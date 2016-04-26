@@ -7,22 +7,16 @@ package HIL.I2C is
    pragma Preelaborate;
 
 
-   type Port_Type is (UNKNOWN, I2C1, I2C2);
-
-   type Address_Type is Bits_10;
    type Data_Type is array(Natural range <>) of Byte;
    
-   type Device_Type is record
-   	Port    : Port_Type;
-   	Address : Address_Type
-   	end record;
+   type Device_Type is (UNKNOWN, BARO);
 
    procedure initialize;
 
+   procedure write (Device : in Device_Type; Data : in Data_Type);
 
-   procedure write (Port : Port_Type; Address : Address_Type; Data : Data_Type);
+   procedure read (Device : in Device_Type; Data : out Data_Type);
 
-   function read (Port : Port_Type; Address : Address_Type) return Data_Type;
-
+   procedure transfer (Device : in Device_Type; Data_TX : in Data_Type; Data_RX : in Data_Type;);
 
 end HIL.I2C;

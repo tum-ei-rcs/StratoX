@@ -4,6 +4,7 @@ package HIL is
 
 
    --procedure configure_Hardware;  
+   type Byte is mod**8;
 
 
 end HIL;
