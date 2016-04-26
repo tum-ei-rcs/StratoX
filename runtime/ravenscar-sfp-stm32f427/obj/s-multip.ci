@@ -1,0 +1,3 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-multip.adb"
+node: { title: "system__multiprocessors__number_of_cpus" label: "Number_Of_Cpus\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-multip.adb:37:4\n0 bytes\n0 dynamic objects" }
+}

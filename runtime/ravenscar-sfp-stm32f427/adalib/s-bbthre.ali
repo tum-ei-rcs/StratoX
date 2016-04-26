@@ -1,0 +1,246 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_EXCEPTIONS
+RV NO_STANDARD_STORAGE_POOLS
+RV NO_UNCHECKED_CONVERSION
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_IMPLEMENTATION_RESTRICTIONS
+RR NO_ELABORATION_CODE
+RV SPARK_05
+
+U system.bb.threads%b	s-bbthre.adb		3d6b14c5 NE OL PK
+W ada%s			ada.ads			ada.ali
+W ada.unchecked_conversion%s
+W system%s		system.ads		system.ali
+W system.bb%s		s-bb.ads		s-bb.ali
+W system.bb.board_support%s  s-bbbosu.adb	s-bbbosu.ali
+W system.bb.parameters%s  s-bbpara.ads		s-bbpara.ali
+W system.bb.protection%s  s-bbprot.adb		s-bbprot.ali
+W system.bb.threads%s	s-bbthre.adb		s-bbthre.ali
+W system.bb.threads.queues%s  s-bbthqu.adb	s-bbthqu.ali
+W system.storage_elements%s  s-stoele.adb	s-stoele.ali
+
+U system.bb.threads%s	s-bbthre.ads		111ee653 BN NE OL PR PK
+W system%s		system.ads		system.ali
+W system.bb%s		s-bb.ads		s-bb.ali
+W system.bb.cpu_primitives%s  s-bbcppr.adb	s-bbcppr.ali
+W system.bb.cpu_primitives.multiprocessors%s  s-bcprmu.adb  s-bcprmu.ali
+W system.bb.interrupts%s  s-bbinte.adb		s-bbinte.ali
+W system.bb.time%s	s-bbtime.adb		s-bbtime.ali
+W system.multiprocessors%s  s-multip.adb	s-multip.ali
+W system.parameters%s	s-parame.adb		s-parame.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-except.ads		20150506105330 5b5f0f2f ada.exceptions%s
+D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
+D s-bbbosu.adb		20150506105328 53d21bd1 system.bb.board_support%b
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bbcppr.adb		20150506105327 7968ef8f system.bb.cpu_primitives%b
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bcprmu.adb		20150506105329 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
+D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
+D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbprot.ads		20150506105331 f48a7e85 system.bb.protection%s
+D s-bbprot.adb		20150506105332 233a43fc system.bb.protection%b
+D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
+D s-bbthre.adb		20150506105332 fefd676c system.bb.threads%b
+D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
+D s-bbthqu.adb		20150506105327 e7db98e5 system.bb.threads.queues%b
+D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
+D s-maccod.ads		20150506105330 0fbb7bce system.machine_code%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-stoele.adb		20150506105330 ed88f8fb system.storage_elements%b
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+X 1 ada.ads
+16K9*Ada 19e8 17|45r6
+X 3 a-unccon.ads
+20v14*Unchecked_Conversion 17|45w10
+X 4 system.ads
+60K9*System 173e11 16|41w6 42r6 43r6 44r6 45r6 46r6 47r6 49r9 52r13 78r25
+. 88r14 92r18 95r23 98r25 105r22 108r25 115r20 142r24 147r34 155r34 164r28
+. 228r23 229r23 230r23 231r23 232r23 233r23 257r39 261r51 297r31 302r29 306r5
+. 17|39r6 40r6 41r6 42r6 43r6 47r14 49r8 50r8 51r8 52r8 53r8 56r13 57r13
+. 58r13 60r32 78r47 91r40 95r43 128r29 130r14 137r50 153r28 155r27 176r16
+. 230r40 236r9 247r33 267r25 277r10 324r43 330r12 351r31 357r7 364r40 453r23
+. 454r23 455r23 456r23 457r23 458r23 510r36 516r24 521r28 572r5
+90M9*Address 16|88r21 105r29 108r32 228r30 229r30 232r30 297r38 302r36 17|56r20
+. 78r54 91r47 95r50 128r36 351r38 453r30 454r30 457r30
+92m4*Null_Address{90M9} 17|245r29 246r29 339r32 340r32
+104V14*"="{boolean} 17|277r50
+126I12*Any_Priority{integer} 16|95r30 98r32 164r35 230r30 257r46 261r58 17|137r57
+. 153r35 289r48 290r48 364r47 455r30
+X 5 s-bb.ads
+43K16*BB 4|60k9 5|97e14 16|43r13 44r13 45r13 47r13 49r16 78r32 115r27 142r31
+. 306r12 17|40r13 41r13 42r13 43r13 47r21 50r15 51r15 52r15 53r15 130r21
+. 230r47 236r16 324r50 330r19 357r14 516r31 521r35 572r12
+X 6 s-bbbosu.ads
+46K19*Board_Support 170e28 17|41w16 54r8 161r7
+53U14*Initialize_Board 17|161s21
+X 8 s-bbcppr.ads
+39K19*CPU_Primitives 142e29 16|43w16 47r16 78r35 192r8 220r8 17|50r18 51r18
+59A9*Context_Buffer(4|90M9) 16|78r50
+82U14*Initialize_Context 17|243s7 337s10 506s10
+83p7 Buffer(59A9) 17|244r10 338r13 507r13
+84m7 Program_Counter{4|90M9} 17|245r10 339r13 508r13
+85m7 Argument{4|90M9} 17|246r10 340r13 509r13
+86m7 Stack_Pointer{4|90M9} 17|247r10 341r13 510r13
+124U14*Initialize_Floating_Point 17|253s7
+X 9 s-bbcppr.adb
+103U14 SV_Call_Handler 104i24
+106U14 Pend_SV_Handler 108i24
+112U14 Sys_Tick_Handler 113i24
+115U14 Interrupt_Request_Handler 116i24
+X 10 s-bcprmu.ads
+33K34*Multiprocessors 49e45 16|47w31 192r23 220r23 17|51r33
+36V13*Current_CPU{22|23I12} 16|192s39 220s39 17|155s57 267s55
+X 12 s-bbinte.ads
+46K19*Interrupts 90e25 16|45w16 17|162r7
+61U14*Initialize_Interrupts 17|162s18
+X 13 s-bbpara.ads
+46K19*Parameters 150e25 17|40w16 53r18
+X 14 s-bbprot.ads
+42K19*Protection 58e25 17|42w16 186r7 259r7 286r10 343r10 366r7 385r7 395r7
+. 441r7 461r7 523r7 543r7 569r7
+48U14*Enter_Kernel 17|186s18 286s21 366s18 395s18 461s18 543s18
+54U14*Leave_Kernel 17|259s18 343s21 385s18 441s18 523s18 569s18
+X 16 s-bbthre.ads
+49K19*Threads 5|43k16 16|306l15 306e22 17|43r16 47b24 130r24 357r17 572l15
+. 572t22
+58b4*Initialized{boolean} 196r21 224r17 244r13 17|257m7
+62R9*Thread_Descriptor 65r33 77c9 144e14
+65P9*Thread_Id(62R9) 68r30 111r14 118r20 137r21 147r16 155r16 163r28 198r65
+. 227r23 246r32 261r33 275r27 17|103r36 112r31 137r32 152r28 266r65 393r26
+. 452r23 530r32 541r27
+68p4*Null_Thread_Id{65P9} 150r23 158r23 249r36 264r19 282r14 17|206r41 207r41
+. 231r40 299r44 300r44 325r43 380r35 400r21 517r24
+71E9*Thread_States 71e56 123r15
+71n27*Runnable{71E9} 287r45 17|218r35 400r61 491r19 551r22 567r33
+71n37*Suspended{71E9} 287r33 17|312r38 430r27 545r21
+71n48*Delayed{71E9}
+78a7*Context{8|59A9} 17|244m48 338m51 507m35
+88m7*ATCB{4|90M9} 17|130r54 357m47
+92i7*Base_CPU{22|21I9} 17|105r21 114r17 120r29 192m26 288m29 465m10
+95i7*Base_Priority{4|126I12} 17|196m26 289m29 381r54 469m10
+98i7*Active_Priority{4|126I12} 17|144r17 197m26 290m29 470m10
+105m7*Top_Of_Stack{4|90M9} 17|211m26 248r54 304m29 483m10 511r41
+108m7*Bottom_Of_Stack{4|90M9} 17|213m26 249r54 308m29 487m10 512r41
+111p7*Next{65P9} 17|206m26 299m29
+115m7*Alarm_Time{20|46M9} 17|230m26 324m29 516m10
+118p7*Next_Alarm{65P9} 17|231m26 325m29 517m10
+123e7*State{71E9} 287r24 17|218m26 312m29 400r53 430m18 491m10 545r13 551m13
+. 567r25
+126b7*In_Interrupt{boolean} 17|222m26 316m29 495m10
+131b7*Wakeup_Signaled{boolean} 291r28 17|226m26 320m29 402r18 425m18 499m10
+. 564m13
+137p7*Global_List{65P9} 17|207m26 300m29 474m10
+142r7*Execution_Time{20|170R9} 17|235m26 329m29 521m10
+146V13*Get_Affinity{22|21I9} 147>7 17|103b13 106l8 106t20
+147p7 Thread{65P9} 150r13 17|103b27 105r14
+154V13*Get_CPU{22|23I12} 155>7 17|112b13 122l8 122t15
+155p7 Thread{65P9} 158r13 17|112b22 114r10 120r22
+162U14*Initialize 163>7 164>7 17|151b14 260l8 260t18
+163p7 Environment_Thread{65P9} 17|152b7 192r7 196r7 197r7 202r49 203r49 204r49
+. 206r7 207r7 211r7 213r7 218r7 222r7 226r7 230r7 231r7 235r7 244r29 248r35
+. 249r35
+164i7 Main_Priority{4|126I12} 17|153b7 196r45 197r45
+198U14*Initialize_Slave_Environment 198>44 17|266b14 345l8 345t36
+198p44 Environment_Thread{65P9} 17|266b44 288r10 289r10 290r10 297r50 299r10
+. 300r10 304r10 308r10 312r10 316r10 320r10 324r10 325r10 329r10 338r32
+226U14*Thread_Create 227>7 228>7 229>7 230>7 231>7 232>7 233>7 17|451b14
+. 524l8 524t21
+227p7 Id{65P9} 17|452b7 465r7 469r7 470r7 474r7 475r29 479r22 483r7 487r7
+. 491r7 495r7 499r7 507r32 511r38 512r38 516r7 517r7 521r7
+228m7 Code{4|90M9} 17|453b7 508r32
+229m7 Arg{4|90M9} 17|454b7 509r32
+230i7 Priority{4|126I12} 17|455b7 469r29 470r29
+231i7 Base_CPU{22|21I9} 17|456b7 465r22
+232m7 Stack_Address{4|90M9} 17|457b7 484r11 487r29
+233i7 Stack_Size{23|59I9} 17|458b7 484r60
+246V13*Thread_Self{65P9} 249r14 17|530b13 535l8 535t19
+257U14*Set_Priority 257>28 258r19 17|364b14 386l8 386t20
+257i28 Priority{4|126I12} 17|364b28 381r20 383r54
+261V13*Get_Priority{4|126I12} 261>28 17|137b13 145l8 145t20
+261p28 Id{65P9} 264r13 17|137b27 144r14
+268U14*Sleep 17|392b14 445l8 445t13
+275U14*Wakeup 275>22 17|541b14 570l8 570t14
+275p22 Id{65P9} 282r8 287r17 291r21 17|541b22 545r10 551r10 556r25 564r10
+. 567r22
+297U14*Set_ATCB 297>24 298r19 17|351b14 358l8 358t16
+297m24 ATCB{4|90M9} 17|351b24 357r55
+302V13*Get_ATCB{4|90M9} 303r19 17|128b13 131l8 131t16
+X 17 s-bbthre.adb
+60i4 Slave_Stack_Size{26|62I12} 64r47 177r52 305r46
+63A9 Slave_Stack_Space<26|70A9>(26|64M9)<26|54I9> 65r8 73r41
+68I12 Slave_CPUs{22|23I12} 73r26 78r32 174r21
+73a4 Slave_Stacks(63A9) 177m20 177r20 179m18 179r18 305m14 305r14 308m48
+. 308r48
+78a4 Slave_Stacks_Table(4|90M9) 79m24 79r24 175m10 341r32
+91m4 Top_Of_Environment_Stack{4|90M9} 92m24 92r24 211r42
+95m4 Bottom_Of_Environment_Stack{4|90M9} 96m24 96r24 214r9
+155i7 Main_CPU{22|23I12} 192r38 202r36 203r34
+174i11 CPU_Id{68I12} 175r30 177r34 179r32
+267i7 CPU_Id{22|23I12} 288r48 297r39 305r28 308r62 341r52
+393p7 Self_Id{16|65P9} 400r10 400r45 402r10 425r10 430r10 434r26
+X 18 s-bbthqu.ads
+41K27*Queues 17|43w24 130r32 202r7 203r7 204r7 297r10 357r25 380r10 381r32
+. 383r7 383r31 393r39 434r10 474r25 475r7 479r7 534r14 556r10 18|369e29
+51U14*Insert 17|479s14 556s17
+97U14*Extract 17|434s17
+119U14*Change_Priority 17|383s14
+226a4*Running_Thread_Table(16|65P9) 17|202m14 297m17
+236a4*First_Thread_Table(16|65P9) 17|203m14
+246V13*Running_Thread{16|65P9} 17|130s39 357s32 380s17 381s39 383s38 393s46
+. 534s21
+364p4*Global_List{16|65P9} 17|204m14 474r32 475m14
+X 20 s-bbtime.ads
+43K19*Time 16|44w16 115r30 142r34 17|52r18 163r7 230r50 236r19 324r53 330r22
+. 516r34 521r38 20|188e19
+46M9*Time 16|115r35 17|230r55 324r58 516r39
+127U14*Initialize_Timers 17|163s12
+170R9*Composite_Execution_Time 16|142r39 20|178e14
+180r4*Initial_Composite_Execution_Time{170R9} 17|236r24 330r27 521r43
+X 22 s-multip.ads
+18K16*Multiprocessors 16|46w13 52r20 92r25 147r41 155r41 192r53 220r53 231r30
+. 17|49r15 68r26 69r12 69r45 155r34 267r32 277r17 456r30 22|31e27
+21I9*CPU_Range<short_short_integer> 16|92r41 147r57 231r46 17|103r54 456r46
+23I12*CPU{21I9} 16|52r36 155r57 192r69 220r69 17|68r42 69r28 69r61 112r49
+. 118r17 120r17 155r50 267r48 277r33
+25i4*Not_A_Specific_CPU{21I9} 17|114r28
+X 23 s-parame.ads
+49K16*Parameters 16|42w13 233r30 17|57r20 176r23 247r40 458r30 510r43 23|203e22
+56I9*Task_Storage_Size<integer>
+59I9*Size_Type<56I9> 16|233r41 17|57r31 458r41
+94b4*Stack_Grows_Down{boolean} 17|176r34 247r51 510r54
+X 26 s-stoele.ads
+42K16*Storage_Elements 17|39w13 58r20 60r39 64r10 484r27 26|117e28
+54I9*Storage_Offset<integer> 17|58r37 484r44
+62I12*Storage_Count{54I9} 17|60r56
+64M9*Storage_Element
+70A9*Storage_Array(64M9)<54I9> 17|64r27
+76V14*"+"{4|90M9} 17|177s50 305s44 484s25
+

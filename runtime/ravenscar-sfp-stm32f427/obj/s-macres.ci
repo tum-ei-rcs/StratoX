@@ -1,0 +1,5 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-macres.adb"
+node: { title: "system__machine_reset__stop" label: "Stop\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-macres.adb:79:4\n0 bytes\n0 dynamic objects" }
+node: { title: "exit" label: "Os_Exit\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-macres.adb:58:4\n0 bytes\n0 dynamic objects" }
+node: { title: "abort" label: "Os_Abort\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-macres.adb:49:4\n0 bytes\n0 dynamic objects" }
+}

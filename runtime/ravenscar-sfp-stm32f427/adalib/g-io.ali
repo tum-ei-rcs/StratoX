@@ -1,0 +1,67 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_OBSOLESCENT_FEATURES
+RV SPARK_05
+
+U gnat.io%b		g-io.adb		2805cb08 NE OL PK
+W gnat%s		gnat.ads		gnat.ali
+W system%s		system.ads		system.ali
+W system.text_io%s	s-textio.adb		s-textio.ali
+
+U gnat.io%s		g-io.ads		cee68f61 NE OL PR PK
+W gnat%s		gnat.ads		gnat.ali
+
+D gnat.ads		20150506105333 fd2ad2f1 gnat%s
+D g-io.ads		20150506105327 33cc5d90 gnat.io%s
+D g-io.adb		20150506105327 4d6a3348 gnat.io%b
+D g-io-put.adb		20150506105326 56a3a5d0 gnat.io.put
+D system.ads		20150506105328 9eacb62e system%s
+D s-textio.ads		20150506105332 753250f1 system.text_io%s
+X 1 gnat.ads
+34K9*GNAT 37e9 2|43r9 63r5 3|32r14 100r5 4|36r11
+X 2 g-io.ads
+43K14*IO 1|34k9 2|63l10 63e12 3|32b19 100l10 100t12 4|36r16
+46U14*Put 46>19 3|51b14 77l8 77t11
+46i19 X{integer} 3|51b19 59r18 59r29 59r37 71r10
+50U14*Put 50>19 3|34b14 43s10 86s10 4|37b11 48l5 48t8
+50e19 C{character} 3|34b19 4|37b16 47r24
+53U14*Put 53>19 3|76s7 83b14 88l8 88t11 96s7
+53a19 S{string} 3|83b19 85r16 86r15
+56U14*Put_Line 56>24 3|94b14 98l8 98t16
+56a24 S{string} 3|94b24 96r12
+60U14*New_Line 60>24 3|40b14 45l8 45t16 97s7
+60i24 Spacing{positive} 3|40b24 42r21
+X 3 g-io.adb
+42i11 J{integer}
+52i7 Int{integer} 59m7 64r17 65m10 65r18 68r20
+53a7 S{string} 54r26 67m10 73m10 76r12 76r24
+54i7 First{natural} 66m10 66r19 67r13 72m10 72r19 73r13 76r15
+55i7 Val{integer} 64m10 65r24 67r60
+85i11 J{integer} 86r18
+X 5 system.ads
+60K9*System 4|34r6 34r26 47r4 5|173e11
+X 6 s-textio.ads
+35K16*Text_IO 4|34w13 34r33 47r11 6|81e19
+42U14*Initialize 4|40s7
+46b4*Initialized{boolean} 4|39r11
+54V13*Is_Tx_Ready{boolean} 4|43s14
+61U14*Put 4|47s19
+

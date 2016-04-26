@@ -1,0 +1,59 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P
+
+RN
+RV NO_FLOATING_POINT
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U interfaces.c%s	i-c.ads			8d26105b NE OL PU PK
+W interfaces%s		interfac.ads		interfac.ali
+
+D interfac.ads		20150506105327 6033a23f interfaces%s
+D i-c.ads		20150506105328 ed15b264 interfaces.c%s
+D system.ads		20150506105328 9eacb62e system%s
+X 1 interfac.ads
+38K9*Interfaces 178e15 2|39r9 102r5
+X 2 i-c.ads
+39K20*C 1|38k9 2|102l16 102e17
+44N4*CHAR_BIT 57r29 64r31 89r38
+45N4*SCHAR_MIN 56r30
+46N4*SCHAR_MAX 56r43
+47N4*UCHAR_MAX 63r31
+52I9*int<integer> 59r36
+53I9*short<short_integer> 60r36
+54I9*long<long_integer> 61r36
+56I9*signed_char<short_short_integer> 57r8
+59M9*unsigned
+60M9*unsigned_short
+61M9*unsigned_long
+63M9*unsigned_char 64r8 66r26
+66M12*plain_char{63M9}
+68I9*ptrdiff_t<integer>
+72M9*size_t 88r30 100r31
+76F9*C_float<float>
+77F9*double<long_float>
+78F9*long_double<long_long_float>
+84E9*char<character> 86r19 86r27 88r58
+86e4*nul{84E9}
+88A9*char_array(84E9)<72M9> 89r8
+95E9*wchar_t<wide_character> 96r8 98r24 98r35 100r59
+98e4*wide_nul{95E9}
+100A9*wchar_array(95E9)<72M9>
+

@@ -1,0 +1,42 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_STANDARD_STORAGE_POOLS
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_OBSOLESCENT_FEATURES
+RV SPARK_05
+
+U system.address_to_access_conversions%s  s-atacco.ads  d29a6701 NE OL PR PK GE
+W system%s		system.ads		system.ali
+
+D system.ads		20150506105328 9eacb62e system%s
+D s-atacco.ads		20150506105331 4c36d12f system.address_to_access_conversions%s
+X 1 system.ads
+60K9*System 173e11 2|39r9 63r5
+90M9*Address 2|57r33 58r56
+X 2 s-atacco.ads
+37+9 Object 43r7 47r38
+39k16*Address_To_Access_Conversions 1|60k9 2|37z9 63l12 63e41
+47P9*Object_Pointer(37+9) 48r8 50r31 57r56 58r33
+57V13*To_Pointer{47P9} 57>25 60b30
+57m25 Value{1|90M9}
+58V13*To_Address{1|90M9} 58>25 61b30
+58p25 Value{47P9}
+

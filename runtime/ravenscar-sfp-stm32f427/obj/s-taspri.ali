@@ -1,0 +1,69 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_ACCESS_SUBPROGRAMS
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U system.task_primitives%s  s-taspri.ads	3cd52794 NE OL PR PK
+W system%s		system.ads		system.ali
+W system.os_interface%s	s-osinte.ads		s-osinte.ali
+
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
+D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
+D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
+D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-osinte.ads		20150506105331 9761d940 system.os_interface%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-taspri.ads		20150506105328 351848fa system.task_primitives%s
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+X 1 system.ads
+60K9*System 173e11 17|38r6 40r9 52r28 62r29 65r24 66r18 77r21 77r39 82r5
+90M9*Address 17|52r35 77r28
+92m4*Null_Address{90M9} 17|77r46
+X 8 s-bbthre.ads
+65P9*Thread_Id(62R9)
+77R9*Thread_Descriptor
+X 12 s-osinte.ads
+50K16*OS_Interface 202e24 17|38w13 62r36 65r31 66r25
+111R12*Thread_Descriptor{8|77R9} 17|62r49
+115P12*Thread_Id{8|65P9} 17|65r44
+118p4*Null_Thread_Id{115P12} 17|66r38
+X 17 s-taspri.ads
+40K16*Task_Primitives 1|60k9 17|61E9 82l12 82e27
+43P9*Task_Body_Access
+47R9*Private_Data 61c9 80e14
+52M12*Task_Address{1|90M9}
+53N4*Task_Address_Size
+56N4*Alternate_Stack_Size
+62r7*Thread_Desc{12|111R12}
+65p7*Thread{12|115P12}
+77m7*Lwp{1|90M9}
+

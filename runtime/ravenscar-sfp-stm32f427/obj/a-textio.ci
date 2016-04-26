@@ -1,0 +1,25 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb"
+node: { title: "system__text_io__initialize" label: "Initialize\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:42:14" shape : ellipse }
+node: { title: "system__text_io__put" label: "Put\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:61:14" shape : ellipse }
+node: { title: "system__text_io__is_tx_ready" label: "Is_Tx_Ready\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:54:13" shape : ellipse }
+node: { title: "system__text_io__use_cr_lf_for_new_line" label: "Use_Cr_Lf_For_New_Line\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:65:13" shape : ellipse }
+node: { title: "system__text_io__get" label: "Get\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:78:13" shape : ellipse }
+node: { title: "system__text_io__is_rx_ready" label: "Is_Rx_Ready\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:73:13" shape : ellipse }
+node: { title: "ada__text_io___elabb" label: "Text_Io\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:36:1\n0 bytes\n0 dynamic objects" }
+edge: { sourcename: "ada__text_io___elabb" targetname: "system__text_io__initialize" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:96:7" }
+node: { title: "ada__text_io__put_line" label: "Put_Line\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:88:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__text_io__put_line" targetname: "ada__text_io__new_line" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:91:7" }
+edge: { sourcename: "ada__text_io__put_line" targetname: "ada__text_io__put__2" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:90:7" }
+node: { title: "ada__text_io__put__2" label: "Put\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:77:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__text_io__put__2" targetname: "ada__text_io__put" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:80:10" }
+node: { title: "ada__text_io__put" label: "Put\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:68:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__text_io__put" targetname: "system__text_io__put" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:74:21" }
+edge: { sourcename: "ada__text_io__put" targetname: "system__text_io__is_tx_ready" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:70:17" }
+node: { title: "ada__text_io__new_line" label: "New_Line\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:55:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__text_io__new_line" targetname: "ada__text_io__put" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:61:7" }
+edge: { sourcename: "ada__text_io__new_line" targetname: "ada__text_io__put" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:58:10" }
+edge: { sourcename: "ada__text_io__new_line" targetname: "system__text_io__use_cr_lf_for_new_line" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:57:10" }
+node: { title: "ada__text_io__get" label: "Get\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:42:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__text_io__get" targetname: "system__text_io__get" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:48:9" }
+edge: { sourcename: "ada__text_io__get" targetname: "system__text_io__is_rx_ready" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-textio.adb:44:17" }
+}

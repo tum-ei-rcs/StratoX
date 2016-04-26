@@ -1,0 +1,86 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_EXCEPTIONS
+RV NO_STANDARD_STORAGE_POOLS
+RV NO_UNCHECKED_CONVERSION
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U system.secondary_stack%b  s-secsta.adb	a56b3ef3 NE OL PK
+W system%s		system.ads		system.ali
+W unchecked_conversion%s
+
+U system.secondary_stack%s  s-secsta.ads	17bf9668 NE OL PK
+W system%s		system.ads		system.ali
+W system.storage_elements%s  s-stoele.adb	s-stoele.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-secsta.ads		20150506105330 a4d06a42 system.secondary_stack%s
+D s-secsta.adb		20150506105326 cb94caa9 system.secondary_stack%b
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-stoele.adb		20150506105330 ed88f8fb system.storage_elements%b
+D unchconv.ads		20150506105326 ca2f9e18 unchecked_conversion%s
+X 3 system.ads
+60K9*System 173e11 4|34r6 36r9 38r24 44r14 55r26 78r5 5|36r14 97r26 120r14
+. 152r5
+90M9*Address 4|44r21 55r33 5|51r52 97r33 120r21
+X 4 s-secsta.ads
+36K16*Secondary_Stack 3|60k9 4|72E4 78l12 78e27 5|36b21 152l12 152t27
+38K12*SSE=38:31 56r22 76r24 5|38r13 40r47 98r22 128r47
+40N4*Default_Secondary_Stack_Size 45r25 5|121r25
+43U14*SS_Init 44>7 45>7 5|119b14 132l8 132t15
+44m7 Stk{3|90M9} 5|120b7 123r48 128r10
+45i7 Size{natural} 5|121b7 126r22 131r30
+54U14*SS_Allocate 55<7 56>7 5|96b14 113l8 113t19
+55m7 Address{3|90M9} 5|97b7 111m7
+56i7 Storage_Size{6|62I12} 5|98b7 102r35
+60M9*Mark_Id<6|105M9> 63r28 66r30 76c9 5|40r26 43r14 44r14 45r27 100r31 100r42
+. 101r31 102r26 126r34 131r21 131r42 138r28 147r30
+63V13*SS_Mark{60M9} 5|138b13 141l8 141t15
+66U14*SS_Release 66>26 5|147b14 150l8 150t18
+66m26 M{60M9} 5|147b26 149r28
+72i4 SS_Pool{integer}
+X 5 s-secsta.adb
+40A9 Memory(6|64M9)<4|60M9> 45r14
+42R9 Stack_Id 46e14 47r36 49r29
+43m7*Top{4|60M9} 107r20 111r43 112m17 112r34 130m13 140r28 149m21
+44m7*Last{4|60M9} 107r47 131m13
+45a7*Mem{40A9} 111m28 130r26
+49P9 Stack_Ptr(42R9) 51r61 53r34 104r31 123r24
+51V13 From_Addr[8|20]{49P9} 123s37
+53V13 Get_Sec_Stack{49P9} 54b<c,__gnat_get_secondary_stack>22 104s44 140s14
+. 149s7
+100m7 Max_Align{4|60M9} 102r51 102r68 103r28
+101m7 Max_Size{4|60M9} 107r26 112r40
+104p7 Sec_Stack{49P9} 107r10 107r37 111r18 111r33 112r7 112r24
+123p7 Stack{49P9} 130r7 130r20 131r7
+X 6 s-stoele.ads
+42K16*Storage_Elements 4|34w13 38r31 6|117e28
+54I9*Storage_Offset<integer> 5|38r17 128r51
+62I12*Storage_Count{54I9} 4|56r26 5|98r26
+64M9*Storage_Element 5|40r51
+96V14*"mod"{54I9} 5|128s14
+105M9*Integer_Address 4|76r28
+X 8 unchconv.ads
+20v10*Unchecked_Conversion 5|34w6 51r30
+

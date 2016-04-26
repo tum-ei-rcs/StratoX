@@ -1,0 +1,8 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-retide.adb"
+node: { title: "system__bb__time__delay_until" label: "Delay_Until\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbtime.ads:141:14" shape : ellipse }
+node: { title: "__gnat_last_chance_handler" label: "gnat_last_chance_handler\n<built-in>" shape : ellipse }
+node: { title: "ada__real_time__delays__to_duration" label: "To_Duration\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-retide.adb:66:4\n0 bytes\n0 dynamic objects" }
+node: { title: "ada__real_time__delays__delay_until" label: "Delay_Until\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-retide.adb:44:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__delays__delay_until" targetname: "system__bb__time__delay_until" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-taprop.adb:93:26" }
+edge: { sourcename: "ada__real_time__delays__delay_until" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-retide.adb:51:10" }
+}

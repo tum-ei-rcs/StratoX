@@ -1,0 +1,25 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb"
+node: { title: "system__bb__threads__sleep" label: "Sleep\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbthre.ads:268:14" shape : ellipse }
+node: { title: "__gnat_last_chance_handler" label: "gnat_last_chance_handler\n<built-in>" shape : ellipse }
+node: { title: "system__bb__protection__leave_kernel" label: "Leave_Kernel\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.ads:54:14" shape : ellipse }
+node: { title: "system__bb__threads__wakeup" label: "Wakeup\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbthre.ads:275:14" shape : ellipse }
+node: { title: "system__tasking__self" label: "Self\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-taskin.ads:70:13" shape : ellipse }
+node: { title: "system__bb__threads__set_priority" label: "Set_Priority\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbthre.adb:364:4" shape : ellipse }
+node: { title: "ada__synchronous_task_control__suspend_until_true" label: "Suspend_Until_True\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb:104:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__synchronous_task_control__suspend_until_true" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb:165:10" }
+edge: { sourcename: "ada__synchronous_task_control__suspend_until_true" targetname: "system__bb__threads__set_priority" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-taprop.adb:128:26" }
+edge: { sourcename: "ada__synchronous_task_control__suspend_until_true" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbthre.adb:385:17" }
+edge: { sourcename: "ada__synchronous_task_control__suspend_until_true" targetname: "system__bb__threads__sleep" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-taprop.adb:82:26" }
+edge: { sourcename: "ada__synchronous_task_control__suspend_until_true" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbthre.adb:385:17" }
+edge: { sourcename: "ada__synchronous_task_control__suspend_until_true" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbthre.adb:385:17" }
+edge: { sourcename: "ada__synchronous_task_control__suspend_until_true" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb:117:10" }
+edge: { sourcename: "ada__synchronous_task_control__suspend_until_true" targetname: "system__tasking__self" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb:105:7" }
+node: { title: "ada__synchronous_task_control__set_true" label: "Set_True\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb:64:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__synchronous_task_control__set_true" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbthre.adb:385:17" }
+edge: { sourcename: "ada__synchronous_task_control__set_true" targetname: "system__bb__threads__wakeup" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-taprop.adb:113:26" }
+edge: { sourcename: "ada__synchronous_task_control__set_true" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbthre.adb:385:17" }
+edge: { sourcename: "ada__synchronous_task_control__set_true" targetname: "system__tasking__self" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb:65:7" }
+node: { title: "ada__synchronous_task_control__set_false" label: "Set_False\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb:53:4\n0 bytes\n0 dynamic objects" }
+node: { title: "ada__synchronous_task_control__current_state" label: "Current_State\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.adb:42:4\n0 bytes\n0 dynamic objects" }
+node: { title: "ada__synchronous_task_control__suspension_objectIP" label: "Suspension_Objectip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-sytaco.ads:55:9\n0 bytes\n0 dynamic objects" }
+}

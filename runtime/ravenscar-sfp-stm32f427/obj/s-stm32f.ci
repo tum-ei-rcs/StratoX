@@ -1,0 +1,10 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads"
+node: { title: "system__stm32f4__mcu_id_registerIP" label: "Mcu_Id_Registerip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads:254:9\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__usart_registersIP" label: "Usart_Registersip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads:234:9\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__gpio_registersIP" label: "Gpio_Registersip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads:159:9\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__Tbits_8x4BIP" label: "Tbits_8x4bip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads:50:4\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__Tbits_32x1BIP" label: "Tbits_32x1bip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads:48:4\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__Tbits_16x2BIP" label: "Tbits_16x2bip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads:49:4\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__flash_registersIP" label: "Flash_Registersip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads:110:9\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__pwr_registersIP" label: "Pwr_Registersip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stm32f.ads:72:9\n0 bytes\n0 dynamic objects" }
+}

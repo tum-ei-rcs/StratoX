@@ -1,0 +1,7 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-assert.adb"
+node: { title: "__gnat_last_chance_handler" label: "Last_Chance_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-except.adb:41:17" shape : ellipse }
+node: { title: "ada__assertions__assert__2" label: "Assert\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-assert.adb:46:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__assertions__assert__2" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-assert.adb:49:10" }
+node: { title: "ada__assertions__assert" label: "Assert\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-assert.adb:39:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__assertions__assert" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-assert.adb:42:10" }
+}

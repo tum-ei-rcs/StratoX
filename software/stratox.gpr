@@ -1,0 +1,86 @@
+project StratoX is
+
+   for Languages use ("Ada");
+   for Main use ("boot.adb");
+
+   -- Specify Directories
+   -----------------------------
+   for Source_Dirs use ("boot", "config", "driver", "hal", "hal/hil", "kernel", "modules");
+   for Object_Dir use "../obj";
+   for Exec_Dir use "../obj";
+   type Build_Modes is
+      ("debug", "release", "analyze");
+   Build_Mode : Build_Modes := external ("My_Build_Mode", "debug");
+   for Runtime ("ada") use "ravenscar-sfp-stm32f427";
+   for Target use "arm-eabi";
+
+   package Compiler is
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Default_Switches ("ada") use ("-O0", "-gnatwa", "-gnatQ", "-gnatw.X");
+
+         when "release" =>
+            for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.X");
+
+         when "analyze" =>
+
+      end case;
+   end Compiler;
+
+   package Builder is
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Default_Switches ("ada") use ("-g");
+            for Global_Configuration_Pragmas use "gnat.adc";
+
+         when "release" =>
+            for Default_Switches ("ada") use ();
+            for Global_Configuration_Pragmas use "gnat.adc";
+
+         when "analyze" =>
+            for Global_Compilation_Switches ("Ada") use ("-gnateT=" & "target.atp");
+      end case;
+   end Builder;
+
+   package Ide is
+      for Communication_Protocol use "remote";
+      for Program_Host use "localhost:4242";
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Gnat use "arm-eabi-gnat";
+            for Gnatlist use "arm-eabi-gnatls";
+            for Debugger_Command use "arm-eabi-gdb";
+
+         when "release" =>
+
+         when "analyze" =>
+            for Gnat use "arm-eabi-gnat";
+            for Gnatlist use "arm-eabi-gnatls";
+            for Debugger_Command use "arm-eabi-gdb";
+      end case;
+   end Ide;
+
+   package Prove is
+      -- switches for gnat2why et. al.
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
+
+         when "release" =>
+            for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
+
+         when "analyze" =>
+            for Switches use ("%X", "--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
+      end case;
+   end Prove;
+
+end StratoX;
+

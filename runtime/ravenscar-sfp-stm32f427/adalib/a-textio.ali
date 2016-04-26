@@ -1,0 +1,64 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_ELABORATION_CODE
+RV NO_OBSOLESCENT_FEATURES
+RV SPARK_05
+
+U ada.text_io%b		a-textio.adb		d3a2eabd OL PK
+W ada%s			ada.ads			ada.ali
+W system%s		system.ads		system.ali
+W system.text_io%s	s-textio.adb		s-textio.ali
+
+U ada.text_io%s		a-textio.ads		c034cb2a EE NE OL PK
+W ada%s			ada.ads			ada.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-textio.ads		20150506105328 ffc84532 ada.text_io%s
+D a-textio.adb		20150506105330 5958ff7e ada.text_io%b
+D system.ads		20150506105328 9eacb62e system%s
+D s-textio.ads		20150506105332 753250f1 system.text_io%s
+X 1 ada.ads
+16K9*Ada 19e8 2|36r9 52r5 3|36r14 98r5
+X 2 a-textio.ads
+36K13*Text_IO 1|16k9 2|52l9 52e16 3|36b18 98l9 98t16
+37U14*Get 37<19 3|42b14 49l8 49t11
+37e19 C{character} 3|42b19 48m7
+40U14*Put 40>19 3|58s10 61s7 68b14 75l8 75t11 80s10
+40e19 Item{character} 3|68b19 74r27
+43U14*Put 43>19 3|77b14 82l8 82t11 90s7
+43a19 Item{string} 3|77b19 79r16 80r15
+46U14*Put_Line 46>24 3|88b14 92l8 92t16
+46a24 Item{string} 3|88b24 90r12
+49U14*New_Line 3|55b14 62l8 62t16 91s7
+X 3 a-textio.adb
+79i11 J{integer} 80r21
+X 4 system.ads
+60K9*System 3|34r6 34r26 48r12 74r7 4|173e11
+X 5 s-textio.ads
+35K16*Text_IO 3|34w13 34r33 48r19 74r14 5|81e19
+42U14*Initialize 3|96s7
+46b4*Initialized{boolean} 3|95r11
+54V13*Is_Tx_Ready{boolean} 3|70s17
+61U14*Put 3|74s22
+65V13*Use_Cr_Lf_For_New_Line{boolean} 3|57s10
+73V13*Is_Rx_Ready{boolean} 3|44s17
+78V13*Get{character} 3|48s27
+

@@ -1,0 +1,3 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-parame.adb"
+node: { title: "system__parameters__adjust_storage_size" label: "Adjust_Storage_Size\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-parame.adb:40:4\n0 bytes\n0 dynamic objects" }
+}

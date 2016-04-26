@@ -1,0 +1,62 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U system.parameters%b	s-parame.adb		c0ab394a NE OL PK
+W system%s		system.ads		system.ali
+
+U system.parameters%s	s-parame.ads		5752e571 NE OL PU PK
+W system%s		system.ads		system.ali
+
+D system.ads		20150506105328 9eacb62e system%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-parame.adb		20150506105326 09556a15 system.parameters%b
+X 1 system.ads
+60K9*System 173e11 2|49r9 109r25 203r5 3|34r14 49r5
+90M9*Address 2|109r32
+X 2 s-parame.ads
+49K16*Parameters 1|60k9 2|203l12 203e22 3|34b21 49l12 49t22
+56I9*Task_Storage_Size<integer> 59r26
+59I9*Size_Type<56I9> 62r32 62r45 65r26 66r23 80r34 83r34 86r41 86r59 3|40r41
+. 40r59
+62i4*Unspecified_Size{59I9} 3|42r17
+65I12*Percentage{59I9} 73r36
+66i4*Dynamic{59I9} 77r67
+73i4*Sec_Stack_Percentage{65I12} 77r44
+77b4*Sec_Stack_Dynamic{boolean}
+80i4*Default_Stack_Size{59I9} 3|43r17
+83i4*Minimum_Stack_Size{59I9}
+86V13*Adjust_Storage_Size{59I9} 86>34 3|40b13 47l8 47t27
+86i34 Size{59I9} 3|40b34 42r10 45r17
+94b4*Stack_Grows_Down{boolean}
+103N4*long_bits
+108N4*ptr_bits
+109M12*C_Address{1|90M9}
+112a4*C_Malloc_Linkname{string}
+135b4*Garbage_Collected{boolean}
+150b4*Single_Lock{boolean}
+163b4*No_Abort{boolean}
+176N4*Max_Attribute_Count
+183b4*Runtime_Traces{boolean}
+192N4*Max_Task_Image_Length
+199N4*Default_Exception_Msg_Max_Length
+

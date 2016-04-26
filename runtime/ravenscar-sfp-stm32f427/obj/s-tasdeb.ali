@@ -1,0 +1,76 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A -O0
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+A -g
+P DB
+
+RN
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U system.tasking.debug%b  s-tasdeb.adb		0f8eba36 NE OL PK
+W system.tasking%s	s-taskin.adb		s-taskin.ali
+
+U system.tasking.debug%s  s-tasdeb.ads		8e39484d BN NE OL PR PK
+W system%s		system.ads		system.ali
+W system.os_interface%s	s-osinte.ads		s-osinte.ali
+W system.tasking%s	s-taskin.adb		s-taskin.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
+D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
+D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
+D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-osinte.ads		20150506105331 9761d940 system.os_interface%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-tasinf.ads		20150506105329 801abd01 system.task_info%s
+D s-taspri.ads		20150506105328 351848fa system.task_primitives%s
+D s-taskin.ads		20150506105326 41d03b44 system.tasking%s
+D s-tasdeb.ads		20150506105332 1958910d system.tasking.debug%s
+D s-tasdeb.adb		20150506105332 16d62b3b system.tasking.debug%b
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+X 3 system.ads
+60K9*System 173e11 22|36r6 37r6 39r9 50r5 23|40r14 67r5
+90M9*Address
+X 14 s-osinte.ads
+50K16*OS_Interface 202e24 22|37w13
+X 21 s-taskin.ads
+47K16*Tasking 3|60k9 21|414e19 22|36w13 39r16 50r12 23|40r21 67r12
+56P9*Task_Id(54R9) 22|46r31 23|42r17 46r17 54r31
+307p7*Activation_Link{56P9} 23|56r31 59m27
+325r7*Common{256R9} 23|56r24 59m20
+347V13*Get_Sec_Stack{3|90M9} 348i<c,__gnat_get_secondary_stack>22
+402U14*Initialize_Slave 403i24
+X 22 s-tasdeb.ads
+39K24*Debug 21|47k16 22|50l20 50e25 23|40b29 67l20 67t25
+46U14*Add_Task_Id 46>27 47r19 23|54b14 65l8 65t19
+46p27 T{21|56P9} 23|54b27 56r22 59r46 61r24 64r20
+X 23 s-tasdeb.adb
+42p4 First_Task{21|56P9} 43r25 61m10
+46p4 Last_Task{21|56P9} 58r10 59r10 64m7
+

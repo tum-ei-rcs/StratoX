@@ -1,0 +1,18 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb"
+node: { title: "system__text_io__put" label: "Put\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:61:14" shape : ellipse }
+node: { title: "system__text_io__is_tx_ready" label: "Is_Tx_Ready\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:54:13" shape : ellipse }
+node: { title: "system__text_io__initialize" label: "Initialize\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-textio.ads:42:14" shape : ellipse }
+node: { title: "gnat__io__put_line" label: "PUT_LINE\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:94:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "gnat__io__put_line" targetname: "gnat__io__put__2" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:43:10" }
+edge: { sourcename: "gnat__io__put_line" targetname: "gnat__io__put__3" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:96:7" }
+node: { title: "gnat__io__put__3" label: "PUT\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:83:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "gnat__io__put__3" targetname: "gnat__io__put__2" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:86:10" }
+node: { title: "gnat__io__put" label: "PUT\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:51:4\n40 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "gnat__io__put" targetname: "gnat__io__put__3" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:76:7" }
+node: { title: "gnat__io__new_line" label: "NEW_LINE\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:40:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "gnat__io__new_line" targetname: "gnat__io__put__2" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io.adb:43:10" }
+node: { title: "gnat__io__put__2" label: "Put\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io-put.adb:37:1\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "gnat__io__put__2" targetname: "system__text_io__put" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io-put.adb:47:18" }
+edge: { sourcename: "gnat__io__put__2" targetname: "system__text_io__is_tx_ready" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io-put.adb:43:14" }
+edge: { sourcename: "gnat__io__put__2" targetname: "system__text_io__initialize" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/g-io-put.adb:40:7" }
+}

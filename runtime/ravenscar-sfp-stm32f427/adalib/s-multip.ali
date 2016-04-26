@@ -1,0 +1,64 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U system.multiprocessors%b  s-multip.adb	84f3a776 NE OL PK
+W interfaces%s		interfac.ads		interfac.ali
+W interfaces.c%s	i-c.ads			i-c.ali
+W system%s		system.ads		system.ali
+
+U system.multiprocessors%s  s-multip.ads	08e2f2a6 BN NE OL PR PK
+W system%s		system.ads		system.ali
+W system.bb%s		s-bb.ads		s-bb.ali
+W system.bb.parameters%s  s-bbpara.ads		s-bbpara.ali
+
+D interfac.ads		20150506105327 6033a23f interfaces%s
+D i-c.ads		20150506105328 ed15b264 interfaces.c%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-multip.adb		20150506105328 9ad81b27 system.multiprocessors%b
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+X 1 interfac.ads
+38K9*Interfaces 178e15 7|29r6 29r24
+X 2 i-c.ads
+39K20*C 102e17 7|29w17 29r35
+52I9*int<integer> 7|43r49
+X 3 system.ads
+60K9*System 173e11 6|16r6 18r9 21r33 31r5 7|31r14 51r5
+X 4 s-bb.ads
+43K16*BB 97e14 6|16r13 21r40
+X 5 s-bbpara.ads
+46K19*Parameters 150e25 6|16w16 21r43
+144N4*Max_Number_Of_CPUs 6|21r54
+X 6 s-multip.ads
+18K16*Multiprocessors 3|60k9 6|19r25 31l12 31e27 7|31b21 51l12 51t27
+21I9*CPU_Range<short_short_integer> 23r19 23r40 25r34
+23I12*CPU{21I9} 27r35 7|37r35 39r10 46r20
+25i4*Not_A_Specific_CPU{21I9}
+27V13*Number_Of_CPUs{23I12} 28r19 7|37b13 49l8 49t22
+X 7 s-multip.adb
+43V22*Gnat_Number_Of_CPUs{2|52I9} 44b<c,__gnat_number_of_cpus>31 46s25
+

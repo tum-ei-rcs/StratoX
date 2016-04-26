@@ -1,0 +1,36 @@
+class {
+  classname: "ada__real_time__timing_events__timing_event"
+  label: "ada__real_time__timing_events__timing_event\a-rttiev.ads:40:9"
+  parent: "ada__real_time__timing_events__timing_event"
+  virtuals: "3:ada__real_time__timing_events__cancel_handler,3:system__bb__timing_events__timing_event\n
+             -1:ada__real_time__timing_events___size__2,-1:system__bb__timing_events__timing_event\n
+             5:ada__real_time__timing_events__set_handler\n
+             6:ada__real_time__timing_events__current_handler\n
+             7:ada__real_time__timing_events__time_of_event"
+}
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb"
+node: { title: "system__bb__timing_events__time_of_event" label: "Time_Of_Event\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbtiev.ads:86:13" shape : ellipse }
+node: { title: "system__bb__timing_events__cancel_handler" label: "Cancel_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbtiev.ads:80:14" shape : ellipse }
+node: { title: "system__bb__protection__leave_kernel" label: "Leave_Kernel\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.ads:54:14" shape : ellipse }
+node: { title: "system__bb__timing_events__set_handler" label: "Set_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbtiev.ads:63:14" shape : ellipse }
+node: { title: "memcmp" label: "builtin_memcmp\n<built-in>" shape : ellipse }
+node: { title: "ada__real_time__timing_events__time_of_event" label: "Time_Of_Event\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:147:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__timing_events__time_of_event" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:156:27" }
+edge: { sourcename: "ada__real_time__timing_events__time_of_event" targetname: "system__bb__timing_events__time_of_event" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:154:11" }
+node: { title: "ada__real_time__timing_events__cancel_handler" label: "Cancel_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:128:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__timing_events__cancel_handler" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:140:27" }
+edge: { sourcename: "ada__real_time__timing_events__cancel_handler" targetname: "system__bb__timing_events__cancel_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:137:11" }
+node: { title: "ada__real_time__timing_events__current_handler" label: "Current_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:108:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__timing_events__current_handler" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:119:27" }
+node: { title: "ada__real_time__timing_events__set_handler" label: "Set_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:76:4\n32 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__timing_events__set_handler" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:101:27" }
+edge: { sourcename: "ada__real_time__timing_events__set_handler" targetname: "system__bb__timing_events__set_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:97:11" }
+edge: { sourcename: "ada__real_time__timing_events__set_handler" targetname: "memcmp" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:82:21" }
+node: { title: "ada__real_time__timing_events__handler_wrapper" label: "Handler_Wrapper\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:57:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__timing_events__handler_wrapper" targetname: "__indirect_call" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:68:18" }
+node: { title: "__indirect_call" label: "Indirect Call Placeholder" shape : ellipse }
+edge: { sourcename: "ada__real_time__timing_events__handler_wrapper" targetname: "memcmp" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.adb:66:18" }
+node: { title: "ada__real_time__timing_events___size__2" label: "Timing_Events\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.ads:66:9\n0 bytes\n0 dynamic objects" }
+node: { title: "ada__real_time__timing_events__timing_eventIP" label: "Timing_Eventip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.ads:66:9\n0 bytes\n0 dynamic objects" }
+node: { title: "ada__real_time__timing_events__E3sIP" label: "E3sip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-rttiev.ads:42:4\n0 bytes\n0 dynamic objects" }
+}

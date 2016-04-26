@@ -1,0 +1,13 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.adb"
+node: { title: "__gnat_last_chance_handler" label: "gnat_last_chance_handler\n<built-in>" shape : ellipse }
+node: { title: "system__stm32f4__rcc__system_clocks" label: "System_Clocks\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.adb:51:4\n20 bytes (static)\n0 dynamic objects" }
+node: { title: "system__stm32f4__rcc__cfgr__apb2_pre_valueRP" label: "Apb2_Pre_Valuerp\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:173:12\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__stm32f4__rcc__cfgr__apb2_pre_valueRP" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:173:12" }
+node: { title: "system__stm32f4__rcc__cfgr__apb1_pre_valueRP" label: "Apb1_Pre_Valuerp\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:162:12\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__stm32f4__rcc__cfgr__apb1_pre_valueRP" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:162:12" }
+node: { title: "system__stm32f4__rcc__cfgr__ahb_pre_valueRP" label: "Ahb_Pre_Valuerp\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:146:12\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__stm32f4__rcc__cfgr__ahb_pre_valueRP" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:146:12" }
+node: { title: "system__stm32f4__rcc__pllp_rangePredicate" label: "Pllp_Rangepredicate\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:116:12\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__rcc__rcc_system_clocksIP" label: "Rcc_System_Clocksip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:42:9\n0 bytes\n0 dynamic objects" }
+node: { title: "system__stm32f4__rcc__rcc_registersIP" label: "Rcc_Registersip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:57:9\n0 bytes\n0 dynamic objects" }
+}

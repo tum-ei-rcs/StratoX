@@ -1,0 +1,72 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_EXCEPTIONS
+RV NO_UNCHECKED_CONVERSION
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U system.memory%b	s-memory.adb		1528ac5a NE OL PK
+W system%s		system.ads		system.ali
+W system.storage_elements%s  s-stoele.adb	s-stoele.ali
+W unchecked_conversion%s
+
+U system.memory%s	s-memory.ads		0ce20ecc EB NE OL PK
+W system%s		system.ads		system.ali
+
+D system.ads		20150506105328 9eacb62e system%s
+D s-memory.ads		20150506105328 924eb8e2 system.memory%s
+D s-memory.adb		20150506105331 608ac0a4 system.memory%b
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D unchconv.ads		20150506105326 ca2f9e18 unchecked_conversion%s
+X 1 system.ads
+60K9*System 173e11 2|39r9 47r42 73r5 3|34r6 37r14 39r24 59r43 62r65 65r26
+. 72r42 101r43 111r51 121r26 127r5
+90M9*Address 2|47r49 3|59r50 62r72 65r33 72r49 101r50 111r58 121r33
+X 2 s-memory.ads
+39K16*Memory 1|60k9 2|71E31 73l12 73e18 3|37b21 127l12 127t18
+42M9*size_t 47r27 3|53r7 59r28 62r30 62r50 72r27 84r17 101r28 111r16 111r36
+47V13*Alloc{1|90M9} 47>20 71i<c,__gnat_malloc>22 3|72b13 95l8 95t13 103s14
+47m20 Size{42M9} 3|72b20 75r35 84r10
+X 3 s-memory.adb
+39K12 SSE=39:31 43r24 45r47
+41N4 Default_Size 48r23 90r16
+43M9 Mark_Id<4|105M9> 45r26 50r10 53r15 73r28 73r39 74r19 77r28
+45A9 Memory(4|64M9)<43M9> 46r8 48r10
+48a4 Mem{45A9} 50r21 94m14 94r14
+50m4 Top{43M9} 77r39 88m7 88r14 90r10
+52V13 To_Mark_Id[5|20]{43M9} 75s23
+59V13 Malloc{1|90M9} 59>21 60i<c,malloc>22 101b13 104l8 104t14 114s14
+59m21 Size{2|42M9} 101b21 103r21
+62V13 Calloc{1|90M9} 62>21 62>38 63i<c,calloc>22 110b13 115l8 115t14
+62m21 N_Elem{2|42M9} 111b7 114r22
+62m38 Elem_Size{2|42M9} 111b24 114r31
+65U14 Free 65>20 66i<c,free>22 121b14 125l8 125t12
+65m20 Ptr{1|90M9} 121b20 122r28
+73m7 Max_Align{43M9} 75r43 75r60 76r65 81r22
+74m7 Max_Size{43M9} 80r10 81m10 88r20
+77m7 Location{43M9} 94r19
+X 4 s-stoele.ads
+42K16*Storage_Elements 3|34w13 39r31 4|117e28
+64M9*Storage_Element 3|45r51
+105M9*Integer_Address 3|43r28
+X 5 unchconv.ads
+20v10*Unchecked_Conversion 3|35w6 52r31
+

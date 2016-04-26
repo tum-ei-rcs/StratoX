@@ -1,0 +1,113 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_EXCEPTIONS
+RV NO_FIXED_POINT
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U ada.real_time.delays%b  a-retide.adb		13da4b8a NE OL PK
+W ada.real_time%s	a-reatim.adb		a-reatim.ali
+W system%s		system.ads		system.ali
+W system.task_primitives%s  s-taspri.ads	s-taspri.ali
+W system.task_primitives.operations%s  s-taprop.adb  s-taprop.ali
+
+U ada.real_time.delays%s  a-retide.ads		6fcba83e NE OL PK
+W ada.real_time%s	a-reatim.adb		a-reatim.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-except.ads		20150506105330 5b5f0f2f ada.exceptions%s
+D a-reatim.ads		20150506105330 67d7729a ada.real_time%s
+D a-retide.ads		20150506105329 081cdaa4 ada.real_time.delays%s
+D a-retide.adb		20150506105329 32434500 ada.real_time.delays%b
+D a-tags.ads		20150506105331 cc425f51 ada.tags%s
+D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
+D s-bbbosu.adb		20150506105328 53d21bd1 system.bb.board_support%b
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bbcppr.adb		20150506105327 7968ef8f system.bb.cpu_primitives%b
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bcprmu.adb		20150506105329 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
+D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
+D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbprot.ads		20150506105331 f48a7e85 system.bb.protection%s
+D s-bbprot.adb		20150506105332 233a43fc system.bb.protection%b
+D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
+D s-bbthre.adb		20150506105332 fefd676c system.bb.threads%b
+D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
+D s-bbthqu.adb		20150506105327 e7db98e5 system.bb.threads.queues%b
+D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
+D s-bbtime.adb		20150506105330 2ad994c8 system.bb.time%b
+D s-bbtiev.ads		20150506105327 14ca2877 system.bb.timing_events%s
+D s-maccod.ads		20150506105330 0fbb7bce system.machine_code%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-mufalo.ads		20150506105326 3dca0374 system.multiprocessors.fair_locks%s
+D s-musplo.ads		20150506105329 69fa25c4 system.multiprocessors.spin_locks%s
+D s-osinte.ads		20150506105331 9761d940 system.os_interface%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-tasinf.ads		20150506105329 801abd01 system.task_info%s
+D s-taspri.ads		20150506105328 351848fa system.task_primitives%s
+D s-taprop.ads		20150506105328 2985d42e system.task_primitives.operations%s
+D s-taprop.adb		20150506105330 45d1d1e3 system.task_primitives.operations%b
+D s-taskin.ads		20150506105326 41d03b44 system.tasking%s
+D s-tasdeb.ads		20150506105332 1958910d system.tasking.debug%s
+D s-tasdeb.adb		20150506105332 16d62b3b system.tasking.debug%b
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+X 1 ada.ads
+16K9*Ada 19e8 4|37r9 48r5 5|36r14 72r5
+X 3 a-reatim.ads
+41K13*Real_Time 1|16k9 3|146e18 4|37r13 39r30 48r9 5|36r18 72r9
+43M9*Time<24|46M9> 4|39r40 42r31 5|44r31 66r30
+X 4 a-retide.ads
+37K23*Delays 3|41k13 4|48l19 48e25 5|36b28 72l19 72t25
+39V13*To_Duration{duration} 39>26 5|66b13 70l8 70t19
+39m26 T{3|43M9} 5|66b26 67r28
+42U14*Delay_Until 42>27 5|44b14 55l8 55t19
+42m27 T{3|43M9} 5|44b27 53r39
+X 5 a-retide.adb
+38K12 STPO=38:48 50r10 53r10 53r28
+X 8 system.ads
+60K9*System 5|32r6 38r25 8|173e11
+90M9*Address
+X 13 s-bbcppr.adb
+103U14 SV_Call_Handler 104i24
+106U14 Pend_SV_Handler 108i24
+112U14 Sys_Tick_Handler 113i24
+115U14 Interrupt_Request_Handler 116i24
+X 24 s-bbtime.ads
+46M9*Time
+X 37 s-taspri.ads
+40K16*Task_Primitives 5|32r13 38r32 37|82e27
+X 38 s-taprop.ads
+44K32*Operations 5|32w29 38r48 38|127e38
+79V13*Self{40|56P9} 5|50s15
+98M9*Time<24|46M9> 5|53r33
+113U14*Delay_Until<24|141p14> 5|53s15
+X 40 s-taskin.ads
+56P9*Task_Id(54R9)
+273i7*Protected_Action_Nesting{natural} 5|50r27
+325r7*Common{256R9} 5|50r20
+347V13*Get_Sec_Stack{8|90M9} 348i<c,__gnat_get_secondary_stack>22
+402U14*Initialize_Slave 403i24
+

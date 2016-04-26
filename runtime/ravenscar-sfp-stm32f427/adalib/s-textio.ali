@@ -1,0 +1,115 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_IMPLICIT_LOOPS
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U system.text_io%b	s-textio.adb		618789b9 NE OL PK
+W interfaces%s		interfac.ads		interfac.ali
+W system%s		system.ads		system.ali
+W system.bb%s		s-bb.ads		s-bb.ali
+W system.bb.parameters%s  s-bbpara.ads		s-bbpara.ali
+W system.stm32f4%s	s-stm32f.ads		s-stm32f.ali
+W system.stm32f4.rcc%s	s-stmrcc.adb		s-stmrcc.ali
+W system.unsigned_types%s  s-unstyp.ads		s-unstyp.ali
+
+U system.text_io%s	s-textio.ads		eb9ee6df NE OL PR PK
+W system%s		system.ads		system.ali
+
+D interfac.ads		20150506105327 6033a23f interfaces%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-textio.ads		20150506105332 753250f1 system.text_io%s
+D s-textio.adb		20150506105331 d35674b7 system.text_io%b
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+X 1 interfac.ads
+38K9*Interfaces 178e15 9|34w6 34r22
+X 2 system.ads
+60K9*System 173e11 8|35r9 81r5 9|36r6 36r32 37r6 37r32 38r6 40r14 61r11 115r5
+X 3 s-bb.ads
+43K16*BB 97e14 9|38r13 61r18
+X 4 s-bbpara.ads
+46K19*Parameters 150e25 9|38w16 61r21
+X 5 s-stm32f.ads
+35K16*STM32F4 268e19 9|36w13 36r39 37r13 37r39
+39M9*Word
+41M9*Bits_1
+42M9*Bits_2
+44M9*Bits_4
+46M9*Bits_16 9|66r22 80r15 81r19
+48A9*Bits_32x1(41M9)<integer>
+49A9*Bits_16x2(42M9)<integer>
+50A9*Bits_8x4(44M9)<integer>
+127K12*GPIO 157e12 9|60r11
+133m7*Mode_AF{42M9} 9|74r34 74r47
+138m7*Type_PP{41M9} 9|76r34 76r47
+145m7*Speed_50MHz{42M9} 9|75r34 75r47
+151m7*Pull_Up{42M9} 9|77r34 77r47
+156m7*AF_USART1{44M9} 9|78r34 78r47
+160a7*MODER{49A9} 9|74m13
+161a7*OTYPER{48A9} 9|76m13
+162a7*OSPEEDR{49A9} 9|75m13
+163a7*PUPDR{49A9} 9|77m13
+170a7*AFRL{50A9} 9|78m13
+174r4*GPIOB{159R9} 9|74m7 74r7 75m7 75r7 76m7 76r7 77m7 77r7 78m7 78r7
+182K12*USART 232e13 9|84r21 84r37 84r53
+188m7*CR1_RE{46M9} 9|84r43
+189m7*CR1_TE{46M9} 9|84r59
+199m7*CR1_UE{46M9} 9|84r27
+235m7*SR{46M9} 9|93r52 99r52
+237m7*DR{46M9} 9|53r60 107m14
+239m7*BRR{46M9} 9|83m14
+241m7*CR1{46M9} 9|84m14
+243m7*CR2{46M9} 9|85m14
+245m7*CR3{46M9} 9|86m14
+251r4*USART1{234R9} 9|53r53 83m7 84m7 85m7 86m7 93r45 99r45 107m7
+X 6 s-stmrcc.ads
+37K24*RCC 247e23 9|37w21 37r47 63r53 71r7 71r32 72r7 72r32
+40M12*Frequency{5|39M9}
+46m7*PCLK2{40M12} 9|63r71
+51V13*System_Clocks{42R9} 9|63s57
+70m7*AHB1ENR{5|39M9} 9|72m21 72r46
+75m7*APB2ENR{5|39M9} 9|71m21 71r46
+96r4*Registers{57R9} 9|71m11 71r36 72m11 72r36
+241m4*RCC_APB2ENR_USART1{5|39M9} 9|71r57
+244m4*RCC_AHB1ENR_GPIOB{5|39M9} 9|72r57
+X 8 s-textio.ads
+35K16*Text_IO 2|60k9 8|81l12 81e19 9|40b21 115l12 115t19
+42U14*Initialize 9|59b14 87l8 87t18
+46b4*Initialized{boolean} 9|69m7
+54V13*Is_Tx_Ready{boolean} 9|93b13
+61U14*Put 61>19 9|105b14 108l8 108t11
+61e19 C{character} 9|105b19 107r35
+65V13*Use_Cr_Lf_For_New_Line{boolean} 9|114b13
+73V13*Is_Rx_Ready{boolean} 9|99b13
+78V13*Get{character} 9|53b13
+X 9 s-textio.adb
+42N4 Baudrate 64r67
+45N4 TX_Ready 93r59
+46N4 RX_Ready 99r59
+63i7 APB_Clock{positive} 64r49
+64i7 Int_Divider{positive} 65r42 81r28
+65i7 Frac_Divider{natural} 80r24
+66m7 BRR{5|46M9} 80m7 83r21
+

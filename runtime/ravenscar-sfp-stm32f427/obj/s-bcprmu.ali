@@ -1,0 +1,63 @@
+V "GNAT Lib v2015"
+A -nostdinc
+A -O2
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -fcallgraph-info=su,da
+A -ffunction-sections
+A -fdata-sections
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -gnatp
+A -gnatg
+A -gnatn2
+P DB
+
+RN
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_IMPLEMENTATION_RESTRICTIONS
+RR NO_ELABORATION_CODE
+
+U system.bb.cpu_primitives.multiprocessors%b  s-bcprmu.adb  f22a3c08 NE OL PK
+W system.bb.cpu_primitives%s  s-bbcppr.adb	s-bbcppr.ali
+
+U system.bb.cpu_primitives.multiprocessors%s  s-bcprmu.ads  71f00eda BN NE OL PR PK
+W system%s		system.ads		system.ali
+W system.bb.cpu_primitives%s  s-bbcppr.adb	s-bbcppr.ali
+W system.multiprocessors%s  s-multip.adb	s-multip.ali
+
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bcprmu.adb		20150506105329 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
+D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+X 1 system.ads
+60K9*System 173e11 4|31r6 33r9 36r32 40r33 43r34 49r5 5|31r14 37r32 39r14
+. 46r33 55r34 69r5
+X 2 s-bb.ads
+43K16*BB 1|60k9 2|97e14 4|33r16 49r12 5|31r21 69r12
+X 3 s-bbcppr.ads
+39K19*CPU_Primitives 2|43k16 3|142e29 4|33r19 49r15 5|31r24 69r15
+X 4 s-bcprmu.ads
+33K34*Multiprocessors 3|39k19 4|49l30 49e45 5|31b39 69l30 69t45
+36V13*Current_CPU{7|23I12} 37r19 5|37b13 40l8 40t19
+40U14*Poke_CPU 40>24 5|46b14 49l8 49t16
+40i24 CPU_Id{7|23I12} 5|46b24
+43U14*Start_CPU 43>25 5|55b14 58l8 58t17
+43i25 CPU_Id{7|23I12} 5|55b25
+46U14*Start_All_CPUs 5|64b14 67l8 67t22
+X 7 s-multip.ads
+18K16*Multiprocessors 4|31w13 36r39 40r40 43r41 5|37r39 39r21 46r40 55r41
+. 7|31e27
+21I9*CPU_Range<short_short_integer>
+23I12*CPU{21I9} 4|36r55 40r56 43r57 5|37r55 39r37 46r56 55r57
+

@@ -1,0 +1,5 @@
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-sssita.adb"
+node: { title: "system__secondary_stack__ss_init" label: "Ss_Init\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.ads:43:14" shape : ellipse }
+node: { title: "__gnat_get_secondary_stack" label: "Get_Sec_Stack\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-sssita.adb:57:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "__gnat_get_secondary_stack" targetname: "system__secondary_stack__ss_init" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-sssita.adb:62:10" }
+}
