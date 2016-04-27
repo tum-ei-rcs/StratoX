@@ -13,6 +13,25 @@
 
 package Helper is
 
+
+  function addWrap( 
+    x   : Integer; 
+    inc : Integer)
+  return Integer
+  is ( if x + inc > x'Last then x + inc - x'Last
+       else x + inc );
+
+  function deltaWrap( 
+    low  : Integer; 
+    high : Integer) 
+  return Integer 
+  is ( if low < high then (high - low)
+       else (high'Last - low) + (high - low'First) );
+
+
+
+
+
    --  Saturate a Float value within a given range.
    function Saturate
      (Value     : Float;

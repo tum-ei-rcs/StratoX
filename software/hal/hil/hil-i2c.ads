@@ -7,7 +7,7 @@ package HIL.I2C is
    pragma Preelaborate;
 
 
-   type Data_Type is array(Natural range <>) of Byte;
+   subtype Data_Type is array(Natural range <>) of Byte;
    
    type Device_Type is (UNKNOWN, BARO);
 

@@ -5,6 +5,7 @@
 with CPU;
 with Ada.Real_Time; use Ada.Real_Time;
 with led_manager;
+with MS5611.Driver;
 
 package body Main is
 
@@ -61,7 +62,8 @@ package body Main is
 
 	procedure initialize is
 	begin
-		CPU.initialize;
+      CPU.initialize;
+      MS5611.Driver.init;
 	end initialize;
 
 

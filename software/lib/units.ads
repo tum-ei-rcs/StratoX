@@ -40,18 +40,18 @@ subtype Current_Type is Unit_Type
 	with Dimension => (Symbol => 'A', Ampere => 1, others => 0);
 
 subtype Temperature_Type is Unit_Type 
-	with Dimension => (Symbol => 'A', Ampere => 1, others => 0);
+	with Dimension => (Symbol => 'K', Ampere => 1, others => 0);
 
 subtype Angle_Type is Unit_Type 
-	with Dimension => (Symbol => "deg", Degree => -1, others => 0);
+	with Dimension => (Symbol => "deg", Degree => 1, others => 0);
 
 
 -- Derived Units
 subtype Pressure_Type is Unit_Type 
-	with Dimension => (Symbol = "Pa", Kilogram => 1, Meter => -1, Second => -2, others => 0);
+	with Dimension => (Symbol => "Pa", Kilogram => 1, Meter => -1, Second => -2, others => 0);
 
 subtype Voltage_Type is Unit_Type
-	with Dimension => (Symbol = 'V', Meter => 2, Kilogram => 1, Second => -3, Ampere => -1, others => 0);
+	with Dimension => (Symbol => 'V', Meter => 2, Kilogram => 1, Second => -3, Ampere => -1, others => 0);
 
 subtype Frequency_Type is Unit_Type 
 	with Dimension => (Symbol => "Hz", Second => -1, others => 0);
@@ -72,10 +72,10 @@ subtype Angular_Acceleration_Type is Unit_Type
 
 
 
-
+CELSIUS_0 : constant Temperature_Type := 273.15;
 
 -- G : constant Linear_Acceleration_Type := 127137.6 * km/(hour ** 2); 
-m : constant Length_Type := Lenth_Type(1.0);
+m : constant Length_Type := Length_Type(1.0);
 mm : constant Length_Type := 0.001 * m; 
 km : constant Length_Type := 1000.0 * m;
 

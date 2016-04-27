@@ -8,6 +8,12 @@ package Bit_Types is
    type Half_Word is new Interfaces.Unsigned_16;  -- for shift/rotate
    type Byte      is new Interfaces.Unsigned_8;   -- for shift/rotate
 
+
+   type Unsigned_8 is mod 2**8 with Size => 8;
+
+
+
+
    type Bits_1  is mod 2**1  with Size => 1;
    type Bits_2  is mod 2**2  with Size => 2;
    type Bits_3  is mod 2**3  with Size => 3;
