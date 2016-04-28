@@ -25,7 +25,7 @@ RV NO_IMPLEMENTATION_RESTRICTIONS
 RR NO_ELABORATION_CODE
 RV SPARK_05
 
-U setup_pll%b		setup_pll.adb		b1ee80db NE OO SU
+U setup_pll%b		setup_pll.adb		54f53114 NE OO SU
 W ada.exceptions%s	a-except.adb		a-except.ali
 W system%s		system.ads		system.ali
 W system.bb%s		s-bb.ads		s-bb.ali
@@ -39,7 +39,7 @@ D a-except.adb		20150506105329 0537fae3 ada.exceptions%b
 D setup_pll.adb		20160412154635 163e8f1b setup_pll%b
 D system.ads		20150506105328 9eacb62e system%s
 D s-bb.ads		20150506105332 883768d6 system.bb%s
-D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
 D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
 D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
 D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s

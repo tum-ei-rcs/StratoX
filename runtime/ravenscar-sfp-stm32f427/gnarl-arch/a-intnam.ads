@@ -128,5 +128,15 @@ package Ada.Interrupts.Names is
    CRYP_Interrupt                   : constant Interrupt_ID := 81;
    HASH_RNG_Interrupt               : constant Interrupt_ID := 82;
    FPU_Interrupt                    : constant Interrupt_ID := 83;
+   UART7_Interrupt                  : constant Interrupt_ID := 84;
+   UART8_Interrupt                  : constant Interrupt_ID := 85;
+   SPI4_Interrupt                   : constant Interrupt_ID := 86;
+   SPI5_Interrupt                   : constant Interrupt_ID := 87;
+   SPI6_Interrupt                   : constant Interrupt_ID := 88;
+   SAI1_Interrupt                   : constant Interrupt_ID := 89;
+   LCD_TFT_Interrupt                : constant Interrupt_ID := 90;
+   LCD_TFT_1_Interrupt              : constant Interrupt_ID := 91;
+   DMA2D_Interrupt                  : constant Interrupt_ID := 92;
+   QUADSPI_Interrupt                : constant Interrupt_ID := 93;
 
 end Ada.Interrupts.Names;

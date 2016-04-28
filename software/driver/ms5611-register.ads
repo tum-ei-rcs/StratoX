@@ -9,8 +9,6 @@
 -- 08152/93020
 -- 
 
-with Bit_Types; use Bit_Types;
-
 private package MS5611.Register is
 
 	type Command_Type is mod 2**8;
@@ -21,7 +19,7 @@ private package MS5611.Register is
 
 
 	--Address
-	BAROMETER_ADR : constant := Unsigned_8(16#77#);  -- I2C-Address of the barometer
+	BAROMETER_ADR : constant := 16#77#;  -- I2C-Address of the barometer
 
 	-- Commands
 	CMD_RESET    : constant Command_Type := 16#1E#; -- ADC reset command

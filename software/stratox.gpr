@@ -1,3 +1,5 @@
+with "hal/hpl/STM32/stm32f42x.gpr";
+
 project StratoX is
 
    for Languages use ("Ada");
@@ -5,7 +7,7 @@ project StratoX is
 
    -- Specify Directories
    -----------------------------
-   for Source_Dirs use ("boot", "config", "driver", "hal", "hal/hil", "kernel", "modules", "lib");
+   for Source_Dirs use ("boot", "config", "driver", "hal/hil", "kernel", "modules", "lib");
    for Object_Dir use "../obj";
    for Exec_Dir use "../obj";
    type Build_Modes is

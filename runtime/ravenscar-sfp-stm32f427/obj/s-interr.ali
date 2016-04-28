@@ -49,7 +49,7 @@ D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors
 D s-bcprmu.adb		20150506105329 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
 D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
 D s-bbinte.adb		20150506105327 e634b97e system.bb.interrupts%b
-D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
 D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
 D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
 D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s

@@ -19,12 +19,12 @@ P DB
 RN
 RV NO_IMPLEMENTATION_PRAGMAS
 
-U ada.interrupts.names%s  a-intnam.ads		df6423ea NE OL PK
+U ada.interrupts.names%s  a-intnam.ads		8126b199 NE OL PK
 W ada.interrupts%s	a-interr.adb		a-interr.ali
 
 D ada.ads		20150506105328 3ffc8e18 ada%s
 D a-interr.ads		20150506105331 391cab36 ada.interrupts%s
-D a-intnam.ads		20160412153759 e67888dc ada.interrupts.names%s
+D a-intnam.ads		20160428100700 b83a1aaf ada.interrupts.names%s
 D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
 D system.ads		20150506105328 9eacb62e system%s
 D s-bb.ads		20150506105332 883768d6 system.bb%s
@@ -32,7 +32,7 @@ D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
 D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
 D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
 D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
-D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
 D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
 D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
 D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
@@ -52,9 +52,9 @@ D s-taprob.ads		20150506105328 dd44e5d4 system.tasking.protected_objects%s
 D s-tposen.ads		20150506105330 0588c33b system.tasking.protected_objects.single_entry%s
 D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
 X 1 ada.ads
-16K9*Ada 19e8 3|34r9 132r5
+16K9*Ada 19e8 3|34r9 142r5
 X 2 a-interr.ads
-38K13*Interrupts 1|16k9 2|71e19 3|34r13 132r9
+38K13*Interrupts 1|16k9 2|71e19 3|34r13 142r9
 40I9*Interrupt_ID<15|61I9> 3|48r48 49r48 50r48 51r48 52r48 53r48 54r48 55r48
 . 56r48 57r48 58r48 59r48 60r48 61r48 62r48 63r48 64r48 65r48 66r48 67r48
 . 68r48 69r48 70r48 71r48 72r48 73r48 74r48 75r48 76r48 77r48 78r48 79r48
@@ -62,9 +62,10 @@ X 2 a-interr.ads
 . 92r48 93r48 94r48 95r48 96r48 97r48 98r48 99r48 100r48 101r48 102r48 103r48
 . 104r48 105r48 106r48 107r48 108r48 109r48 110r48 111r48 112r48 113r48 114r48
 . 115r48 116r48 117r48 118r48 119r48 120r48 121r48 122r48 123r48 124r48 125r48
-. 126r48 127r48 128r48 129r48 130r48
+. 126r48 127r48 128r48 129r48 130r48 131r48 132r48 133r48 134r48 135r48 136r48
+. 137r48 138r48 139r48 140r48
 X 3 a-intnam.ads
-34K24*Names 2|38k13 3|132l20 132e25
+34K24*Names 2|38k13 3|142l20 142e25
 48i4*Sys_Tick_Interrupt{2|40I9}
 49i4*WWDG_Interrupt{2|40I9}
 50i4*PVD_Interrupt{2|40I9}
@@ -148,6 +149,16 @@ X 3 a-intnam.ads
 128i4*CRYP_Interrupt{2|40I9}
 129i4*HASH_RNG_Interrupt{2|40I9}
 130i4*FPU_Interrupt{2|40I9}
+131i4*UART7_Interrupt{2|40I9}
+132i4*UART8_Interrupt{2|40I9}
+133i4*SPI4_Interrupt{2|40I9}
+134i4*SPI5_Interrupt{2|40I9}
+135i4*SPI6_Interrupt{2|40I9}
+136i4*SAI1_Interrupt{2|40I9}
+137i4*LCD_TFT_Interrupt{2|40I9}
+138i4*LCD_TFT_1_Interrupt{2|40I9}
+139i4*DMA2D_Interrupt{2|40I9}
+140i4*QUADSPI_Interrupt{2|40I9}
 X 5 system.ads
 90M9*Address
 X 15 s-interr.ads

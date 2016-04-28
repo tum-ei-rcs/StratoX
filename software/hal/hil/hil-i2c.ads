@@ -1,13 +1,9 @@
 
 
 
-with Bit_Types;
-
 package HIL.I2C is
-   pragma Preelaborate;
 
-
-   subtype Data_Type is array(Natural range <>) of Byte;
+   type Data_Type is array(Natural range <>) of Byte;
    
    type Device_Type is (UNKNOWN, BARO);
 
@@ -17,6 +13,6 @@ package HIL.I2C is
 
    procedure read (Device : in Device_Type; Data : out Data_Type);
 
-   procedure transfer (Device : in Device_Type; Data_TX : in Data_Type; Data_RX : in Data_Type;);
+   procedure transfer (Device : in Device_Type; Data_TX : in Data_Type; Data_RX : in Data_Type);
 
 end HIL.I2C;

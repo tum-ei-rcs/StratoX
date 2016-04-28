@@ -38,7 +38,7 @@ W system%s		system.ads		system.ali
 
 D ada.ads		20150506105328 3ffc8e18 ada%s
 D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
-D interfac.ads		20150506105327 6033a23f interfaces%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
 D i-c.ads		20150506105328 ed15b264 interfaces.c%s
 D system.ads		20150506105328 9eacb62e system%s
 D s-memset.ads		20150506105331 7b1d51b7 system.memory_set%s

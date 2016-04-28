@@ -22,7 +22,7 @@ RV NO_IMPLEMENTATION_PRAGMAS
 RV NO_IMPLEMENTATION_RESTRICTIONS
 RR NO_ELABORATION_CODE
 
-U system.bb.parameters%s  s-bbpara.ads		2fe76716 NE OL PR PK
+U system.bb.parameters%s  s-bbpara.ads		cafcd6d9 NE OL PR PK
 W system%s		system.ads		system.ali
 W system.bb%s		s-bb.ads		s-bb.ali
 W system.stm32f4%s	s-stm32f.ads		s-stm32f.ali
@@ -30,7 +30,7 @@ W system.stm32f4.rcc%s	s-stmrcc.adb		s-stmrcc.ali
 
 D system.ads		20150506105328 9eacb62e system%s
 D s-bb.ads		20150506105332 883768d6 system.bb%s
-D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
 D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
 D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
 D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s

@@ -26,7 +26,7 @@ RV NO_IMPLEMENTATION_RESTRICTIONS
 RR NO_ELABORATION_CODE
 RV SPARK_05
 
-U system.bb.threads%b	s-bbthre.adb		3d6b14c5 NE OL PK
+U system.bb.threads%b	s-bbthre.adb		d870a50a NE OL PK
 W ada%s			ada.ads			ada.ali
 W ada.unchecked_conversion%s
 W system%s		system.ads		system.ali
@@ -60,7 +60,7 @@ D s-bbcppr.adb		20150506105327 7968ef8f system.bb.cpu_primitives%b
 D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
 D s-bcprmu.adb		20150506105329 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
 D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
-D s-bbpara.ads		20160412153816 65704abd system.bb.parameters%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
 D s-bbprot.ads		20150506105331 f48a7e85 system.bb.protection%s
 D s-bbprot.adb		20150506105332 233a43fc system.bb.protection%b
 D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s

@@ -1,5 +1,5 @@
 arch
-../ravenscar-sfp-stm32f4/common
-../ravenscar-sfp-stm32f4/math
-../ravenscar-sfp-stm32f4/gnarl-common
+common
+math
+gnarl-common
 gnarl-arch

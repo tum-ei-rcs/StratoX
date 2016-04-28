@@ -1,6 +1,6 @@
 
 package HIL.GPIO is
-   pragma Preelaborate;
+   --pragma Preelaborate;
 
 
    type GPIO_Signal_Type is(
@@ -15,6 +15,8 @@ package HIL.GPIO is
 
 
    --function init return Boolean;
+
+   procedure configure;
 
    procedure write (Point : in GPIO_Point_Type; Signal : in GPIO_Signal_Type);
 

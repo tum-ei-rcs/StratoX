@@ -1,5 +1,5 @@
 
-with bit_types; use Bit_Types;
+
 with units;  use type units.Unit_Type;
 with HIL.I2C;	-- Hardware Interface to I2C
 with MS5611.Register; use MS5611.Register;
@@ -9,7 +9,7 @@ package body MS5611.Driver is
 	--pragma Unssuppress( Overflow_Check );
 	--pragma Unsuppress( Range_Check );
 
-   type Data_Array is array (Natural range <>) of Unsigned_8 with Component_Size => 8;
+   type Data_Array is array (Natural range <>) of HIL.Byte with Component_Size => 8;
 
    
 	-- define baro states 
@@ -52,7 +52,7 @@ package body MS5611.Driver is
 		);
 	type Conversion_Data_Type is mod 2**24; 
 
-	subtype DT_Type    is Integer range   -16776960 ..    16777216;
+	subtype DT_Type    is Integer           range   -16776960 ..    16777216;
 	subtype Sense_Type is Long_Long_Integer range -4294836225 ..  6442352640;
 	subtype OFF_Type   is Long_Long_Integer range -8589672450 .. 12884705280;
 
@@ -120,31 +120,33 @@ package body MS5611.Driver is
 
 	-- final measurement values 
 	pressure    : Pressure_Type    := 1000.0;  -- invalid initial value
-	temperature : Temperature_Type :=  233.15;
+	TEMP : Temperature_Type :=  233.15;
 
-
+   G_CELSIUS_0 : constant := 273.15;
+   
+   
 	-- Glue Code
 	-- the following procedures access the Hardware Interface Layer (HIL)
    procedure writeToDevice(Device : Device_Type; data : in Data_Array) is
 	begin
-		HIL.I2C.write(HIL.I2C.BARO, data);
+		HIL.I2C.write(HIL.I2C.BARO, HIL.I2C.Data_Type( data ) );
 	end writeToDevice;
 
 	procedure readFromDevice(Device : Device_Type; data : out Data_Array) is
 	begin
-		HIL.I2C.read(HIL.I2C.BARO, data);
+		HIL.I2C.read(HIL.I2C.BARO, HIL.I2C.Data_Type( data ) );
 	end readFromDevice;
 
 	procedure transferWithDevice(data_tx : in Data_Array; data_rx : out Data_Array) is
 	begin
-		HIL.I2C.transfer(HIL.I2C.BARO, data_tx, data_rx);
+		HIL.I2C.transfer(HIL.I2C.BARO, HIL.I2C.Data_Type( data_tx ), HIL.I2C.Data_Type( data_rx ) );
 	end transferWithDevice;	
 
 
 
 
 	procedure sendCommand(Device : Device_Type; command : in Command_Type) is
-		Command_Data : Data_Array (1 .. 1) :=  (1 => Unsigned_8( command ) );
+		Command_Data : Data_Array (1 .. 1) :=  (1 => HIL.Byte ( command ) );
 	begin
 		writeToDevice(Device, Command_Data);
 	end sendCommand;
@@ -173,7 +175,7 @@ package body MS5611.Driver is
 		end case;
 		sendCommand(Device, command);
 		readFromDevice(Device, data);
-		coeff_data := Coefficient_Data_Type(data);
+		coeff_data := Coefficient_Data_Type( data(1) ) + Coefficient_Data_Type( data(2) )*(2*8);
 	end read_coefficient;
 
 
@@ -181,11 +183,11 @@ package body MS5611.Driver is
 	procedure read_adc (Device : Device_Type; adc_value : out Conversion_Data_Type)
 	with pre => adc_value'Size = 24
    is
-      data    : Data_Array(1 .. 2) := (others => 0);
+      data    : Data_Array(1 .. 3) := (others => 0);
 	begin
 		sendCommand (Device, CMD_ADC_READ);
                 readFromDevice(Device, data);
-      adc_value := Conversion_Data_Type( data );
+      adc_value := Conversion_Data_Type ( data(1) ) + Conversion_Data_Type ( data(2) )*(2**8) + Conversion_Data_Type ( data(3) )*(2**16);
 	end read_adc;
 
 
@@ -239,7 +241,7 @@ package body MS5611.Driver is
 				read_adc(Baro, temperature_raw);
 				dT := calculateTemperatureDifference(temperature_raw, c5);
 				compensateTemperature;
-				temperature := calculateTemperature( dT, C6 );
+				TEMP := calculateTemperature( dT, C6 );
 				startConversion( D1, OSR_4096 );
 
 
@@ -298,7 +300,7 @@ package body MS5611.Driver is
 			when OSR_2048 => Cmd := Cmd + Command_Type(6);
 			when OSR_4096 => Cmd := Cmd + Command_Type(8);
 		end case;
-      data(1) := Unsigned_8(Cmd); 
+      data(1) := HIL.Byte(Cmd); 
 		writeToDevice(Baro, data);
 	end startConversion;
 
@@ -331,14 +333,14 @@ package body MS5611.Driver is
 		OFF2  : OFF_Type := 0;
 		SENS2 : Sense_Type := 0;
 	begin
-		if Temperature < Temperature_Type (20.0) + units.CELSIUS_0 then
-			T2   := Temperature_Type ( dT**2 / 2**31 );
-			OFF2 := OFF_Type (5.0 * (temperature - units.CELSIUS_0 - Temperature_Type( 20.0 ) )**2 / 2.0)
+		if TEMP < Temperature_Type (20.0 + G_CELSIUS_0) then
+			T2   := Temperature_Type ( Float( dT**2 ) / Float (2**31) );
+			OFF2 := OFF_Type (5.0 * (TEMP - Temperature_Type( 20.0 + G_CELSIUS_0) )**2 / 2.0);
 			SENS2 := Sense_Type( OFF2 / 2 );
 
-			if Temperature < units.Temperature_Type (-15.0 ) + units.CELSIUS_0 then
-				OFF2  := OFF2  +  7.0 * (temperature - units.CELSIUS_0 + Temperature_Type (15.0) )**2;
-				SENS2 := SENS2 + 11.0 * (temperature - units.CELSIUS_0 + Temperature_Type (15.0) )**2 / 2.0;
+			if TEMP < units.Temperature_Type (-15.0 ) + units.CELSIUS_0 then
+				OFF2  := OFF2  +  OFF_Type ( 7.0 * (TEMP - Temperature_Type (15.0 + G_CELSIUS_0) )**2 );
+				SENS2 := SENS2 + Sense_Type ( 11.0 * (TEMP - Temperature_Type (15.0 + G_CELSIUS_0) )**2 / 2.0 );
 			end if;
 		end if;
 		TEMP := TEMP - T2;    -- this compensates the final temperature value
@@ -355,14 +357,14 @@ package body MS5611.Driver is
 	return Pressure_Type
 	is
 	begin
-		return (Pressure_Raw * SENS/2**21 - OFF)/2**15;
+		return Pressure_Type ( (Float ( Pressure_Raw ) * Float( SENS/2**21 ) - Float( OFF ) ) / Float( 2**15 ) );
 	end calculatePressure;
 
 
 
 	function get_temperature return Temperature_Type is
 	begin
-		return temperature;
+		return TEMP;
 	end get_temperature;
 
 	function get_pressure return Pressure_Type is
