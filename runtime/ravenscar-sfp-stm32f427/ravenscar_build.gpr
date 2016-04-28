@@ -12,7 +12,7 @@ project Ravenscar_Build is
   for Object_Dir use "obj";
 
   for Source_Dirs use
-    ("gnarl-arch", "../ravenscar-sfp-stm32f4/gnarl-common");
+    ("gnarl-arch", "gnarl-common");
 
   type Build_Type is ("Production", "Debug");
 

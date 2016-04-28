@@ -10,7 +10,7 @@ project Runtime_Build is
   for Object_Dir use "obj";
 
   for Source_Dirs use
-    ("arch", "../ravenscar-sfp-stm32f4/common", "../ravenscar-sfp-stm32f4/math");
+    ("arch", "common", "math");
   
   type Build_Type is ("Production", "Debug");
 
