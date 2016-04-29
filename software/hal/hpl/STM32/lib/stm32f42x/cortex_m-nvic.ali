@@ -1,0 +1,221 @@
+V "GNAT Lib v2015"
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -g
+P DB ES
+
+RN
+RR NO_FIXED_POINT
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_ELABORATION_CODE
+RV SPARK_05
+
+U cortex_m.nvic%b	cortex_m-nvic.adb	daba86be NE OO PK
+W cortex_m%s		cortex_m.ads		cortex_m.ali
+W memory_barriers%s	memory_barriers.adb	memory_barriers.ali
+W system%s		system.ads		system.ali
+
+U cortex_m.nvic%s	cortex_m-nvic.ads	54716e03 BN EE OO PK
+W ada%s			ada.ads			ada.ali
+W ada.interrupts%s	a-interr.adb		a-interr.ali
+W cortex_m%s		cortex_m.ads		cortex_m.ali
+W hal%s			hal.ads			hal.ali
+W interfaces%s		interfac.ads		interfac.ali
+W system%s		system.ads		system.ali
+W system.storage_elements%s  s-stoele.adb	s-stoele.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-interr.ads		20150506105331 391cab36 ada.interrupts%s
+D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
+D cortex_m.ads		20160428074121 38b367df cortex_m%s
+D cortex_m-nvic.ads	20160428074122 140f5875 cortex_m.nvic%s
+D cortex_m-nvic.adb	20160428074122 350105c2 cortex_m.nvic%b
+D hal.ads		20160428074121 bf4eee8e hal%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
+D memory_barriers.ads	20160428074122 fbb4db09 memory_barriers%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
+D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
+D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
+D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
+D s-interr.ads		20150506105332 448c3263 system.interrupts%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-mufalo.ads		20150506105326 3dca0374 system.multiprocessors.fair_locks%s
+D s-musplo.ads		20150506105329 69fa25c4 system.multiprocessors.spin_locks%s
+D s-osinte.ads		20150506105331 9761d940 system.os_interface%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-tasinf.ads		20150506105329 801abd01 system.task_info%s
+D s-taspri.ads		20150506105328 351848fa system.task_primitives%s
+D s-taskin.ads		20150506105326 41d03b44 system.tasking%s
+D s-taprob.ads		20150506105328 dd44e5d4 system.tasking.protected_objects%s
+D s-tposen.ads		20150506105330 0588c33b system.tasking.protected_objects.single_entry%s
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+D /home/emu/Dropbox/TUM/MA/StratoX/software/gnat.adc  20160424112437 00000000
+X 1 ada.ads
+16K9*Ada 19e8 5|48r6 48r32
+X 2 a-interr.ads
+38K13*Interrupts 71e19 5|48w10 48r36
+40I9*Interrupt_ID<20|61I9> 5|73r18 81r26 88r39 90r40 92r28 94r29 96r34 98r36
+. 6|79r18 135r26 150r39 162r40 175r28 189r29 203r34 215r36
+X 4 cortex_m.ads
+32K9*Cortex_M 34e13 5|50r9 251r5 6|44r14 250r5
+X 5 cortex_m-nvic.ads
+50K18*NVIC 4|32k9 5|104E9 251l14 251e18 6|44b23 250l14 250t18
+53m4*Priority_Group_0{7|6M12}
+56m4*Priority_Group_1{7|6M12}
+59m4*Priority_Group_2{7|6M12}
+62m4*Priority_Group_3{7|6M12}
+65m4*Priority_Group_4{7|6M12}
+68U14*Set_Priority_Grouping 68>37 6|60b14 72l8 72t29
+68m37 Priority_Group{7|6M12} 6|60b37 62r43
+70V13*Priority_Grouping{7|6M12} 6|50b13 54l8 54t25 139s41
+72U14*Set_Priority 73>7 74>7 6|78b14 89l8 89t20 141s7
+73i7 IRQn{2|40I9} 6|79b7 82r44
+74m7 Priority{7|6M12} 6|80b7 84r21
+76V13*Encoded_Priority{7|6M12} 77>7 77>31 77>57 6|95b13 128l8 128t24 143s10
+77m7 Priority_Group{7|6M12} 6|96b7 99r46
+77m31 Preempt_Priority{7|6M12} 6|96b31 121r16
+77m57 Subpriority{7|6M12} 6|96b57 125r16
+80U14*Set_Priority 81>7 82>7 83>7 6|134b14 144l8 144t20
+81i7 IRQn{2|40I9} 6|135b7 142r10
+82m7 Preempt_Priority{7|6M12} 6|136b7 143r44
+83m7 Subpriority{7|6M12} 6|137b7 143r62
+88U14*Enable_Interrupt 88>32 6|150b14 156l8 156t24
+88i32 IRQn{2|40I9} 6|150b32 151r45
+90U14*Disable_Interrupt 90>33 6|162b14 169l8 169t25
+90i33 IRQn{2|40I9} 6|162b33 163r45
+92V13*Active{boolean} 92>21 6|175b13 183l8 183t14
+92i21 IRQn{2|40I9} 6|175b21 176r45
+94V13*Pending{boolean} 94>22 6|189b13 197l8 197t15
+94i22 IRQn{2|40I9} 6|189b22 190r45
+96U14*Set_Pending 96>27 6|203b14 209l8 209t19
+96i27 IRQn{2|40I9} 6|203b27 204r45
+98U14*Clear_Pending 98>29 6|215b14 221l8 221t21
+98i29 IRQn{2|40I9} 6|215b29 216r45
+100U14*Reset_System 6|227b14 248l8 248t20
+104A9 Words(7|6M12)<integer> 109r19 111r19 112r19 114r19 115r19 117r19 118r19
+. 120r19 121r19 123r19 126r19 178r19 184r19 186r19 188r19
+105A9 Bytes(7|8M12)<integer> 124r19 162r19
+108R9 Nested_Vectored_Interrupt_Controller 130e6 132r8 230r11
+109a7*ISER{104A9} 133r7 6|155m12
+111a7*Reserved0{104A9} 134r7
+112a7*ICER{104A9} 135r7 6|168m12
+114a7*Reserved1{104A9} 136r7
+115a7*ISPR{104A9} 137r7 6|196r20 208m12
+117a7*Reserved2{104A9} 138r7
+118a7*ICPR{104A9} 139r7 6|220m12
+120a7*Reserved3{104A9} 140r7
+121a7*IABR{104A9} 141r7 6|182r20
+123a7*Reserved4{104A9} 142r7
+124a7*IP{105A9} 143r7 6|88m12
+126a7*Reserved5{104A9} 144r7
+127m7*STIR{7|6M12} 145r7
+149R9 System_Control_Block 192e6 194r8 225r10
+150m7*CPUID{7|6M12} 195r7
+152m7*ICSR{7|6M12} 196r7
+154m7*VTOR{7|6M12} 197r7
+156m7*AIRCR{7|6M12} 198r7 6|52r31 65r24 71m11 235m11 237r14
+158m7*SCR{7|6M12} 199r7
+160m7*CCR{7|6M12} 200r7
+162a7*SHP{105A9} 201r7
+164m7*SHCSR{7|6M12} 202r7
+166m7*CFSR{7|6M12} 203r7
+168m7*HFSR{7|6M12} 204r7
+170m7*DFSR{7|6M12} 205r7
+172m7*MMFAR{7|6M12} 206r7
+174m7*BFAR{7|6M12} 207r7
+176m7*AFSR{7|6M12} 208r7
+178a7*PFR{104A9} 209r7
+180m7*DFR{7|6M12} 210r7
+182m7*ADR{7|6M12} 211r7
+184a7*MMFR{104A9} 212r7
+186a7*ISAR{104A9} 213r7
+188a7*RESERVED0{104A9} 214r7
+189m7*CPACR{7|6M12} 215r7
+219N4 SCS_Base 221r28 222r28
+221N4 NVIC_Base 232r36
+222N4 SCB_Base 227r36
+225r4 SCB{149R9} 228m24 228r24 6|52r27 65r20 71m7 235m7 237r10
+230r4 NVIC{108R9} 233m24 233r24 6|88m7 155m7 168m7 182r15 196r15 208m7 220m7
+236N4 SCB_AIRCR_PRIGROUP_Pos 238r21 6|53r27
+237m4 SCB_AIRCR_PRIGROUP_Mask{7|6M12} 6|52r41 67r41 237r24
+240N4 SCB_AIRCR_VECTKEY_Pos 242r28 6|69r26 235r37
+241m4 SCB_AIRCR_VECTKEY_Mask{7|6M12} 6|67r15
+244N4 SCB_AIRCR_SYSRESETREQ_Pos 246r21
+245m4 SCB_AIRCR_SYSRESETREQ_Mask{7|6M12} 6|238r9
+248N4 NVIC_PRIO_BITS 6|84r35 108r35 109r33 114r30 117r52
+X 6 cortex_m-nvic.adb
+61m7 Reg_Value{7|6M12} 65m7 66m7 66r20 68m7 68r20 71r20
+62m7 PriorityGroupTmp{7|6M12} 70r21
+63N7 Key 69r21
+82i7 Index{natural} 88r16
+83m7 Value{7|6M12} 88r32
+99m7 PriorityGroupTmp{7|6M12} 108r15 111r37 114r11 117r29
+100m7 PreemptPriorityBits{7|6M12} 109m10 111m10 120r40
+101m7 SubPriorityBits{7|6M12} 115m10 117m10 122r44 124r40
+102m7 Temp1{7|6M12} 120m7 121r37
+103m7 Temp2{7|6M12} 121m7 122r28
+104m7 Temp3{7|6M12} 122m7 127r14
+105m7 Temp4{7|6M12} 124m7 125r32
+106m7 Temp5{7|6M12} 125m7 127r23
+139m7 Priority_Group{7|6M12} 143r28
+151m7 IRQn_As_Word{7|6M12} 153r31 155r40
+152i7 Index{natural} 155r18
+163m7 IRQn_As_Word{7|6M12} 165r31 168r52
+164i7 Index{natural} 168r18
+176m7 IRQn_As_Word{7|6M12} 178r31 180r33
+177i7 Index{natural} 182r26
+179m7 Value{7|6M12} 182r37
+190m7 IRQn_As_Word{7|6M12} 192r31 194r33
+191i7 Index{natural} 196r26
+193m7 Value{7|6M12} 196r37
+204m7 IRQn_As_Word{7|6M12} 206r31 208r52
+205i7 Index{natural} 208r18
+216m7 IRQn_As_Word{7|6M12} 218r31 220r52
+217i7 Index{natural} 220r18
+228N7 Key 235r32
+246l9 spin
+X 7 hal.ads
+3K9*HAL 5|47w6 47r32 7|72e8
+6M12*Word{8|68M9} 5|53r32 56r32 59r32 62r32 65r32 68r54 70r38 74r18 77r24
+. 77r50 77r71 78r14 82r26 83r26 104r46 127r19 150r19 152r19 154r19 156r19
+. 158r19 160r19 164r19 166r19 168r19 170r19 172r19 174r19 176r19 180r19 182r19
+. 189r19 237r39 241r39 245r42 6|50r38 60r54 61r19 62r35 80r18 83r24 96r24
+. 96r50 96r71 97r14 99r38 100r29 101r29 102r15 103r15 104r15 105r15 106r15
+. 136r26 137r26 139r33 151r31 151r39 163r31 163r39 176r31 176r39 179r31 190r31
+. 190r39 193r31 204r31 204r39 216r31 216r39
+8M12*Byte{8|62M9} 5|105r46 6|88r26
+X 8 interfac.ads
+38K9*Interfaces 5|46w6 46r32 8|178e15
+62M9*Unsigned_8
+68M9*Unsigned_32
+115V13*Shift_Left{68M9} 5|238s6 242s6 246s6 6|69s9 70s9 84s9 120s16 122s16
+. 124s16 155s28 168s28 180s9 194s9 208s28 220s28 235s20
+119V13*Shift_Right{68M9} 6|52s14 153s18 165s18 178s18 192s18 206s18 218s18
+X 9 memory_barriers.ads
+34K9*Memory_Barriers 6|42w6 229r11 9|41e20
+36U14*Data_Synchronization_Barrier 6|233s7 242s7
+X 10 system.ads
+60K9*System 5|45w6 227r17 232r17 10|173e11
+90M9*Address 5|227r17 232r17
+X 20 s-interr.ads
+61I9*Ada_Interrupt_ID<short_short_integer>
+97U14*Install_Restricted_Handlers_Sequential 98i<c,__gnat_attach_all_handlers>22
+X 31 s-taskin.ads
+347V13*Get_Sec_Stack{10|90M9} 348i<c,__gnat_get_secondary_stack>22
+402U14*Initialize_Slave 403i24
+

@@ -1,0 +1,127 @@
+V "GNAT Lib v2015"
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -g
+P DB ES
+
+RN
+RR NO_FIXED_POINT
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U stm32.exti%b		stm32-exti.adb		12127bac NE OO PK IU
+W stm32%s		stm32.ads		stm32.ali
+W stm32_svd%s		stm32_svd.ads		stm32_svd.ali
+W stm32_svd.exti%s	stm32_svd-exti.ads	stm32_svd-exti.ali
+
+U stm32.exti%s		stm32-exti.ads		cc604add BN EE NE OO PK IU
+W stm32%s		stm32.ads		stm32.ali
+
+D hal.ads		20160428074121 bf4eee8e hal%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
+D stm32.ads		20160428074121 ebc79a82 stm32%s
+D stm32-exti.ads	20160428074122 27a7d05f stm32.exti%s
+D stm32-exti.adb	20160428074122 7fcf67eb stm32.exti%b
+D stm32_svd.ads		20160428074121 f021752e stm32_svd%s
+D stm32_svd-exti.ads	20160428074121 4a7acc18 stm32_svd.exti%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+D /home/emu/Dropbox/TUM/MA/StratoX/software/gnat.adc  20160424112437 00000000
+X 3 stm32.ads
+39K9*STM32 42e10 4|45r9 113r5 5|47r14 135r5
+X 4 stm32-exti.ads
+45K15*EXTI 3|39k9 4|113l11 113e15 5|47b20 135l11 135t15
+47E9*External_Line_Number 70e20 87r17 91r49 95r17 99r45 103r35 106r48 110r47
+. 5|54r17 57r35 70r49 71r35 83r17 86r35 99r45 100r35 111r35 113r36 120r48
+. 122r31 128r47 131r30
+48n7*EXTI_Line_0{47E9}
+49n7*EXTI_Line_1{47E9}
+50n7*EXTI_Line_2{47E9}
+51n7*EXTI_Line_3{47E9}
+52n7*EXTI_Line_4{47E9}
+53n7*EXTI_Line_5{47E9}
+54n7*EXTI_Line_6{47E9}
+55n7*EXTI_Line_7{47E9}
+56n7*EXTI_Line_8{47E9}
+57n7*EXTI_Line_9{47E9}
+58n7*EXTI_Line_10{47E9}
+59n7*EXTI_Line_11{47E9}
+60n7*EXTI_Line_12{47E9}
+61n7*EXTI_Line_13{47E9}
+62n7*EXTI_Line_14{47E9}
+63n7*EXTI_Line_15{47E9}
+64n7*EXTI_Line_16{47E9}
+65n7*EXTI_Line_17{47E9}
+66n7*EXTI_Line_18{47E9}
+67n7*EXTI_Line_19{47E9}
+68n7*EXTI_Line_20{47E9}
+69n7*EXTI_Line_21{47E9}
+70n7*EXTI_Line_22{47E9}
+72E9*External_Triggers 78e33 80r34 83r30
+73n7*Interrupt_Rising_Edge{72E9} 81r13 5|61r20 90r20
+74n7*Interrupt_Falling_Edge{72E9} 5|63r20 92r20
+75n7*Interrupt_Rising_Falling_Edge{72E9} 81r38 5|61r45 63r45 90r45 92r45
+76n7*Event_Rising_Edge{72E9} 84r13
+77n7*Event_Falling_Edge{72E9}
+78n7*Event_Rising_Falling_Edge{72E9} 84r34
+80E12*Interrupt_Triggers{72E9} 88r17 5|55r17
+83E12*Event_Triggers{72E9} 96r17 5|84r17
+86U14*Enable_External_Interrupt 87>7 88>7 5|53b14 64l8 64t33
+87e7 Line{47E9} 5|54b7 57r61
+88e7 Trigger{80E12} 5|55b7 61r9 63r9
+91U14*Disable_External_Interrupt 91>42 5|70b14 76l8 76t34
+91e42 Line{47E9} 5|70b42 71r61
+94U14*Enable_External_Event 95>7 96>7 5|82b14 93l8 93t29
+95e7 Line{47E9} 5|83b7 86r61
+96e7 Trigger{83E12} 5|84b7 90r9 92r9
+99U14*Disable_External_Event 99>38 5|99b14 105l8 105t30
+99e38 Line{47E9} 5|99b38 100r61
+103U14*Generate_SWI 103>28 5|111b14 114l8 114t20
+103e28 Line{47E9} 5|111b28 113r62
+106V13*External_Interrupt_Pending{boolean} 106>41 5|120b13
+106e41 Line{47E9} 5|122r57
+110U14*Clear_External_Interrupt 110>40 5|128b14 132l8 132t32
+110e40 Line{47E9} 5|128b40 131r56
+X 5 stm32-exti.adb
+57i7 Index{natural} 59r31 60r32 62r32
+71i7 Index{natural} 73r31 74r32 75r32
+86i7 Index{natural} 88r31 89r32 91r32
+100i7 Index{natural} 102r31 103r32 104r32
+X 6 stm32_svd.ads
+9K9*STM32_SVD 5|45r6 45r26 6|183e14
+X 7 stm32_svd-exti.ads
+9K19*EXTI 5|45w16 45r36 7|332e19
+25A9*IMR_MR_Field_Array(boolean)<integer>
+38a13*Arr{25A9} 5|59m26 59r26 73m26 73r26
+51r7*MR{29R9} 5|59m23 59r23 73m23 73r23
+72A9*EMR_MR_Field_Array(boolean)<integer>
+85a13*Arr{72A9} 5|88m26 88r26 102m26 102r26
+98r7*MR{76R9} 5|88m23 88r23 102m23 102r23
+119A9*RTSR_TR_Field_Array(boolean)<integer>
+132a13*Arr{119A9} 5|60m27 60r27 74m27 74r27 89m27 89r27 103m27 103r27
+145r7*TR{123R9} 5|60m24 60r24 74m24 74r24 89m24 89r24 103m24 103r24
+166A9*FTSR_TR_Field_Array(boolean)<integer>
+179a13*Arr{166A9} 5|62m27 62r27 75m27 75r27 91m27 91r27 104m27 104r27
+192r7*TR{170R9} 5|62m24 62r24 75m24 75r24 91m24 91r24 104m24 104r24
+213A9*SWIER_Field_Array(boolean)<integer>
+226a13*Arr{213A9} 5|113m31 113r31
+239r7*SWIER{217R9} 5|113m25 113r25
+260A9*PR_Field_Array(boolean)<integer>
+273a13*Arr{260A9} 5|122r26 131m25 131r25
+286r7*PR{264R9} 5|122r23 131m22 131r22
+305r7*IMR{49R9} 5|59m19 59r19 73m19 73r19
+307r7*EMR{96R9} 5|88m19 88r19 102m19 102r19
+309r7*RTSR{143R9} 5|60m19 60r19 74m19 74r19 89m19 89r19 103m19 103r19
+311r7*FTSR{190R9} 5|62m19 62r19 75m19 75r19 91m19 91r19 104m19 104r19
+313r7*SWIER{237R9} 5|113m19 113r19
+315r7*PR{284R9} 5|122r20 131m19 131r19
+329r4*EXTI_Periph{303R9} 5|59m7 59r7 60m7 60r7 62m7 62r7 73m7 73r7 74m7 74r7
+. 75m7 75r7 88m7 88r7 89m7 89r7 91m7 91r7 102m7 102r7 103m7 103r7 104m7 104r7
+. 113m7 113r7 122r8 131m7 131r7
+

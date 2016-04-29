@@ -1,0 +1,361 @@
+V "GNAT Lib v2015"
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -g
+P DB LC TF  ES
+
+RN
+RV NO_EXCEPTIONS
+RR NO_FIXED_POINT
+RV NO_PROTECTED_TYPES
+RV NO_STANDARD_STORAGE_POOLS
+RV NO_UNCHECKED_CONVERSION
+RV NO_DEFAULT_INITIALIZATION
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_ELABORATION_CODE
+RV SPARK_05
+RV MAX_PROTECTED_ENTRIES=1
+RV MAX_ENTRY_QUEUE_LENGTH=1+
+
+U stm32.ltdc%b		stm32-ltdc.adb		d9e7d3b3 OO PK IU
+W ada%s			ada.ads			ada.ali
+W ada.exceptions%s	a-except.adb		a-except.ali
+W ada.interrupts%s	a-interr.adb		a-interr.ali
+W ada.interrupts.names%s  a-intnam.ads		a-intnam.ali
+W ada.tags%s		a-tags.adb		a-tags.ali
+W ada.unchecked_conversion%s
+W interfaces%s		interfac.ads		interfac.ali
+W stm32%s		stm32.ads		stm32.ali
+W stm32_svd%s		stm32_svd.ads		stm32_svd.ali
+W stm32_svd.ltdc%s	stm32_svd-ltdc.ads	stm32_svd-ltdc.ali
+W stm32_svd.rcc%s	stm32_svd-rcc.ads	stm32_svd-rcc.ali
+W system%s		system.ads		system.ali
+W system.interrupts%s	s-interr.adb		s-interr.ali
+W system.storage_elements%s  s-stoele.adb	s-stoele.ali
+W system.tasking.protected_objects%s  s-taprob.adb  s-taprob.ali
+W system.tasking.protected_objects.single_entry%s  s-tposen.adb  s-tposen.ali
+
+U stm32.ltdc%s		stm32-ltdc.ads		cd23392a BN EE NE OO PK IU
+W interfaces%s		interfac.ads		interfac.ali
+W stm32%s		stm32.ads		stm32.ali
+W stm32.device%s	stm32-device.adb	stm32-device.ali
+W system%s		system.ads		system.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-except.ads		20150506105330 5b5f0f2f ada.exceptions%s
+D a-except.adb		20150506105329 0537fae3 ada.exceptions%b
+D a-interr.ads		20150506105331 391cab36 ada.interrupts%s
+D a-intnam.ads		20160428100700 b83a1aaf ada.interrupts.names%s
+D a-reatim.ads		20150506105330 67d7729a ada.real_time%s
+D a-tags.ads		20150506105331 cc425f51 ada.tags%s
+D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
+D hal.ads		20160428074121 bf4eee8e hal%s
+D hal-gpio.ads		20160428074121 481d0283 hal.gpio%s
+D hal-i2c.ads		20160428074121 6ce92421 hal.i2c%s
+D hal-spi.ads		20160428074121 4360da65 hal.spi%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
+D stm32.ads		20160428074121 ebc79a82 stm32%s
+D stm32-adc.ads		20160428074122 2e38986c stm32.adc%s
+D stm32-dac.ads		20160428074122 df6e3b82 stm32.dac%s
+D stm32-device.ads	20160428074121 d860e275 stm32.device%s
+D stm32-exti.ads	20160428074122 27a7d05f stm32.exti%s
+D stm32-gpio.ads	20160428074122 6872a941 stm32.gpio%s
+D stm32-i2c.ads		20160428074121 6a136e22 stm32.i2c%s
+D stm32-ltdc.ads	20160428074121 6028f7f3 stm32.ltdc%s
+D stm32-ltdc.adb	20160428074121 a504de12 stm32.ltdc%b
+D stm32-spi.ads		20160428074122 343bdfc8 stm32.spi%s
+D stm32-timers.ads	20160428074122 310d3cee stm32.timers%s
+D stm32-usarts.ads	20160428074122 4bc66301 stm32.usarts%s
+D stm32_svd.ads		20160428074121 f021752e stm32_svd%s
+D stm32_svd-adc.ads	20160428074121 c8c7ea21 stm32_svd.adc%s
+D stm32_svd-dac.ads	20160428074121 114ad2ab stm32_svd.dac%s
+D stm32_svd-dma.ads	20160428074121 a8809791 stm32_svd.dma%s
+D stm32_svd-gpio.ads	20160428074121 a8848f43 stm32_svd.gpio%s
+D stm32_svd-i2c.ads	20160428074121 dbd14067 stm32_svd.i2c%s
+D stm32_svd-ltdc.ads	20160428074121 13d38a4d stm32_svd.ltdc%s
+D stm32_svd-rcc.ads	20160428074121 d0655398 stm32_svd.rcc%s
+D stm32_svd-spi.ads	20160428074121 ac48b27d stm32_svd.spi%s
+D stm32_svd-usart.ads	20160428074121 84313de2 stm32_svd.usart%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
+D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
+D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
+D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
+D s-interr.ads		20150506105332 448c3263 system.interrupts%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-mufalo.ads		20150506105326 3dca0374 system.multiprocessors.fair_locks%s
+D s-musplo.ads		20150506105329 69fa25c4 system.multiprocessors.spin_locks%s
+D s-osinte.ads		20150506105331 9761d940 system.os_interface%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-tasinf.ads		20150506105329 801abd01 system.task_info%s
+D s-taspri.ads		20150506105328 351848fa system.task_primitives%s
+D s-taskin.ads		20150506105326 41d03b44 system.tasking%s
+D s-taprob.ads		20150506105328 dd44e5d4 system.tasking.protected_objects%s
+D s-tposen.ads		20150506105330 0588c33b system.tasking.protected_objects.single_entry%s
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+D /home/emu/Dropbox/TUM/MA/StratoX/software/gnat.adc  20160424112437 00000000
+X 1 ada.ads
+16K9*Ada 19e8 22|42r6 43r6 61r28 62r28 154r21 432r31 451r30
+X 4 a-interr.ads
+38K13*Interrupts 71e19 22|42r10 154r25
+40I9*Interrupt_ID<46|61I9>
+X 5 a-intnam.ads
+34K24*Names 142e25 22|42w21 154r36
+137i4*LCD_TFT_Interrupt{4|40I9} 22|154r42
+X 8 a-unccon.ads
+20v14*Unchecked_Conversion 22|43w10 61r32 62r32 432r35 451r34
+X 9 hal.ads
+6M12*Word{13|68M9} 22|90r20 91r20 93r20 102r20 103r20 104r20 433r31 452r10
+. 462r25 462r45 463r25 463r45
+8M12*Byte{13|62M9} 21|88r40 96r24 22|380r24 461r40
+12M9*UInt2
+14M9*UInt3 21|81r42 22|267r23
+24M9*UInt9 21|80r42 22|266r23
+28M9*UInt11 22|396r49 397r45 419r28
+30M9*UInt12
+32M9*UInt13 22|415r21 416r20
+52M9*UInt24 22|466r9 466r28 466r47
+X 10 hal-gpio.ads
+3h9*GPIO_Point
+X 11 hal-i2c.ads
+17h9*I2C_Port
+X 12 hal-spi.ads
+15h9*SPI_Port
+X 13 interfac.ads
+62M9*Unsigned_8
+68M9*Unsigned_32
+115V13*Shift_Left{68M9} 22|462s33 463s33
+X 14 stm32.ads
+39K9*STM32 42e10 21|45r6 45r24 47r9 122r5 22|50r14 469r5
+X 17 stm32-device.ads
+56K15*Device 466e17 21|45w12 45r30
+429M9*PLLSAI_DivR<9|12M9> 22|270r18
+430m4*PLLSAI_DIV2{429M9} 22|285r22
+431m4*PLLSAI_DIV4{429M9} 22|287r22
+432m4*PLLSAI_DIV8{429M9} 22|289r22
+433m4*PLLSAI_DIV16{429M9} 22|291r22
+435U14*Set_PLLSAI_Factors 22|297s7
+436m7 LCD{9|14M9} 22|298r10
+437m7 VCO{9|24M9} 22|299r10
+438m7 DivR{429M9} 22|300r10
+440U14*Enable_PLLSAI 22|301s7
+441U14*Disable_PLLSAI 22|296s7
+X 21 stm32-ltdc.ads
+47K15*LTDC 14|39k9 21|122l11 122e15 22|50b20 469l11 469t15
+49E9*LCD_Layer 49e38 91r24 100r17 104r15 107r15 22|141r32 208r32 242r17 375r24
+. 430r15 447r15
+49n23*Layer1{49E9} 22|210r18 336r24 435r18
+49n31*Layer2{49E9} 22|337r24
+52E9*Pixel_Format 61e6 63r36 92r24 114r36 22|376r24 400r21
+53n7*Pixel_Fmt_ARGB8888{52E9} 116r16
+54n7*Pixel_Fmt_RGB888{52E9} 117r16
+55n7*Pixel_Fmt_RGB565{52E9} 118r16
+56n7*Pixel_Fmt_ARGB1555{52E9} 118r35
+57n7*Pixel_Fmt_ARGB4444{52E9} 118r56
+58n7*Pixel_Fmt_L8{52E9} 119r16
+59n7*Pixel_Fmt_AL44{52E9} 119r31
+60n7*Pixel_Fmt_AL88{52E9} 120r16
+63V13*Bytes_Per_Pixel{natural} 63>30 114b13 22|415s33 416s32
+63e30 Fmt{52E9} 115r13
+66M12*Frame_Buffer_Access{36|90M9} 104r33 108r14 22|430r33 433r10 448r14
+. 452r16
+68E9*Blending_Factor 70e39 97r24 22|381r24
+69n7*BF_Constant_Alpha{68E9} 22|407r15
+70n7*BF_Pixel_Alpha_X_Constant_Alpha{68E9} 97r43 22|381r43 410r15
+72U14*Initialize 72>26 73>26 74>26 75>26 76>26 77>26 78>26 79>26 80>26 81>26
+. 82>26 22|257b14 341l8 341t18
+72i26 Width{positive} 22|258b7 317r57 325r39
+73i26 Height{positive} 22|259b7 318r57 328r39
+74i26 H_Sync{natural} 22|260b7 305r33 311r35 317r33 325r15
+75i26 H_Back_Porch{natural} 22|261b7 311r44 317r42 325r24
+76i26 H_Front_Porch{natural} 22|262b7 325r47
+77i26 V_Sync{natural} 22|263b7 306r33 312r35 318r33 328r15
+78i26 V_Back_Porch{natural} 22|264b7 312r44 318r42 328r24
+79i26 V_Front_Porch{natural} 22|265b7 328r48
+80m26 PLLSAI_N{9|24M9} 22|266b7 299r18
+81m26 PLLSAI_R{9|14M9} 22|267b7 298r18
+82i26 DivR{natural} 22|268b7 284r10 286r13 288r13 290r13
+84V13*Initialized{boolean} 22|273s10 365b13 368l8 368t19
+85U14*Start 22|347b14 350l8 350t13
+86U14*Stop 22|356b14 359l8 359t12
+88U14*Set_Background 88>30 88>33 88>36 22|461b14 467l8 467t22
+88m30 R{9|8M12} 22|461b30 462r51
+88m33 G{9|8M12} 22|461b33 463r51
+88m36 B{9|8M12} 22|461b36 466r55
+90U14*Layer_Init 91>7 92>7 93>7 94>7 94>10 95>7 95>10 96>7 97>7 22|374b14
+. 423l8 423t18
+91e7 Layer{49E9} 22|375b7 383r54 421r25 422r24
+92e7 Config{52E9} 22|376b7 400r44 415r50 416r49
+93m7 Buffer{36|90M9} 22|377b7 421r32
+94i7 X{natural} 22|378b7 389r37 391r37
+94i10 Y{natural} 22|378b10 396r57 397r53
+95i7 W{positive} 22|379b7 391r41 415r29 416r28
+95i10 H{positive} 22|379b10 397r57 419r36
+96m7 Constant_Alpha{9|8M12} 22|380b7 402r25
+97e7 BF{68E9} 22|381b7 406r12
+99U14*Set_Layer_State 100>7 101>7 22|241b14 251l8 251t23 336s7 337s7 422s7
+100e7 Layer{49E9} 22|242b7 245r49
+101b7 Enabled{boolean} 22|243b7 247r23 248r23
+103U14*Set_Frame_Buffer 104>7 104>26 22|421s7 429b14 440l8 440t24
+104e7 Layer{49E9} 22|430b7 435r10
+104m26 Addr{66M12} 22|430b26 436r42 438r42
+106V13*Get_Frame_Buffer{66M12} 107>7 22|446b13 455l8 455t24
+107e7 Layer{49E9} 22|447b7 450r47
+110U14*Reload_Config 110>29 22|221b14 235l8 235t21 249s10
+110b29 Immediate{boolean} 22|222b7 225r10 249r25
+X 22 stm32-ltdc.adb
+53E9 LCD_Polarity 55e29 61r54
+54n7 Polarity_Active_Low{53E9} 279r41 280r41 281r41
+55n7 Polarity_Active_High{53E9}
+56E9 LCD_PC_Polarity 58e35 62r54
+57n7 Input_Pixel_Clock{56E9}
+58n7 Inverted_Input_Pixel_Clock{56E9} 282r41
+61V13 To_Bool[8|20]{boolean} 279s32 280s32 281s32
+62V13 To_Bool[8|20]{boolean} 282s32
+65R9 Layer_Type 108e15 110r8 129r36 136r27 138r27
+66r7*LCR{32|390R9} 111r7 247r12 248m12
+69r7*LWHPCR{32|421R9} 112r7 387m9
+72r7*LWVPCR{32|449R9} 113r7 395m9
+75r7*LCKCR{32|478R9} 114r7
+78r7*LPFCR{32|505R9} 115r7 400m9
+81r7*LCACR{32|526R9} 116r7 402m9
+84r7*LDCCR{32|550R9} 117r7 404m9
+87r7*LBFCR{32|578R9} 118r7 408m15 409m15 411m15 412m15
+90m7*Reserved_0{9|6M12} 119r7
+91m7*Reserved_1{9|6M12} 120r7
+93m7*LCFBAR{9|6M12} 121r7 454r24
+96r7*LCFBLR{32|606R9} 122r7 384r40 417m9
+99r7*LCFBLNR{32|633R9} 123r7 419m9
+102m7*Reserved_2{9|6M12} 124r7
+103m7*Reserved_3{9|6M12} 125r7
+104m7*Reserved_4{9|6M12} 126r7
+106r7*LCLUTWR{32|657R9} 127r7
+129P9 Layer_Access(65R9) 141r50 208r50 245r22 383r27 450r20
+131N4 BF1_Constant_Alpha 408r28
+132N4 BF2_Constant_Alpha 409r28
+133N4 BF1_Pixel_Alpha 411r28
+134N4 BF2_Pixel_Alpha 412r28
+136r4 G_Layer1_Reg{65R9} 211m17 211r17
+138r4 G_Layer2_Reg{65R9} 213m17 213r17
+141V13 Get_Layer{129P9} 141>24 208b13 215l8 215t17 245s38 383s43 450s36
+141e24 Layer{21|49E9} 208b24 210r10
+144w14 Sync 164b19 202l8 202t12 232r10 233r10
+147U17 Apply_On_VSync 179b17 186l11 186t25 232s15
+150Y13 Wait 170b13 173l11 173t15 233s15
+152U17 Interrupt 154r10 192b17 201l11 201t20
+157b7 Not_Pending{boolean} 170r23 181r10 199r13
+245p7 L{129P9} 247r10 248r10
+270m7 DivR_Val{17|429M9} 285m10 287m10 289m10 291m10 300r18
+383p7 L{129P9} 384r38 387r7 395r7 400r7 402r7 404r7 408r13 409r13 411r13
+. 412r13 417r7 419r7
+384r7 CFBL{32|606R9} 415m7 416m7 417r19
+432V16 To_Word[8|20]{13|68M9} 436s33 438s33
+450p7 L{129P9} 454r22
+451V16 To_FBA[8|20]{36|90M9} 454s14
+462m7 RShift{9|6M12} 466r17
+463m7 GShift{9|6M12} 466r36
+X 26 stm32_svd.ads
+9K9*STM32_SVD 22|47r6 47r26 48r6 48r26 26|183e14
+X 32 stm32_svd-ltdc.ads
+9K19*LTDC 22|47w16 47r36 32|1096e19
+20M12*SSCR_VSH_Field{9|28M9} 22|306r17
+21M12*SSCR_HSW_Field{9|30M9} 22|305r17
+26m7*VSH{20M12} 22|306m10
+30m7*HSW{21M12} 22|305m10
+48M12*BPCR_AVBP_Field{9|28M9} 22|312r18
+49M12*BPCR_AHBP_Field{9|30M9} 22|311r18
+54m7*AVBP{48M12} 22|312m10 396r38 397r38
+58m7*AHBP{49M12} 22|311m10 388r61 390r61
+76M12*AWCR_AAH_Field{9|28M9} 22|318r17
+77M12*AWCR_AAW_Field{9|30M9} 22|317r17
+82m7*AAH{76M12} 22|318m10
+86m7*AAW{77M12} 22|317m10
+104M12*TWCR_TOTALH_Field{9|28M9} 22|327r12
+105M12*TWCR_TOTALW_Field{9|30M9} 22|324r12
+110m7*TOTALH{104M12} 22|326m10
+114m7*TOTALW{105M12} 22|323m10
+139b7*LTDCEN{boolean} 22|334m23 349m23 358m23 367r30
+155b7*DEN{boolean} 22|340m23
+159b7*PCPOL{boolean} 22|282m23
+161b7*DEPOL{boolean} 22|281m23
+163b7*VSPOL{boolean} 22|279m23
+165b7*HSPOL{boolean} 22|280m23
+194b7*IMR{boolean} 22|226m27 229r44
+196b7*VBR{boolean} 22|185m27
+218m7*BC{213M12} 22|332m24 465m24
+243b7*RRIE{boolean} 22|183m26 196m29
+271b7*RRIF{boolean} 22|195r29
+299b7*CRRIF{boolean} 22|197m29
+390R9*L1CR_Register 22|66r20 32|402e6
+392b7*LEN{boolean} 22|247r16 248m16
+417M12*L1WHPCR_WHSTPOS_Field{9|30M9} 22|388r21 389r14
+418M12*L1WHPCR_WHSPPOS_Field{9|30M9} 22|390r21 391r14
+421R9*L1WHPCR_Register 22|69r20 32|431e6
+423m7*WHSTPOS{417M12} 22|388m10
+427m7*WHSPPOS{418M12} 22|390m10
+449R9*L1WVPCR_Register 22|72r20 32|459e6
+451m7*WVSTPOS{445M12} 22|396m10
+455m7*WVSPPOS{446M12} 22|397m10
+478R9*L1CKCR_Register 22|75r20 32|488e6
+505R9*L1PFCR_Register 22|78r20 32|511e6
+507m7*PF{502M12} 22|400m15
+526R9*L1CACR_Register 22|81r20 32|532e6
+528m7*CONSTA{523M12} 22|402m15
+550R9*L1DCCR_Register 22|84r20 32|560e6
+578R9*L1BFCR_Register 22|87r20 32|588e6
+580m7*BF2{574M12} 22|409m21 412m21
+584m7*BF1{575M12} 22|408m21 411m21
+606R9*L1CFBLR_Register 22|96r20 384r18 32|616e6
+608m7*CFBLL{602M12} 22|415m12
+612m7*CFBP{603M12} 22|416m12
+633R9*L1CFBLNR_Register 22|99r20 32|639e6
+635m7*CFBLNBR{630M12} 22|419m17
+657R9*L1CLUTWR_Register 22|106r20 32|667e6
+976r7*SSCR{24R9} 22|304m19
+978r7*BPCR{52R9} 22|310m19 388r56 390r56 396r33 397r33
+980r7*AWCR{80R9} 22|316m19
+982r7*TWCR{108R9} 22|322m19
+984r7*GCR{137R9} 22|279m19 280m19 281m19 282m19 334m19 340m19 349m19 358m19
+. 367r26
+986r7*SRCR{192R9} 22|185m22 226m22 229r39
+988r7*BCCR{216R9} 22|332m19 465m19
+990r7*IER{235R9} 22|183m22 196m25
+992r7*ISR{263R9} 22|195r25
+994r7*ICR{291R9} 22|197m25
+1002r7*L1CR{390R9} 22|137m42
+1018m7*L1CFBAR{9|6M12} 22|436m22
+1026r7*L2CR{682R9} 22|139m42
+1042m7*L2CFBAR{9|6M12} 22|438m22
+1093r4*LTDC_Periph{974R9} 22|137m30 137r30 139m30 139r30 183m10 185m10 195r13
+. 196m13 197m13 226m10 229r27 279m7 280m7 281m7 282m7 304m7 310m7 316m7 322m7
+. 332m7 334m7 340m7 349m7 358m7 367r14 388r44 390r44 396r21 397r21 436m10
+. 438m10 465m7
+X 33 stm32_svd-rcc.ads
+9K19*RCC 22|48w16 48r36 33|1638e18
+908b7*LTDCEN{boolean} 22|277m26
+1580r7*APB2ENR{862R9} 22|277m18
+1635r4*RCC_Periph{1552R9} 22|277m7
+X 36 system.ads
+60K9*System 21|43w6 66r35 93r24 22|45w6 45r26 377r24 36|173e11
+90M9*Address 21|66r42 93r31 22|377r31
+X 46 s-interr.ads
+61I9*Ada_Interrupt_ID<short_short_integer>
+97U14*Install_Restricted_Handlers_Sequential 98i<c,__gnat_attach_all_handlers>22
+X 57 s-taskin.ads
+347V13*Get_Sec_Stack{36|90M9} 348i<c,__gnat_get_secondary_stack>22
+402U14*Initialize_Slave 403i24
+

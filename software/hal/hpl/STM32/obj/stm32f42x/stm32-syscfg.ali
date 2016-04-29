@@ -1,0 +1,151 @@
+V "GNAT Lib v2015"
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -g
+P DB ES
+
+RN
+RR NO_FIXED_POINT
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U stm32.syscfg%b	stm32-syscfg.adb	d9c9e567 NE OO PK IU
+W ada.tags%s		a-tags.adb		a-tags.ali
+W interfaces%s		interfac.ads		interfac.ali
+W stm32%s		stm32.ads		stm32.ali
+W stm32.device%s	stm32-device.adb	stm32-device.ali
+W stm32.exti%s		stm32-exti.adb		stm32-exti.ali
+W stm32_svd%s		stm32_svd.ads		stm32_svd.ali
+W stm32_svd.exti%s	stm32_svd-exti.ads	stm32_svd-exti.ali
+W stm32_svd.syscfg%s	stm32_svd-syscfg.ads	stm32_svd-syscfg.ali
+
+U stm32.syscfg%s	stm32-syscfg.ads	dc1500f8 BN EE NE OO PK IU
+W stm32%s		stm32.ads		stm32.ali
+W stm32.gpio%s		stm32-gpio.adb		stm32-gpio.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-reatim.ads		20150506105330 67d7729a ada.real_time%s
+D a-tags.ads		20150506105331 cc425f51 ada.tags%s
+D hal.ads		20160428074121 bf4eee8e hal%s
+D hal-gpio.ads		20160428074121 481d0283 hal.gpio%s
+D hal-i2c.ads		20160428074121 6ce92421 hal.i2c%s
+D hal-spi.ads		20160428074121 4360da65 hal.spi%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
+D stm32.ads		20160428074121 ebc79a82 stm32%s
+D stm32-adc.ads		20160428074122 2e38986c stm32.adc%s
+D stm32-dac.ads		20160428074122 df6e3b82 stm32.dac%s
+D stm32-device.ads	20160428074121 d860e275 stm32.device%s
+D stm32-exti.ads	20160428074122 27a7d05f stm32.exti%s
+D stm32-gpio.ads	20160428074122 6872a941 stm32.gpio%s
+D stm32-i2c.ads		20160428074121 6a136e22 stm32.i2c%s
+D stm32-spi.ads		20160428074122 343bdfc8 stm32.spi%s
+D stm32-syscfg.ads	20160428074122 5fa0333b stm32.syscfg%s
+D stm32-syscfg.adb	20160428074122 1b8f8bb4 stm32.syscfg%b
+D stm32-timers.ads	20160428074122 310d3cee stm32.timers%s
+D stm32-usarts.ads	20160428074122 4bc66301 stm32.usarts%s
+D stm32_svd.ads		20160428074121 f021752e stm32_svd%s
+D stm32_svd-adc.ads	20160428074121 c8c7ea21 stm32_svd.adc%s
+D stm32_svd-dac.ads	20160428074121 114ad2ab stm32_svd.dac%s
+D stm32_svd-dma.ads	20160428074121 a8809791 stm32_svd.dma%s
+D stm32_svd-exti.ads	20160428074121 4a7acc18 stm32_svd.exti%s
+D stm32_svd-gpio.ads	20160428074121 a8848f43 stm32_svd.gpio%s
+D stm32_svd-i2c.ads	20160428074121 dbd14067 stm32_svd.i2c%s
+D stm32_svd-spi.ads	20160428074121 ac48b27d stm32_svd.spi%s
+D stm32_svd-syscfg.ads	20160428074121 285ba3da stm32_svd.syscfg%s
+D stm32_svd-usart.ads	20160428074121 84313de2 stm32_svd.usart%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
+D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
+D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
+D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-osinte.ads		20150506105331 9761d940 system.os_interface%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+D /home/emu/Dropbox/TUM/MA/StratoX/software/gnat.adc  20160424112437 00000000
+X 4 hal.ads
+16M9*UInt4
+X 5 hal-gpio.ads
+3h9*GPIO_Point
+X 6 hal-i2c.ads
+17h9*I2C_Port
+X 7 hal-spi.ads
+15h9*SPI_Port
+X 9 stm32.ads
+39K9*STM32 42e10 17|45r6 45r23 47r9 62r5 18|48r6 50r6 50r28 52r14 151r11
+. 165r5
+X 12 stm32-device.ads
+56K15*Device 466e17 18|50w12 50r34
+78E9*GPIO_Port_Id 82e6 18|63r29 96r15 99r15 102r15 105r15
+84V13*As_GPIO_Port_Id{78E9} 18|63s45
+X 13 stm32-exti.ads
+45K15*EXTI 113e15 18|48w12 151r17
+47E9*External_Line_Number 70e20 18|153r33
+110U14*Clear_External_Interrupt 18|153s7
+X 14 stm32-gpio.ads
+49K15*GPIO 367e15 17|45w12 45r29
+51R9*Internal_GPIO_Port<26|447R9> 17|50r14 56r14 18|54r14 58r14 114r14 137r14
+53E9*GPIO_Pin 55e68 17|50r42 58r46 18|115r14 118r41 150r46 153r59
+78I12*GPIO_Pin_Index{natural} 17|60r46 18|55r14 59r14 160r46
+80A9*GPIO_Pins(53E9)<integer> 17|56r42 18|138r14
+181R9*GPIO_Point<5|3R9> 186e14 17|53r16 18|126r16
+182p7*Periph(51R9) 18|129r41
+185i7*Pin{78I12} 18|129r59
+X 17 stm32-syscfg.ads
+47K15*SYSCFG 9|39k9 17|62l11 62e17 18|52b20 165l11 165t17
+49U14*Connect_External_Interrupt 50>7 50>35 18|113b14 119l8 119t34 142s10
+50r7 Port{14|51R9} 18|114b7 118r35
+50e35 Pin{14|53E9} 18|115b7 118r55
+52U14*Connect_External_Interrupt 53>7 18|125b14 130l8 130t34
+53r7 Point{14|181R9} 18|126b7 129r35 129r53
+55U14*Connect_External_Interrupt 56>7 56>35 18|136b14 144l8 144t34
+56r7 Port{14|51R9} 18|137b7 142r38
+56a35 Pins{14|80A9} 18|138b7 141r18
+58U14*Clear_External_Interrupt 58>40 18|150b14 154l8 154t32
+58e40 Pin{14|53E9} 18|150b40 153r73
+60U14*Clear_External_Interrupt 60>40 18|160b14 163l8 163t32
+60i40 Pin{14|78I12} 18|160b40 162r30
+X 18 stm32-syscfg.adb
+53U14 Connect_External_Interrupt 54>7 55>7 57b14 107l8 107t34 118s7 129s7
+54r7 Port{14|51R9} 58b7 63r62
+55i7 Pin{14|78I12} 59b7 77r19 86r21
+61i7 CR_Index{integer} 77m7 93r12
+62i7 EXTI_Index{integer} 86m7 95r45 98r45 101r45 104r45
+63e7 Port_Name{12|78E9} 96r38 99r38 102r38 105r38
+141e11 Pin=141:18{14|53E9} 142r44
+X 21 stm32_svd.ads
+9K9*STM32_SVD 18|45r6 45r28 46r6 46r28 21|183e14
+X 25 stm32_svd-exti.ads
+9K19*EXTI 18|45w16 45r38 25|332e19
+260A9*PR_Field_Array(boolean)<integer>
+273a13*Arr{260A9} 18|162m25 162r25
+286r7*PR{264R9} 18|162m22 162r22
+315r7*PR{284R9} 18|162m19 162r19
+329r4*EXTI_Periph{303R9} 18|162m7 162r7
+X 29 stm32_svd-syscfg.ads
+9K19*SYSCFG 18|46w16 46r38 29|197e21
+93M12*EXTICR1_EXTI_Element{4|16M9}
+96A9*EXTICR1_EXTI_Field_Array(93M12)<integer> 18|62r34
+109a13*Arr{96A9} 18|95m40 95r40 98m40 98r40 101m40 101r40 104m40 104r40
+122r7*EXTI{100R9} 18|95m35 95r35 98m35 98r35 101m35 101r35 104m35 104r35
+171r7*EXTICR1{120R9} 18|95m27 95r27
+173r7*EXTICR2{120R9} 18|98m27 98r27
+175r7*EXTICR3{120R9} 18|101m27 101r27
+177r7*EXTICR4{120R9} 18|104m27 104r27
+194r4*SYSCFG_Periph{165R9} 18|95m13 95r13 98m13 98r13 101m13 101r13 104m13
+. 104r13
+

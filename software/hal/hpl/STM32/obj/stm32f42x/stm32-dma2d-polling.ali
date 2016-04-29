@@ -1,0 +1,72 @@
+V "GNAT Lib v2015"
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -g
+P DB ES
+
+RN
+RV NO_EXCEPTIONS
+RR NO_FIXED_POINT
+RV NO_UNCHECKED_CONVERSION
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U stm32.dma2d.polling%b	stm32-dma2d-polling.adb	a1d71359 NE OO PK IU
+W ada.exceptions%s	a-except.adb		a-except.ali
+W stm32.dma2d%s		stm32-dma2d.adb		stm32-dma2d.ali
+W stm32_svd%s		stm32_svd.ads		stm32_svd.ali
+W stm32_svd.dma2d%s	stm32_svd-dma2d.ads	stm32_svd-dma2d.ali
+
+U stm32.dma2d.polling%s	stm32-dma2d-polling.ads	b6f625e8 EE NE OO PK IU
+W stm32.dma2d%s		stm32-dma2d.adb		stm32-dma2d.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-except.ads		20150506105330 5b5f0f2f ada.exceptions%s
+D a-except.adb		20150506105329 0537fae3 ada.exceptions%b
+D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
+D hal.ads		20160428074121 bf4eee8e hal%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
+D stm32.ads		20160428074121 ebc79a82 stm32%s
+D stm32-dma2d.ads	20160428074121 7dc7a215 stm32.dma2d%s
+D stm32-dma2d-polling.ads  20160428074122 cb3187fd stm32.dma2d.polling%s
+D stm32-dma2d-polling.adb  20160428074122 22dbc256 stm32.dma2d.polling%b
+D stm32_svd.ads		20160428074121 f021752e stm32_svd%s
+D stm32_svd-dma2d.ads	20160428074121 483d56f2 stm32_svd.dma2d%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D /home/emu/Dropbox/TUM/MA/StratoX/software/gnat.adc  20160424112437 00000000
+X 7 stm32.ads
+39K9*STM32 42e10 9|34r9 38r5 10|34r14 86r7 91r5
+X 8 stm32-dma2d.ads
+35K15*DMA2D 7|39k9 8|274e16 9|34r15 38r11 10|34r20 86r13 91r11
+158P9*DMA2D_Sync_Procedure
+160U14*DMA2D_Init 10|86s19
+161p7 Init{158P9} 10|87r10
+162p7 Wait{158P9} 10|88r10
+X 9 stm32-dma2d-polling.ads
+34K21*Polling 8|35k15 9|38l17 38e24 10|34b26 91l17 91t24
+36U14*Initialize 10|84b14 89l8 89t18
+X 10 stm32-dma2d-polling.adb
+36b4 Transferring{boolean} 47m7 59r14 63m7
+38U14 DMA2D_Init_Transfer 45b14 51l8 51t27 87r18
+39U14 DMA2D_Wait_Transfer 57b14 78l8 78t27 88r18
+X 11 stm32_svd.ads
+9K9*STM32_SVD 10|32r6 32r27 11|183e14
+X 12 stm32_svd-dma2d.ads
+9K19*DMA2D 10|32w16 32r37 12|609e20
+25b7*START{boolean} 10|50m23
+77b7*TEIF{boolean} 10|67r30 71r33
+79b7*TCIF{boolean} 10|70r37
+87b7*CEIF{boolean} 10|65r27
+113b7*CTCIF{boolean} 10|48m25 76m28
+119b7*CCTCIF{boolean} 10|49m25
+534r7*CR{23R9} 10|50m20
+536r7*ISR{75R9} 10|65r23 67r26 70r33 71r29
+538r7*IFCR{109R9} 10|48m20 49m20 76m23
+606r4*DMA2D_Periph{532R9} 10|48m7 49m7 50m7 65r10 67r13 70r20 71r16 76m10
+

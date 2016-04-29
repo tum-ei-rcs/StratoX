@@ -1,0 +1,91 @@
+V "GNAT Lib v2015"
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -g
+P DB ES
+
+RN
+RR NO_FIXED_POINT
+RV NO_FLOATING_POINT
+RV NO_IMPLEMENTATION_ATTRIBUTES
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_OBSOLESCENT_FEATURES
+RV SPARK_05
+
+U cortex_m.fpu%b	cortex_m-fpu.adb	bbc2fec2 NE OO PK
+W cortex_m%s		cortex_m.ads		cortex_m.ali
+W system%s		system.ads		system.ali
+W system.machine_code%s	s-maccod.ads		s-maccod.ali
+
+U cortex_m.fpu%s	cortex_m-fpu.ads	23c5e747 EE NE OO PK
+W cortex_m%s		cortex_m.ads		cortex_m.ali
+W hal%s			hal.ads			hal.ali
+
+D cortex_m.ads		20160428074121 38b367df cortex_m%s
+D cortex_m-fpu.ads	20160428074122 a4386e16 cortex_m.fpu%s
+D cortex_m-fpu.adb	20160428074122 8eed5d34 cortex_m.fpu%b
+D hal.ads		20160428074121 bf4eee8e hal%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-maccod.ads		20150506105330 0fbb7bce system.machine_code%s
+D /home/emu/Dropbox/TUM/MA/StratoX/software/gnat.adc  20160424112437 00000000
+X 1 cortex_m.ads
+32K9*Cortex_M 34e13 2|49r9 123r5 3|35r14 68r5
+X 2 cortex_m-fpu.ads
+49K18*FPU 1|32k9 2|123l14 123e17 3|35b23 68l14 68t17
+51V13*Sqrt{float} 51>19 3|43b13 51l8 51t12
+51f19 X{float} 3|43b19 47r47
+53E9*Rounding_Mode 57e15 80r19
+54n7*To_Nearest{53E9}
+55n7*To_Plus_Infinity{53E9}
+56n7*To_Minus_Infinity{53E9}
+57n7*To_Zero{53E9}
+59M9*Bits_1 72r19
+60M9*Bits_2 85r19
+61M9*Bits_6 81r19
+63R9*Status_Control_Register 98e6 100r8 121r26 3|57r26 58r16
+65b7*N{boolean} 101r7
+67b7*Z{boolean} 102r7
+69b7*C{boolean} 103r7
+71b7*V{boolean} 104r7
+72m7*Reserved1{59M9} 105r7
+74b7*AHP{boolean} 106r7
+76b7*DN{boolean} 107r7
+78b7*FZ{boolean} 108r7
+80e7*RM{53E9} 109r7
+81m7*Reserved2{61M9} 110r7
+82m7*Reserved3{4|8M12} 111r7
+84b7*IDC{boolean} 112r7
+85m7*Reserved4{60M9} 113r7
+88b7*IXC{boolean} 114r7
+90b7*UFC{boolean} 115r7
+92b7*OFC{boolean} 116r7
+94b7*DZC{boolean} 117r7
+96b7*IOC{boolean} 118r7
+121V13*FPSCR{63R9} 3|57b13 66l8 66t13
+X 3 cortex_m-fpu.adb
+44f7 Result{float} 48m49 48r49 50r14
+58r7 Result{2|63R9} 62m49 62r49 65r14
+X 4 hal.ads
+3K9*HAL 2|47w6 47r15 4|72e8
+8M12*Byte{5|62M9} 2|82r19
+X 5 interfac.ads
+62M9*Unsigned_8
+X 6 system.ads
+60K9*System 3|32r6 32r32 33w6 33r18 6|173e11
+90M9*Address 3|62r25
+X 7 s-maccod.ads
+36K16*Machine_Code 3|32w13 32r39 7|130e24
+43I9*Asm_Input_Operand<integer>
+44I9*Asm_Output_Operand<integer>
+82U14*Asm 3|46s7 60s7
+84i6 Outputs{44I9} 3|48r12
+85i6 Inputs{43I9} 3|47r12 62r12
+86a6 Clobber{string} 3|64r12
+87b6 Volatile{boolean} 3|49r12 63r12
+

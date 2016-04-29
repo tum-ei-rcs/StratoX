@@ -1,0 +1,71 @@
+V "GNAT Lib v2015"
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -g
+P DB ES
+
+RN
+RR NO_FIXED_POINT
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_IMPLEMENTATION_RESTRICTIONS
+RR NO_ELABORATION_CODE
+RV SPARK_05
+
+U stm32_svd.iwdg%s	stm32_svd-iwdg.ads	f5b950a5 NE OO PR PK IU
+W hal%s			hal.ads			hal.ali
+W stm32_svd%s		stm32_svd.ads		stm32_svd.ali
+W system%s		system.ads		system.ali
+
+D hal.ads		20160428074121 bf4eee8e hal%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
+D stm32_svd.ads		20160428074121 f021752e stm32_svd%s
+D stm32_svd-iwdg.ads	20160428074121 247a7d2b stm32_svd.iwdg%s
+D system.ads		20150506105328 9eacb62e system%s
+D /home/emu/Dropbox/TUM/MA/StratoX/software/gnat.adc  20160424112437 00000000
+X 1 hal.ads
+3K9*HAL 72e8 4|6w6 20r28 27r24 41r27 48r23 62r28 69r24 90r23
+7M12*Short{2|65M9} 4|20r32 27r28
+14M9*UInt3 4|41r31
+30M9*UInt12 4|62r32
+44M9*UInt20 4|69r28
+62M9*UInt29 4|48r27
+64M9*UInt30 4|90r27
+X 2 interfac.ads
+65M9*Unsigned_16
+X 3 stm32_svd.ads
+9K9*STM32_SVD 183e14 4|9r9 129r5
+100m4*IWDG_Base{5|90M9} 4|127r30
+X 4 stm32_svd-iwdg.ads
+9K19*IWDG 3|9k9 4|129l15 129e19
+20M12*KR_KEY_Field{1|7M12} 25r24
+23R9*KR_Register 29e6 32r8 108r13
+25m7*KEY{20M12} 33r7
+27m7*Reserved_16_31{1|7M12} 34r7
+41M12*PR_PR_Field{1|14M9} 46r23
+44R9*PR_Register 50e6 53r8 110r13
+46m7*PR{41M12} 54r7
+48m7*Reserved_3_31{1|62M9} 55r7
+62M12*RLR_RL_Field{1|30M9} 67r24
+65R9*RLR_Register 71e6 74r8 112r13
+67m7*RL{62M12} 75r7
+69m7*Reserved_12_31{1|44M9} 76r7
+84R9*SR_Register 92e6 95r8 114r13
+86b7*PVU{boolean} 96r7
+88b7*RVU{boolean} 97r7
+90m7*Reserved_2_31{1|64M9} 98r7
+106R9*IWDG_Peripheral 116e6 118r8 126r26
+108r7*KR{23R9} 119r7
+110r7*PR{44R9} 120r7
+112r7*RLR{65R9} 121r7
+114r7*SR{84R9} 122r7
+126r4*IWDG_Periph{106R9}
+X 5 system.ads
+60K9*System 4|7w6 30r24 51r24 72r24 93r24 5|173e11
+90M9*Address
+114n41*Low_Order_First{114E9} 4|30r31 51r31 72r31 93r31
+

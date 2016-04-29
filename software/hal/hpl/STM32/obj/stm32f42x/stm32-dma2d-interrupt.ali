@@ -1,0 +1,133 @@
+V "GNAT Lib v2015"
+A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -gnatA
+A -mlittle-endian
+A -mfloat-abi=hard
+A -mcpu=cortex-m4
+A -mfpu=fpv4-sp-d16
+A -mthumb
+A -g
+P DB LC TF  ES
+
+RN
+RV NO_DIRECT_BOOLEAN_OPERATORS
+RR NO_FIXED_POINT
+RV NO_PROTECTED_TYPES
+RV NO_STANDARD_STORAGE_POOLS
+RV NO_UNCHECKED_CONVERSION
+RV NO_DEFAULT_INITIALIZATION
+RV NO_IMPLEMENTATION_PRAGMAS
+RV NO_ELABORATION_CODE
+RV SPARK_05
+RV MAX_PROTECTED_ENTRIES=1
+RV MAX_ENTRY_QUEUE_LENGTH=1+
+
+U stm32.dma2d.interrupt%b  stm32-dma2d-interrupt.adb  2d206946 OO PK IU
+W ada%s			ada.ads			ada.ali
+W ada.interrupts%s	a-interr.adb		a-interr.ali
+W ada.interrupts.names%s  a-intnam.ads		a-intnam.ali
+W stm32.dma2d%s		stm32-dma2d.adb		stm32-dma2d.ali
+W stm32_svd%s		stm32_svd.ads		stm32_svd.ali
+W stm32_svd.dma2d%s	stm32_svd-dma2d.ads	stm32_svd-dma2d.ali
+W system%s		system.ads		system.ali
+W system.interrupts%s	s-interr.adb		s-interr.ali
+W system.tasking.protected_objects%s  s-taprob.adb  s-taprob.ali
+W system.tasking.protected_objects.single_entry%s  s-tposen.adb  s-tposen.ali
+
+U stm32.dma2d.interrupt%s  stm32-dma2d-interrupt.ads  86412d43 EE NE OO PK IU
+W stm32.dma2d%s		stm32-dma2d.adb		stm32-dma2d.ali
+
+D ada.ads		20150506105328 3ffc8e18 ada%s
+D a-interr.ads		20150506105331 391cab36 ada.interrupts%s
+D a-intnam.ads		20160428100700 b83a1aaf ada.interrupts.names%s
+D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
+D hal.ads		20160428074121 bf4eee8e hal%s
+D interfac.ads		20160413121402 6033a23f interfaces%s
+D stm32.ads		20160428074121 ebc79a82 stm32%s
+D stm32-dma2d.ads	20160428074121 7dc7a215 stm32.dma2d%s
+D stm32-dma2d-interrupt.ads  20160428074122 fb868f56 stm32.dma2d.interrupt%s
+D stm32-dma2d-interrupt.adb  20160428074121 26a1aa4d stm32.dma2d.interrupt%b
+D stm32_svd.ads		20160428074121 f021752e stm32_svd%s
+D stm32_svd-dma2d.ads	20160428074121 483d56f2 stm32_svd.dma2d%s
+D system.ads		20150506105328 9eacb62e system%s
+D s-bb.ads		20150506105332 883768d6 system.bb%s
+D s-bbbosu.ads		20150506105328 3f67a4b3 system.bb.board_support%s
+D s-bbcppr.ads		20150506105330 37229a46 system.bb.cpu_primitives%s
+D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
+D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
+D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
+D s-bbthqu.ads		20150506105329 6e3d132d system.bb.threads.queues%s
+D s-bbtime.ads		20150506105331 2fd6b2f5 system.bb.time%s
+D s-interr.ads		20150506105332 448c3263 system.interrupts%s
+D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
+D s-mufalo.ads		20150506105326 3dca0374 system.multiprocessors.fair_locks%s
+D s-musplo.ads		20150506105329 69fa25c4 system.multiprocessors.spin_locks%s
+D s-osinte.ads		20150506105331 9761d940 system.os_interface%s
+D s-parame.ads		20150506105332 c9fe535f system.parameters%s
+D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
+D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
+D s-tasinf.ads		20150506105329 801abd01 system.task_info%s
+D s-taspri.ads		20150506105328 351848fa system.task_primitives%s
+D s-taskin.ads		20150506105326 41d03b44 system.tasking%s
+D s-taprob.ads		20150506105328 dd44e5d4 system.tasking.protected_objects%s
+D s-tposen.ads		20150506105330 0588c33b system.tasking.protected_objects.single_entry%s
+D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+D /home/emu/Dropbox/TUM/MA/StratoX/software/gnat.adc  20160424112437 00000000
+X 1 ada.ads
+16K9*Ada 19e8 10|32r6 48r41
+X 2 a-interr.ads
+38K13*Interrupts 71e19 10|32r10 48r45
+40I9*Interrupt_ID<23|61I9>
+X 3 a-intnam.ads
+34K24*Names 142e25 10|32w21 48r56
+139i4*DMA2D_Interrupt{2|40I9} 10|48r62
+X 7 stm32.ads
+39K9*STM32 42e10 9|34r9 38r5 10|36r14 140r5
+X 8 stm32-dma2d.ads
+35K15*DMA2D 7|39k9 8|274e16 9|34r15 38r11 10|36r20 140r11
+158P9*DMA2D_Sync_Procedure
+160U14*DMA2D_Init 10|136s7
+161p7 Init{158P9} 10|136r19
+162p7 Wait{158P9} 10|137r19
+X 9 stm32-dma2d-interrupt.ads
+34K21*Interrupt 8|35k15 9|38l17 38e26 10|36b26 140l17 140t26
+36U14*Initialize 10|134b14 138l8 138t18
+X 10 stm32-dma2d-interrupt.adb
+38U14 DMA2D_Start 116b14 119l8 119t19 136r27
+39U14 DMA2D_Wait 125b14 128l8 128t18 137r27
+41w14 Sync 59b19 110l8 110t12 118r7 127r7
+43Y13 Wait 64b13 67l11 67t15 127s12
+45U17 Start_Transfer 73b17 84l11 84t25 118s12
+47U17 Interrupt 48r30 90b17 109l11 109t20
+51b7 Ready{boolean} 64r23 75r25 76r10 97r13 103r13
+52b7 Error{boolean} 77r10 96r13 102r13
+X 11 stm32_svd.ads
+9K9*STM32_SVD 10|34r6 34r32 11|183e14
+X 12 stm32_svd-dma2d.ads
+9K19*DMA2D 10|34w16 34r42 12|609e20
+25b7*START{boolean} 10|83m26
+33b7*TEIE{boolean} 10|81m26
+35b7*TCIE{boolean} 10|80m26
+43b7*CEIE{boolean} 10|79m26
+77b7*TEIF{boolean} 10|92r55
+79b7*TCIF{boolean} 10|99r33
+87b7*CEIF{boolean} 10|92r30
+111b7*CTEIF{boolean} 10|95m31
+113b7*CTCIF{boolean} 10|101m31
+121b7*CCEIF{boolean} 10|94m31
+534r7*CR{23R9} 10|79m23 80m23 81m23 83m23
+536r7*ISR{75R9} 10|92r26 92r51 99r29
+538r7*IFCR{109R9} 10|94m26 95m26 101m26
+606r4*DMA2D_Periph{532R9} 10|79m10 80m10 81m10 83m10 92r13 92r38 94m13 95m13
+. 99r16 101m13
+X 13 system.ads
+90M9*Address
+X 23 s-interr.ads
+61I9*Ada_Interrupt_ID<short_short_integer>
+97U14*Install_Restricted_Handlers_Sequential 98i<c,__gnat_attach_all_handlers>22
+X 34 s-taskin.ads
+347V13*Get_Sec_Stack{13|90M9} 348i<c,__gnat_get_secondary_stack>22
+402U14*Initialize_Slave 403i24
+
