@@ -17,11 +17,10 @@
 -- ToDo: Support MORSE function (proper translation of C shifts)
 
 with led;
-with bit_types; use Bit_Types;
 
 package body led_manager is
 
-
+type Bits_8 is mod 2**8;
 
 led_id : Led_Id_Type;
 

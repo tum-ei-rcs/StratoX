@@ -1,7 +1,7 @@
 
 
 with units;  use type units.Unit_Type;
-with HIL.I2C;	-- Hardware Interface to I2C
+with HIL.SPI;	-- Hardware Interface to SPI
 with MS5611.Register; use MS5611.Register;
 --with Logger;    -- Log errors and debug info
 
@@ -129,17 +129,17 @@ package body MS5611.Driver is
 	-- the following procedures access the Hardware Interface Layer (HIL)
    procedure writeToDevice(Device : Device_Type; data : in Data_Array) is
 	begin
-		HIL.I2C.write(HIL.I2C.BARO, HIL.I2C.Data_Type( data ) );
+		HIL.SPI.write(HIL.SPI.Barometer, HIL.SPI.Data_Type( data ) );
 	end writeToDevice;
 
 	procedure readFromDevice(Device : Device_Type; data : out Data_Array) is
 	begin
-		HIL.I2C.read(HIL.I2C.BARO, HIL.I2C.Data_Type( data ) );
+		HIL.SPI.read(HIL.SPI.Barometer, HIL.SPI.Data_Type( data ) );
 	end readFromDevice;
 
 	procedure transferWithDevice(data_tx : in Data_Array; data_rx : out Data_Array) is
 	begin
-		HIL.I2C.transfer(HIL.I2C.BARO, HIL.I2C.Data_Type( data_tx ), HIL.I2C.Data_Type( data_rx ) );
+		null; --HIL.SPI.transfer(HIL.SPI.BARO, HIL.SPI.Data_Type( data_tx ), HIL.SPI.Data_Type( data_rx ) );
 	end transferWithDevice;	
 
 
