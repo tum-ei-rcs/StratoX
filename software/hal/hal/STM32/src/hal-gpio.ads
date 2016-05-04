@@ -5,7 +5,7 @@ package HAL.GPIO is
 
    function Set (Point : GPIO_Point) return Boolean is abstract;
 
-   procedure Set (Point : in out GPIO_Point) is abstract;
+   procedure Set (Point : in GPIO_Point) is abstract;
    procedure Clear (Point : in out GPIO_Point) is abstract;
    procedure Toggle (Point : in out GPIO_Point) is abstract;
 end HAL.GPIO;

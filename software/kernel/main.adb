@@ -6,6 +6,7 @@ with CPU;
 with Ada.Real_Time; use Ada.Real_Time;
 with led_manager;
 with MS5611.Driver;
+with HIL.UART;
 
 package body Main is
 
@@ -74,6 +75,11 @@ package body Main is
 	 delay until Clock + Milliseconds (200);
 	 led_manager.LED_tick(200);
 	 led_manager.LED_sync;
+         
+         -- UART Test
+         HIL.UART.write(HIL.UART.Console, (65, 70) );
+         
+         
       end loop;
    end run_Loop;	
 

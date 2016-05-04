@@ -41,7 +41,7 @@ with STM32_SVD.RCC; use STM32_SVD.RCC;
 package body STM32.Device is
 
    HSE_VALUE : constant Word :=
-                 Word (System.BB.Parameters.HSE_Clock(System.STM32F4.DEV_ID_STM32F42xxx));
+                 Word (System.BB.Parameters.HSE_Clock );
    --  External oscillator in Hz
 
    HSI_VALUE : constant := 16_000_000;

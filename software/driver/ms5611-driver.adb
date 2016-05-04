@@ -134,12 +134,12 @@ package body MS5611.Driver is
 
 	procedure readFromDevice(Device : Device_Type; data : out Data_Array) is
 	begin
-		HIL.SPI.read(HIL.SPI.Barometer, HIL.SPI.Data_Type( data ) );
+              HIL.SPI.read(HIL.SPI.Barometer, HIL.SPI.Data_Type( data ) );
 	end readFromDevice;
 
-	procedure transferWithDevice(data_tx : in Data_Array; data_rx : out Data_Array) is
+	procedure transferWithDevice(Device : Device_Type; data_tx : in Data_Array; data_rx : out Data_Array) is
 	begin
-		null; --HIL.SPI.transfer(HIL.SPI.BARO, HIL.SPI.Data_Type( data_tx ), HIL.SPI.Data_Type( data_rx ) );
+            HIL.SPI.transfer(HIL.SPI.Barometer, HIL.SPI.Data_Type( data_tx ), HIL.SPI.Data_Type( data_rx ) );
 	end transferWithDevice;	
 
 
@@ -152,6 +152,16 @@ package body MS5611.Driver is
 	end sendCommand;
 
 
+   
+   -- This is where the magic occurs.
+   Function Convert( Data : In Data_Array ) Return Coefficient_Data_Type is
+      Result : Coefficient_Data_Type;
+      For Result'Address use Data'Address;
+      Pragma Import( Convention => Ada, Entity => Result );
+      Pragma Inline( Convert );
+   begin
+      Return Result;
+   end Convert;
 
 
 
@@ -163,19 +173,22 @@ package body MS5611.Driver is
 		) 
 	is
 		command : Command_Type := 0;
+                Command_Data : Data_Array (1 .. 1) :=  (1 => HIL.Byte ( command ) );
 		data    : Data_Array(1 .. 2) := (others => 0);
 	begin
 		case coeff_id is
-			when SENS_T1 => command := CMD_READ_C1;
-			when OFF_T1  => command := CMD_READ_C2;
-			when TCS     => command := CMD_READ_C3;
-			when TCO     => command := CMD_READ_C4;
-			when T_REF   => command := CMD_READ_C5;
-			when TEMPSENS => command := CMD_READ_C6;
+			when SENS_T1 => Command_Data := (1 => HIL.Byte ( CMD_READ_C1 ) );
+			when OFF_T1  => Command_Data := (1 => HIL.Byte (CMD_READ_C2 ) );
+			when TCS     => Command_Data := (1 => HIL.Byte (CMD_READ_C3 ) );
+			when TCO     => Command_Data := (1 => HIL.Byte (CMD_READ_C4 ) );
+			when T_REF   => Command_Data := (1 => HIL.Byte (CMD_READ_C5 ) );
+			when TEMPSENS => Command_Data := (1 => HIL.Byte (CMD_READ_C6) );
 		end case;
-		sendCommand(Device, command);
-		readFromDevice(Device, data);
-		coeff_data := Coefficient_Data_Type( data(1) ) + Coefficient_Data_Type( data(2) )*(2*8);
+                transferWithDevice(Device, Command_Data, data);
+		--sendCommand(Device, command);
+		--readFromDevice(Device, data);
+      coeff_data := Coefficient_Data_Type( data(1) ) + Coefficient_Data_Type( data(2) )*(2*8);
+      -- coeff_data := Convert( data(1 .. 2) );
 	end read_coefficient;
 
 

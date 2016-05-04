@@ -21,7 +21,7 @@ project StratoX is
       case Build_Mode is
 
          when "debug" =>
-            for Default_Switches ("ada") use ("-O0", "-gnatwa", "-gnatQ", "-gnatw.X");
+            for Default_Switches ("ada") use ("-O0", "-gnatwa.X", "-gnatQ", "-g");
 
          when "release" =>
             for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.X");
@@ -58,6 +58,7 @@ project StratoX is
             for Gnat use "arm-eabi-gnat";
             for Gnatlist use "arm-eabi-gnatls";
             for Debugger_Command use "arm-eabi-gdb";
+            for Vcs_Kind use "Git";
 
          when "release" =>
 

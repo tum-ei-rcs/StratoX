@@ -4,13 +4,13 @@ package body PID_Controller is
 
 	procedure initialize(
 		pid : out Pid_Object; 
-		Kp  : in  Float; 
-		Ki  : in  Float; 
-		Kd  : in  Float ) 
+		Kp  : in  PID_Coefficient_Type; 
+		Ki  : in  PID_Coefficient_Type; 
+		Kd  : in  PID_Coefficient_Type ) 
 	is
 	begin
-      Pid.Previous_Error := 0.0;
-      Pid.Integral := 0.0;
+      Pid.Previous_Error := PID_Data_Type'First;
+      Pid.Integral := PID_Data_Type'First;
       Pid.Kp := Kp;
       Pid.Ki := Ki;
       Pid.Kd := Kd;

@@ -13,19 +13,19 @@
 
 
 generic
-   PID_Data_Type is private;
-   PID_Time_Type is private;
-   PID_Coefficient_Type is private;
+   type PID_Data_Type is private;
+   type PID_Time_Type is private;
+   type PID_Coefficient_Type is private;
    PID_INTEGRAL_LIMIT_LOW : PID_Data_Type;
    PID_INTEGRAL_LIMIT_HIGH : PID_Data_Type;
 package PID_Controller
-with SPARK_Mode
+--with SPARK_Mode
 is
 
 	type Pid_Object is private;
 
 	-- init
-	procedure initialize(pid : out Pid_Object; Kp : Float; Ki : Float; Kd : Float);
+	procedure initialize(pid : out Pid_Object; Kp : PID_Coefficient_Type; Ki : PID_Coefficient_Type; Kd : PID_Coefficient_Type);
 
 	function step(pid : in out Pid_Object; error : PID_Data_Type; dt : PID_Time_Type) return PID_Data_Type;
 
