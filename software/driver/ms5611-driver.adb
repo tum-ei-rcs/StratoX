@@ -142,13 +142,22 @@ package body MS5611.Driver is
             HIL.SPI.transfer(HIL.SPI.Barometer, HIL.SPI.Data_Type( data_tx ), HIL.SPI.Data_Type( data_rx ) );
 	end transferWithDevice;	
 
-
-
+        procedure selectDevice(Device : Device_Type ) is
+        begin
+           HIL.SPI.select_Chip(HIL.SPI.Barometer);
+        end selectDevice;
+        
+        procedure deselectDevice(Device : Device_Type ) is
+        begin
+           HIL.SPI.deselect_Chip(HIL.SPI.Barometer);
+        end deselectDevice;       
 
 	procedure sendCommand(Device : Device_Type; command : in Command_Type) is
 		Command_Data : Data_Array (1 .. 1) :=  (1 => HIL.Byte ( command ) );
 	begin
+        selectDevice(Device);
 		writeToDevice(Device, Command_Data);
+                deselectDevice(Device);
 	end sendCommand;
 
 
@@ -172,22 +181,24 @@ package body MS5611.Driver is
 			coeff_data : out Coefficient_Data_Type 
 		) 
 	is
-		command : Command_Type := 0;
-                Command_Data : Data_Array (1 .. 1) :=  (1 => HIL.Byte ( command ) );
-		data    : Data_Array(1 .. 2) := (others => 0);
+                Cmd     : Data_Array (1 .. 1) := (others => 0);
+                Data_TX : Data_Array (1 .. 2) := (others => 0);
+		Data_RX : Data_Array (1 .. 2) := (others => 0);
 	begin
 		case coeff_id is
-			when SENS_T1 => Command_Data := (1 => HIL.Byte ( CMD_READ_C1 ) );
-			when OFF_T1  => Command_Data := (1 => HIL.Byte (CMD_READ_C2 ) );
-			when TCS     => Command_Data := (1 => HIL.Byte (CMD_READ_C3 ) );
-			when TCO     => Command_Data := (1 => HIL.Byte (CMD_READ_C4 ) );
-			when T_REF   => Command_Data := (1 => HIL.Byte (CMD_READ_C5 ) );
-			when TEMPSENS => Command_Data := (1 => HIL.Byte (CMD_READ_C6) );
+			when SENS_T1  => Cmd(1) := HIL.Byte (CMD_READ_C1);
+			when OFF_T1   => Cmd(1) := HIL.Byte (CMD_READ_C2);
+			when TCS      => Cmd(1) := HIL.Byte (CMD_READ_C3);
+			when TCO      => Cmd(1) := HIL.Byte (CMD_READ_C4);
+			when T_REF    => Cmd(1) := HIL.Byte (CMD_READ_C5);
+			when TEMPSENS => Cmd(1) := HIL.Byte (CMD_READ_C6);
 		end case;
-                transferWithDevice(Device, Command_Data, data);
-		--sendCommand(Device, command);
-		--readFromDevice(Device, data);
-      coeff_data := Coefficient_Data_Type( data(1) ) + Coefficient_Data_Type( data(2) )*(2*8);
+                
+                selectDevice(Device);
+                writeToDevice(Device, Cmd);
+                transferWithDevice(Device, Data_TX, Data_RX);
+                deselectDevice(Device);
+      coeff_data := Coefficient_Data_Type( Data_RX(1) ) + Coefficient_Data_Type( Data_RX(2) )*(2*8);
       -- coeff_data := Convert( data(1 .. 2) );
 	end read_coefficient;
 
@@ -205,6 +216,11 @@ package body MS5611.Driver is
 
 
 
+   procedure reset is
+   begin
+      sendCommand(Baro, CMD_RESET);
+   end reset;
+
 	-- \brief This function sequentially initializes the barometer.
 	-- Therefore, the barometer is reset, the PROM-Coefficients are read and the starting-height (altitude_offset) is calculated.
 	procedure init is	
@@ -215,7 +231,6 @@ package body MS5611.Driver is
 		c5 : Coefficient_Data_Type := 0;
 		c6 : Coefficient_Data_Type := 0;
 	begin
-		sendCommand(Baro, CMD_RESET);
 		read_coefficient(Baro, SENS_T1, c1);
 		G_sens_t1 := Float ( c1 ) * Float( 2**15 );
 
@@ -299,21 +314,20 @@ package body MS5611.Driver is
 
 	procedure startConversion(ID : Conversion_ID_Type; OSR : OSR_Type) is
       Cmd : Command_Type := 0;
-      data : Data_Array(1 .. 1) := (1 => 0);
+      data : Data_Array(1 .. 2) := (others => 0);
 	begin
-		case (ID) is
-			when D1 => Cmd := CMD_CONV_D1;
-			when D2 => Cmd := CMD_CONV_D2;
-		end case;
-
 		case (OSR) is
-			when OSR_256  => Cmd := Cmd + Command_Type(0);
-			when OSR_512  => Cmd := Cmd + Command_Type(2);
-			when OSR_1024 => Cmd := Cmd + Command_Type(4);
-			when OSR_2048 => Cmd := Cmd + Command_Type(6);
-			when OSR_4096 => Cmd := Cmd + Command_Type(8);
+			when OSR_256  => data(1) := HIL.Byte(CMD_ADC_CONV_256);
+			when OSR_512  => data(1) := HIL.Byte(CMD_ADC_CONV_512);
+			when OSR_1024 => data(1) := HIL.Byte(CMD_ADC_CONV_1024);
+			when OSR_2048 => data(1) := HIL.Byte(CMD_ADC_CONV_2048);
+			when OSR_4096 => data(1) := HIL.Byte(CMD_ADC_CONV_4096);
 		end case;
-      data(1) := HIL.Byte(Cmd); 
+                
+		case (ID) is
+			when D1 => data(2) := HIL.Byte(REG_D1);
+			when D2 => data(2) := HIL.Byte(REG_D2);
+		end case;
 		writeToDevice(Baro, data);
 	end startConversion;
 

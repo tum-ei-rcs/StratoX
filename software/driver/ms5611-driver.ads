@@ -32,6 +32,7 @@ package MS5611.Driver is
 		OSR_4096
 	);
 
+        procedure reset;
 	procedure init;
 	procedure update_val;   -- call this periodically
 	function get_temperature return Temperature_Type;

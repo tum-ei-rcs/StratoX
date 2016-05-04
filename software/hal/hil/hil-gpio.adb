@@ -9,6 +9,12 @@ package body HIL.GPIO is
    SPI1_MOSI : constant STM32.GPIO.GPIO_Point := STM32.Device.PA7;
 
 
+   SPI4_SCK  : constant STM32.GPIO.GPIO_Point := STM32.Device.PE2;
+   SPI4_MISO : constant STM32.GPIO.GPIO_Point := STM32.Device.PE5;
+   SPI4_MOSI : constant STM32.GPIO.GPIO_Point := STM32.Device.PE6;
+   SPI4_CS   : constant STM32.GPIO.GPIO_Point := STM32.Device.PE4;
+
+
    UART2_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD6;
    UART2_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD5;
 
@@ -32,7 +38,8 @@ package body HIL.GPIO is
    function map(Point : GPIO_Point_Type) return GPIO_Point is
       ( case Point is
          when RED_LED     => STM32.Device.PE12,
-         when SPI_CS_BARO => STM32.Device.PD7
+         when SPI_CS_BARO => STM32.Device.PD7,
+         when SPI_CS_EXT  => SPI4_CS
      );
    -- function map(Signal : GPIO_Signal_Type) return GPIO_Signal_Type;
 
@@ -78,7 +85,18 @@ package body HIL.GPIO is
       Point := map(SPI_CS_BARO);
       STM32.GPIO.Set( This => Point );
 
-       -- configure UART 3
+
+      --configure SPI 4
+      Configure_IO( Points => (SPI4_SCK, SPI4_MISO, SPI4_MOSI), Config => Config_SPI1 );
+
+      Configure_Alternate_Function(
+         Points => (SPI4_SCK, SPI4_MOSI, SPI4_MISO),
+         AF     => GPIO_AF_SPI4);
+
+      Configure_IO( Point => SPI4_CS, Config => Config_Out );
+      STM32.GPIO.Set( This => SPI4_CS );
+
+       -- configure UART 2
       Configure_IO( Points => (UART2_RX, UART2_TX), Config => Config_UART3 );
 
       Configure_Alternate_Function(

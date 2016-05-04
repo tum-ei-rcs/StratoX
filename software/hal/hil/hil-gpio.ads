@@ -8,7 +8,8 @@ package HIL.GPIO is
 
    type GPIO_Point_Type is (
       RED_LED,
-      SPI_CS_BARO
+      SPI_CS_BARO,
+      SPI_CS_EXT
 
       -- HITCH,
       -- ELEVON_LEFT,   -- PWM shoud be access with write(ELEVON_LEFT, Angle)

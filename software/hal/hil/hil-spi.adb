@@ -21,34 +21,68 @@ package body HIL.SPI is
 					       Direction => STM32.SPI.D2Lines_FullDuplex,
 					       Mode => STM32.SPI.Master,
 					       Data_Size => HAL.SPI.Data_Size_8b,
-					       Clock_Polarity => STM32.SPI.High,
+					       Clock_Polarity => STM32.SPI.Low,
 					       Clock_Phase => STM32.SPI.P1Edge,
 					       Slave_Management => STM32.SPI.Software_Managed,
-                                               Baud_Rate_Prescaler => STM32.SPI.BRP_32,  -- 20 MHz for Baro
+                                               Baud_Rate_Prescaler => STM32.SPI.BRP_128,  -- BR = 168 / (2*PreScale)  ; max 20 MHz for Baro
 					       First_Bit => STM32.SPI.MSB,
 					       CRC_Poly => 16#07#);
 						
 					       
    begin
+       -- SPI 1 (Baro)
+      STM32.Device.Enable_Clock( STM32.Device.SPI_1 );  
+   
       STM32.SPI.Configure(Port => STM32.Device.SPI_1, Conf => Config);
-      
       STM32.SPI.Enable( STM32.Device.SPI_1 );
       
-      -- enable clock
-      STM32.Device.Enable_Clock( STM32.Device.SPI_1 );
+      -- SPI 4 (Extern)
+      STM32.Device.Enable_Clock( STM32.Device.SPI_4 );  
+   
+      STM32.SPI.Configure(Port => STM32.Device.SPI_4, Conf => Config);
+      STM32.SPI.Enable( STM32.Device.SPI_4 );     
+      
+
    end configure;
       
+
+
+   procedure select_Chip(Device : Device_ID_Type) is
+   begin
+      case (Device) is
+      when Barometer => 
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, HIL.GPIO.LOW);
+      when Extern =>
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, HIL.GPIO.LOW);
+      when others => null;
+      end case;
+   end select_Chip;
+      
+
+   procedure deselect_Chip(Device : Device_ID_Type) is
+   begin
+      case (Device) is
+      when Barometer => 
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, HIL.GPIO.HIGH);
+      when Extern =>
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, HIL.GPIO.HIGH);
+      when others => null;
+      end case;
+   end deselect_Chip;
+
 
    procedure write (Device : Device_ID_Type; Data : Data_Type) is
       i : Natural := 0;
    begin
       case (Device) is
       when Barometer => 
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, HIL.GPIO.LOW);
          for i in Data'Range loop
 	    STM32.SPI.Transmit(STM32.Device.SPI_1, HAL.Byte( Data(i) ) );
          end loop;
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, HIL.GPIO.HIGH);
+       when Extern => 
+         for i in Data'Range loop
+	    STM32.SPI.Transmit(STM32.Device.SPI_4, HAL.Byte( Data(i) ) );
+         end loop;       
       when others => null;
       end case;
    end write;
@@ -64,13 +98,17 @@ package body HIL.SPI is
    begin
        case (Device) is
       when Barometer => 
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, HIL.GPIO.LOW);
 	 STM32.SPI.Transmit_Receive(
                              STM32.Device.SPI_1, 
                              STM32.SPI.Byte_Buffer( Data_TX ),
                              STM32.SPI.Byte_Buffer( Data_RX ),
                              Positive( Data_TX'Length ) );
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, HIL.GPIO.HIGH);
+       when Extern => 
+	 STM32.SPI.Transmit_Receive(
+                             STM32.Device.SPI_4, 
+                             STM32.SPI.Byte_Buffer( Data_TX ),
+                             STM32.SPI.Byte_Buffer( Data_RX ),
+                             Positive( Data_TX'Length ) );                      
       when others => null;
       end case;   
    end transfer;

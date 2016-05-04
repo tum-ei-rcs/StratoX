@@ -2,11 +2,15 @@
 
 package HIL.SPI is
 
-   type Device_ID_Type is (Barometer, Magneto, MPU6000);
+   type Device_ID_Type is (Barometer, Magneto, MPU6000, Extern);
 
    type Data_Type is array(Natural range <>) of Byte;
    
    procedure configure;
+
+   procedure select_Chip(Device : Device_ID_Type);
+   
+   procedure deselect_Chip(Device : Device_ID_Type);
 
    procedure write (Device : Device_ID_Type; Data : Data_Type);
 

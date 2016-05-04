@@ -7,6 +7,7 @@ with Ada.Real_Time; use Ada.Real_Time;
 with led_manager;
 with MS5611.Driver;
 with HIL.UART;
+with HIL.SPI;
 
 package body Main is
 
@@ -64,11 +65,14 @@ package body Main is
 	procedure initialize is
 	begin
       CPU.initialize;
+      MS5611.Driver.reset;
+      delay until Clock + Milliseconds (5);
       MS5611.Driver.init;
 	end initialize;
 
 
    procedure run_Loop is
+       data : HIL.SPI.Data_Type(1 .. 2) := (others => 0);  
    begin
       led_manager.LED_blink(led_manager.SLOW);
       loop
@@ -79,6 +83,10 @@ package body Main is
          -- UART Test
          HIL.UART.write(HIL.UART.Console, (65, 70) );
          
+         -- SPI Test
+         HIL.SPI.select_Chip(HIL.SPI.Extern);
+         HIL.SPI.transfer(HIL.SPI.Extern, (10, 42), data );
+         HIL.SPI.deselect_Chip(HIL.SPI.Extern);
          
       end loop;
    end run_Loop;	
