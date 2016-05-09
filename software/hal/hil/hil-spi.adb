@@ -24,9 +24,9 @@ package body HIL.SPI is
 					       Clock_Polarity => STM32.SPI.Low,
 					       Clock_Phase => STM32.SPI.P1Edge,
 					       Slave_Management => STM32.SPI.Software_Managed,
-                                               Baud_Rate_Prescaler => STM32.SPI.BRP_128,  -- BR = 168 / (2*PreScale)  ; max 20 MHz for Baro
+                                               Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale)  ; max 20 MHz for Baro
 					       First_Bit => STM32.SPI.MSB,
-					       CRC_Poly => 16#07#);
+					       CRC_Poly => 16#00#);
 						
 					       
    begin

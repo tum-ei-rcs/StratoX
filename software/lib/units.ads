@@ -72,12 +72,24 @@ subtype Angular_Acceleration_Type is Unit_Type
 
 
 
-CELSIUS_0 : constant Temperature_Type := 273.15;
+Meter : constant Length_Type := Length_Type(1.0);
+
+
+
+
+CELSIUS_0 : constant Temperature_Type := Temperature_Type( 273.15 );
 
 -- G : constant Linear_Acceleration_Type := 127137.6 * km/(hour ** 2); 
 m : constant Length_Type := Length_Type(1.0);
 mm : constant Length_Type := 0.001 * m; 
 km : constant Length_Type := 1000.0 * m;
+
+
+Pascal : constant Pressure_Type := Pressure_Type( 1.0 );
+Bar    : constant Pressure_Type := Pressure_Type( 100_000.0 );
+
+Kelvin : constant Temperature_Type := Temperature_Type( 1.0 );
+
 
 
 end Units;

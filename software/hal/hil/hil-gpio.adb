@@ -8,6 +8,11 @@ package body HIL.GPIO is
    SPI1_MISO : constant STM32.GPIO.GPIO_Point := STM32.Device.PA6;
    SPI1_MOSI : constant STM32.GPIO.GPIO_Point := STM32.Device.PA7;
 
+      SPI1_CS_MS5611  : constant STM32.GPIO.GPIO_Point := STM32.Device.PD7;   -- Baro
+      SPI1_CS_MPU6000 : constant STM32.GPIO.GPIO_Point := STM32.Device.PC2;   -- Acc/Gyro
+      SPI1_CS_LSM303D : constant STM32.GPIO.GPIO_Point := STM32.Device.PC15;  -- Acc/Mag
+      SPI1_CS_L3GD20H : constant STM32.GPIO.GPIO_Point := STM32.Device.PC13;  -- Gyro
+
 
    SPI4_SCK  : constant STM32.GPIO.GPIO_Point := STM32.Device.PE2;
    SPI4_MISO : constant STM32.GPIO.GPIO_Point := STM32.Device.PE5;
@@ -38,10 +43,12 @@ package body HIL.GPIO is
    function map(Point : GPIO_Point_Type) return GPIO_Point is
       ( case Point is
          when RED_LED     => STM32.Device.PE12,
-         when SPI_CS_BARO => STM32.Device.PD7,
+         when SPI_CS_BARO    => SPI1_CS_MS5611,
+         when SPI_CS_MPU6000 => SPI1_CS_MPU6000,
+         when SPI_CS_LSM303D => SPI1_CS_LSM303D,
+         when SPI_CS_L3GD20H => SPI1_CS_L3GD20H,
          when SPI_CS_EXT  => SPI4_CS
      );
-   -- function map(Signal : GPIO_Signal_Type) return GPIO_Signal_Type;
 
 
    procedure write (Point : GPIO_Point_Type; Signal : GPIO_Signal_Type) is
@@ -63,7 +70,7 @@ package body HIL.GPIO is
        Config_In : constant GPIO_Port_Configuration := (
          Mode => Mode_In,
          Output_Type => Push_Pull,
-         Speed => Speed_2MHz,
+         Speed => Speed_50MHz,
          Resistors => Floating );
       Point      : GPIO_Point := STM32.Device.PE12;
    begin
@@ -76,13 +83,28 @@ package body HIL.GPIO is
       Configure_IO( Points => (SPI1_SCK, SPI1_MISO, SPI1_MOSI), Config => Config_SPI1 );
 
       Configure_Alternate_Function(
-         Points => (1 => SPI1_SCK, 2 => SPI1_MOSI),
+         Points => (1 => SPI1_SCK, 2 => SPI1_MOSI, 3 => SPI1_MISO),
          AF     => GPIO_AF_SPI1);
 
 
       -- configure Baro ChipSelect
       Configure_IO( Point => map(SPI_CS_BARO), Config => Config_Out );
       Point := map(SPI_CS_BARO);
+      STM32.GPIO.Set( This => Point );
+
+      -- configure MPU6000 ChipSelect
+      Configure_IO( Point => map(SPI_CS_MPU6000), Config => Config_Out );
+      Point := map(SPI_CS_MPU6000);
+      STM32.GPIO.Set( This => Point );
+
+       -- configure LSM303D ChipSelect
+      Configure_IO( Point => map(SPI_CS_LSM303D), Config => Config_Out );
+      Point := map(SPI_CS_LSM303D);
+      STM32.GPIO.Set( This => Point );
+
+       -- configure L3GD20H ChipSelect
+      Configure_IO( Point => map(SPI_CS_L3GD20H), Config => Config_Out );
+      Point := map(SPI_CS_L3GD20H);
       STM32.GPIO.Set( This => Point );
 
 

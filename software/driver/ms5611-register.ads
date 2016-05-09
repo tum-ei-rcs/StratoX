@@ -26,16 +26,17 @@ private package MS5611.Register is
    CMD_ADC_READ  : constant Command_Type := 16#00#; -- ADC read command
 
 
-   CMD_ADC_CONV_256  : constant Command_Type := 16#40#;  -- Conversion commands
-   CMD_ADC_CONV_512  : constant Command_Type := 16#42#;
-   CMD_ADC_CONV_1024 : constant Command_Type := 16#44#;
-   CMD_ADC_CONV_2048 : constant Command_Type := 16#46#;
-   CMD_ADC_CONV_4096 : constant Command_Type := 16#48#;
+   CMD_D1_CONV_256  : constant Command_Type := 16#40#;  -- Pressure Conversion commands
+   CMD_D1_CONV_512  : constant Command_Type := 16#42#;
+   CMD_D1_CONV_1024 : constant Command_Type := 16#44#;
+   CMD_D1_CONV_2048 : constant Command_Type := 16#46#;
+   CMD_D1_CONV_4096 : constant Command_Type := 16#48#;
 
-
-   REG_D1      : constant Command_Type := 16#00#;  -- Pressure 
-   REG_D2      : constant Command_Type := 16#10#;  -- Temperature 
-
+   CMD_D2_CONV_256  : constant Command_Type := 16#50#;  -- Temperature Conversion commands
+   CMD_D2_CONV_512  : constant Command_Type := 16#52#;
+   CMD_D2_CONV_1024 : constant Command_Type := 16#54#;
+   CMD_D2_CONV_2048 : constant Command_Type := 16#56#;
+   CMD_D2_CONV_4096 : constant Command_Type := 16#58#;
 
 
    CMD_READ_C1        : constant Command_Type := 16#A2#; -- C1 read command

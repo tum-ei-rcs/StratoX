@@ -1,3 +1,4 @@
+
 -- Description:
 -- Main System File
 -- todo: better unit name
@@ -72,7 +73,7 @@ package body Main is
 
 
    procedure run_Loop is
-       data : HIL.SPI.Data_Type(1 .. 2) := (others => 0);  
+       data : HIL.SPI.Data_Type(1 .. 3) := (others => 0);  
    begin
       led_manager.LED_blink(led_manager.SLOW);
       loop
@@ -83,9 +84,12 @@ package body Main is
          -- UART Test
          HIL.UART.write(HIL.UART.Console, (65, 70) );
          
+         -- MS5611 Test
+         MS5611.Driver.update_val;
+         
          -- SPI Test
          HIL.SPI.select_Chip(HIL.SPI.Extern);
-         HIL.SPI.transfer(HIL.SPI.Extern, (10, 42), data );
+         HIL.SPI.transfer(HIL.SPI.Extern, (166, 0, 0), data );
          HIL.SPI.deselect_Chip(HIL.SPI.Extern);
          
       end loop;

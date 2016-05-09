@@ -22,7 +22,7 @@ package MS5611.Driver is
    subtype Time_Type is units.Time_Type;
    
 	subtype Temperature_Type is units.Temperature_Type range  233.15 ..    358.15;  -- -40° .. 85°
-	subtype Pressure_Type    is units.Pressure_Type    range 1000.0  .. 120000.0;
+	subtype Pressure_Type    is units.Pressure_Type    range 1000.0  .. 120000.0;   -- 100 mbar .. 1.2 bar
 
 	type OSR_Type is (
 		OSR_256,
