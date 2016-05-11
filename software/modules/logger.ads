@@ -10,8 +10,6 @@
 --     Logger.init  -- initializes the Logger
 --     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package Logger with SPARK_Mode 
 is
 	
@@ -20,7 +18,7 @@ is
 	subtype Message_Type is String;
 	type Log_Level is (ERROR, WARN, INFO, DEBUG, TRACE);
 
-	function init return Init_Error_Code;
+	procedure init(status : out Init_Error_Code);
 
 	procedure log(level : Log_Level; message : Message_Type) with
 		-- Global => logger_level,
@@ -31,7 +29,7 @@ is
 
 private
 	package Adapter is
-		function init return Init_Error_Code;
+		procedure init(status : out Init_Error_Code);
 		procedure write(message : Message_Type);
 	end Adapter;
 end Logger;

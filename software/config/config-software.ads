@@ -20,7 +20,7 @@ package Config.Software is
 
 
 	-- Bus Timeouts
-	I2C_READ_TIMEOUT : constant units.Time_Type := 10.0;
+	I2C_READ_TIMEOUT : constant units.Time_Type := 10.0 * units.Second;
 
 
 	-- filter configuration

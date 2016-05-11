@@ -347,6 +347,12 @@ package body MS5611.Driver is
    end calculateTemperatureDifference;
 
 
+   function calculateTEMP( dT      : DT_Type;
+                           tempsens : Float)
+                          return TEMP_Type is
+   begin
+      return 2000.0 + TEMP_Type( dT * tempsens );
+   end calculateTEMP;
    
    
    function convertToKelvin(Temp : in TEMP_Type) return Temperature_Type is

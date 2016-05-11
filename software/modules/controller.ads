@@ -14,10 +14,12 @@ with units;
 
 package Controller is
 
-	type GPS_Loacation_Type is new record
+   type System_Data_Type is new Integer;
+
+	type GPS_Loacation_Type is record
 		Longitude : Integer;
 		Latitude : Integer;
-		Altitute : Integer
+		Altitute : Integer;
 	end record;
 
 	type Direction_Type is new Integer; -- Degree_Type, north is 0°
@@ -30,10 +32,10 @@ package Controller is
 
 	procedure runOneCycle(systemData : System_Data_Type);
 
-private:
-	procedure controlDirection(directionError : Direction_Type);
-
-	procedure controlTilt(tiltError : Tilt_Type);
+-- private
+--  	procedure controlDirection(directionError : Direction_Type);
+--  
+--  	procedure controlTilt(tiltError : Tilt_Type);
 
 
 end Controller;

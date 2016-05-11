@@ -85,6 +85,9 @@ mm : constant Length_Type := 0.001 * m;
 km : constant Length_Type := 1000.0 * m;
 
 
+Second : constant Time_Type := Time_Type ( 1.0 );
+
+
 Pascal : constant Pressure_Type := Pressure_Type( 1.0 );
 Bar    : constant Pressure_Type := Pressure_Type( 100_000.0 );
 

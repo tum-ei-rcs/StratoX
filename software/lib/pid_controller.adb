@@ -24,16 +24,16 @@ package body PID_Controller is
 		dt : PID_Time_Type) 
 	return PID_Data_Type 
 	is
-		derivate : PID_Data_Type := 0;
-		proportional : PID_Data_Type := 0;
-		output : PID_Data_Type := 0;
+		derivate : PID_Data_Type := PID_Data_Type'First;
+		proportional : PID_Data_Type := PID_Data_Type'First;
+		output : PID_Data_Type := PID_Data_Type'First;
 	begin
-		Pid.Integral := Pid.Integ + error * dt; -- todo: saturation (exception?, operator overload)
-		derivate := (error - Pid.Previous_Error) / dt;
-
-		output := ( Pid.Kp * error +
-			        Pid.Ki * Pid.Integral +
-			        Pid.Kd * derivate );
+--  		Pid.Integral := Pid.Integral + error * dt; -- todo: saturation (exception?, operator overload)
+--  		derivate := (error - Pid.Previous_Error) / dt;
+--  
+--  		output := ( Pid.Kp * error +
+--  			        Pid.Ki * Pid.Integral +
+--  			        Pid.Kd * derivate );
 
 		return output;
 	end step;

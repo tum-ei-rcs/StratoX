@@ -2,9 +2,11 @@
 
 with STM32.USARTs;
 with STM32.Device;
-with HAL.UART;
 
 package body HIL.UART is
+   
+
+   
    
    procedure configure is 
    begin
@@ -53,28 +55,33 @@ package body HIL.UART is
    end configure;
       
 
-   function map ( Device : in Device_ID_Type ) return STM32.USARTs.USART is
-     (case (Device) is
-	 when GPS => STM32.Device.USART_1,
-	 when Console => STM32.Device.USART_3 );
-   
-   
    procedure write (Device : in Device_ID_Type; Data : in Data_Type) is
-      i : Natural := 0;
-      dev : STM32.USARTs.USART := map (Device);
    begin
-      for i in Data'Range loop
-	 STM32.USARTs.Transmit( dev, HAL.Uint9( Data(i) ) );
-      end loop;
+      case (Device) is
+      when GPS =>
+         for i in Data'Range loop
+            STM32.USARTs.Transmit( STM32.Device.USART_1, HAL.Uint9( Data(i) ) );
+         end loop;
+      when Console =>
+         for i in Data'Range loop
+            STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.Uint9( Data(i) ) );
+         end loop; 
+      end case;
    end write;
-   
+
 
    procedure read (Device : in Device_ID_Type; Data : out Data_Type) is
-      i : Natural := 0;
    begin
-      for i in Data'Range loop
-	 STM32.USARTs.Receive( map(Device), HAL.Uint9( Data(i) ) );
-      end loop;
+      case (Device) is
+      when GPS =>
+         for i in Data'Range loop
+            STM32.USARTs.Receive( STM32.Device.USART_1, HAL.Uint9( Data(i) ) );
+         end loop;
+      when Console =>
+         for i in Data'Range loop
+            STM32.USARTs.Receive( STM32.Device.USART_3, HAL.Uint9( Data(i) ) );
+         end loop; 
+      end case;
    end read;
    
 

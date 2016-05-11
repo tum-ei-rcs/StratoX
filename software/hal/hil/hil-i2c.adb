@@ -8,10 +8,14 @@ package body HIL.I2C is
 
 
    procedure initialize is
-      Config : STM32.I2C.I2C_Configuration := (
+      Config : constant STM32.I2C.I2C_Configuration := (
 					       Clock_Speed => 44,
+                                               Mode => STM32.I2C.I2C_Mode,
+                                               Duty_Cycle => STM32.I2C.DutyCycle_2,
 					       Addressing_Mode => STM32.I2C.Addressing_Mode_7bit,
-					       Own_Address => 16#00#
+					       Own_Address => 16#00#,
+                                               General_Call_Enabled => False,
+                                               Clock_Stretching_Enabled => True
 					       );				       
    begin
    	STM32.I2C.Configure(STM32.Device.I2C_1, Config);
