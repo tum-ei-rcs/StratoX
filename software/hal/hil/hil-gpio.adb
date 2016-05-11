@@ -67,11 +67,6 @@ package body HIL.GPIO is
          Output_Type => Push_Pull,
          Speed => Speed_2MHz,
          Resistors => Floating );
-       Config_In : constant GPIO_Port_Configuration := (
-         Mode => Mode_In,
-         Output_Type => Push_Pull,
-         Speed => Speed_50MHz,
-         Resistors => Floating );
       Point      : GPIO_Point := STM32.Device.PE12;
    begin
       -- configure LED

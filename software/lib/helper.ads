@@ -14,19 +14,21 @@
 package Helper is
 
 
+  generic
+      type Numeric_Type is range <>;
   function addWrap( 
-    x   : Integer; 
-    inc : Integer)
-  return Integer
-  is ( if x + inc > x'Last then x + inc - x'Last
-       else x + inc );
+    x   : Numeric_Type; 
+    inc : Numeric_Type)
+  return Numeric_Type;
 
-  function deltaWrap( 
-    low  : Integer; 
-    high : Integer) 
-  return Integer 
-  is ( if low < high then (high - low)
-       else (high'Last - low) + (high - low'First) );
+
+
+--    function deltaWrap( 
+--      low  : Integer; 
+--      high : Integer) 
+--    return Integer 
+--    is ( if low < high then (high - low)
+--         else (high'Last - low) + (high - low'First) );
 
 
 

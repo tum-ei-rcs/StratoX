@@ -20,10 +20,10 @@ is
 
 	-- HAL, only change Adapter to port Code
 	package body Adapter is
-		function init return Init_Error_Code is			
+		procedure init(status : out Init_Error_Code) is
 		begin
 			HIL.UART.configure;
-			return SUCCESS;
+			status := SUCCESS;
 		end init;
 
 
@@ -40,26 +40,20 @@ is
 	logger_level : Log_Level := DEBUG;
 
 
-	function init return Init_Error_Code is
+	procedure init(status : out Init_Error_Code) is
 	begin
-		return Adapter.init;
+		Adapter.init(status);
 	end init;
 
 
 	function level_Message(level : Log_Level) return Message_Type is
 	begin
-		case level is
-			when ERROR =>
-				return "[E] ";		
-			when WARN =>
-				return "[W] ";		
-			when INFO =>
-				return "[I] ";	
-			when DEBUG =>
-				return "[D] ";
-			when TRACE =>
-				return "  >";
-		end case;
+		return (case level is
+			when ERROR => "[E] ",		
+			when WARN  => "[W] ",		
+			when INFO  => "[I] ",	
+			when DEBUG => "[D] ",
+			when TRACE => "  > " );
 	end level_Message;
 
 

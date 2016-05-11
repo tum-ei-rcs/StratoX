@@ -1,6 +1,5 @@
 
 with STM32.SPI; use STM32.SPI;
-with STM32.GPIO;
 with STM32.Device;
 with HAL.SPI;
 with HIL.GPIO;
@@ -17,7 +16,7 @@ package body HIL.SPI is
    
    
    procedure configure is
-      Config : STM32.SPI.SPI_Configuration := (
+      Config : constant STM32.SPI.SPI_Configuration := (
 					       Direction => STM32.SPI.D2Lines_FullDuplex,
 					       Mode => STM32.SPI.Master,
 					       Data_Size => HAL.SPI.Data_Size_8b,
@@ -72,7 +71,6 @@ package body HIL.SPI is
 
 
    procedure write (Device : Device_ID_Type; Data : Data_Type) is
-      i : Natural := 0;
    begin
       case (Device) is
       when Barometer => 
