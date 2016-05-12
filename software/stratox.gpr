@@ -2,6 +2,10 @@ with "hal/hpl/STM32/stm32f42x.gpr";
 
 project StratoX is
 
+   type Rts_Profile_Type is
+      ("ravenscar-sfp", "ravenscar-full");
+   type Build_Type is
+      ("Debug", "Production");
    for Languages use ("Ada");
    for Main use ("boot.adb");
 
@@ -15,6 +19,8 @@ project StratoX is
    Build_Mode : Build_Modes := external ("My_Build_Mode", "debug");
    for Runtime ("ada") use "ravenscar-sfp-stm32f427";
    for Target use "arm-eabi";
+   BUILD : Build_Type := external ("BUILD");
+   RTS : Rts_Profile_Type := external ("RTS");
 
    package Compiler is
 
@@ -55,10 +61,32 @@ project StratoX is
       case Build_Mode is
 
          when "debug" =>
-            for Gnat use "arm-eabi-gnat";
-            for Gnatlist use "arm-eabi-gnatls";
-            for Debugger_Command use "arm-eabi-gdb";
-            for Vcs_Kind use "Git";
+
+            case BUILD is
+
+               when "Debug" =>
+
+                  case RTS is
+
+                     when "ravenscar-sfp" =>
+                        for Gnat use "arm-eabi-gnat";
+                        for Gnatlist use "arm-eabi-gnatls";
+                        for Debugger_Command use "arm-eabi-gdb";
+                        for Vcs_Kind use "Auto";
+
+                     when "ravenscar-full" =>
+                        for Gnat use "arm-eabi-gnat";
+                        for Gnatlist use "arm-eabi-gnatls";
+                        for Debugger_Command use "arm-eabi-gdb";
+                        for Vcs_Kind use "Git";
+                  end case;
+
+               when "Production" =>
+                  for Gnat use "arm-eabi-gnat";
+                  for Gnatlist use "arm-eabi-gnatls";
+                  for Debugger_Command use "arm-eabi-gdb";
+                  for Vcs_Kind use "Git";
+            end case;
 
          when "release" =>
 
@@ -84,6 +112,32 @@ project StratoX is
             for Switches use ("%X", "--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
       end case;
    end Prove;
+
+   case BUILD is
+
+      when "Debug" =>
+
+         case RTS is
+
+            when "ravenscar-sfp" =>
+
+               case Build_Mode is
+
+                  when "debug" =>
+
+                  when "release" =>
+
+                  when "analyze" =>
+
+               end case;
+
+            when "ravenscar-full" =>
+
+         end case;
+
+      when "Production" =>
+
+   end case;
 
 end StratoX;
 

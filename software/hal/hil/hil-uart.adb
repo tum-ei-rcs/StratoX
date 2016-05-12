@@ -20,23 +20,23 @@ package body HIL.UART is
       STM32.USARTs.Set_Mode( STM32.Device.USART_1, STM32.USARTs.Tx_Rx_Mode );
       STM32.USARTs.Set_Flow_Control( STM32.Device.USART_1, STM32.USARTs.No_Flow_Control );
 
-      -- UART 2
-      -- STM32.USARTs.Enable( STM32.Device.USART_2 );
-      STM32.USARTs.Set_Stop_Bits( STM32.Device.USART_2, STM32.USARTs.Stopbits_1 );
-      STM32.USARTs.Set_Word_Length( STM32.Device.USART_2, STM32.USARTs.Word_Length_8 );
-      STM32.USARTs.Set_Parity( STM32.Device.USART_2, STM32.USARTs.No_Parity );
-      STM32.USARTs.Set_Baud_Rate( STM32.Device.USART_2, 9_600 );
-      STM32.USARTs.Set_Oversampling_Mode( STM32.Device.USART_2, STM32.USARTs.Oversampling_By_16 );
-      STM32.USARTs.Set_Mode( STM32.Device.USART_2, STM32.USARTs.Tx_Rx_Mode );
-      STM32.USARTs.Set_Flow_Control( STM32.Device.USART_2, STM32.USARTs.No_Flow_Control );
+      -- UART 6 (PX4IO)
+      STM32.USARTs.Enable( STM32.Device.USART_6 );
+      STM32.USARTs.Set_Stop_Bits( STM32.Device.USART_6, STM32.USARTs.Stopbits_1 );
+      STM32.USARTs.Set_Word_Length( STM32.Device.USART_6, STM32.USARTs.Word_Length_8 );
+      STM32.USARTs.Set_Parity( STM32.Device.USART_6, STM32.USARTs.No_Parity );
+      STM32.USARTs.Set_Baud_Rate( STM32.Device.USART_6, 1_500_000 );
+      STM32.USARTs.Set_Oversampling_Mode( STM32.Device.USART_6, STM32.USARTs.Oversampling_By_16 );
+      STM32.USARTs.Set_Mode( STM32.Device.USART_6, STM32.USARTs.Tx_Rx_Mode );
+      STM32.USARTs.Set_Flow_Control( STM32.Device.USART_6, STM32.USARTs.No_Flow_Control );
       
       
-      -- UART 3
+      -- UART 3 (Serial 2)
       STM32.USARTs.Enable( STM32.Device.USART_3 );
       STM32.USARTs.Set_Stop_Bits( STM32.Device.USART_3, STM32.USARTs.Stopbits_1 );
       STM32.USARTs.Set_Word_Length( STM32.Device.USART_3, STM32.USARTs.Word_Length_8 );
       STM32.USARTs.Set_Parity( STM32.Device.USART_3, STM32.USARTs.No_Parity );
-      STM32.USARTs.Set_Baud_Rate( STM32.Device.USART_3, 9_600 );
+      STM32.USARTs.Set_Baud_Rate( STM32.Device.USART_3, 1_500_000 );
       STM32.USARTs.Set_Oversampling_Mode( STM32.Device.USART_3, STM32.USARTs.Oversampling_By_16 );
       STM32.USARTs.Set_Mode( STM32.Device.USART_3, STM32.USARTs.Tx_Rx_Mode );
       STM32.USARTs.Set_Flow_Control( STM32.Device.USART_3, STM32.USARTs.No_Flow_Control );
@@ -66,6 +66,10 @@ package body HIL.UART is
          for i in Data'Range loop
             STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.Uint9( Data(i) ) );
          end loop; 
+      when PX4IO =>
+         for i in Data'Range loop
+            STM32.USARTs.Transmit( STM32.Device.USART_7, HAL.Uint9( Data(i) ) );
+         end loop; 
       end case;
    end write;
 
@@ -81,6 +85,10 @@ package body HIL.UART is
          for i in Data'Range loop
             STM32.USARTs.Receive( STM32.Device.USART_3, HAL.Uint9( Data(i) ) );
          end loop; 
+      when PX4IO =>
+         for i in Data'Range loop
+            STM32.USARTs.Receive( STM32.Device.USART_6, HAL.Uint9( Data(i) ) );
+         end loop;       
       end case;
    end read;
    

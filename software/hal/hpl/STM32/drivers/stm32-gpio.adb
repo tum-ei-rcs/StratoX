@@ -100,7 +100,7 @@ package body STM32.GPIO is
    ---------
 
    overriding
-   procedure Set (This : in GPIO_Point) is
+   procedure Set (This : in out GPIO_Point) is
    begin
       This.Periph.BSRR.BS.Arr (This.Pin) := True;
    end Set;

@@ -200,6 +200,10 @@ package body STM32.USARTs is
 
    procedure Transmit (This : in out USART;  Data : UInt9) is
    begin
+      --  Wait until TXE flag is set to send data
+      while not Tx_Ready (This) loop
+         null;
+      end loop;
       This.DR.DR := Data;
    end Transmit;
 
@@ -209,6 +213,10 @@ package body STM32.USARTs is
 
    procedure Receive (This : USART;  Data : out UInt9) is
    begin
+      --  Wait until RXNE flag is set to read data
+      while not Rx_Ready (This) loop
+         null;
+      end loop;
       Data := Current_Input (This);
    end Receive;
 

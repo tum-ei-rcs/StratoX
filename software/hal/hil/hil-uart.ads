@@ -2,9 +2,9 @@
 
 package HIL.UART is
 
-   type Device_ID_Type is (GPS, Console);
+   type Device_ID_Type is (GPS, Console, PX4IO);
 
-   type Data_Type is array(Natural range <>) of Byte;
+   subtype Data_Type is Byte_Array;
    
    procedure configure;
 

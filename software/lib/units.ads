@@ -86,6 +86,8 @@ km : constant Length_Type := 1000.0 * m;
 
 
 Second : constant Time_Type := Time_Type ( 1.0 );
+Milli_Second : constant Time_Type := 1.0e-3 * Second;
+Micro_Second : constant Time_Type := 1.0e-6 * Second;
 
 
 Pascal : constant Pressure_Type := Pressure_Type( 1.0 );

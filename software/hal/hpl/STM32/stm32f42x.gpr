@@ -1,15 +1,15 @@
---with "../../config.gpr";
-with "../../hal/STM32/HAL.gpr";
+with "../../config.gpr";
+with "../../hal/HAL.gpr";
 
 library project STM32F42x is
 
    for Target use "arm-eabi";
-   for Runtime ("Ada") use "-ravenscar-sfp-stm32f427";
+   for Runtime ("Ada") use Config.RTS & "-stm32f429disco";
 
-   for Library_Name use "stm32f427";
+   for Library_Name use "stm32f429";
    for Library_Kind use "static";
-   for Library_Dir use "lib/stm32f42x/";
-   for Object_Dir use "obj/stm32f42x/";
+   for Library_Dir use "lib/stm32f42x/" & Config.RTS & "/" & Config.BUILD;
+   for Object_Dir use "obj/stm32f42x/" & Config.RTS & "/" & Config.BUILD;
 
    for Source_Dirs use Project'Source_Dirs &
      ("../cortex_m",
@@ -24,7 +24,7 @@ library project STM32F42x is
       "drivers/uart_stm32f4",
       "drivers/ltdc");
 
-   --package Compiler renames Config.Compiler;
-   --package Builder renames Config.Builder;
+   package Compiler renames Config.Compiler;
+   package Builder renames Config.Builder;
 
 end STM32F42x;

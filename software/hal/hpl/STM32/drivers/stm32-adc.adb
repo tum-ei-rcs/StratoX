@@ -157,7 +157,7 @@ package body STM32.ADC is
    is
    begin
       This.CR1.RES := ADC_Resolution'Enum_Rep (Resolution);
-      This.CR2.ALIGN := Alignment = Right_Aligned;
+      This.CR2.ALIGN := Alignment = Left_Aligned;
    end Configure_Unit;
 
    ------------------------
@@ -176,7 +176,7 @@ package body STM32.ADC is
    function Current_Alignment
      (This : Analog_To_Digital_Converter)
       return Data_Alignment
-   is ((if This.CR2.ALIGN then Right_Aligned else Left_Aligned));
+   is ((if This.CR2.ALIGN then Left_Aligned else Right_Aligned));
 
    ---------------------------------
    -- Configure_Common_Properties --
@@ -882,7 +882,7 @@ package body STM32.ADC is
    is
    begin
       if Channel > 9 then
-         This.SMPR1.SMP.Arr (Natural (Channel - 10)) :=
+         This.SMPR1.SMP.Arr (Natural (Channel)) :=
            Channel_Sampling_Times'Enum_Rep (Sample_Time);
       else
          This.SMPR2.SMP.Arr (Natural (Channel)) :=
@@ -902,9 +902,9 @@ package body STM32.ADC is
    begin
       case Rank is
          when 1 => This.JOFR1.JOFFSET1 := Offset;
-         when 2 => This.JOFR2.JOFFSET1 := Offset;
-         when 3 => This.JOFR3.JOFFSET1 := Offset;
-         when 4 => This.JOFR4.JOFFSET1 := Offset;
+         when 2 => This.JOFR2.JOFFSET2 := Offset;
+         when 3 => This.JOFR3.JOFFSET3 := Offset;
+         when 4 => This.JOFR4.JOFFSET4 := Offset;
       end case;
    end Set_Injected_Channel_Offset;
 

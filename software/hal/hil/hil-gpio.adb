@@ -26,6 +26,9 @@ package body HIL.GPIO is
    UART3_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD9;
    UART3_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD8;
 
+   UART6_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PC7;
+   UART6_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PC6;
+
 
    Config_SPI1 : constant GPIO_Port_Configuration := (
          Mode => Mode_AF,
@@ -35,6 +38,18 @@ package body HIL.GPIO is
 
    Config_UART3 : constant GPIO_Port_Configuration := (
          Mode => Mode_AF,
+         Output_Type => Push_Pull,
+         Speed => Speed_50MHz,
+         Resistors => Floating );
+
+   Config_UART6 : constant GPIO_Port_Configuration := (
+         Mode => Mode_AF,
+         Output_Type => Push_Pull,
+         Speed => Speed_50MHz,
+         Resistors => Floating );
+
+    Config_In : constant GPIO_Port_Configuration := (
+         Mode => Mode_In,
          Output_Type => Push_Pull,
          Speed => Speed_50MHz,
          Resistors => Floating );
@@ -111,7 +126,8 @@ package body HIL.GPIO is
          AF     => GPIO_AF_SPI4);
 
       Configure_IO( Point => SPI4_CS, Config => Config_Out );
-      STM32.GPIO.Set( This => SPI4_CS );
+      Point := map(SPI_CS_EXT);
+      STM32.GPIO.Set( This => Point );
 
        -- configure UART 2
       Configure_IO( Points => (UART2_RX, UART2_TX), Config => Config_UART3 );
@@ -120,12 +136,22 @@ package body HIL.GPIO is
          Points => (UART2_RX, UART2_TX),
          AF     => GPIO_AF_USART2);
 
-      -- configure UART 3
+      -- configure UART 3 (Serial 2)
       Configure_IO( Points => (UART3_RX, UART3_TX), Config => Config_UART3 );
 
       Configure_Alternate_Function(
          Points => (UART3_RX, UART3_TX),
          AF     => GPIO_AF_USART3);
+
+      -- configure UART 6 (PX4IO)
+      Configure_IO( Point => UART6_TX, Config => Config_UART6 );
+      Configure_IO( Point => UART6_RX, Config => Config_In );
+
+      Configure_Alternate_Function(
+         Point => UART6_TX,
+         AF     => GPIO_AF_USART6);
+
+
 
 
    end configure;

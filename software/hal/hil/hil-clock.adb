@@ -6,7 +6,7 @@ package body HIL.Clock is
    procedure configure is
    begin
       -- GPIOs
-      STM32.Device.Enable_Clock( STM32.Device.GPIO_A );
+      STM32.Device.Enable_Clock(STM32.Device.GPIO_A );
       STM32.Device.Enable_Clock(STM32.Device.GPIO_B);
       STM32.Device.Enable_Clock(STM32.Device.GPIO_C);
       STM32.Device.Enable_Clock(STM32.Device.GPIO_D);
@@ -20,6 +20,7 @@ package body HIL.Clock is
       
       -- UART (UART3 is Ser2 is Telemtrie2)
       STM32.Device.Enable_Clock( STM32.Device.USART_3 );
+      STM32.Device.Enable_Clock( STM32.Device.USART_6 );   -- PX4IO 
       STM32.Device.Enable_Clock( STM32.Device.USART_7 );   -- SER 5
  
  

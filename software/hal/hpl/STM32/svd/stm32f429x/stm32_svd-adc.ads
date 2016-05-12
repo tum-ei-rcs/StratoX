@@ -278,14 +278,14 @@ package STM32_SVD.ADC is
       Reserved_30_31 at 0 range 30 .. 31;
    end record;
 
-   -------------------
-   -- JOFR_Register --
-   -------------------
+   --------------------
+   -- JOFR1_Register --
+   --------------------
 
    subtype JOFR1_JOFFSET1_Field is HAL.UInt12;
 
    --  injected channel data offset register x
-   type JOFR_Register is record
+   type JOFR1_Register is record
       --  Data offset for injected channel x
       JOFFSET1       : JOFR1_JOFFSET1_Field := 16#0#;
       --  unspecified
@@ -294,8 +294,71 @@ package STM32_SVD.ADC is
      with Volatile_Full_Access, Size => 32,
           Bit_Order => System.Low_Order_First;
 
-   for JOFR_Register use record
+   for JOFR1_Register use record
       JOFFSET1       at 0 range 0 .. 11;
+      Reserved_12_31 at 0 range 12 .. 31;
+   end record;
+
+   --------------------
+   -- JOFR2_Register --
+   --------------------
+
+   subtype JOFR2_JOFFSET2_Field is HAL.UInt12;
+
+   --  injected channel data offset register x
+   type JOFR2_Register is record
+      --  Data offset for injected channel x
+      JOFFSET2       : JOFR2_JOFFSET2_Field := 16#0#;
+      --  unspecified
+      Reserved_12_31 : HAL.UInt20 := 16#0#;
+   end record
+     with Volatile_Full_Access, Size => 32,
+          Bit_Order => System.Low_Order_First;
+
+   for JOFR2_Register use record
+      JOFFSET2       at 0 range 0 .. 11;
+      Reserved_12_31 at 0 range 12 .. 31;
+   end record;
+
+   --------------------
+   -- JOFR3_Register --
+   --------------------
+
+   subtype JOFR3_JOFFSET3_Field is HAL.UInt12;
+
+   --  injected channel data offset register x
+   type JOFR3_Register is record
+      --  Data offset for injected channel x
+      JOFFSET3       : JOFR3_JOFFSET3_Field := 16#0#;
+      --  unspecified
+      Reserved_12_31 : HAL.UInt20 := 16#0#;
+   end record
+     with Volatile_Full_Access, Size => 32,
+          Bit_Order => System.Low_Order_First;
+
+   for JOFR3_Register use record
+      JOFFSET3       at 0 range 0 .. 11;
+      Reserved_12_31 at 0 range 12 .. 31;
+   end record;
+
+   --------------------
+   -- JOFR4_Register --
+   --------------------
+
+   subtype JOFR4_JOFFSET4_Field is HAL.UInt12;
+
+   --  injected channel data offset register x
+   type JOFR4_Register is record
+      --  Data offset for injected channel x
+      JOFFSET4       : JOFR4_JOFFSET4_Field := 16#0#;
+      --  unspecified
+      Reserved_12_31 : HAL.UInt20 := 16#0#;
+   end record
+     with Volatile_Full_Access, Size => 32,
+          Bit_Order => System.Low_Order_First;
+
+   for JOFR4_Register use record
+      JOFFSET4       at 0 range 0 .. 11;
       Reserved_12_31 at 0 range 12 .. 31;
    end record;
 
@@ -396,9 +459,9 @@ package STM32_SVD.ADC is
       Reserved_24_31 at 0 range 24 .. 31;
    end record;
 
-   ------------------
-   -- SQR_Register --
-   ------------------
+   -------------------
+   -- SQR2_Register --
+   -------------------
 
    -------------
    -- SQR2.SQ --
@@ -432,7 +495,7 @@ package STM32_SVD.ADC is
    end record;
 
    --  regular sequence register 2
-   type SQR_Register is record
+   type SQR2_Register is record
       --  7th conversion in regular sequence
       SQ             : SQR2_SQ_Field := (As_Array => False, Val => 16#0#);
       --  unspecified
@@ -441,7 +504,57 @@ package STM32_SVD.ADC is
      with Volatile_Full_Access, Size => 32,
           Bit_Order => System.Low_Order_First;
 
-   for SQR_Register use record
+   for SQR2_Register use record
+      SQ             at 0 range 0 .. 29;
+      Reserved_30_31 at 0 range 30 .. 31;
+   end record;
+
+   -------------------
+   -- SQR3_Register --
+   -------------------
+
+   -------------
+   -- SQR3.SQ --
+   -------------
+
+   --  SQR3_SQ array element
+   subtype SQR3_SQ_Element is HAL.UInt5;
+
+   --  SQR3_SQ array
+   type SQR3_SQ_Field_Array is array (1 .. 6) of SQR3_SQ_Element
+     with Component_Size => 5, Size => 30;
+
+   --  Type definition for SQR3_SQ
+   type SQR3_SQ_Field
+     (As_Array : Boolean := False)
+   is record
+      case As_Array is
+         when False =>
+            --  SQ as a value
+            Val : HAL.UInt30;
+         when True =>
+            --  SQ as an array
+            Arr : SQR3_SQ_Field_Array;
+      end case;
+   end record
+     with Unchecked_Union, Size => 30;
+
+   for SQR3_SQ_Field use record
+      Val at 0 range 0 .. 29;
+      Arr at 0 range 0 .. 29;
+   end record;
+
+   --  regular sequence register 3
+   type SQR3_Register is record
+      --  1st conversion in regular sequence
+      SQ             : SQR3_SQ_Field := (As_Array => False, Val => 16#0#);
+      --  unspecified
+      Reserved_30_31 : HAL.UInt2 := 16#0#;
+   end record
+     with Volatile_Full_Access, Size => 32,
+          Bit_Order => System.Low_Order_First;
+
+   for SQR3_Register use record
       SQ             at 0 range 0 .. 29;
       Reserved_30_31 at 0 range 30 .. 31;
    end record;
@@ -510,7 +623,7 @@ package STM32_SVD.ADC is
    --  injected data register x
    type JDR_Register is record
       --  Read-only. Injected data
-      JDATA          : JDR1_JDATA_Field := 16#0#;
+      JDATA          : JDR1_JDATA_Field;
       --  unspecified
       Reserved_16_31 : HAL.Short;
    end record
@@ -531,7 +644,7 @@ package STM32_SVD.ADC is
    --  regular data register
    type DR_Register is record
       --  Read-only. Regular data
-      DATA           : DR_DATA_Field := 16#0#;
+      DATA           : DR_DATA_Field;
       --  unspecified
       Reserved_16_31 : HAL.Short;
    end record
@@ -550,45 +663,45 @@ package STM32_SVD.ADC is
    --  ADC Common status register
    type CSR_Register is record
       --  Read-only. Analog watchdog flag of ADC 1
-      AWD1           : Boolean := False;
+      AWD1           : Boolean;
       --  Read-only. End of conversion of ADC 1
-      EOC1           : Boolean := False;
+      EOC1           : Boolean;
       --  Read-only. Injected channel end of conversion of ADC 1
-      JEOC1          : Boolean := False;
+      JEOC1          : Boolean;
       --  Read-only. Injected channel Start flag of ADC 1
-      JSTRT1         : Boolean := False;
+      JSTRT1         : Boolean;
       --  Read-only. Regular channel Start flag of ADC 1
-      STRT1          : Boolean := False;
+      STRT1          : Boolean;
       --  Read-only. Overrun flag of ADC 1
-      OVR1           : Boolean := False;
+      OVR1           : Boolean;
       --  unspecified
       Reserved_6_7   : HAL.UInt2;
       --  Read-only. Analog watchdog flag of ADC 2
-      AWD2           : Boolean := False;
+      AWD2           : Boolean;
       --  Read-only. End of conversion of ADC 2
-      EOC2           : Boolean := False;
+      EOC2           : Boolean;
       --  Read-only. Injected channel end of conversion of ADC 2
-      JEOC2          : Boolean := False;
+      JEOC2          : Boolean;
       --  Read-only. Injected channel Start flag of ADC 2
-      JSTRT2         : Boolean := False;
+      JSTRT2         : Boolean;
       --  Read-only. Regular channel Start flag of ADC 2
-      STRT2          : Boolean := False;
+      STRT2          : Boolean;
       --  Read-only. Overrun flag of ADC 2
-      OVR2           : Boolean := False;
+      OVR2           : Boolean;
       --  unspecified
       Reserved_14_15 : HAL.UInt2;
       --  Read-only. Analog watchdog flag of ADC 3
-      AWD3           : Boolean := False;
+      AWD3           : Boolean;
       --  Read-only. End of conversion of ADC 3
-      EOC3           : Boolean := False;
+      EOC3           : Boolean;
       --  Read-only. Injected channel end of conversion of ADC 3
-      JEOC3          : Boolean := False;
+      JEOC3          : Boolean;
       --  Read-only. Injected channel Start flag of ADC 3
-      JSTRT3         : Boolean := False;
+      JSTRT3         : Boolean;
       --  Read-only. Regular channel Start flag of ADC 3
-      STRT3          : Boolean := False;
+      STRT3          : Boolean;
       --  Read-only. Overrun flag of ADC3
-      OVR3           : Boolean := False;
+      OVR3           : Boolean;
       --  unspecified
       Reserved_22_31 : HAL.UInt10;
    end record
@@ -719,13 +832,13 @@ package STM32_SVD.ADC is
       --  sample time register 2
       SMPR2 : SMPR2_Register;
       --  injected channel data offset register x
-      JOFR1 : JOFR_Register;
+      JOFR1 : JOFR1_Register;
       --  injected channel data offset register x
-      JOFR2 : JOFR_Register;
+      JOFR2 : JOFR2_Register;
       --  injected channel data offset register x
-      JOFR3 : JOFR_Register;
+      JOFR3 : JOFR3_Register;
       --  injected channel data offset register x
-      JOFR4 : JOFR_Register;
+      JOFR4 : JOFR4_Register;
       --  watchdog higher threshold register
       HTR   : HTR_Register;
       --  watchdog lower threshold register
@@ -733,9 +846,9 @@ package STM32_SVD.ADC is
       --  regular sequence register 1
       SQR1  : SQR1_Register;
       --  regular sequence register 2
-      SQR2  : SQR_Register;
+      SQR2  : SQR2_Register;
       --  regular sequence register 3
-      SQR3  : SQR_Register;
+      SQR3  : SQR3_Register;
       --  injected sequence register
       JSQR  : JSQR_Register;
       --  injected data register x
