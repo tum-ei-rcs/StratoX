@@ -192,7 +192,7 @@ package STM32.GPIO is
    --  input data register of This.Port.all; returns False otherwise.
 
    overriding
-   procedure Set (This : in out GPIO_Point) with
+   procedure Set (This : in GPIO_Point) with
      Inline,
      Post => Set (This);
    --  For This.Port.all, sets the output data register bit specified by
