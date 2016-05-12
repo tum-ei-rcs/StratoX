@@ -1,0 +1,3 @@
+graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-stoele.adb"
+node: { title: "system__storage_elements__storage_arrayIP" label: "Storage_Arrayip\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-stoele.ads:70:9\n0 bytes\n0 dynamic objects" }
+}

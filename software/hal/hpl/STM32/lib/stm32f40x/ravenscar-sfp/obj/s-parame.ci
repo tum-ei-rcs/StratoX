@@ -1,0 +1,3 @@
+graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-parame.adb"
+node: { title: "system__parameters__adjust_storage_size" label: "Adjust_Storage_Size\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-parame.adb:40:4\n0 bytes\n0 dynamic objects" }
+}

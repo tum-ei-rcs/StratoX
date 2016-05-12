@@ -1,0 +1,3 @@
+graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-tasdeb.adb"
+node: { title: "system__tasking__debug__add_task_id" label: "Add_Task_Id\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-tasdeb.adb:54:4\n16 bytes (static)\n0 dynamic objects" }
+}

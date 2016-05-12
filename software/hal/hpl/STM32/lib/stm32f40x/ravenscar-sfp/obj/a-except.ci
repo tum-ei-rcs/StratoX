@@ -1,0 +1,5 @@
+graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/a-except.adb"
+node: { title: "__gnat_last_chance_handler" label: "Last_Chance_Handler\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/a-except.adb:41:17" shape : ellipse }
+node: { title: "ada__exceptions__raise_exception" label: "Raise_Exception\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/a-except.adb:38:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__exceptions__raise_exception" targetname: "__gnat_last_chance_handler" label: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/a-except.adb:46:7" }
+}
