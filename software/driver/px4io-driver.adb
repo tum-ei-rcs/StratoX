@@ -3,6 +3,7 @@ with HIL.UART; use type HIL.UART.Data_Type;
 with PX4IO.Protocol; use PX4IO.Protocol;
 with HIL;
 with CRC8;
+with Logger;
 
 package body PX4IO.Driver is
 
@@ -23,12 +24,12 @@ package body PX4IO.Driver is
    end write;
    
    procedure read(page : Page_Type; offset : Offset_Type; data : out Data_Type) is
-      Data_TX : HIL.UART.Data_Type(1 .. 5) := (     -- maximum 68 (4 + 64), but is this necessary?
+      Data_TX : HIL.UART.Data_Type(1 .. 4) := (     -- maximum 68 (4 + 64), but is this necessary?
                                                1 => HIL.Byte( 1 ),
                                                2 => HIL.Byte( 0 ),
                                                3 => HIL.Byte(page),
-                                               4 => HIL.Byte(offset),
-                                               5 => HIL.Byte( 0 )
+                                               4 => HIL.Byte(offset)
+                                               --others => HIL.Byte( 0 )
                                                );
       Data_RX : HIL.UART.Data_Type(1 .. (4+data'Length)) := ( others => 0 );
    begin
@@ -42,6 +43,7 @@ package body PX4IO.Driver is
    procedure initialize is
       protocol : Data_Type(1 .. 1) := (1 => 0);
    begin
+        Logger.log(Logger.DEBUG, "Probe PX4IO");
 	read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_PROTOCOL_VERSION, protocol);
    end initialize;
 

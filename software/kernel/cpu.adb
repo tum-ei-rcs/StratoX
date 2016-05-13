@@ -8,6 +8,7 @@ with HIL.GPIO;
 with HIL.SPI;
 with HIL.Clock;
 with HIL.UART;
+with Logger;
 
 
 package body CPU is
@@ -18,11 +19,14 @@ package body CPU is
 
       --  Configure GPIO
       HIL.Clock.configure;
+      HIL.UART.configure;
+      Logger.log(Logger.DEBUG, "Startup...");
 
       HIL.GPIO.configure;
       HIL.SPI.configure;
-      HIL.UART.configure;
 
+
+      Logger.log(Logger.DEBUG, "Hardware initialized.");
 
    end initialize;
 

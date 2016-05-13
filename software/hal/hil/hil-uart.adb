@@ -2,6 +2,7 @@
 
 with STM32.USARTs;
 with STM32.Device;
+with Logger;
 
 package body HIL.UART is
    
@@ -68,7 +69,7 @@ package body HIL.UART is
          end loop; 
       when PX4IO =>
          for i in Data'Range loop
-            STM32.USARTs.Transmit( STM32.Device.USART_7, HAL.Uint9( Data(i) ) );
+            STM32.USARTs.Transmit( STM32.Device.USART_6, HAL.Uint9( Data(i) ) );
          end loop; 
       end case;
    end write;
@@ -88,14 +89,19 @@ package body HIL.UART is
       when PX4IO =>
          for i in Data'Range loop
             STM32.USARTs.Receive( STM32.Device.USART_6, HAL.Uint9( Data(i) ) );
+            Logger.log(Logger.TRACE, "IO:" & HIL.Byte'Image( Data(i) ) );
          end loop;       
       end case;
    end read;
    
 
    function toData_Type( Message : String ) return Data_Type is
+      Bytes : Data_Type( Message'Range ) := (others => 0);
    begin
-      return (1 => 0);
+      for pos in Message'Range loop
+         Bytes(pos) := Character'Pos( Message(pos) );
+      end loop;
+      return Bytes;
    end toData_Type;
 
 			     

@@ -15,6 +15,8 @@ package Main is
 
 
 	procedure initialize;
+        
+        procedure perform_Self_Test;
 
 	procedure run_Loop;
 

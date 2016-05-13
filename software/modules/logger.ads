@@ -10,6 +10,9 @@
 --     Logger.init  -- initializes the Logger
 --     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
 
+
+-- ToDo: Unconstrained Strings require a secondary stack for each call... can this be optimized?
+
 package Logger with SPARK_Mode 
 is
 	

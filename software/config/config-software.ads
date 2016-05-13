@@ -11,12 +11,13 @@
 
 
 with units;
+with Logger;
 
 package Config.Software is
 
 	DEBUG_MODE_IS_ACTIVE : constant Boolean := True;
 
-	CPU_CLOCK_HZ : constant Integer := 168_000_000;
+   CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.TRACE;
 
 
 	-- Bus Timeouts

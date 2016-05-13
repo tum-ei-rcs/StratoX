@@ -17,6 +17,10 @@ with HIL.UART;
 package body Logger --with SPARK_Mode 
 is
 	pragma SPARK_Mode;
+        
+        
+        --Message_Buffer : array
+        
 
 	-- HAL, only change Adapter to port Code
 	package body Adapter is
@@ -29,9 +33,9 @@ is
 
 		procedure write(message : Message_Type) is
 			--LF : Character := Character'Val(10);
-			--CR : Character := Character'Val(13);
+			CR : constant Character := Character'Val(13);  -- ASCII
 		begin
-	 HIL.UART.write(HIL.UART.Console, HIL.UART.toData_Type ( message ) );
+         HIL.UART.write(HIL.UART.Console, HIL.UART.toData_Type ( message & CR ) );
 		end write;	
 	end Adapter;
 
@@ -49,10 +53,10 @@ is
 	function level_Message(level : Log_Level) return Message_Type is
 	begin
 		return (case level is
-			when ERROR => "[E] ",		
-			when WARN  => "[W] ",		
-			when INFO  => "[I] ",	
-			when DEBUG => "[D] ",
+			when ERROR => "E: ",		
+			when WARN  => "W: ",		
+			when INFO  => "I: ",	
+			when DEBUG => "D: ",
 			when TRACE => "  > " );
 	end level_Message;
 

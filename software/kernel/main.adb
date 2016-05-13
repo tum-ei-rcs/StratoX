@@ -10,6 +10,8 @@ with MS5611.Driver;
 with PX4IO.Driver;
 with HIL.UART;
 with HIL.SPI;
+with Logger;
+with Config.Software; use Config.Software;
 
 package body Main is
 
@@ -67,6 +69,10 @@ package body Main is
 	procedure initialize is
 	begin
       CPU.initialize;
+      
+      Logger.set_Log_Level(CFG_LOGGER_LEVEL_UART);
+      perform_Self_Test;
+      
       MS5611.Driver.reset;
       delay until Clock + Milliseconds (5);
       MS5611.Driver.init;
@@ -74,17 +80,32 @@ package body Main is
 	end initialize;
 
 
+   procedure perform_Self_Test is
+   begin
+      Logger.log(Logger.INFO, "Starting Self Test");
+      
+      Logger.log(Logger.DEBUG, "Logger: Debug Test Message");
+      Logger.log(Logger.TRACE, "Logger: Trace Test Message");
+      
+   end perform_Self_Test;
+
+
    procedure run_Loop is
-       data : HIL.SPI.Data_Type(1 .. 3) := (others => 0);  
+       data : HIL.SPI.Data_Type(1 .. 3) := (others => 0);
+       data_rx : HIL.UART.Data_Type(1 .. 2) := (others => 0);
+       msg : String := "Main";
    begin
       led_manager.LED_blink(led_manager.SLOW);
+      
+      Logger.log(Logger.INFO, msg);
       loop
 	 delay until Clock + Milliseconds (200);
 	 led_manager.LED_tick(200);
 	 led_manager.LED_sync;
          
          -- UART Test
-         HIL.UART.write(HIL.UART.Console, (0, 0) );
+         HIL.UART.write(HIL.UART.Console, (70, 65) );
+         HIL.UART.read(HIL.UART.Console, data_rx);
          
          -- MS5611 Test
          MS5611.Driver.update_val;
