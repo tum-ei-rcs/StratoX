@@ -32,7 +32,7 @@
 --**************************************************************************
 
 
--- with Interfaces; use Interfaces;
+with Interfaces; use Interfaces;
 
 package PX4IO.Protocol is
 
@@ -78,18 +78,12 @@ package PX4IO.Protocol is
 -- REG_TO_FLOAT : constant := (reg)	(FloatREG_TO_SIGNED(reg) /10_000.0f);
 -- FLOAT_TO_REG : constant := Float	SIGNED_TO_REG(Integer_16(Float *10_000.0f));
 
-type Unsigned_16 is mod 2**16;
-type Unsigned_8  is mod 2**8;
-
 type Page_Type is new Unsigned_8;
 type Offset_Type is new Unsigned_8;
 subtype Bit_Mask_Type is Unsigned_8;
 
+--subtype Value_Type is HIL.Byte;
 
-
-
-function Shift_Left(This : Integer; Shift : Integer) return Bit_Mask_Type is
-( 2**Shift );
 
 
 
@@ -245,7 +239,7 @@ PX4IO_P_SETUP_FORCE_SAFETY_OFF : constant := 12	;-- force safety switch into
 PX4IO_P_SETUP_RC_THR_FAILSAFE_US : constant := 13	;--*< the throttle failsafe pulse length in microseconds
 
 PX4IO_P_SETUP_FORCE_SAFETY_ON : constant := 14	;-- force safety switch into 'disarmed' (PWM disabled state)
-PX4IO_FORCE_SAFETY_MAGIC : constant :=22_027	;-- required argument for force safety (random)
+PX4IO_FORCE_SAFETY_MAGIC : constant Unsigned_16 := 22_027	;-- required argument for force safety (random)
 
 PX4IO_P_SETUP_PWM_REVERSE : constant := 15	;--*< Bitmask to reverse PWM channels 1-8
 PX4IO_P_SETUP_TRIM_ROLL : constant := 16	;--*< Roll trim, in actuator units

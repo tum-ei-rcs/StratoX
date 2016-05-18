@@ -89,8 +89,11 @@ package body HIL.UART is
       when PX4IO =>
          for i in Data'Range loop
             STM32.USARTs.Receive( STM32.Device.USART_6, HAL.Uint9( Data(i) ) );
+         end loop;
+         
+         for i in Data'Range loop
             Logger.log(Logger.TRACE, "IO:" & HIL.Byte'Image( Data(i) ) );
-         end loop;       
+         end loop;
       end case;
    end read;
    

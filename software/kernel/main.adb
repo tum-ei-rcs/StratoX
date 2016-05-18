@@ -74,6 +74,8 @@ package body Main is
       perform_Self_Test;
       
       MS5611.Driver.reset;
+      
+      -- wait to satisfy some timing
       delay until Clock + Milliseconds (5);
       MS5611.Driver.init;
       PX4IO.Driver.initialize;
@@ -87,12 +89,14 @@ package body Main is
       Logger.log(Logger.DEBUG, "Logger: Debug Test Message");
       Logger.log(Logger.TRACE, "Logger: Trace Test Message");
       
+      PX4IO.Driver.initialize;
+      
    end perform_Self_Test;
 
 
    procedure run_Loop is
        data : HIL.SPI.Data_Type(1 .. 3) := (others => 0);
-       data_rx : HIL.UART.Data_Type(1 .. 2) := (others => 0);
+       data_rx : HIL.UART.Data_Type(1 .. 1) := (others => 0);
        msg : String := "Main";
    begin
       led_manager.LED_blink(led_manager.SLOW);
@@ -106,6 +110,15 @@ package body Main is
          -- UART Test
          HIL.UART.write(HIL.UART.Console, (70, 65) );
          HIL.UART.read(HIL.UART.Console, data_rx);
+         
+         case ( Character'Val( data_rx(1) ) ) is
+         when 't' => perform_Self_Test;
+         when 's' => PX4IO.Driver.read_Status;
+         when 'l' => led_manager.LED_blink(led_manager.FAST);
+         when others   => null;
+         end case;
+         
+         
          
          -- MS5611 Test
          MS5611.Driver.update_val;
