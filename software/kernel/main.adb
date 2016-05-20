@@ -4,6 +4,7 @@
 -- todo: better unit name
 
 with CPU;
+with units; use units;
 with Ada.Real_Time; use Ada.Real_Time;
 with led_manager;
 with MS5611.Driver;
@@ -120,6 +121,13 @@ package body Main is
          HIL.UART.read(HIL.UART.Console, data_rx);
          
          case ( Character'Val( data_rx(1) ) ) is
+         when '1' => PX4IO.Driver.set_Servo_Angle(PX4IO.Driver.LEFT_ELEVON, 20.0 * Degree);
+         when '2' => PX4IO.Driver.set_Servo_Angle(PX4IO.Driver.LEFT_ELEVON, 90.0 * Degree);
+         when '3' => PX4IO.Driver.set_Servo_Angle(PX4IO.Driver.LEFT_ELEVON, 180.0 * Degree);
+         when '8' => PX4IO.Driver.set_Servo_Angle(PX4IO.Driver.RIGHT_ELEVON, -30.0 * Degree);
+         when '9' => PX4IO.Driver.set_Servo_Angle(PX4IO.Driver.RIGHT_ELEVON, 90.0 * Degree);
+         when '0' => PX4IO.Driver.set_Servo_Angle(PX4IO.Driver.RIGHT_ELEVON, 180.0 * Degree);
+         
          when 't' => perform_Self_Test;
          when 's' => PX4IO.Driver.read_Status;
          when 'l' => led_manager.LED_blink(led_manager.FAST);

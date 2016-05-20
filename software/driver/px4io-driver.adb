@@ -235,6 +235,7 @@ is
             when LEFT_ELEVON  => G_Servo_Angle_Left  := angle;
             when RIGHT_ELEVON => G_Servo_Angle_Right := angle;
       end case;
+      Logger.log(Logger.DEBUG, "Servo Angle set");
    end set_Servo_Angle;
    
    
@@ -249,8 +250,9 @@ is
    function servo_Duty_Cycle(angle : in Servo_Angle_Type) return Unsigned_16 
    with post => servo_Duty_Cycle'Result >= 1_000 and servo_Duty_Cycle'Result <= 2_000
    is
+      modulo : Angle_Type := Angle_Type'Remainder(angle, SERVO_ANGLE_MAX_LIMIT);
    begin
-      return 1_000 + Unsigned_16( Unit_Type'Remainder(angle, SERVO_ANGLE_MAX_LIMIT) / SERVO_ANGLE_MAX_LIMIT * 1.000);
+      return 1_000 + Unsigned_16( Unit_Type'Remainder(angle, SERVO_ANGLE_MAX_LIMIT + 1.0 ) / SERVO_ANGLE_MAX_LIMIT * 1000.0);
    end servo_Duty_Cycle;
    
    
@@ -289,7 +291,8 @@ is
       
       -- motor
       Speed(1 .. 2) := HIL.toBytes( esc_PWM( G_Motor_Speed ) );
-      write(PX4IO_PAGE_CONTROLS, PX4IO_P_CONTROLS_GROUP_0, Speed);
+      --write(PX4IO_PAGE_CONTROLS, PX4IO_P_CONTROLS_GROUP_0, Speed);  -- write to CONTROLS clears PX4IO_PAGE_DIRECT_PWM
+      write(PX4IO_PAGE_DIRECT_PWM, 2, Speed);
       
       -- check state
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);

@@ -89,6 +89,8 @@ Second : constant Time_Type := Time_Type ( 1.0 );
 Milli_Second : constant Time_Type := 1.0e-3 * Second;
 Micro_Second : constant Time_Type := 1.0e-6 * Second;
 
+Degree : constant Angle_Type := Angle_Type ( 1.0 );
+
 
 Pascal : constant Pressure_Type := Pressure_Type( 1.0 );
 Bar    : constant Pressure_Type := Pressure_Type( 100_000.0 );
