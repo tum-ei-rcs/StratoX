@@ -2,6 +2,7 @@
 
 with PX4IO.Protocol; use PX4IO.Protocol;
 with Interfaces; use Interfaces;
+with Ada.Real_Time; use Ada.Real_Time;
 with CRC8;
 with Logger;
 
@@ -132,10 +133,23 @@ is
     
       -- set debug level to 5
       write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_SET_DEBUG, HIL.toBytes ( Unsigned_16(5) ) );
-
+      delay until Clock + Milliseconds ( 2 );
 
        -- clear all Alarms
       write(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, (1 .. 2 => HIL.Byte ( 255 ) ) );   -- PX4IO clears Bits with 1 (inverted)
+      delay until Clock + Milliseconds ( 2 );   
+      
+      -- clear status flags
+      modify_clear(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
+                   PX4IO_P_STATUS_FLAGS_FAILSAFE or 
+                   PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED );
+                   
+     -- set Mixer OK
+     modify_set(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
+                  PX4IO_P_STATUS_FLAGS_MIXER_OK or
+                  PX4IO_P_STATUS_FLAGS_INIT_OK
+                  );
+                  
     
       -- disarm before setup (exactly as in original PX4 code)
       modify_clear(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
@@ -145,46 +159,54 @@ is
 		PX4IO_P_SETUP_ARMING_ALWAYS_PWM_ENABLE or
                 PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE or
                 PX4IO_P_SETUP_ARMING_LOCKDOWN );
- 
+      delay until Clock + Milliseconds ( 2 );
+      
+      
       -- read the setup
       read_Status;
     
       -- read some senseless values because original PX4 is doing it
-      read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_HARDWARE_VERSION, Data);
-      read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_ACTUATOR_COUNT, Data);
-      read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_CONTROL_COUNT, Data);
-      read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_RELAY_COUNT, Data);
-      read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_MAX_TRANSFER, Data);   -- substract -2 (because PX4 is doing it)
-      read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_RC_INPUT_COUNT, Data);
-    
+--        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_HARDWARE_VERSION, Data);
+--        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_ACTUATOR_COUNT, Data);
+--        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_CONTROL_COUNT, Data);
+--        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_RELAY_COUNT, Data);
+--        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_MAX_TRANSFER, Data);   -- substract -2 (because PX4 is doing it)
+--        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_RC_INPUT_COUNT, Data);
+      delay until Clock + Milliseconds ( 2 );
     
     
       -- set PWM limits
       --write(PX4IO_PAGE_CONTROL_MIN_PWM, 0, );
       --write(PX4IO_PAGE_CONTROL_MAX_PWM
       
-      -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
-      modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED); 
+      
+      -- give IO some values (should enable PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED )
+      sync_Outputs;     
+      
+      
+      
+        -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
+      --modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED); 
+      delay until Clock + Milliseconds ( 2 );
 
-      -- disable failsafe
-      modify_clear(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE);
 
       -- setup arming
       modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
-             PX4IO_P_SETUP_ARMING_IO_ARM_OK or
-             --PX4IO_P_SETUP_ARMING_FMU_ARMED or
+             PX4IO_P_SETUP_ARMING_IO_ARM_OK or  
+             PX4IO_P_SETUP_ARMING_FMU_ARMED or
              --PX4IO_P_SETUP_ARMING_INAIR_RESTART_OK or
              --PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE_OK or
              PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED --or  -- disable RC, 
              --PX4IO_P_SETUP_ARMING_ALWAYS_PWM_ENABLE 
          );
 
-      -- give IO some values 
-      sync_Outputs;
-
-
-      -- disable failsafe
-      modify_clear(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE);
+      -- FMU armed
+      --modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_FMU_ARMED);
+      
+      -- RC off
+      --modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED);
+      
+      
 
       -- safety off
       write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes( PX4IO_FORCE_SAFETY_MAGIC ) ); -- force into armed state

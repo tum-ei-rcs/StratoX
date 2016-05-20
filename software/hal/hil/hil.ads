@@ -16,9 +16,9 @@ package HIL is
    type Byte_Array is array(Natural range <>) of Byte;
 
 
-
+   -- little endian (lowest byte first)
    function toBytes(uint : Unsigned_16) return Byte_Array is
-      (1 => Unsigned_8 ( uint / 2**8 ), 2 => Unsigned_8( uint mod 2**8 ) );
+      (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
 
 
    function toUnsigned_16( bytes : Byte_Array) return Unsigned_16 
