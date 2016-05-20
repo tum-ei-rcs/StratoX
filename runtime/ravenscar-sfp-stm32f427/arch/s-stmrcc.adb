@@ -49,7 +49,7 @@ package body System.STM32F4.RCC is
    -------------------
 
    function System_Clocks return RCC_System_Clocks is
-      HSE_VALUE    : constant Word := Word (Param.HSE_Clock (MCU_ID.DEV_ID));
+      HSE_VALUE    : constant Word := Word (Param.HSE_Clock);
       RCC_CFGR_SWS : constant := 16#C#;
       Source       : constant Word := Registers.CFGR and RCC_CFGR_SWS;
       Result       : RCC_System_Clocks;

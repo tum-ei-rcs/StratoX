@@ -33,6 +33,7 @@
 
 
 with Interfaces; use Interfaces;
+with HIL; use HIL;
 
 package PX4IO.Protocol is
 
@@ -80,7 +81,7 @@ package PX4IO.Protocol is
 
 type Page_Type is new Unsigned_8;
 type Offset_Type is new Unsigned_8;
-subtype Bit_Mask_Type is Unsigned_8;
+subtype Bit_Mask_Type is HIL.Unsigned_16_Mask;
 
 --subtype Value_Type is HIL.Byte;
 
@@ -129,7 +130,7 @@ PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED : constant Bit_Mask_Type := (Shift_Left(1, 
 PX4IO_P_STATUS_FLAGS_RC_ST24 : constant Bit_Mask_Type := (Shift_Left(1, 14)) ;-- ST24 input is valid
 PX4IO_P_STATUS_FLAGS_RC_SUMD : constant Bit_Mask_Type := (Shift_Left(1, 15)) ;-- SUMD input is valid
 
-PX4IO_P_STATUS_ALARMS : constant Bit_Mask_Type := 3	 ;-- alarm flags - alarms latch, write 1 to a bit to clear it
+PX4IO_P_STATUS_ALARMS : constant := 3	 ;-- alarm flags - alarms latch, write 1 to a bit to clear it
 PX4IO_P_STATUS_ALARMS_VBATT_LOW : constant Bit_Mask_Type := (Shift_Left(1, 0)) ;-- [1] VBatt is very close to regulator dropout
 PX4IO_P_STATUS_ALARMS_TEMPERATURE : constant Bit_Mask_Type := (Shift_Left(1, 1)) ;-- board temperature is high
 PX4IO_P_STATUS_ALARMS_SERVO_CURRENT : constant Bit_Mask_Type := (Shift_Left(1, 2)) ;-- [1] servo current limit was exceeded

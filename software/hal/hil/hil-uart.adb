@@ -76,6 +76,7 @@ package body HIL.UART is
 
 
    procedure read (Device : in Device_ID_Type; Data : out Data_Type) is
+      msg : String := "";
    begin
       case (Device) is
       when GPS =>
@@ -91,9 +92,15 @@ package body HIL.UART is
             STM32.USARTs.Receive( STM32.Device.USART_6, HAL.Uint9( Data(i) ) );
          end loop;
          
-         for i in Data'Range loop
-            Logger.log(Logger.TRACE, "IO:" & HIL.Byte'Image( Data(i) ) );
+         Logger.log(Logger.TRACE, "IO: " &
+                    HIL.Byte'Image( Data(1) )& ", " &
+                    HIL.Byte'Image( Data(2) )& ", " &
+                    HIL.Byte'Image( Data(3) )& ", " &
+                    HIL.Byte'Image( Data(4) )& ", " );
+         for i in 5 .. Data'Length loop
+            Logger.log(Logger.TRACE, "IO: " & HIL.Byte'Image( Data(i) ) );
          end loop;
+         
       end case;
    end read;
    

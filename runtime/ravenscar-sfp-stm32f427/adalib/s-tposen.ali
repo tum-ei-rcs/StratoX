@@ -1,6 +1,6 @@
 V "GNAT Lib v2015"
 A -nostdinc
-A -O2
+A -O0
 A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
@@ -14,6 +14,8 @@ A -mthumb
 A -gnatp
 A -gnatg
 A -gnatn2
+A -gnatwC
+A -g
 P DB
 
 RN
@@ -49,7 +51,7 @@ D s-bbcppr.adb		20150506105327 7968ef8f system.bb.cpu_primitives%b
 D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
 D s-bcprmu.adb		20150506105329 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
 D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
-D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
+D s-bbpara.ads		20160503115124 d83742d1 system.bb.parameters%s
 D s-bbprot.ads		20150506105331 f48a7e85 system.bb.protection%s
 D s-bbprot.adb		20150506105332 233a43fc system.bb.protection%b
 D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s

@@ -14,7 +14,7 @@ project Runtime_Build is
   
   type Build_Type is ("Production", "Debug");
 
-  Build : Build_Type := external ("BUILD", "Production");
+  Build : Build_Type := external ("BUILD", "Debug");
 
   package Builder is
      for Switches ("Ada") use ("--RTS=" & Project'project_dir);
@@ -31,7 +31,7 @@ project Runtime_Build is
            CFLAGS := CFLAGS & ("-O0", "-g");
            ASMFLAGS := ASMFLAGS & ("-g");
      end case;
-     ALL_ADAFLAGS := ("-gnatpg", "-gnatn2", "-nostdinc") & CFLAGS;
+     ALL_ADAFLAGS := ("-gnatpg", "-gnatn2", "-nostdinc", "-gnatwC") & CFLAGS;
      ALL_CFLAGS := ("-DIN_RTS", "-Dinhibit_libc") & CFLAGS;
 
      NO_SIBLING_ADAFLAGS := ("-fno-optimize-sibling-calls");

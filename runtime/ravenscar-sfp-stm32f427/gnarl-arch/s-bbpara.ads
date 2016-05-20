@@ -72,16 +72,7 @@ package System.BB.Parameters is
    --  MCU used. Change the return value based on the external clock used on
    --  your specific hardware.
 
-   function HSE_Clock
-     (Device_ID : STM32F4.Bits_12) return STM32F4.RCC.HSECLK_Range
-   is (case Device_ID is
-          when STM32F4.DEV_ID_STM32F42xxx => 24_000_000,
-          --  Pixhawk Autopilot
-          when STM32F4.DEV_ID_STM32F7xxxx => 25_000_000,
-          --  STM32F7 Evaluation board
-          when others => 8_000_000)
-          --  STM32F407 Disco board and Unknown device
-   with Inline_Always;
+   HSE_Clock : constant STM32F4.RCC.HSECLK_Range := 24_000_000;
 
    Has_FPU : constant Boolean := True;
    --  Set to true if core has a FPU

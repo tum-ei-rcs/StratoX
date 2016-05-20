@@ -1,10 +1,6 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-extiin.adb"
-node: { title: "system__bb__protection__leave_kernel" label: "Leave_Kernel\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.ads:54:14" shape : ellipse }
-node: { title: "system__bb__execution_time__elapsed_time" label: "Elapsed_Time\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbexti.adb:83:13" shape : ellipse }
-node: { title: "system__bb__interrupts__current_interrupt" label: "Current_Interrupt\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbinte.ads:76:13" shape : ellipse }
-node: { title: "ada__execution_time__interrupts__supported" label: "Supported\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-extiin.adb:61:4\n0 bytes\n0 dynamic objects" }
-node: { title: "ada__execution_time__interrupts__clock" label: "Clock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/a-extiin.adb:54:4\n16 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__execution_time__interrupts__clock" targetname: "system__bb__protection__leave_kernel" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbexti.adb:197:27" }
-edge: { sourcename: "ada__execution_time__interrupts__clock" targetname: "system__bb__execution_time__elapsed_time" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbexti.adb:190:27" }
-edge: { sourcename: "ada__execution_time__interrupts__clock" targetname: "system__bb__interrupts__current_interrupt" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbexti.adb:189:30" }
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-extiin.adb"
+node: { title: "system__bb__execution_time__interrupt_clock" label: "Interrupt_Clock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbexti.ads:39:13" shape : ellipse }
+node: { title: "ada__execution_time__interrupts__supported" label: "Supported\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-extiin.adb:61:4\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "ada__execution_time__interrupts__clock" label: "Clock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-extiin.adb:54:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__execution_time__interrupts__clock" targetname: "system__bb__execution_time__interrupt_clock" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-extiin.adb:55:7" }
 }

@@ -1,6 +1,6 @@
 V "GNAT Lib v2015"
 A -nostdinc
-A -O2
+A -O0
 A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
@@ -14,6 +14,8 @@ A -mthumb
 A -gnatp
 A -gnatg
 A -gnatn2
+A -gnatwC
+A -g
 P DB
 
 RN
@@ -25,7 +27,7 @@ W interfaces%s		interfac.ads		interfac.ali
 W interfaces.c%s	i-c.ads			i-c.ali
 W system%s		system.ads		system.ali
 
-U system.multiprocessors%s  s-multip.ads	edf94369 BN NE OL PR PK
+U system.multiprocessors%s  s-multip.ads	b5a5faca BN NE OL PR PK
 W system%s		system.ads		system.ali
 W system.bb%s		s-bb.ads		s-bb.ali
 W system.bb.parameters%s  s-bbpara.ads		s-bbpara.ali
@@ -34,7 +36,7 @@ D interfac.ads		20160413121402 6033a23f interfaces%s
 D i-c.ads		20150506105328 ed15b264 interfaces.c%s
 D system.ads		20150506105328 9eacb62e system%s
 D s-bb.ads		20150506105332 883768d6 system.bb%s
-D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
+D s-bbpara.ads		20160503115124 d83742d1 system.bb.parameters%s
 D s-multip.ads		20150506105332 f33e0e35 system.multiprocessors%s
 D s-multip.adb		20150506105328 9ad81b27 system.multiprocessors%b
 D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
@@ -51,8 +53,8 @@ X 3 system.ads
 X 4 s-bb.ads
 43K16*BB 97e14 6|16r13 21r40
 X 5 s-bbpara.ads
-46K19*Parameters 150e25 6|16w16 21r43
-144N4*Max_Number_Of_CPUs 6|21r54
+46K19*Parameters 141e25 6|16w16 21r43
+135N4*Max_Number_Of_CPUs 6|21r54
 X 6 s-multip.ads
 18K16*Multiprocessors 3|60k9 6|19r25 31l12 31e27 7|31b21 51l12 51t27
 21I9*CPU_Range<short_short_integer> 23r19 23r40 25r34

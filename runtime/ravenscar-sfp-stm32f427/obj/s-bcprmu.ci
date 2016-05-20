@@ -1,6 +1,6 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bcprmu.adb"
-node: { title: "system__bb__cpu_primitives__multiprocessors__start_all_cpus" label: "Start_All_Cpus\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bcprmu.adb:64:4\n0 bytes\n0 dynamic objects" }
-node: { title: "system__bb__cpu_primitives__multiprocessors__start_cpu" label: "Start_Cpu\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bcprmu.adb:55:4\n0 bytes\n0 dynamic objects" }
-node: { title: "system__bb__cpu_primitives__multiprocessors__poke_cpu" label: "Poke_Cpu\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bcprmu.adb:46:4\n0 bytes\n0 dynamic objects" }
-node: { title: "system__bb__cpu_primitives__multiprocessors__current_cpu" label: "Current_Cpu\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bcprmu.adb:37:4\n0 bytes\n0 dynamic objects" }
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bcprmu.adb"
+node: { title: "system__bb__cpu_primitives__multiprocessors__start_all_cpus" label: "Start_All_Cpus\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bcprmu.adb:64:4\n4 bytes (static)\n0 dynamic objects" }
+node: { title: "system__bb__cpu_primitives__multiprocessors__start_cpu" label: "Start_Cpu\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bcprmu.adb:55:4\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "system__bb__cpu_primitives__multiprocessors__poke_cpu" label: "Poke_Cpu\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bcprmu.adb:46:4\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "system__bb__cpu_primitives__multiprocessors__current_cpu" label: "Current_Cpu\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bcprmu.adb:37:4\n4 bytes (static)\n0 dynamic objects" }
 }

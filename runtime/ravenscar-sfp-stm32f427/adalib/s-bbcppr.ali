@@ -1,6 +1,6 @@
 V "GNAT Lib v2015"
 A -nostdinc
-A -O2
+A -O0
 A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
@@ -14,6 +14,8 @@ A -mthumb
 A -gnatp
 A -gnatg
 A -gnatn2
+A -gnatwC
+A -g
 P DB
 
 RN
@@ -42,7 +44,7 @@ W system.machine_code%s	s-maccod.ads		s-maccod.ali
 W system.multiprocessors%s  s-multip.adb	s-multip.ali
 W system.storage_elements%s  s-stoele.adb	s-stoele.ali
 
-U system.bb.cpu_primitives%s  s-bbcppr.ads	a1d2bfcc BN NE OL PR PK
+U system.bb.cpu_primitives%s  s-bbcppr.ads	f98e066f BN NE OL PR PK
 W system%s		system.ads		system.ali
 W system.bb%s		s-bb.ads		s-bb.ali
 W system.bb.parameters%s  s-bbpara.ads		s-bbpara.ali
@@ -60,7 +62,7 @@ D s-bbcppr.adb		20150506105327 7968ef8f system.bb.cpu_primitives%b
 D s-bcprmu.ads		20150506105330 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
 D s-bcprmu.adb		20150506105329 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
 D s-bbinte.ads		20150506105330 4743e2d6 system.bb.interrupts%s
-D s-bbpara.ads		20160428100922 806bfb72 system.bb.parameters%s
+D s-bbpara.ads		20160503115124 d83742d1 system.bb.parameters%s
 D s-bbprot.ads		20150506105331 f48a7e85 system.bb.protection%s
 D s-bbprot.adb		20150506105332 233a43fc system.bb.protection%b
 D s-bbthre.ads		20150506105328 d71e350d system.bb.threads%s
@@ -191,10 +193,10 @@ X 10 s-bbcppr.adb
 455r7 HW_Ctx{138R9} 464m7
 477m7 EH{5|90M9} 479r29 480r29 481r29 482r29 483r29 484r29 485r29
 X 14 s-bbpara.ads
-46K19*Parameters 9|37w16 61r34 96r33 131r6 10|45r8 59r58 14|150e25
-86b4*Has_FPU{boolean} 10|59r69
-101N4*Trap_Vectors 9|96r44
-124N4*Context_Buffer_Capacity 9|61r45 131r17
+46K19*Parameters 9|37w16 61r34 96r33 131r6 10|45r8 59r58 14|141e25
+77b4*Has_FPU{boolean} 10|59r69
+92N4*Trap_Vectors 9|96r44
+115N4*Context_Buffer_Capacity 9|61r45 131r17
 X 17 s-bbthre.ads
 49K19*Threads 10|39w16 40r16 46r8 17|306e22
 65P9*Thread_Id(62R9)

@@ -213,7 +213,7 @@ package body STM32.USARTs is
    ---------
 
    procedure Receive (This : USART;  Data : out UInt9) is
-      Timeout : constant Natural := 100;
+      Timeout : constant Natural := 10;
       Start   : constant Time    := Clock;
    begin
       --  Wait until RXNE flag is set to read data

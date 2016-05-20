@@ -1,3 +1,2 @@
 graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-arch/s-bbpara.ads"
-node: { title: "system__bb__parameters__hse_clock" label: "Hse_Clock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-arch/s-bbpara.ads:75:4\n0 bytes\n0 dynamic objects" }
 }

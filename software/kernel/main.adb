@@ -71,13 +71,13 @@ package body Main is
       CPU.initialize;
       
       Logger.set_Log_Level(CFG_LOGGER_LEVEL_UART);
-      perform_Self_Test;
+      --perform_Self_Test;
       
-      MS5611.Driver.reset;
+      --MS5611.Driver.reset;
       
       -- wait to satisfy some timing
-      delay until Clock + Milliseconds (5);
-      MS5611.Driver.init;
+      delay until Clock + Milliseconds (20);
+      --MS5611.Driver.init;
       PX4IO.Driver.initialize;
 	end initialize;
 
@@ -89,7 +89,6 @@ package body Main is
       Logger.log(Logger.DEBUG, "Logger: Debug Test Message");
       Logger.log(Logger.TRACE, "Logger: Trace Test Message");
       
-      PX4IO.Driver.initialize;
       
    end perform_Self_Test;
 
@@ -98,36 +97,58 @@ package body Main is
        data : HIL.SPI.Data_Type(1 .. 3) := (others => 0);
        data_rx : HIL.UART.Data_Type(1 .. 1) := (others => 0);
        msg : String := "Main";
+       
+       loop_time_start   : Time := Clock;
+       loop_duration_max : Time_Span := Milliseconds( 0 );
    begin
       led_manager.LED_blink(led_manager.SLOW);
       
       Logger.log(Logger.INFO, msg);
+      
+      
+      -- arm PX4IO
+      --PX4IO.Driver.arm;
+      
       loop
-	 delay until Clock + Milliseconds (200);
-	 led_manager.LED_tick(200);
+         loop_time_start := Clock;
+	 
+	 led_manager.LED_tick( MAIN_TICK_RATE_MS );
 	 led_manager.LED_sync;
          
          -- UART Test
-         HIL.UART.write(HIL.UART.Console, (70, 65) );
+         --HIL.UART.write(HIL.UART.Console, (70, 65) );
          HIL.UART.read(HIL.UART.Console, data_rx);
          
          case ( Character'Val( data_rx(1) ) ) is
          when 't' => perform_Self_Test;
          when 's' => PX4IO.Driver.read_Status;
          when 'l' => led_manager.LED_blink(led_manager.FAST);
+         when 'd' => PX4IO.Driver.disarm;
+         when 'p' => Logger.log(Logger.INFO, Integer'Image( loop_duration_max / Time_Span_Unit ) );
          when others   => null;
          end case;
          
          
+         -- PX4IO
+         PX4IO.Driver.sync_Outputs;
+         
          
          -- MS5611 Test
-         MS5611.Driver.update_val;
+         --MS5611.Driver.update_val;
          
          -- SPI Test
-         HIL.SPI.select_Chip(HIL.SPI.Extern);
-         HIL.SPI.transfer(HIL.SPI.Extern, (166, 0, 0), data );
-         HIL.SPI.deselect_Chip(HIL.SPI.Extern);
+         --HIL.SPI.select_Chip(HIL.SPI.Extern);
+         --HIL.SPI.transfer(HIL.SPI.Extern, (166, 0, 0), data );
+         --HIL.SPI.deselect_Chip(HIL.SPI.Extern);
          
+         
+         -- profile
+         if loop_duration_max < (Clock - loop_time_start) then
+            loop_duration_max := Clock - loop_time_start;
+         end if;
+         
+         -- wait remaining loop time
+         delay until loop_time_start + Milliseconds ( MAIN_TICK_RATE_MS );
       end loop;
    end run_Loop;	
 

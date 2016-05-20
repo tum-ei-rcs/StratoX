@@ -17,7 +17,13 @@ package Config.Software is
 
 	DEBUG_MODE_IS_ACTIVE : constant Boolean := True;
 
-   CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.TRACE;
+   CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;
+   
+   MAIN_TICK_RATE_MS : constant := 40;   -- Tickrate in Milliseconds
+   
+   
+   -- PX4IO Timeout RC  : 2000ms
+   -- PX4IO Timeout FMU (no controls) : 500ms
 
 
 	-- Bus Timeouts

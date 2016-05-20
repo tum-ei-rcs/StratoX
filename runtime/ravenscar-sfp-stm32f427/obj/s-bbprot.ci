@@ -1,8 +1,31 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.adb"
-node: { title: "system__bb__protection__leave_kernel" label: "Leave_Kernel\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.adb:75:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "__indirect_call" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.adb:157:35" }
+graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb"
+node: { title: "system__bb__cpu_primitives__context_switch" label: "Context_Switch\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbcppr.ads:64:14" shape : ellipse }
+node: { title: "context_switch_needed" label: "Context_Switch_Needed\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbthqu.ads:258:13" shape : ellipse }
+node: { title: "system__bb__threads__queues__extract" label: "Extract\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbthqu.ads:97:14" shape : ellipse }
+node: { title: "system__bb__cpu_primitives__enable_interrupts" label: "Enable_Interrupts\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbcppr.ads:120:14" shape : ellipse }
+node: { title: "system__bb__threads__queues__insert" label: "Insert\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbthqu.ads:51:14" shape : ellipse }
+node: { title: "system__bb__threads__queues__running_thread" label: "Running_Thread\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbthqu.ads:246:13" shape : ellipse }
+node: { title: "system__bb__threads__queues__first_thread" label: "First_Thread\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbthqu.ads:253:13" shape : ellipse }
+node: { title: "system__bb__cpu_primitives__disable_interrupts" label: "Disable_Interrupts\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbcppr.ads:112:14" shape : ellipse }
+node: { title: "system__bb__protection__leave_kernel" label: "Leave_Kernel\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:75:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__cpu_primitives__enable_interrupts" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:166:21" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__running_thread" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:167:24" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__cpu_primitives__context_switch" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:160:24" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "__indirect_call" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:157:35" }
 node: { title: "__indirect_call" label: "Indirect Call Placeholder" shape : ellipse }
-edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "__indirect_call" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.adb:122:44" }
-edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "__indirect_call" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.adb:110:35" }
-node: { title: "system__bb__protection__enter_kernel" label: "Enter_Kernel\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/gnarl-common/s-bbprot.adb:63:4\n0 bytes\n0 dynamic objects" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "context_switch_needed" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:149:24" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__extract" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:143:27" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__running_thread" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:143:51" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__running_thread" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:142:27" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__cpu_primitives__disable_interrupts" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:128:27" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__cpu_primitives__enable_interrupts" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:127:27" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "__indirect_call" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:122:44" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__running_thread" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:117:35" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__running_thread" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:116:30" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "__indirect_call" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:110:35" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__insert" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:105:24" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__running_thread" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:105:47" }
+edge: { sourcename: "system__bb__protection__leave_kernel" targetname: "system__bb__threads__queues__first_thread" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:96:24" }
+node: { title: "system__bb__protection__enter_kernel" label: "Enter_Kernel\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:63:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__bb__protection__enter_kernel" targetname: "system__bb__cpu_primitives__disable_interrupts" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbprot.adb:68:21" }
 }
