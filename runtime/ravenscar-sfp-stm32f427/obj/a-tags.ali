@@ -1,7 +1,7 @@
 V "GNAT Lib v2015"
 A -nostdinc
-A -O2
-A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -O0
+A --RTS=/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
 A -fdata-sections
@@ -14,6 +14,8 @@ A -mthumb
 A -gnatp
 A -gnatg
 A -gnatn2
+A -gnatwC
+A -g
 A -g
 P DB SS
 
@@ -44,16 +46,16 @@ W ada%s			ada.ads			ada.ali
 W system%s		system.ads		system.ali
 W system.storage_elements%s  s-stoele.adb	s-stoele.ali
 
-D ada.ads		20150506105328 3ffc8e18 ada%s
-D a-except.ads		20150506105330 5b5f0f2f ada.exceptions%s
-D a-except.adb		20150506105329 0537fae3 ada.exceptions%b
-D a-tags.ads		20150506105331 cc425f51 ada.tags%s
-D a-tags.adb		20150506105327 adf3a87b ada.tags%b
-D a-unccon.ads		20150506105331 f9eb8f06 ada.unchecked_conversion%s
-D system.ads		20150506105328 9eacb62e system%s
-D s-secsta.ads		20150506105330 a4d06a42 system.secondary_stack%s
-D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
-D s-stoele.adb		20150506105330 ed88f8fb system.storage_elements%b
+D ada.ads		20160519162255 3ffc8e18 ada%s
+D a-except.ads		20160519162255 5b5f0f2f ada.exceptions%s
+D a-except.adb		20160519162255 0537fae3 ada.exceptions%b
+D a-tags.ads		20160519162255 cc425f51 ada.tags%s
+D a-tags.adb		20160519162255 adf3a87b ada.tags%b
+D a-unccon.ads		20160519162255 f9eb8f06 ada.unchecked_conversion%s
+D system.ads		20160427145143 9eacb62e system%s
+D s-secsta.ads		20160519162255 a4d06a42 system.secondary_stack%s
+D s-stoele.ads		20160519162255 2dc34a04 system.storage_elements%s
+D s-stoele.adb		20160519162255 ed88f8fb system.storage_elements%b
 X 1 ada.ads
 16K9*Ada 19e8 4|74r9 270r5 5|35r6 38r14 51r11 54r10 57r10 143r5
 X 4 a-tags.ads

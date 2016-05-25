@@ -1,10 +1,10 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-textio.adb"
-node: { title: "system__stm32f4__rcc__system_clocks" label: "System_Clocks\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-stmrcc.ads:51:13" shape : ellipse }
-node: { title: "system__text_io__use_cr_lf_for_new_line" label: "Use_Cr_Lf_For_New_Line\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-textio.adb:114:4\n4 bytes (static)\n0 dynamic objects" }
-node: { title: "system__text_io__put" label: "Put\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-textio.adb:105:4\n16 bytes (static)\n0 dynamic objects" }
-node: { title: "system__text_io__is_rx_ready" label: "Is_Rx_Ready\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-textio.adb:99:4\n4 bytes (static)\n0 dynamic objects" }
-node: { title: "system__text_io__is_tx_ready" label: "Is_Tx_Ready\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-textio.adb:93:4\n4 bytes (static)\n0 dynamic objects" }
-node: { title: "system__text_io__initialize" label: "Initialize\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-textio.adb:59:4\n56 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "system__text_io__initialize" targetname: "system__stm32f4__rcc__system_clocks" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-textio.adb:63:56" }
-node: { title: "system__text_io__get" label: "Get\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/arch/s-textio.adb:53:4\n4 bytes (static)\n0 dynamic objects" }
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-textio.adb"
+node: { title: "system__stm32f4__rcc__system_clocks" label: "System_Clocks\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-stmrcc.ads:51:13" shape : ellipse }
+node: { title: "system__text_io__use_cr_lf_for_new_line" label: "Use_Cr_Lf_For_New_Line\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-textio.adb:114:4\n4 bytes (static)\n0 dynamic objects" }
+node: { title: "system__text_io__put" label: "Put\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-textio.adb:105:4\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "system__text_io__is_rx_ready" label: "Is_Rx_Ready\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-textio.adb:99:4\n4 bytes (static)\n0 dynamic objects" }
+node: { title: "system__text_io__is_tx_ready" label: "Is_Tx_Ready\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-textio.adb:93:4\n4 bytes (static)\n0 dynamic objects" }
+node: { title: "system__text_io__initialize" label: "Initialize\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-textio.adb:59:4\n56 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__text_io__initialize" targetname: "system__stm32f4__rcc__system_clocks" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-textio.adb:63:56" }
+node: { title: "system__text_io__get" label: "Get\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/arch/s-textio.adb:53:4\n4 bytes (static)\n0 dynamic objects" }
 }

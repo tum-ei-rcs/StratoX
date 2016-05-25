@@ -1,20 +1,25 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb"
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb"
 node: { title: "memcpy" label: "memcpy\n<built-in>" shape : ellipse }
-node: { title: "__gnat_last_chance_handler" label: "Last_Chance_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-except.adb:41:17" shape : ellipse }
-node: { title: "system__secondary_stack__ss_allocate" label: "Ss_Allocate\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.ads:54:14" shape : ellipse }
-node: { title: "ada__tags__parent_tag" label: "Parent_Tag\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:119:4\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__tags__parent_tag" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:125:10" }
-node: { title: "ada__tags__external_tag" label: "External_Tag\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:83:4\n32 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__tags__external_tag" targetname: "memcpy" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:96:7" }
-edge: { sourcename: "ada__tags__external_tag" targetname: "system__secondary_stack__ss_allocate" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:96:7" }
-edge: { sourcename: "ada__tags__external_tag" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:90:10" }
-node: { title: "ada__tags__expanded_name" label: "Expanded_Name\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:63:4\n32 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__tags__expanded_name" targetname: "memcpy" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:76:7" }
-edge: { sourcename: "ada__tags__expanded_name" targetname: "system__secondary_stack__ss_allocate" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:76:7" }
-edge: { sourcename: "ada__tags__expanded_name" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.adb:70:10" }
-node: { title: "ada__tags__no_dispatch_table_wrapperIP" label: "No_Dispatch_Table_Wrapperip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.ads:223:9\n0 bytes\n0 dynamic objects" }
-node: { title: "ada__tags__dispatch_table_wrapperIP" label: "Dispatch_Table_Wrapperip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.ads:200:9\n0 bytes\n0 dynamic objects" }
-node: { title: "ada__tags__type_specific_dataIP" label: "Type_Specific_Dataip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.ads:158:9\n0 bytes\n0 dynamic objects" }
-node: { title: "ada__tags__address_arrayIP" label: "Address_Arrayip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.ads:135:9\n4 bytes (static)\n0 dynamic objects" }
-node: { title: "ada__tags__tag_tableIP" label: "Tag_Tableip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/a-tags.ads:132:9\n4 bytes (static)\n0 dynamic objects" }
+node: { title: "__gnat_last_chance_handler" label: "Last_Chance_Handler\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-except.adb:41:17" shape : ellipse }
+node: { title: "system__secondary_stack__ss_allocate" label: "Ss_Allocate\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.ads:54:14" shape : ellipse }
+node: { title: "ada__tags__parent_tag" label: "Parent_Tag\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:119:4\n48 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__tags__parent_tag" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:125:10" }
+node: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:ada__tags__length" label: "Length\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:103:4\n24 bytes (static)\n0 dynamic objects" }
+node: { title: "ada__tags__external_tag" label: "External_Tag\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:83:4\n64 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__tags__external_tag" targetname: "memcpy" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:96:7" }
+edge: { sourcename: "ada__tags__external_tag" targetname: "system__secondary_stack__ss_allocate" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:96:7" }
+edge: { sourcename: "ada__tags__external_tag" targetname: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:ada__tags__length" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:96:27" }
+edge: { sourcename: "ada__tags__external_tag" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:90:10" }
+node: { title: "ada__tags__expanded_name" label: "Expanded_Name\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:63:4\n64 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__tags__expanded_name" targetname: "memcpy" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:76:7" }
+edge: { sourcename: "ada__tags__expanded_name" targetname: "system__secondary_stack__ss_allocate" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:76:7" }
+edge: { sourcename: "ada__tags__expanded_name" targetname: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:ada__tags__length" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:76:27" }
+edge: { sourcename: "ada__tags__expanded_name" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.adb:70:10" }
+node: { title: "ada__tags__no_dispatch_table_wrapperIP" label: "No_Dispatch_Table_Wrapperip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.ads:223:9\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "ada__tags__dispatch_table_wrapperIP" label: "Dispatch_Table_Wrapperip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.ads:200:9\n32 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__tags__dispatch_table_wrapperIP" targetname: "ada__tags__address_arrayIP" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.ads:214:7" }
+node: { title: "ada__tags__type_specific_dataIP" label: "Type_Specific_Dataip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.ads:158:9\n32 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__tags__type_specific_dataIP" targetname: "ada__tags__tag_tableIP" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.ads:192:7" }
+node: { title: "ada__tags__address_arrayIP" label: "Address_Arrayip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.ads:135:9\n24 bytes (static)\n0 dynamic objects" }
+node: { title: "ada__tags__tag_tableIP" label: "Tag_Tableip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/a-tags.ads:132:9\n24 bytes (static)\n0 dynamic objects" }
 }

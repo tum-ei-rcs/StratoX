@@ -1,7 +1,7 @@
 V "GNAT Lib v2015"
 A -nostdinc
-A -O2
-A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -O0
+A --RTS=/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
 A -fdata-sections
@@ -14,6 +14,8 @@ A -mthumb
 A -gnatp
 A -gnatg
 A -gnatn2
+A -gnatwC
+A -g
 P DB
 
 RN
@@ -29,12 +31,12 @@ W system.text_io%s	s-textio.adb		s-textio.ali
 U gnat.io%s		g-io.ads		cee68f61 NE OL PR PK
 W gnat%s		gnat.ads		gnat.ali
 
-D gnat.ads		20150506105333 fd2ad2f1 gnat%s
-D g-io.ads		20150506105327 33cc5d90 gnat.io%s
-D g-io.adb		20150506105327 4d6a3348 gnat.io%b
-D g-io-put.adb		20150506105326 56a3a5d0 gnat.io.put
-D system.ads		20150506105328 9eacb62e system%s
-D s-textio.ads		20150506105332 753250f1 system.text_io%s
+D gnat.ads		20160519162255 fd2ad2f1 gnat%s
+D g-io.ads		20160519162255 33cc5d90 gnat.io%s
+D g-io.adb		20160519162255 4d6a3348 gnat.io%b
+D g-io-put.adb		20160519162255 56a3a5d0 gnat.io.put
+D system.ads		20160427145143 9eacb62e system%s
+D s-textio.ads		20160519162255 753250f1 system.text_io%s
 X 1 gnat.ads
 34K9*GNAT 37e9 2|43r9 63r5 3|32r14 100r5 4|36r11
 X 2 g-io.ads

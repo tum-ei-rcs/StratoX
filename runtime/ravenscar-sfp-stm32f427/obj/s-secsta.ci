@@ -1,13 +1,13 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb"
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb"
 node: { title: "__gnat_last_chance_handler" label: "gnat_last_chance_handler\n<built-in>" shape : ellipse }
-node: { title: "__gnat_get_secondary_stack" label: "Get_Sec_Stack\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:53:13" shape : ellipse }
-node: { title: "system__secondary_stack__ss_release" label: "Ss_Release\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:147:4\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "system__secondary_stack__ss_release" targetname: "__gnat_get_secondary_stack" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:149:7" }
-node: { title: "system__secondary_stack__ss_mark" label: "Ss_Mark\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:138:4\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "system__secondary_stack__ss_mark" targetname: "__gnat_get_secondary_stack" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:140:14" }
-node: { title: "system__secondary_stack__ss_init" label: "Ss_Init\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:119:4\n0 bytes\n0 dynamic objects" }
-node: { title: "system__secondary_stack__ss_allocate" label: "Ss_Allocate\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:96:4\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "system__secondary_stack__ss_allocate" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:108:10" }
-edge: { sourcename: "system__secondary_stack__ss_allocate" targetname: "__gnat_get_secondary_stack" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:104:7" }
-node: { title: "system__secondary_stack__memoryIP" label: "Memoryip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-secsta.adb:40:9\n0 bytes\n0 dynamic objects" }
+node: { title: "__gnat_get_secondary_stack" label: "Get_Sec_Stack\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:53:13" shape : ellipse }
+node: { title: "system__secondary_stack__ss_release" label: "Ss_Release\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:147:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__secondary_stack__ss_release" targetname: "__gnat_get_secondary_stack" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:149:7" }
+node: { title: "system__secondary_stack__ss_mark" label: "Ss_Mark\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:138:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__secondary_stack__ss_mark" targetname: "__gnat_get_secondary_stack" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:140:14" }
+node: { title: "system__secondary_stack__ss_init" label: "Ss_Init\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:119:4\n24 bytes (static)\n0 dynamic objects" }
+node: { title: "system__secondary_stack__ss_allocate" label: "Ss_Allocate\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:96:4\n32 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__secondary_stack__ss_allocate" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:108:10" }
+edge: { sourcename: "system__secondary_stack__ss_allocate" targetname: "__gnat_get_secondary_stack" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:104:7" }
+node: { title: "system__secondary_stack__memoryIP" label: "Memoryip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-secsta.adb:40:9\n16 bytes (static)\n0 dynamic objects" }
 }

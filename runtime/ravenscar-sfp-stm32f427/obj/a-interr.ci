@@ -1,18 +1,18 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb"
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb"
 node: { title: "__gnat_last_chance_handler" label: "gnat_last_chance_handler\n<built-in>" shape : ellipse }
-node: { title: "ada__interrupts__reference" label: "Reference\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:106:4\n16 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__interrupts__reference" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:108:7" }
-node: { title: "ada__interrupts__is_reserved" label: "Is_Reserved\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:96:4\n16 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__interrupts__is_reserved" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:98:7" }
-node: { title: "ada__interrupts__is_attached" label: "Is_Attached\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:86:4\n16 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__interrupts__is_attached" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:88:7" }
-node: { title: "ada__interrupts__exchange_handler" label: "Exchange_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:73:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__interrupts__exchange_handler" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:79:7" }
-node: { title: "ada__interrupts__detach_handler" label: "Detach_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:64:4\n16 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__interrupts__detach_handler" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:66:7" }
-node: { title: "ada__interrupts__current_handler" label: "Current_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:52:4\n16 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__interrupts__current_handler" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:56:7" }
-node: { title: "ada__interrupts__attach_handler" label: "Attach_Handler\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:40:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__interrupts__attach_handler" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:45:7" }
-node: { title: "ada__interrupts__E3sIP" label: "E3sip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-interr.ads:42:4\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "ada__interrupts__reference" label: "Reference\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:106:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__interrupts__reference" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:108:7" }
+node: { title: "ada__interrupts__is_reserved" label: "Is_Reserved\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:96:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__interrupts__is_reserved" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:98:7" }
+node: { title: "ada__interrupts__is_attached" label: "Is_Attached\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:86:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__interrupts__is_attached" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:88:7" }
+node: { title: "ada__interrupts__exchange_handler" label: "Exchange_Handler\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:73:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__interrupts__exchange_handler" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:79:7" }
+node: { title: "ada__interrupts__detach_handler" label: "Detach_Handler\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:64:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__interrupts__detach_handler" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:66:7" }
+node: { title: "ada__interrupts__current_handler" label: "Current_Handler\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:52:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__interrupts__current_handler" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:56:7" }
+node: { title: "ada__interrupts__attach_handler" label: "Attach_Handler\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:40:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__interrupts__attach_handler" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.adb:45:7" }
+node: { title: "ada__interrupts__E3sIP" label: "E3sip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-interr.ads:42:4\n16 bytes (static)\n0 dynamic objects" }
 }

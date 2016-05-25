@@ -1,3 +1,3 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-memcom.adb"
-node: { title: "memcmp" label: "Memcmp\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-memcom.adb:46:4\n8 bytes (static)\n0 dynamic objects" }
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-memcom.adb"
+node: { title: "memcmp" label: "Memcmp\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-memcom.adb:46:4\n40 bytes (static)\n0 dynamic objects" }
 }
