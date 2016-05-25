@@ -21,6 +21,10 @@ with units;
 
 package Types is
 
+
+-- timestamp als 64bit unsigned integer
+
+
 --    type Data_Type is interface;
 --       procedure getData(This : in out Data_Type) is abstract;
 --       function  isValid(This : in     Data_Type) is abstract return Boolean;

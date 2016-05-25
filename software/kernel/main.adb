@@ -8,6 +8,7 @@ with Ada.Real_Time;   use Ada.Real_Time;
 with led_manager;
 with MS5611.Driver;
 with PX4IO.Driver;
+with MPU6000.Driver;
 with HIL.UART;
 with HIL.SPI;
 with Logger;
@@ -79,6 +80,8 @@ package body Main is
       delay until Clock + Milliseconds (20);
       --MS5611.Driver.init;
       PX4IO.Driver.initialize;
+      
+      MPU6000.Driver.Init;
    end initialize;
 
    procedure perform_Self_Test is
