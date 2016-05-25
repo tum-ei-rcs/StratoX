@@ -9,11 +9,30 @@ package HIL is
    -- type Byte is mod 2**8 with Size => 8;
    subtype Byte is HAL.Byte;
    
+   -- Unsigned_8
+   -- Integer_8
+   
    type Unsigned_16_Mask is new Unsigned_16;
    type Unsigned_16_Bit_ID is new Natural range 0 .. 15;
    
+   subtype Byte_Bit_Position is Integer range 0 .. 7;
+
+
+   
+   -- Arrays
    
    type Byte_Array is array(Natural range <>) of Byte;
+   
+   type Unsigned_8_Array  is array(Natural range <>) of Unsigned_8;
+   type Unsigned_16_Array is array(Natural range <>) of Unsigned_16;  
+   type Unsigned_32_Array is array(Natural range <>) of Unsigned_32;   
+   
+   type Integer_8_Array  is array(Natural range <>) of Integer_8;
+   type Integer_16_Array is array(Natural range <>) of Integer_16;  
+   type Integer_32_Array is array(Natural range <>) of Integer_32;
+   
+   
+   type Float_Array is array(Natural range <>) of Float;
 
 
    -- little endian (lowest byte first)

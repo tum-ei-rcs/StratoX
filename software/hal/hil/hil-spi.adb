@@ -26,10 +26,21 @@ package body HIL.SPI is
                                                Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale)  ; max 20 MHz for Baro
 					       First_Bit => STM32.SPI.MSB,
 					       CRC_Poly => 16#00#);
+                                               
+      MPU6000_Config : constant STM32.SPI.SPI_Configuration := (
+					       Direction => STM32.SPI.D2Lines_FullDuplex,
+					       Mode => STM32.SPI.Master,
+					       Data_Size => HAL.SPI.Data_Size_8b,
+					       Clock_Polarity => STM32.SPI.Low,
+					       Clock_Phase => STM32.SPI.P1Edge,
+					       Slave_Management => STM32.SPI.Software_Managed,
+                                               Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale)  ; max 20 MHz for Baro
+					       First_Bit => STM32.SPI.MSB,
+					       CRC_Poly => 16#00#);
 						
 					       
    begin
-       -- SPI 1 (Baro)
+       -- SPI 1 (Baro, MPU6000?)
       STM32.Device.Enable_Clock( STM32.Device.SPI_1 );  
    
       STM32.SPI.Configure(Port => STM32.Device.SPI_1, Conf => Config);

@@ -250,9 +250,9 @@ is
    function servo_Duty_Cycle(angle : in Servo_Angle_Type) return Unsigned_16 
    with post => servo_Duty_Cycle'Result >= 1_000 and servo_Duty_Cycle'Result <= 2_000
    is
-      modulo : Angle_Type := Angle_Type'Remainder(angle, SERVO_ANGLE_MAX_LIMIT);
+      -- modulo : Angle_Type := Angle_Type'Remainder(angle, SERVO_ANGLE_MAX_LIMIT + 1.0);
    begin
-      return 1_000 + Unsigned_16( Unit_Type'Remainder(angle, SERVO_ANGLE_MAX_LIMIT + 1.0 ) / SERVO_ANGLE_MAX_LIMIT * 1000.0);
+      return 1_000 + Unsigned_16( angle / SERVO_ANGLE_MAX_LIMIT * 1000.0);
    end servo_Duty_Cycle;
    
    
