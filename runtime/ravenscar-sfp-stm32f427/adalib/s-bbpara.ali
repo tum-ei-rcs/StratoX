@@ -1,7 +1,7 @@
 V "GNAT Lib v2015"
 A -nostdinc
 A -O0
-A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A --RTS=/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
 A -fdata-sections
@@ -23,19 +23,19 @@ RV NO_IMPLEMENTATION_PRAGMAS
 RV NO_IMPLEMENTATION_RESTRICTIONS
 RR NO_ELABORATION_CODE
 
-U system.bb.parameters%s  s-bbpara.ads		92a06f7a NE OL PR PK
+U system.bb.parameters%s  s-bbpara.ads		e6ba8bb1 NE OL PR PK
 W system%s		system.ads		system.ali
 W system.bb%s		s-bb.ads		s-bb.ali
 W system.stm32f4%s	s-stm32f.ads		s-stm32f.ali
 W system.stm32f4.rcc%s	s-stmrcc.adb		s-stmrcc.ali
 
-D system.ads		20150506105328 9eacb62e system%s
-D s-bb.ads		20150506105332 883768d6 system.bb%s
-D s-bbpara.ads		20160503115124 d83742d1 system.bb.parameters%s
-D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
-D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
-D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
-D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+D system.ads		20160427145143 9eacb62e system%s
+D s-bb.ads		20160519162255 883768d6 system.bb%s
+D s-bbpara.ads		20160525103512 d83742d1 system.bb.parameters%s
+D s-stm32f.ads		20160427145143 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20160525113533 47f9e05b system.stm32f4.rcc%s
+D s-stoele.ads		20160519162255 2dc34a04 system.storage_elements%s
+D s-unstyp.ads		20160519162255 9d58a4c0 system.unsigned_types%s
 X 1 system.ads
 60K9*System 173e11 3|43r6 44r6 46r9 47r25 141r5
 X 2 s-bb.ads
@@ -43,10 +43,10 @@ X 2 s-bb.ads
 X 3 s-bbpara.ads
 46K19*Parameters 2|43k16 3|47r35 141l15 141e25
 49N4*Clock_Frequency 50r19
-59e4*AHB_PRE{5|146E12}
-61e4*APB1_PRE{5|162E12}
-63e4*APB2_PRE{5|173E12}
-75i4*HSE_Clock{5|122I12}
+59e4*AHB_PRE{5|144E12}
+61e4*APB1_PRE{5|160E12}
+63e4*APB2_PRE{5|171E12}
+75i4*HSE_Clock{5|120I12}
 77b4*Has_FPU{boolean}
 87N4*Number_Of_Interrupt_ID
 92N4*Trap_Vectors
@@ -59,14 +59,14 @@ X 4 s-stm32f.ads
 35K16*STM32F4 3|43w13 44r13 50r38 59r24 60r17 61r24 62r17 63r24 64r17 75r25
 . 4|268e19
 X 5 s-stmrcc.ads
-37K24*RCC 3|44w21 50r46 59r32 60r25 61r32 62r25 63r32 64r25 75r33 5|247e23
-122I12*HSECLK_Range{integer} 3|75r37
-126I12*SYSCLK_Range{integer} 3|50r50
-140K12*CFGR 3|59r36 60r29 61r36 62r29 63r36 64r29 5|229e12
-146E12*AHB_PRE_Value 3|59r41 5|148e74
-146n30*AHBPRE_DIV1{146E12} 3|60r34
-162E12*APB1_PRE_Value 3|61r41 5|163e59
-162n59*APB1PRE_DIV4{162E12} 3|62r34
-173E12*APB2_PRE_Value 3|63r41 5|174e59
-173n45*APB2PRE_DIV2{173E12} 3|64r34
+37K24*RCC 3|44w21 50r46 59r32 60r25 61r32 62r25 63r32 64r25 75r33 5|245e23
+120I12*HSECLK_Range{integer} 3|75r37
+124I12*SYSCLK_Range{integer} 3|50r50
+138K12*CFGR 3|59r36 60r29 61r36 62r29 63r36 64r29 5|227e12
+144E12*AHB_PRE_Value 3|59r41 5|146e74
+144n30*AHBPRE_DIV1{144E12} 3|60r34
+160E12*APB1_PRE_Value 3|61r41 5|161e59
+160n59*APB1PRE_DIV4{160E12} 3|62r34
+171E12*APB2_PRE_Value 3|63r41 5|172e59
+171n45*APB2PRE_DIV2{171E12} 3|64r34
 

@@ -1,7 +1,7 @@
 V "GNAT Lib v2015"
 A -nostdinc
 A -O0
-A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/NOravenscar-sfp-stm32f427/
+A --RTS=/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
 A -fdata-sections
@@ -23,7 +23,7 @@ RV NO_IMPLICIT_LOOPS
 RV NO_IMPLEMENTATION_PRAGMAS
 RV SPARK_05
 
-U system.text_io%b	s-textio.adb		dcc081d5 NE OL PK
+U system.text_io%b	s-textio.adb		a8da651e NE OL PK
 W interfaces%s		interfac.ads		interfac.ali
 W system%s		system.ads		system.ali
 W system.bb%s		s-bb.ads		s-bb.ali
@@ -35,16 +35,16 @@ W system.unsigned_types%s  s-unstyp.ads		s-unstyp.ali
 U system.text_io%s	s-textio.ads		eb9ee6df NE OL PR PK
 W system%s		system.ads		system.ali
 
-D interfac.ads		20160413121402 6033a23f interfaces%s
-D system.ads		20150506105328 9eacb62e system%s
-D s-bb.ads		20150506105332 883768d6 system.bb%s
-D s-bbpara.ads		20160503115124 d83742d1 system.bb.parameters%s
-D s-stm32f.ads		20160412151908 f14341ed system.stm32f4%s
-D s-stmrcc.ads		20150506105332 33e30490 system.stm32f4.rcc%s
-D s-stoele.ads		20150506105332 2dc34a04 system.storage_elements%s
-D s-textio.ads		20150506105332 753250f1 system.text_io%s
-D s-textio.adb		20150506105331 d35674b7 system.text_io%b
-D s-unstyp.ads		20150506105330 9d58a4c0 system.unsigned_types%s
+D interfac.ads		20160519162255 6033a23f interfaces%s
+D system.ads		20160427145143 9eacb62e system%s
+D s-bb.ads		20160519162255 883768d6 system.bb%s
+D s-bbpara.ads		20160525103512 d83742d1 system.bb.parameters%s
+D s-stm32f.ads		20160427145143 f14341ed system.stm32f4%s
+D s-stmrcc.ads		20160525113533 47f9e05b system.stm32f4.rcc%s
+D s-stoele.ads		20160519162255 2dc34a04 system.storage_elements%s
+D s-textio.ads		20160519162255 753250f1 system.text_io%s
+D s-textio.adb		20160427145143 d35674b7 system.text_io%b
+D s-unstyp.ads		20160519162255 9d58a4c0 system.unsigned_types%s
 X 1 interfac.ads
 38K9*Interfaces 178e15 9|34w6 34r22
 X 2 system.ads
@@ -87,15 +87,15 @@ X 5 s-stm32f.ads
 245m7*CR3{46M9} 9|86m14
 251r4*USART1{234R9} 9|53r53 83m7 84m7 85m7 86m7 93r45 99r45 107m7
 X 6 s-stmrcc.ads
-37K24*RCC 247e23 9|37w21 37r47 63r53 71r7 71r32 72r7 72r32
+37K24*RCC 245e23 9|37w21 37r47 63r53 71r7 71r32 72r7 72r32
 40M12*Frequency{5|39M9}
 46m7*PCLK2{40M12} 9|63r71
 51V13*System_Clocks{42R9} 9|63s57
 70m7*AHB1ENR{5|39M9} 9|72m21 72r46
 75m7*APB2ENR{5|39M9} 9|71m21 71r46
 96r4*Registers{57R9} 9|71m11 71r36 72m11 72r36
-241m4*RCC_APB2ENR_USART1{5|39M9} 9|71r57
-244m4*RCC_AHB1ENR_GPIOB{5|39M9} 9|72r57
+239m4*RCC_APB2ENR_USART1{5|39M9} 9|71r57
+242m4*RCC_AHB1ENR_GPIOB{5|39M9} 9|72r57
 X 8 s-textio.ads
 35K16*Text_IO 2|60k9 8|81l12 81e19 9|40b21 115l12 115t19
 42U14*Initialize 9|59b14 87l8 87t18

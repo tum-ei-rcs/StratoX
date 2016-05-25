@@ -1,4 +1,4 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-maccod.ads"
-node: { title: "system__machine_code__asm_output_operand_listIP" label: "Asm_Output_Operand_Listip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-maccod.ads:54:9\n0 bytes\n0 dynamic objects" }
-node: { title: "system__machine_code__asm_input_operand_listIP" label: "Asm_Input_Operand_Listip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/s-maccod.ads:51:9\n0 bytes\n0 dynamic objects" }
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-maccod.ads"
+node: { title: "system__machine_code__asm_output_operand_listIP" label: "Asm_Output_Operand_Listip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-maccod.ads:54:9\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "system__machine_code__asm_input_operand_listIP" label: "Asm_Input_Operand_Listip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-maccod.ads:51:9\n16 bytes (static)\n0 dynamic objects" }
 }

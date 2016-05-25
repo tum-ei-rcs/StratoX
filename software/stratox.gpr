@@ -21,10 +21,11 @@ project StratoX is
       case Build_Mode is
 
          when "debug" =>
-            for Default_Switches ("ada") use ("-O0", "-gnatwa.X", "-gnatQ", "-g");
+--            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrs", "-gnatQ", "-g", "-gnato", "-gnatyak");
+            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12");
 
          when "release" =>
-            for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.X");
+            for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.Xh.k.o", "-gnatVaimrs", "-gnato", "-gnat12");
 
          when "analyze" =>
 

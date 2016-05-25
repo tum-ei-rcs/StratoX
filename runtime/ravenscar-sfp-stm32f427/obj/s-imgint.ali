@@ -1,7 +1,7 @@
 V "GNAT Lib v2015"
 A -nostdinc
-A -O2
-A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -O0
+A --RTS=/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
 A -fdata-sections
@@ -14,6 +14,8 @@ A -mthumb
 A -gnatp
 A -gnatg
 A -gnatn2
+A -gnatwC
+A -g
 P DB
 
 RN
@@ -27,9 +29,9 @@ W system%s		system.ads		system.ali
 U system.img_int%s	s-imgint.ads		9c7756ec NE OL PU PK
 W system%s		system.ads		system.ali
 
-D system.ads		20150506105328 9eacb62e system%s
-D s-imgint.ads		20150506105328 02dbe0c2 system.img_int%s
-D s-imgint.adb		20150506105329 55d8c50a system.img_int%b
+D system.ads		20160427145143 9eacb62e system%s
+D s-imgint.ads		20160519162255 02dbe0c2 system.img_int%s
+D s-imgint.adb		20160519162255 55d8c50a system.img_int%b
 X 1 system.ads
 60K9*System 173e11 2|36r9 57r5 3|32r14 98r5
 X 2 s-imgint.ads

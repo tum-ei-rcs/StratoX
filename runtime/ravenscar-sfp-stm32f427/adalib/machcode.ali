@@ -1,7 +1,7 @@
 V "GNAT Lib v2015"
 A -nostdinc
-A -O2
-A --RTS=/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/
+A -O0
+A --RTS=/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/
 A -fcallgraph-info=su,da
 A -ffunction-sections
 A -fdata-sections
@@ -14,6 +14,8 @@ A -mthumb
 A -gnatp
 A -gnatg
 A -gnatn2
+A -gnatwC
+A -g
 P DB
 
 RN
@@ -23,9 +25,9 @@ U machine_code%s	machcode.ads		68363d4e NE OL PU
 W system%s		system.ads		system.ali
 W system.machine_code%s	s-maccod.ads		s-maccod.ali
 
-D machcode.ads		20150506105332 678d4680 machine_code%s
-D system.ads		20150506105328 9eacb62e system%s
-D s-maccod.ads		20150506105330 0fbb7bce system.machine_code%s
+D machcode.ads		20160519162255 678d4680 machine_code%s
+D system.ads		20160427145143 9eacb62e system%s
+D s-maccod.ads		20160519162255 0fbb7bce system.machine_code%s
 X 1 machcode.ads
 18K9*Machine_Code=18:37
 X 2 system.ads

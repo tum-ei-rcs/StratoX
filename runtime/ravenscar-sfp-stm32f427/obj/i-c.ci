@@ -1,4 +1,4 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/i-c.ads"
-node: { title: "interfaces__c__wchar_arrayIP" label: "Wchar_Arrayip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/i-c.ads:100:9\n0 bytes\n0 dynamic objects" }
-node: { title: "interfaces__c__char_arrayIP" label: "Char_Arrayip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4/common/i-c.ads:88:9\n0 bytes\n0 dynamic objects" }
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/i-c.ads"
+node: { title: "interfaces__c__wchar_arrayIP" label: "Wchar_Arrayip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/i-c.ads:100:9\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "interfaces__c__char_arrayIP" label: "Char_Arrayip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/i-c.ads:88:9\n16 bytes (static)\n0 dynamic objects" }
 }

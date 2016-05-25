@@ -1,92 +1,92 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb"
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb"
 node: { title: "__aeabi_ldivmod" label: "aeabi_ldivmod\n<built-in>" shape : ellipse }
 node: { title: "__aeabi_uldivmod" label: "aeabi_uldivmod\n<built-in>" shape : ellipse }
-node: { title: "system__tasking__initialize" label: "Initialize\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-taskin.ads:375:14" shape : ellipse }
-node: { title: "system__bb__board_support__ticks_per_second" label: "Ticks_Per_Second\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-bbbosu.ads:75:13" shape : ellipse }
-node: { title: "system__task_primitives__operations__monotonic_clock" label: "Monotonic_Clock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-taprop.ads:100:13" shape : ellipse }
+node: { title: "system__tasking__initialize" label: "Initialize\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-taskin.ads:375:14" shape : ellipse }
+node: { title: "system__bb__board_support__ticks_per_second" label: "Ticks_Per_Second\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-bbbosu.ads:75:13" shape : ellipse }
+node: { title: "system__task_primitives__operations__monotonic_clock" label: "Monotonic_Clock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-taprop.ads:100:13" shape : ellipse }
 node: { title: "__gnat_last_chance_handler" label: "gnat_last_chance_handler\n<built-in>" shape : ellipse }
-node: { title: "ada__real_time___elabs" label: "Real_Time\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:41:1\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time___elabs" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:48:22" }
-edge: { sourcename: "ada__real_time___elabs" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:48:53" }
-node: { title: "ada__real_time___elabb" label: "Real_Time\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:41:1\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time___elabb" targetname: "system__tasking__initialize" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:576:18" }
-node: { title: "ada__real_time__to_time_span" label: "To_Time_Span\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:544:4\n40 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__to_time_span" targetname: "ada__real_time__mul_div" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:558:10" }
-edge: { sourcename: "ada__real_time__to_time_span" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:559:22" }
-node: { title: "ada__real_time__to_duration" label: "To_Duration\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:505:4\n40 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__to_duration" targetname: "ada__real_time__mul_div" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:529:20" }
-edge: { sourcename: "ada__real_time__to_duration" targetname: "ada__real_time__mul_div" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:528:20" }
-edge: { sourcename: "ada__real_time__to_duration" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:516:7" }
-node: { title: "ada__real_time__mul_div" label: "Mul_Div\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:434:4\n96 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__mul_div" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:495:10" }
-edge: { sourcename: "ada__real_time__mul_div" targetname: "__aeabi_uldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:488:17" }
-edge: { sourcename: "ada__real_time__mul_div" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:479:10" }
-edge: { sourcename: "ada__real_time__mul_div" targetname: "__aeabi_uldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:472:17" }
-node: { title: "ada__real_time__time_of" label: "Time_Of\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:367:4\n56 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "ada__real_time__Oadd" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:426:10" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:418:10" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "__aeabi_uldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:417:23" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:409:16" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "__aeabi_uldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:407:33" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "ada__real_time__Oadd__2" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:392:13" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "ada__real_time__Oadd__3" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:393:18" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:388:22" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:387:38" }
-edge: { sourcename: "ada__real_time__time_of" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:368:39" }
-node: { title: "ada__real_time__split" label: "Split\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:356:4\n48 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__split" targetname: "ada__real_time__Osubtract__2" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:360:15" }
-edge: { sourcename: "ada__real_time__split" targetname: "__aeabi_uldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:359:30" }
-edge: { sourcename: "ada__real_time__split" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:357:39" }
-node: { title: "ada__real_time__seconds" label: "Seconds\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:345:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__seconds" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:349:43" }
-node: { title: "ada__real_time__nanoseconds" label: "Nanoseconds\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:333:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__nanoseconds" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:337:7" }
-edge: { sourcename: "ada__real_time__nanoseconds" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:338:29" }
-node: { title: "ada__real_time__minutes" label: "Minutes\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:312:4\n56 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__minutes" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:325:44" }
-edge: { sourcename: "ada__real_time__minutes" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:323:10" }
-edge: { sourcename: "ada__real_time__minutes" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:314:7" }
-edge: { sourcename: "ada__real_time__minutes" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:314:51" }
-edge: { sourcename: "ada__real_time__minutes" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:313:7" }
-edge: { sourcename: "ada__real_time__minutes" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:313:51" }
-node: { title: "ada__real_time__milliseconds" label: "Milliseconds\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:300:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__milliseconds" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:304:7" }
-edge: { sourcename: "ada__real_time__milliseconds" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:305:29" }
-node: { title: "ada__real_time__microseconds" label: "Microseconds\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:288:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__microseconds" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:292:7" }
-edge: { sourcename: "ada__real_time__microseconds" targetname: "system__bb__board_support__ticks_per_second" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:293:29" }
-node: { title: "ada__real_time__clock" label: "Clock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:279:4\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__clock" targetname: "system__task_primitives__operations__monotonic_clock" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:281:7" }
-node: { title: "ada__real_time__Odivide__2" label: "/\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:268:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Odivide__2" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:272:7" }
-edge: { sourcename: "ada__real_time__Odivide__2" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:272:19" }
-edge: { sourcename: "ada__real_time__Odivide__2" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:272:19" }
-node: { title: "ada__real_time__Odivide" label: "/\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:261:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Odivide" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
-edge: { sourcename: "ada__real_time__Odivide" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:14" }
-edge: { sourcename: "ada__real_time__Odivide" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
-edge: { sourcename: "ada__real_time__Odivide" targetname: "__aeabi_ldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
-edge: { sourcename: "ada__real_time__Odivide" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
-edge: { sourcename: "ada__real_time__Odivide" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
-node: { title: "ada__real_time__Osubtract__4" label: "-\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:251:4\n16 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Osubtract__4" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:254:14" }
-node: { title: "ada__real_time__Osubtract__3" label: "-\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:245:4\n32 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Osubtract__3" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:248:14" }
-node: { title: "ada__real_time__Osubtract__2" label: "-\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:223:4\n32 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Osubtract__2" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:241:10" }
-edge: { sourcename: "ada__real_time__Osubtract__2" targetname: "ada__real_time__Osubtract__3" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:238:10" }
-edge: { sourcename: "ada__real_time__Osubtract__2" targetname: "ada__real_time__Osubtract__4" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:238:17" }
-node: { title: "ada__real_time__Osubtract" label: "-\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:194:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Osubtract" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:219:10" }
-node: { title: "ada__real_time__Oadd__3" label: "+\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:184:4\n32 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Oadd__3" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:187:14" }
-node: { title: "ada__real_time__Oadd" label: "+\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:155:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Oadd" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:180:10" }
-node: { title: "ada__real_time__Omultiply__2" label: "*\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:146:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Omultiply__2" targetname: "ada__real_time__Omultiply" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:148:7" }
-node: { title: "ada__real_time__Omultiply" label: "*\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:114:4\n56 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Omultiply" targetname: "__gnat_last_chance_handler" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:140:10" }
-edge: { sourcename: "ada__real_time__Omultiply" targetname: "__aeabi_uldivmod" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:139:44" }
-node: { title: "ada__real_time__Oadd__2" label: "+\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:68:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Oadd__2" targetname: "ada__real_time__Oadd" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:69:13" }
+node: { title: "ada__real_time___elabs" label: "Real_Time\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:41:1\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time___elabs" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:48:22" }
+edge: { sourcename: "ada__real_time___elabs" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:48:53" }
+node: { title: "ada__real_time___elabb" label: "Real_Time\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:41:1\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time___elabb" targetname: "system__tasking__initialize" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:576:18" }
+node: { title: "ada__real_time__to_time_span" label: "To_Time_Span\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:544:4\n40 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__to_time_span" targetname: "ada__real_time__mul_div" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:558:10" }
+edge: { sourcename: "ada__real_time__to_time_span" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:559:22" }
+node: { title: "ada__real_time__to_duration" label: "To_Duration\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:505:4\n40 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__to_duration" targetname: "ada__real_time__mul_div" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:529:20" }
+edge: { sourcename: "ada__real_time__to_duration" targetname: "ada__real_time__mul_div" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:528:20" }
+edge: { sourcename: "ada__real_time__to_duration" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:516:7" }
+node: { title: "ada__real_time__mul_div" label: "Mul_Div\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:434:4\n96 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__mul_div" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:495:10" }
+edge: { sourcename: "ada__real_time__mul_div" targetname: "__aeabi_uldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:488:17" }
+edge: { sourcename: "ada__real_time__mul_div" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:479:10" }
+edge: { sourcename: "ada__real_time__mul_div" targetname: "__aeabi_uldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:472:17" }
+node: { title: "ada__real_time__time_of" label: "Time_Of\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:367:4\n56 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "ada__real_time__Oadd" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:426:10" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:418:10" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "__aeabi_uldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:417:23" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:409:16" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "__aeabi_uldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:407:33" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "ada__real_time__Oadd__2" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:392:13" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "ada__real_time__Oadd__3" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:393:18" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:388:22" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:387:38" }
+edge: { sourcename: "ada__real_time__time_of" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:368:39" }
+node: { title: "ada__real_time__split" label: "Split\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:356:4\n48 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__split" targetname: "ada__real_time__Osubtract__2" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:360:15" }
+edge: { sourcename: "ada__real_time__split" targetname: "__aeabi_uldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:359:30" }
+edge: { sourcename: "ada__real_time__split" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:357:39" }
+node: { title: "ada__real_time__seconds" label: "Seconds\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:345:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__seconds" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:349:43" }
+node: { title: "ada__real_time__nanoseconds" label: "Nanoseconds\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:333:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__nanoseconds" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:337:7" }
+edge: { sourcename: "ada__real_time__nanoseconds" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:338:29" }
+node: { title: "ada__real_time__minutes" label: "Minutes\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:312:4\n56 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__minutes" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:325:44" }
+edge: { sourcename: "ada__real_time__minutes" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:323:10" }
+edge: { sourcename: "ada__real_time__minutes" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:314:7" }
+edge: { sourcename: "ada__real_time__minutes" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:314:51" }
+edge: { sourcename: "ada__real_time__minutes" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:313:7" }
+edge: { sourcename: "ada__real_time__minutes" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:313:51" }
+node: { title: "ada__real_time__milliseconds" label: "Milliseconds\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:300:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__milliseconds" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:304:7" }
+edge: { sourcename: "ada__real_time__milliseconds" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:305:29" }
+node: { title: "ada__real_time__microseconds" label: "Microseconds\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:288:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__microseconds" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:292:7" }
+edge: { sourcename: "ada__real_time__microseconds" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:293:29" }
+node: { title: "ada__real_time__clock" label: "Clock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:279:4\n8 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__clock" targetname: "system__task_primitives__operations__monotonic_clock" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:281:7" }
+node: { title: "ada__real_time__Odivide__2" label: "/\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:268:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Odivide__2" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:272:7" }
+edge: { sourcename: "ada__real_time__Odivide__2" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:272:19" }
+edge: { sourcename: "ada__real_time__Odivide__2" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:272:19" }
+node: { title: "ada__real_time__Odivide" label: "/\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:261:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Odivide" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
+edge: { sourcename: "ada__real_time__Odivide" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:14" }
+edge: { sourcename: "ada__real_time__Odivide" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
+edge: { sourcename: "ada__real_time__Odivide" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
+edge: { sourcename: "ada__real_time__Odivide" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
+edge: { sourcename: "ada__real_time__Odivide" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:265:34" }
+node: { title: "ada__real_time__Osubtract__4" label: "-\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:251:4\n16 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Osubtract__4" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:254:14" }
+node: { title: "ada__real_time__Osubtract__3" label: "-\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:245:4\n32 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Osubtract__3" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:248:14" }
+node: { title: "ada__real_time__Osubtract__2" label: "-\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:223:4\n32 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Osubtract__2" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:241:10" }
+edge: { sourcename: "ada__real_time__Osubtract__2" targetname: "ada__real_time__Osubtract__3" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:238:10" }
+edge: { sourcename: "ada__real_time__Osubtract__2" targetname: "ada__real_time__Osubtract__4" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:238:17" }
+node: { title: "ada__real_time__Osubtract" label: "-\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:194:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Osubtract" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:219:10" }
+node: { title: "ada__real_time__Oadd__3" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:184:4\n32 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Oadd__3" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:187:14" }
+node: { title: "ada__real_time__Oadd" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:155:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Oadd" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:180:10" }
+node: { title: "ada__real_time__Omultiply__2" label: "*\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:146:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Omultiply__2" targetname: "ada__real_time__Omultiply" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:148:7" }
+node: { title: "ada__real_time__Omultiply" label: "*\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:114:4\n56 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Omultiply" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:140:10" }
+edge: { sourcename: "ada__real_time__Omultiply" targetname: "__aeabi_uldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:139:44" }
+node: { title: "ada__real_time__Oadd__2" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:68:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Oadd__2" targetname: "ada__real_time__Oadd" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:69:13" }
 }

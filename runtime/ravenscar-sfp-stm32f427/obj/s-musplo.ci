@@ -1,8 +1,8 @@
-graph: { title: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb"
-node: { title: "system__multiprocessors__spin_locks__unlock" label: "Unlock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:80:4\n16 bytes (static)\n0 dynamic objects" }
-node: { title: "system__multiprocessors__spin_locks__try_lock" label: "Try_Lock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:64:4\n24 bytes (static)\n0 dynamic objects" }
-node: { title: "system__multiprocessors__spin_locks__locked" label: "Locked\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:55:4\n16 bytes (static)\n0 dynamic objects" }
-node: { title: "system__multiprocessors__spin_locks__lock" label: "Lock\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:39:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "system__multiprocessors__spin_locks__lock" targetname: "system__multiprocessors__spin_locks__try_lock" label: "/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:46:10" }
-node: { title: "system__multiprocessors__spin_locks__spin_lockIP" label: "Spin_Lockip\n/home/emu/Software/gnatarm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.ads:41:9\n16 bytes (static)\n0 dynamic objects" }
+graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb"
+node: { title: "system__multiprocessors__spin_locks__unlock" label: "Unlock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:80:4\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "system__multiprocessors__spin_locks__try_lock" label: "Try_Lock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:64:4\n24 bytes (static)\n0 dynamic objects" }
+node: { title: "system__multiprocessors__spin_locks__locked" label: "Locked\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:55:4\n16 bytes (static)\n0 dynamic objects" }
+node: { title: "system__multiprocessors__spin_locks__lock" label: "Lock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:39:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "system__multiprocessors__spin_locks__lock" targetname: "system__multiprocessors__spin_locks__try_lock" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.adb:46:10" }
+node: { title: "system__multiprocessors__spin_locks__spin_lockIP" label: "Spin_Lockip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-musplo.ads:41:9\n16 bytes (static)\n0 dynamic objects" }
 }

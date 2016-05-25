@@ -114,9 +114,7 @@ package System.STM32F4.RCC is
    subtype PLLM_Range is Integer range 2 .. 63;
    subtype PLLN_Range is Integer range 192 .. 432;
    subtype PLLP_Range is Integer range 2 .. 8
-     with Static_Predicate => (case PLLP_Range is
-                                 when 2 | 4 | 6 | 8 => True,
-                                 when others => False);
+     with Static_Predicate => (PLLP_Range in 2 | 4 | 6 | 8);
    subtype PLLQ_Range is Integer range 2 .. 15;
 
    subtype HSECLK_Range is Integer range   1_000_000 ..  26_000_000;
