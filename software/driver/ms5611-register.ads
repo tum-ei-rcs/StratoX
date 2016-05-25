@@ -17,14 +17,12 @@ private package MS5611.Register is
    TEMP_HIGH     : constant := 20.0;
    TEMP_LOW      : constant := -15.0;
 
-
-   --Address
+   -- SPI Address of chip
    BAROMETER_ADR : constant := 16#77#;  -- I2C-Address of the barometer
 
    -- Commands
-   CMD_RESET     : constant Command_Type := 16#1E#; -- ADC reset command
-   CMD_ADC_READ  : constant Command_Type := 16#00#; -- ADC read command
-
+   CMD_RESET        : constant Command_Type := 16#1E#; -- ADC reset command
+   CMD_ADC_READ     : constant Command_Type := 16#00#; -- ADC read command
 
    CMD_D1_CONV_256  : constant Command_Type := 16#40#;  -- Pressure Conversion commands
    CMD_D1_CONV_512  : constant Command_Type := 16#42#;
@@ -38,14 +36,12 @@ private package MS5611.Register is
    CMD_D2_CONV_2048 : constant Command_Type := 16#56#;
    CMD_D2_CONV_4096 : constant Command_Type := 16#58#;
 
-
-   CMD_READ_C1        : constant Command_Type := 16#A2#; -- C1 read command
-   CMD_READ_C2        : constant Command_Type := 16#A4#; -- C2
-   CMD_READ_C3        : constant Command_Type := 16#A6#; -- C3
-   CMD_READ_C4        : constant Command_Type := 16#A8#; -- C4
-   CMD_READ_C5        : constant Command_Type := 16#AA#; -- C5
-   CMD_READ_C6        : constant Command_Type := 16#AC#; -- C6
-   CMD_READ_CRC       : constant Command_Type := 16#AE#; -- CRC
-
+   CMD_READ_C1      : constant Command_Type := 16#A2#; -- C1 read command
+   CMD_READ_C2      : constant Command_Type := 16#A4#; -- C2
+   CMD_READ_C3      : constant Command_Type := 16#A6#; -- C3
+   CMD_READ_C4      : constant Command_Type := 16#A8#; -- C4
+   CMD_READ_C5      : constant Command_Type := 16#AA#; -- C5
+   CMD_READ_C6      : constant Command_Type := 16#AC#; -- C6
+   CMD_READ_CRC     : constant Command_Type := 16#AE#; -- CRC
 
 end MS5611.Register;

@@ -3,15 +3,14 @@
 -- Project: StratoX
 --
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
---
--- Description: Driver for the Barometer MS5611-01BA03
---
--- ToDo:
--- [ ] Adjustment to current System
--- [ ] Use HIL.I2C
-
 with Units;
 
+-- @summary
+-- Driver for the Barometer MS5611-01BA03
+--
+-- ToDo:
+--  - Adjustment to current System
+--  - Use HIL.I2C
 package MS5611.Driver is
 
    type Device_Type is (Baro, NONE);
@@ -21,7 +20,7 @@ package MS5611.Driver is
    subtype Time_Type is Units.Time_Type;
 
    subtype Temperature_Type is
-     Units.Temperature_Type range 233.15 .. 358.15;  -- -40 .. 85degC, limits from datasheet
+     Units.Temperature_Type range 233.15 .. 358.15;  -- (-)40 .. 85degC, limits from datasheet
    subtype Pressure_Type is
      Units.Pressure_Type range 1000.0 .. 120000.0;   -- 10 .. 1200 mbar, limits from datasheet
 
@@ -41,17 +40,21 @@ package MS5611.Driver is
    -- initialize the device, get chip-specific compensation values
 
    procedure update_val;
-   -- read measurements values. Should be called periodically.
+   -- trigger measurement update. Should be called periodically.
 
    function get_temperature return Temperature_Type;
-   -- return the last known temperature measurement.
+   -- get temperature from buffer
+   -- @return the last known temperature measurement
 
    function get_pressure return Pressure_Type;
-   -- return the last known pressure measurement
+   -- get barometric pressure from buffer
+   -- @return the last known pressure measurement
 
    procedure self_check (Status : out Error_Type);
-   -- \brief This function implements the self-check of the barometer.
-   -- It checks the measured altitude for validity by comparing them to
-   -- altitude_offset. Furthermore it can adapt the takeoff altitude.
+   -- implements the self-check of the barometer.
+   -- It checks the measured altitude for validity by
+   -- comparing them to altitude_offset. Furthermore it can adapt
+   -- the takeoff altitude.
+   -- @param Status returns the result of self check
 
 end MS5611.Driver;

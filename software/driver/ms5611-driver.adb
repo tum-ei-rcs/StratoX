@@ -1,17 +1,15 @@
+--
 with Units;
 use type Units.Unit_Type;
 with HIL.SPI;   -- Hardware Interface to SPI
 with MS5611.Register; use MS5611.Register;
---with Logger;    -- Log errors and debug info
 
 package body MS5611.Driver is
-   --pragma Unssuppress( Overflow_Check );
-   --pragma Unsuppress( Range_Check );
 
    type Data_Array is array (Natural range <>) of HIL.Byte with
         Component_Size => 8;
 
-      -- define baro states
+   -- baro device states
    type Baro_FSM_Type is
      (NOT_INITIALIZED, READY, TEMPERATURE_CONVERSION, PRESSURE_CONVERSION);
 
@@ -20,6 +18,10 @@ package body MS5611.Driver is
       Start : Time_Type;
    end record;
 
+   -- the current state of the sensor device
+   -- @field FSM_State what the device is currently doing
+   -- @field Conv_Info_Temp context for state TEMPERATURE_CONVERSION
+   -- @field Conv_Info_Pres context for state PRESSURE_CONVERSION
    type Baro_State_Type is record
       FSM_State      : Baro_FSM_Type;
       Conv_Info_Temp : Conversion_Info_Type;
@@ -28,7 +30,7 @@ package body MS5611.Driver is
 
    type Conversion_Time_LUT_Type is array (OSR_Type) of Time_Type;
 
-   type Coefficient_ID_Type is (SENS_T1, OFF_T1, TCS, TCO, T_REF, TEMPSENS);
+   type Coefficient_ID_Type is (COEFF_SENS_T1, COEFF_OFF_T1, COEFF_TCS, COEFF_TCO, COEFF_T_REF, COEFF_TEMPSENS);
    type Coefficient_Data_Type is mod 2**16 with
         Size => 16;
 
@@ -38,23 +40,28 @@ package body MS5611.Driver is
    subtype DT_Type is Float range -16776960.9 .. 16777216.9;
    subtype Sense_Type is Float range -4294836225.9 .. 6442352640.9;
    subtype OFF_Type is Float range -8589672450.9 .. 12884705280.9;
-
    subtype TEMP_Type is Float range -4000.9 .. 8500.9;
 
    -- Forward Declarations
+
    procedure startConversion (ID : Conversion_ID_Type; OSR : OSR_Type);
    function calculateTemperatureDifference
      (Temp_Raw : Conversion_Data_Type;
       T_Ref    : Float) return DT_Type;
-   function calculateTEMP (dT : DT_Type; tempsens : Float) return TEMP_Type;
+   function calculateTEMP (thisDT : DT_Type; tempsens : Float) return TEMP_Type;
    procedure compensateTemperature;
 
-   function convertToKelvin (Temp : in TEMP_Type) return Temperature_Type;
+   function convertToKelvin (thisTemp : in TEMP_Type) return Temperature_Type;
 
    function calculatePressure
-     (Pressure_Raw : Conversion_Data_Type;
-      SENS         : Sense_Type;
-      OFF          : OFF_Type) return Pressure_Type;
+     (arg_pressure_raw : Conversion_Data_Type;
+      arg_sense        : Sense_Type;
+      arg_offset       : OFF_Type) return Pressure_Type;
+   -- calculate physical pressure from raw measurements
+   -- @param arg_pressure_raw raw pressure data
+   -- @param arg_sense raw sense data
+   -- @param arg_offset calibration offset
+   -- @return barometric pressure
 
    -- maximum conversion times (taken from the datasheet)
    Conversion_Time_LUT : constant Conversion_Time_LUT_Type :=
@@ -71,18 +78,15 @@ package body MS5611.Driver is
       Conv_Info_Pres => (OSR_256, Time_Type (0.0)));
 
    -- calibration variables (read values)
-   G_sens_t1 : Float := 0.0;  -- Pressure sensitivity (54487)
-   G_off_t1  : Float := 0.0;  -- Pressure offset (51552)
-   G_tcs     : Float :=
-     0.0;  -- Temperature coefficient of pressure sensitivity (33258)
-   G_tco : Float := 0.0;  -- Temperature coefficient of pressure offset (27255)
+   G_sens_t1  : Float := 0.0;  -- Pressure sensitivity (54487)
+   G_off_t1   : Float := 0.0;  -- Pressure offset (51552)
+   G_tcs      : Float := 0.0;  -- Temperature coefficient of pressure sensitivity (33258)
+   G_tco      : Float := 0.0;  -- Temperature coefficient of pressure offset (27255)
    G_t_ref    : Float := 0.0;  -- barometer reference temperature (29426)
-   G_tempsens : Float :=
-     0.0;  -- Temperature coefficient of the temperature (27777)
+   G_tempsens : Float := 0.0;  -- Temperature coefficient of the temperature (27777)
 
    -- ADC values
-   temperature_raw : Conversion_Data_Type :=
-     0;  -- raw temperture read from baro
+   temperature_raw : Conversion_Data_Type := 0;  -- raw temperture read from baro
    pressure_raw : Conversion_Data_Type := 0;  -- raw pressure read from baro
 
    -- Compensation values
@@ -102,14 +106,18 @@ package body MS5611.Driver is
    -- the following procedures access the Hardware Interface Layer (HIL)
 
    procedure selectDevice (Device : Device_Type) is
-   begin
-      HIL.SPI.select_Chip (HIL.SPI.Barometer);
-   end selectDevice;
+    begin
+        if Device = Baro then
+            HIL.SPI.select_Chip (HIL.SPI.Barometer);
+        end if;
+    end selectDevice;
 
    procedure deselectDevice (Device : Device_Type) is
-   begin
-      HIL.SPI.deselect_Chip (HIL.SPI.Barometer);
-   end deselectDevice;
+    begin
+        if Device = Baro then
+            HIL.SPI.deselect_Chip (HIL.SPI.Barometer);
+        end if;
+    end deselectDevice;
 
    procedure writeToDevice (Device : Device_Type; data : in Data_Array) is
    begin
@@ -142,7 +150,7 @@ package body MS5611.Driver is
 --        Return Result;
 --     end Convert;
 
-   -- \brief reads a PROM coefficient value
+   -- reads a PROM coefficient value
    procedure read_coefficient
      (Device     :     Device_Type;
       coeff_id   :     Coefficient_ID_Type;
@@ -152,17 +160,17 @@ package body MS5611.Driver is
       Data_RX : Data_Array (1 .. 3) := (others => 0);
    begin
       case coeff_id is
-         when SENS_T1 =>
+         when COEFF_SENS_T1 =>
             Data_TX (1) := HIL.Byte (CMD_READ_C1);
-         when OFF_T1 =>
+         when COEFF_OFF_T1 =>
             Data_TX (1) := HIL.Byte (CMD_READ_C2);
-         when TCS =>
+         when COEFF_TCS =>
             Data_TX (1) := HIL.Byte (CMD_READ_C3);
-         when TCO =>
+         when COEFF_TCO =>
             Data_TX (1) := HIL.Byte (CMD_READ_C4);
-         when T_REF =>
+         when COEFF_T_REF =>
             Data_TX (1) := HIL.Byte (CMD_READ_C5);
-         when TEMPSENS =>
+         when COEFF_TEMPSENS =>
             Data_TX (1) := HIL.Byte (CMD_READ_C6);
       end case;
 
@@ -173,7 +181,7 @@ package body MS5611.Driver is
       -- coeff_data := Convert( data(1 .. 2) );
    end read_coefficient;
 
-   -- \brief reads the 24 bit ADC value from the barometer
+   -- reads the 24 bit ADC value from the barometer
    procedure read_adc
      (Device    :     Device_Type;
       adc_value : out Conversion_Data_Type) with
@@ -194,7 +202,7 @@ package body MS5611.Driver is
       writeToDevice (Baro, (1 => HIL.Byte (CMD_RESET)));
    end reset;
 
-   -- \brief This function sequentially initializes the barometer.
+   -- This function sequentially initializes the barometer.
    -- Therefore, the barometer is reset, the PROM-Coefficients are read and the starting-height (altitude_offset) is calculated.
    procedure init is
       c1 : Coefficient_Data_Type := 0;
@@ -204,22 +212,22 @@ package body MS5611.Driver is
       c5 : Coefficient_Data_Type := 0;
       c6 : Coefficient_Data_Type := 0;
    begin
-      read_coefficient (Baro, SENS_T1, c1);
+      read_coefficient (Baro, COEFF_SENS_T1, c1);
       G_sens_t1 := Float (c1) * Float (2**15);
 
-      read_coefficient (Baro, OFF_T1, c2);
+      read_coefficient (Baro, COEFF_OFF_T1, c2);
       G_off_t1 := Float (c2) * Float (2**16);
 
-      read_coefficient (Baro, TCS, c3);
+      read_coefficient (Baro, COEFF_TCS, c3);
       G_tcs := Float (c3) / Float (2**8);
 
-      read_coefficient (Baro, TCO, c4);
+      read_coefficient (Baro, COEFF_TCO, c4);
       G_tco := Float (c4) / Float (2**7);
 
-      read_coefficient (Baro, T_REF, c5);
+      read_coefficient (Baro, COEFF_T_REF, c5);
       G_t_ref := Float (c5) * Float (2**8);
 
-      read_coefficient (Baro, TEMPSENS, c6);
+      read_coefficient (Baro, COEFF_TEMPSENS, c6);
       G_tempsens := Float (c6) / Float (2**23);
 
       G_Baro_State.FSM_State := READY;
@@ -228,7 +236,7 @@ package body MS5611.Driver is
 
    procedure update_val is
    begin
-      -- Borometer takes 10ms (8.2ms) for one conversion, barometer_update_val gets called every main_loop (5ms)
+      -- Barometer takes 10ms (8.2ms) for one conversion, barometer_update_val gets called every main_loop (5ms)
       -- read conversion value every second to make sure barometer timing constraint is not violated
       case G_Baro_State.FSM_State is
 
@@ -271,7 +279,7 @@ package body MS5611.Driver is
       end if;
 
       -- read coefficient again and check equality
-      read_coefficient (Baro, SENS_T1, c3);
+      read_coefficient (Baro, COEFF_SENS_T1, c3);
       if (Float (c3) /= G_tcs) then
          Status := FAILURE;
       else
@@ -328,14 +336,14 @@ package body MS5611.Driver is
       return DT_Type (Float (Temp_Raw) - T_Ref);
    end calculateTemperatureDifference;
 
-   function calculateTEMP (dT : DT_Type; tempsens : Float) return TEMP_Type is
+   function calculateTEMP (thisDT : DT_Type; tempsens : Float) return TEMP_Type is
    begin
-      return 2000.0 + TEMP_Type (dT * tempsens);
+      return 2000.0 + TEMP_Type (thisDT * tempsens);
    end calculateTEMP;
 
-   function convertToKelvin (Temp : in TEMP_Type) return Temperature_Type is
+   function convertToKelvin (thisTemp : in TEMP_Type) return Temperature_Type is
    begin
-      return Temperature_Type (G_CELSIUS_0 + Temp / 100.0);
+      return Temperature_Type (G_CELSIUS_0 + thisTemp / 100.0);
    end convertToKelvin;
 
    -- compensates values according to datasheet
@@ -361,13 +369,13 @@ package body MS5611.Driver is
    end compensateTemperature;
 
    function calculatePressure
-     (Pressure_Raw : Conversion_Data_Type;
-      SENS         : Sense_Type;
-      OFF          : OFF_Type) return Pressure_Type
+     (arg_pressure_raw : Conversion_Data_Type;
+      arg_sense        : Sense_Type;
+      arg_offset       : OFF_Type) return Pressure_Type
    is
    begin
       return Pressure_Type
-          ((Float (Pressure_Raw) * SENS / Float (2**21) - OFF) /
+          ((Float (arg_pressure_raw) * arg_sense / Float (2**21) - arg_offset) /
            Float (2**15));
    end calculatePressure;
 
