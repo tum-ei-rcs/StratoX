@@ -13,6 +13,7 @@
 
 
 with HIL.UART;
+with SDIO.Driver;
 
 package body Logger --with SPARK_Mode 
 is

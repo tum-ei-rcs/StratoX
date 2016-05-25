@@ -30,6 +30,7 @@ is
 
 	procedure set_Log_Level(level : Log_Level);
 
+-- TODO: separate task for SDIO logging, reading from a buffer. Because SDIO is slow.
 private
 	package Adapter is
 		procedure init(status : out Init_Error_Code);
