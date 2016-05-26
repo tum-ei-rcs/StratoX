@@ -38,7 +38,7 @@ with System.Task_Primitives.Operations;
 
 with Ada.Unchecked_Conversion;
 
-package body Ada.Real_Time is
+package body Ada.Real_Time with SPARK_Mode => Off is
    pragma Suppress (Overflow_Check);
    --  This package has careful manual overflow checks, and unsupresses them
    --  where appropriate. This default enables compilation with checks enabled

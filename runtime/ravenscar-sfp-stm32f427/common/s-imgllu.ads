@@ -35,7 +35,7 @@
 
 with System.Unsigned_Types;
 
-package System.Img_LLU is
+package System.Img_LLU with SPARK_Mode => Off is
    pragma Pure;
 
    procedure Image_Long_Long_Unsigned

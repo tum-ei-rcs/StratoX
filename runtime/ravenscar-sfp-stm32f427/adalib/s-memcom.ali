@@ -24,24 +24,24 @@ RV NO_UNCHECKED_CONVERSION
 RV NO_IMPLEMENTATION_PRAGMAS
 RV SPARK_05
 
-U system.memory_compare%b  s-memcom.adb		a6251283 NE OL PK
+U system.memory_compare%b  s-memcom.adb		9db77c93 NE OL PK
 W ada%s			ada.ads			ada.ali
 W ada.unchecked_conversion%s
 W interfaces%s		interfac.ads		interfac.ali
 W interfaces.c%s	i-c.ads			i-c.ali
 W system%s		system.ads		system.ali
 
-U system.memory_compare%s  s-memcom.ads		3b4082db NE OL PR PK
+U system.memory_compare%s  s-memcom.ads		e2224a69 NE OL PR PK
 W interfaces%s		interfac.ads		interfac.ali
 W interfaces.c%s	i-c.ads			i-c.ali
 W system%s		system.ads		system.ali
 
-D ada.ads		20160519162255 3ffc8e18 ada%s
-D a-unccon.ads		20160519162255 f9eb8f06 ada.unchecked_conversion%s
-D interfac.ads		20160519162255 6033a23f interfaces%s
-D i-c.ads		20160519162255 ed15b264 interfaces.c%s
-D system.ads		20160427145143 9eacb62e system%s
-D s-memcom.ads		20160519162255 48f98691 system.memory_compare%s
+D ada.ads		20160526162845 3ffc8e18 ada%s
+D a-unccon.ads		20160526162805 f9eb8f06 ada.unchecked_conversion%s
+D interfac.ads		20160526163414 fd31ed46 interfaces%s
+D i-c.ads		20160526162805 e5799b7b interfaces.c%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-memcom.ads		20160526162805 7b07c19e system.memory_compare%s
 D s-memcom.adb		20160519162255 fa22a970 system.memory_compare%b
 X 1 ada.ads
 16K9*Ada 19e8 7|32r6 40r30

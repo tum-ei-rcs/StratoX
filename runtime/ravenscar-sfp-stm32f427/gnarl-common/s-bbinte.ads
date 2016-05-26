@@ -43,7 +43,7 @@ with System;
 with System.BB.Parameters;
 with System.Multiprocessors;
 
-package System.BB.Interrupts is
+package System.BB.Interrupts with SPARK_Mode => On is
    pragma Preelaborate;
 
    Max_Interrupt : constant := System.BB.Parameters.Number_Of_Interrupt_ID;
@@ -57,6 +57,7 @@ package System.BB.Interrupts is
 
    type Interrupt_Handler is access procedure (Id : Interrupt_ID);
    --  Prototype of procedures used as low level handlers
+   -- FIXME SPARK: access type must go
 
    procedure Initialize_Interrupts;
    --  Initialize table containing the pointers to the different interrupt

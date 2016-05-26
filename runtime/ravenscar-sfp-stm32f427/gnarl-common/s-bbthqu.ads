@@ -38,7 +38,7 @@ with System.BB.Time;
 with System.BB.CPU_Primitives.Multiprocessors;
 with System.Multiprocessors;
 
-package System.BB.Threads.Queues is
+package System.BB.Threads.Queues with SPARK_Mode => Off is
    pragma Preelaborate;
 
    use type System.BB.Time.Time;

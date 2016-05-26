@@ -46,7 +46,7 @@ with System.BB.Interrupts;
 with System.Multiprocessors;
 with System.BB.CPU_Primitives.Multiprocessors;
 
-package System.BB.Threads is
+package System.BB.Threads with SPARK_Mode => Off is
    pragma Preelaborate;
 
    use type System.Multiprocessors.CPU;

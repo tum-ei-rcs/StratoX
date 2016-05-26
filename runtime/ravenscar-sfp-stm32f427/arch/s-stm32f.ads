@@ -32,7 +32,7 @@ pragma Restrictions (No_Elaboration_Code);
 
 with System.Storage_Elements;
 
-package System.STM32F4 is
+package System.STM32F4 with SPARK_Mode => Off is
    pragma Preelaborate (System.STM32F4);
 
    subtype Address is System.Address;

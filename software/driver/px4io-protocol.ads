@@ -35,7 +35,7 @@
 with Interfaces; use Interfaces;
 with HIL; use HIL;
 
-package PX4IO.Protocol is
+package PX4IO.Protocol with SPARK_Mode is
 
 
 --*
@@ -84,7 +84,6 @@ type Offset_Type is new Unsigned_8;
 subtype Bit_Mask_Type is HIL.Unsigned_16_Mask;
 
 --subtype Value_Type is HIL.Byte;
-
 
 
 

@@ -27,7 +27,7 @@ RV NO_DEFAULT_INITIALIZATION
 RV NO_IMPLEMENTATION_PRAGMAS
 RV SPARK_05
 
-U ada.real_time.timing_events%b  a-rttiev.adb	113de8aa NE OL PK
+U ada.real_time.timing_events%b  a-rttiev.adb	3787672c NE OL PK
 W ada%s			ada.ads			ada.ali
 W ada.real_time%s	a-reatim.adb		a-reatim.ali
 W ada.tags%s		a-tags.adb		a-tags.ali
@@ -37,7 +37,7 @@ W system.bb%s		s-bb.ads		s-bb.ali
 W system.bb.protection%s  s-bbprot.adb		s-bbprot.ali
 W system.bb.time%s	s-bbtime.adb		s-bbtime.ali
 
-U ada.real_time.timing_events%s  a-rttiev.ads	8bf6c1f2 BN NE OL PK
+U ada.real_time.timing_events%s  a-rttiev.ads	6c9f6611 BN NE OL PK
 W ada.real_time%s	a-reatim.adb		a-reatim.ali
 W ada.tags%s		a-tags.adb		a-tags.ali
 W system%s		system.ads		system.ali
@@ -45,41 +45,41 @@ W system.bb%s		s-bb.ads		s-bb.ali
 W system.bb.timing_events%s  s-bbtiev.adb	s-bbtiev.ali
 W system.storage_elements%s  s-stoele.adb	s-stoele.ali
 
-D ada.ads		20160519162255 3ffc8e18 ada%s
-D a-except.ads		20160519162255 5b5f0f2f ada.exceptions%s
-D a-reatim.ads		20160519162255 67d7729a ada.real_time%s
-D a-rttiev.ads		20160519162255 f8eb9b1f ada.real_time.timing_events%s
+D ada.ads		20160526162845 3ffc8e18 ada%s
+D a-except.ads		20160526162805 05cada37 ada.exceptions%s
+D a-reatim.ads		20160526164429 2a997612 ada.real_time%s
+D a-rttiev.ads		20160526162805 1bbed5ea ada.real_time.timing_events%s
 D a-rttiev.adb		20160519162255 cb6130c3 ada.real_time.timing_events%b
-D a-tags.ads		20160519162255 cc425f51 ada.tags%s
-D a-unccon.ads		20160519162255 f9eb8f06 ada.unchecked_conversion%s
-D system.ads		20160427145143 9eacb62e system%s
-D s-bb.ads		20160519162255 883768d6 system.bb%s
-D s-bbbosu.ads		20160519162255 3f67a4b3 system.bb.board_support%s
+D a-tags.ads		20160526162805 49af6795 ada.tags%s
+D a-unccon.ads		20160526162805 f9eb8f06 ada.unchecked_conversion%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-bb.ads		20160526162805 57eacf15 system.bb%s
+D s-bbbosu.ads		20160526162805 d379f5b2 system.bb.board_support%s
 D s-bbbosu.adb		20160427145143 53d21bd1 system.bb.board_support%b
-D s-bbcppr.ads		20160519162255 37229a46 system.bb.cpu_primitives%s
+D s-bbcppr.ads		20160526162805 d37113a9 system.bb.cpu_primitives%s
 D s-bbcppr.adb		20160519162255 7968ef8f system.bb.cpu_primitives%b
-D s-bcprmu.ads		20160519162255 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
-D s-bbinte.ads		20160519162255 4743e2d6 system.bb.interrupts%s
-D s-bbpara.ads		20160525103512 d83742d1 system.bb.parameters%s
-D s-bbprot.ads		20160519162255 f48a7e85 system.bb.protection%s
+D s-bcprmu.ads		20160526162805 283bcab4 system.bb.cpu_primitives.multiprocessors%s
+D s-bbinte.ads		20160526163811 7d3734ac system.bb.interrupts%s
+D s-bbpara.ads		20160526162805 36af0059 system.bb.parameters%s
+D s-bbprot.ads		20160526162805 1fe659bc system.bb.protection%s
 D s-bbprot.adb		20160519162255 233a43fc system.bb.protection%b
-D s-bbthre.ads		20160519162255 d71e350d system.bb.threads%s
-D s-bbthqu.ads		20160519162255 6e3d132d system.bb.threads.queues%s
-D s-bbtime.ads		20160519162255 2fd6b2f5 system.bb.time%s
-D s-bbtiev.ads		20160519162255 14ca2877 system.bb.timing_events%s
-D s-maccod.ads		20160519162255 0fbb7bce system.machine_code%s
-D s-multip.ads		20160519162255 f33e0e35 system.multiprocessors%s
-D s-osinte.ads		20160519162255 9761d940 system.os_interface%s
-D s-parame.ads		20160519162255 c9fe535f system.parameters%s
-D s-stm32f.ads		20160427145143 f14341ed system.stm32f4%s
-D s-stmrcc.ads		20160525113533 47f9e05b system.stm32f4.rcc%s
-D s-stoele.ads		20160519162255 2dc34a04 system.storage_elements%s
-D s-unstyp.ads		20160519162255 9d58a4c0 system.unsigned_types%s
+D s-bbthre.ads		20160526162805 7a919fda system.bb.threads%s
+D s-bbthqu.ads		20160526162805 cfaa9b91 system.bb.threads.queues%s
+D s-bbtime.ads		20160526162805 015554bf system.bb.time%s
+D s-bbtiev.ads		20160526162805 5db8c5e9 system.bb.timing_events%s
+D s-maccod.ads		20160526162805 9404b396 system.machine_code%s
+D s-multip.ads		20160526162805 8bd8e9c8 system.multiprocessors%s
+D s-osinte.ads		20160526163925 d8b54ec7 system.os_interface%s
+D s-parame.ads		20160526162805 284dab97 system.parameters%s
+D s-stm32f.ads		20160526162805 2e787da2 system.stm32f4%s
+D s-stmrcc.ads		20160526162805 db2901a4 system.stm32f4.rcc%s
+D s-stoele.ads		20160526162805 5eeb52fd system.storage_elements%s
+D s-unstyp.ads		20160526163029 9d58a4c0 system.unsigned_types%s
 X 1 ada.ads
 16K9*Ada 19e8 4|38r9 74r5 5|32r6 37r14 49r17 161r5
 X 3 a-reatim.ads
-41K13*Real_Time 1|16k9 3|146e18 4|38r13 74r9 5|37r18 49r21 161r9
-43M9*Time<21|46M9> 4|47r17 57r57 5|78r17 147r57 148r13 154r14
+41K13*Real_Time 1|16k9 3|150e18 4|38r13 74r9 5|37r18 49r21 161r9
+42M9*Time<21|46M9> 4|47r17 57r57 5|78r17 147r57 148r13 154r14
 X 4 a-rttiev.ads
 38K23*Timing_Events 3|41k13 4|66E9 74l19 74e32 5|37b28 49r31 161l19 161t32
 40R9*Timing_Event<22|42R9> 43r52 45p14 46r24 50p13 51r15 53P14 54r26 57p13
@@ -89,14 +89,14 @@ X 4 a-rttiev.ads
 43r37 Event{40R9}
 45U14*Set_Handler 46=7 47>7 48>7 61r19 5|76b14 102l8 102t19
 46r7 Event{40R9} 5|77b7 95m7 97m44 97r44
-47m7 At_Time{3|43M9} 5|78b7 98r46
+47m7 At_Time{3|42M9} 5|78b7 98r46
 48p7 Handler{42P9} 5|79b7 82r13 95r29
 50V13*Current_Handler{42P9} 51>7 62r19 5|108b13 122l8 122t23
 51r7 Event{40R9} 5|109b7 117r14
 53U14*Cancel_Handler<22|80p14> 54=7 55<7 63r19 5|128b14 141l8 141t22
 54r7 Event{40R9} 5|129b7 137m47 137r47 138m7
 55b7 Cancelled{boolean} 5|130b7 137m55
-57V13*Time_Of_Event{3|43M9} 57>28 64r19 5|147b13 159l8 159t21
+57V13*Time_Of_Event{3|42M9} 57>28 64r19 5|147b13 159l8 159t21
 57r28 Event{40R9} 5|147b28 154r59
 68p10*Real_Handler{42P9} 5|63r59 67m19 95m13 117r20 138m13
 X 5 a-rttiev.adb
@@ -107,7 +107,7 @@ X 5 a-rttiev.adb
 63p7 Handler{4|42P9} 66r10 68r10
 81p7 BB_Handler{22|37P9} 99r25
 111p7 Res{4|42P9} 117m7 121r14
-148m7 Res{3|43M9} 154m7 158r14
+148m7 Res{3|42M9} 154m7 158r14
 X 7 a-unccon.ads
 20v14*Unchecked_Conversion 5|32w10
 X 8 system.ads

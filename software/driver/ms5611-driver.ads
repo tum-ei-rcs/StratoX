@@ -11,7 +11,7 @@ with Units;
 -- ToDo:
 --  - Adjustment to current System
 --  - Use HIL.I2C
-package MS5611.Driver is
+package MS5611.Driver with SPARK_Mode is
 
    type Device_Type is (Baro, NONE);
 

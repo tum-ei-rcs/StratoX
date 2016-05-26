@@ -35,7 +35,7 @@
 
 with System.Unsigned_Types;
 
-package System.Img_Uns is
+package System.Img_Uns with SPARK_Mode => Off is
    pragma Pure;
 
    procedure Image_Unsigned

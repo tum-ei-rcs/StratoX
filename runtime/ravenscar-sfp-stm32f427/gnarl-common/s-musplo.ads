@@ -26,7 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package System.Multiprocessors.Spin_Locks is
+package System.Multiprocessors.Spin_Locks with SPARK_Mode => Off is
    pragma Preelaborate;
 
    ---------------

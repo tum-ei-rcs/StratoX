@@ -1,0 +1,83 @@
+project Default is
+
+   for Languages use ("Ada");
+   for Main use ("main.adb");
+
+   type Build_Modes is ("debug", "release", "analyze");
+   Build_Mode : Build_Modes := external ("Build_Mode", "debug");
+   for Runtime ("ada") use "ravenscar-sfp-stm32f427";
+   for Target use "arm-eabi";
+
+
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj/";
+
+   package Compiler is
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", "-gnatet=../target-gen.atp");
+
+         when "analyze" =>
+
+                       when "release" =>
+
+      end case;
+   end Compiler;
+
+   package Builder is
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Default_Switches ("ada") use ("-g");
+
+         when "release" =>
+            for Default_Switches ("ada") use ();
+
+         when "analyze" =>
+            for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target.atp");
+      end case;
+   end Builder;
+
+   package Ide is
+      for Communication_Protocol use "remote";
+      for Program_Host use "localhost:4242";
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Gnat use "arm-eabi-gnat";
+            for Gnatlist use "arm-eabi-gnatls";
+            for Debugger_Command use "arm-eabi-gdb";
+            for Documentation_Dir use "doc/";
+
+         when "release" =>
+
+         when "analyze" =>
+            for Gnat use "arm-eabi-gnat";
+            for Gnatlist use "arm-eabi-gnatls";
+            for Debugger_Command use "arm-eabi-gdb";
+      end case;
+   end Ide;
+
+   package Prove is
+      -- switches for gnat2why et. al.
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
+
+         when "release" =>
+            for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
+
+         when "analyze" =>
+            for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
+      end case;
+   end Prove;
+
+
+end Default;
+

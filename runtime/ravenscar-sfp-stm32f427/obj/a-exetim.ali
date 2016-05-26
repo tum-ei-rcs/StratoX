@@ -25,10 +25,9 @@ RV NO_STANDARD_STORAGE_POOLS
 RV NO_UNCHECKED_CONVERSION
 RV NO_DEFAULT_INITIALIZATION
 RV NO_IMPLEMENTATION_PRAGMAS
-RV NO_ELABORATION_CODE
 RV SPARK_05
 
-U ada.execution_time%b	a-exetim.adb		a3835918 NE OL PK
+U ada.execution_time%b	a-exetim.adb		83bee86d NE OL PK
 W ada%s			ada.ads			ada.ali
 W ada.task_identification%s  a-taside.adb	a-taside.ali
 W ada.unchecked_conversion%s
@@ -42,62 +41,62 @@ W system.task_primitives%s  s-taspri.ads	s-taspri.ali
 W system.task_primitives.operations%s  s-taprop.adb  s-taprop.ali
 W system.tasking%s	s-taskin.adb		s-taskin.ali
 
-U ada.execution_time%s	a-exetim.ads		e59f28c5 EE OL PK
+U ada.execution_time%s	a-exetim.ads		f1fd2a2b NE OL PK
 W ada%s			ada.ads			ada.ali
 W ada.real_time%s	a-reatim.adb		a-reatim.ali
 W ada.task_identification%s  a-taside.adb	a-taside.ali
 
-D ada.ads		20160519162255 3ffc8e18 ada%s
-D a-except.ads		20160519162255 5b5f0f2f ada.exceptions%s
-D a-exetim.ads		20160519162255 27853111 ada.execution_time%s
+D ada.ads		20160526162845 3ffc8e18 ada%s
+D a-except.ads		20160526162805 05cada37 ada.exceptions%s
+D a-exetim.ads		20160526162805 a2af1391 ada.execution_time%s
 D a-exetim.adb		20160519162255 58d61475 ada.execution_time%b
-D a-reatim.ads		20160519162255 67d7729a ada.real_time%s
-D a-reatim.adb		20160519162255 be930e0f ada.real_time%b
-D a-tags.ads		20160519162255 cc425f51 ada.tags%s
-D a-taside.ads		20160519162255 9a31e556 ada.task_identification%s
+D a-reatim.ads		20160526164429 2a997612 ada.real_time%s
+D a-reatim.adb		20160526160833 c7841e63 ada.real_time%b
+D a-tags.ads		20160526162805 49af6795 ada.tags%s
+D a-taside.ads		20160526162805 4637c1b0 ada.task_identification%s
 D a-taside.adb		20160519162255 dd56034c ada.task_identification%b
-D a-unccon.ads		20160519162255 f9eb8f06 ada.unchecked_conversion%s
-D system.ads		20160427145143 9eacb62e system%s
-D s-bb.ads		20160519162255 883768d6 system.bb%s
-D s-bbbosu.ads		20160519162255 3f67a4b3 system.bb.board_support%s
+D a-unccon.ads		20160526162805 f9eb8f06 ada.unchecked_conversion%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-bb.ads		20160526162805 57eacf15 system.bb%s
+D s-bbbosu.ads		20160526162805 d379f5b2 system.bb.board_support%s
 D s-bbbosu.adb		20160427145143 53d21bd1 system.bb.board_support%b
-D s-bbcppr.ads		20160519162255 37229a46 system.bb.cpu_primitives%s
+D s-bbcppr.ads		20160526162805 d37113a9 system.bb.cpu_primitives%s
 D s-bbcppr.adb		20160519162255 7968ef8f system.bb.cpu_primitives%b
-D s-bcprmu.ads		20160519162255 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bcprmu.ads		20160526162805 283bcab4 system.bb.cpu_primitives.multiprocessors%s
 D s-bcprmu.adb		20160519162255 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
-D s-bbexti.ads		20160519162255 b8f6a7fe system.bb.execution_time%s
+D s-bbexti.ads		20160526162805 bd64878d system.bb.execution_time%s
 D s-bbexti.adb		20160519162255 e60e53c4 system.bb.execution_time%b
-D s-bbinte.ads		20160519162255 4743e2d6 system.bb.interrupts%s
-D s-bbpara.ads		20160525103512 d83742d1 system.bb.parameters%s
-D s-bbprot.ads		20160519162255 f48a7e85 system.bb.protection%s
+D s-bbinte.ads		20160526163811 7d3734ac system.bb.interrupts%s
+D s-bbpara.ads		20160526162805 36af0059 system.bb.parameters%s
+D s-bbprot.ads		20160526162805 1fe659bc system.bb.protection%s
 D s-bbprot.adb		20160519162255 233a43fc system.bb.protection%b
-D s-bbthre.ads		20160519162255 d71e350d system.bb.threads%s
+D s-bbthre.ads		20160526162805 7a919fda system.bb.threads%s
 D s-bbthre.adb		20160519162255 fefd676c system.bb.threads%b
-D s-bbthqu.ads		20160519162255 6e3d132d system.bb.threads.queues%s
+D s-bbthqu.ads		20160526162805 cfaa9b91 system.bb.threads.queues%s
 D s-bbthqu.adb		20160519162255 e7db98e5 system.bb.threads.queues%b
-D s-bbtime.ads		20160519162255 2fd6b2f5 system.bb.time%s
-D s-bbtime.adb		20160519162255 2ad994c8 system.bb.time%b
-D s-bbtiev.ads		20160519162255 14ca2877 system.bb.timing_events%s
-D s-maccod.ads		20160519162255 0fbb7bce system.machine_code%s
-D s-multip.ads		20160519162255 f33e0e35 system.multiprocessors%s
-D s-mufalo.ads		20160519162255 3dca0374 system.multiprocessors.fair_locks%s
-D s-musplo.ads		20160519162255 69fa25c4 system.multiprocessors.spin_locks%s
-D s-osinte.ads		20160519162255 9761d940 system.os_interface%s
-D s-parame.ads		20160519162255 c9fe535f system.parameters%s
-D s-secsta.ads		20160519162255 a4d06a42 system.secondary_stack%s
-D s-stm32f.ads		20160427145143 f14341ed system.stm32f4%s
-D s-stmrcc.ads		20160525113533 47f9e05b system.stm32f4.rcc%s
-D s-stoele.ads		20160519162255 2dc34a04 system.storage_elements%s
-D s-tasinf.ads		20160519162255 801abd01 system.task_info%s
-D s-taspri.ads		20160519162255 351848fa system.task_primitives%s
-D s-taprop.ads		20160519162255 2985d42e system.task_primitives.operations%s
-D s-taprop.adb		20160519162255 45d1d1e3 system.task_primitives.operations%b
-D s-taskin.ads		20160519162255 41d03b44 system.tasking%s
-D s-tasdeb.ads		20160519162255 1958910d system.tasking.debug%s
+D s-bbtime.ads		20160526162805 015554bf system.bb.time%s
+D s-bbtime.adb		20160526151607 2ad994c8 system.bb.time%b
+D s-bbtiev.ads		20160526162805 5db8c5e9 system.bb.timing_events%s
+D s-maccod.ads		20160526162805 9404b396 system.machine_code%s
+D s-multip.ads		20160526162805 8bd8e9c8 system.multiprocessors%s
+D s-mufalo.ads		20160526162805 e73853a9 system.multiprocessors.fair_locks%s
+D s-musplo.ads		20160526162805 ca8d187d system.multiprocessors.spin_locks%s
+D s-osinte.ads		20160526163925 d8b54ec7 system.os_interface%s
+D s-parame.ads		20160526162805 284dab97 system.parameters%s
+D s-secsta.ads		20160526162805 49ef84e5 system.secondary_stack%s
+D s-stm32f.ads		20160526162805 2e787da2 system.stm32f4%s
+D s-stmrcc.ads		20160526162805 db2901a4 system.stm32f4.rcc%s
+D s-stoele.ads		20160526162805 5eeb52fd system.storage_elements%s
+D s-tasinf.ads		20160526162805 aa449e23 system.task_info%s
+D s-taspri.ads		20160526162805 d87653ab system.task_primitives%s
+D s-taprop.ads		20160526162805 c44e2a2b system.task_primitives.operations%s
+D s-taprop.adb		20160526151855 45d1d1e3 system.task_primitives.operations%b
+D s-taskin.ads		20160526162805 1c40893b system.tasking%s
+D s-tasdeb.ads		20160526162805 3e184c25 system.tasking.debug%s
 D s-tasdeb.adb		20160519162255 16d62b3b system.tasking.debug%b
-D s-tasres.ads		20160519162255 0c8ef6fb system.tasking.restricted%s
-D s-tarest.ads		20160519162255 128b2dbd system.tasking.restricted.stages%s
-D s-unstyp.ads		20160519162255 9d58a4c0 system.unsigned_types%s
+D s-tasres.ads		20160526162805 c0a29de4 system.tasking.restricted%s
+D s-tarest.ads		20160526162805 c4a2da2c system.tasking.restricted.stages%s
+D s-unstyp.ads		20160526163029 9d58a4c0 system.unsigned_types%s
 X 1 ada.ads
 16K9*Ada 19e8 3|16r6 17r6 19r9 25r42 26r30 29r11 30r13 35r15 38r15 43r15
 . 47r32 56r16 57r16 60r13 61r13 61r40 71r25 73r53 74r53 76r24 76r51 83r5
@@ -106,47 +105,47 @@ X 1 ada.ads
 . 131r16 133r16 135r7 135r28 143r12 144r12 144r39 148r24 160r5
 X 3 a-exetim.ads
 19K13*Execution_Time 1|16k9 3|71E9 83l9 83e23 4|45b18 160l9 160t23
-21M9*CPU_Time<5|43M9> 23r30 24r30 31r14 34r15 35r47 39r15 39r32 42r15 43r47
+21M9*CPU_Time<5|42M9> 23r30 24r30 31r14 34r15 35r47 39r15 39r32 42r15 43r47
 . 46r15 47r15 49r33 50r33 51r33 52r33 55r12 62r15 67r41 71c9 73r30 73r43
 . 74r30 74r43 4|50r28 63r15 64r47 68r14 73r15 73r32 77r14 85r15 86r47 90r14
 . 94r15 95r15 108r54 129r12 145r14 148r14 155r41
 23m4*CPU_Time_First{21M9} 73c4
 24m4*CPU_Time_Last{21M9} 74c4
 25o4*CPU_Time_Unit{duration}
-26i4*CPU_Tick{5|55I9} 76c4
+26i4*CPU_Tick{5|58I9} 76c4
 28V13*Clock{21M9} 29>7 4|106b13 122l8 122t13
 29p7 T{8|43P9} 4|107b7 115r10 119r74
-33V14*"+"{21M9}<5|64p13> 34>7 35>7 4|62b14 69l9 69t11
+33V14*"+"{21M9}<5|67p13> 34>7 35>7 4|62b14 69l9 69t11
 34m7 Left{21M9} 4|63b7 68r44
-35i7 Right{5|55I9} 4|64b7 68r52
-37V14*"+"{21M9}<5|68p13> 38>7 39>7 4|71b14 78l9 78t11
-38i7 Left{5|55I9} 4|72b7 77r24
+35i7 Right{5|58I9} 4|64b7 68r52
+37V14*"+"{21M9}<5|71p13> 38>7 39>7 4|71b14 78l9 78t11
+38i7 Left{5|58I9} 4|72b7 77r24
 39m7 Right{21M9} 4|73b7 77r51
-41V14*"-"{21M9}<5|65p13> 42>7 43>7 4|84b14 91l9 91t11
+41V14*"-"{21M9}<5|68p13> 42>7 43>7 4|84b14 91l9 91t11
 42m7 Left{21M9} 4|85b7 90r44
-43i7 Right{5|55I9} 4|86b7 90r52
-45V14*"-"{5|55I9}<5|66p13> 46>7 47>7 4|93b14 100l9 100t11
+43i7 Right{5|58I9} 4|86b7 90r52
+45V14*"-"{5|58I9}<5|69p13> 46>7 47>7 4|93b14 100l9 100t11
 46m7 Left{21M9} 4|94b7 99r35
 47m7 Right{21M9} 4|95b7 99r63
-49V14*"<"{boolean}<5|71p13> 49>19 49>25 78b31
+49V14*"<"{boolean}<5|74p13> 49>19 49>25 78b31
 49m19 Left{21M9}
 49m25 Right{21M9}
-50V14*"<="{boolean}<5|72p13> 50>19 50>25 79b31
+50V14*"<="{boolean}<5|75p13> 50>19 50>25 79b31
 50m19 Left{21M9}
 50m25 Right{21M9}
-51V14*">"{boolean}<5|73p13> 51>19 51>25 80b31
+51V14*">"{boolean}<5|76p13> 51>19 51>25 80b31
 51m19 Left{21M9}
 51m25 Right{21M9}
-52V14*">="{boolean}<5|74p13> 52>19 52>25 81b31
+52V14*">="{boolean}<5|77p13> 52>19 52>25 81b31
 52m19 Left{21M9}
 52m25 Right{21M9}
-54U14*Split<5|112p14> 55>7 56<7 57<7 4|128b14 136l8 136t13
+54U14*Split<5|115p14> 55>7 56<7 57<7 4|128b14 136l8 136t13
 55m7 T{21M9} 4|129b7 135r48
-56i7 SC{5|110I9} 4|130b7 135m52
-57i7 TS{5|55I9} 4|131b7 135m56
-59V13*Time_Of{21M9}<5|113p13> 60>8 61>8 4|142b13 149l8 149t15
-60i8 SC{5|110I9} 4|143b7 148r47
-61i8 TS{5|55I9} 4|144b7 148r51
+56i7 SC{5|113I9} 4|130b7 135m52
+57i7 TS{5|58I9} 4|131b7 135m56
+59V13*Time_Of{21M9}<5|116p13> 60>8 61>8 4|142b13 149l8 149t15
+60i8 SC{5|113I9} 4|143b7 148r47
+61i8 TS{5|58I9} 4|144b7 148r51
 64b4*Interrupt_Clocks_Supported{boolean}
 65b4*Separate_Interrupt_Clocks_Supported{boolean}
 67V13*Clock_For_Interrupts{21M9} 4|155b13 158l8 158t28
@@ -159,23 +158,23 @@ X 5 a-reatim.ads
 41K13*Real_Time 3|17w10 25r46 26r34 35r19 38r19 43r19 47r36 56r20 57r20 60r17
 . 61r17 61r44 71r29 73r57 74r57 76r28 76r55 4|64r19 66r20 68r28 72r19 75r20
 . 77r35 86r19 88r20 90r28 95r36 97r20 99r19 99r47 130r20 131r20 133r20 135r11
-. 135r32 143r16 144r16 144r43 148r28 5|146e18
-43M9*Time<29|46M9> 3|71r39 4|66r30 68r38 75r30 77r45 88r30 90r38 97r30 99r29
+. 135r32 143r16 144r16 144r43 148r28 5|150e18
+42M9*Time<29|46M9> 3|71r39 4|66r30 68r38 75r30 77r45 88r30 90r38 97r30 99r29
 . 99r57 133r30 135r42
-44m4*Time_First{43M9} 3|73r67
-45m4*Time_Last{43M9} 3|74r67
-47o4*Time_Unit{duration} 3|25r56
-55I9*Time_Span<29|81I9> 3|26r44 35r29 38r29 43r29 47r46 57r30 61r27 76r38
+43m4*Time_First{42M9} 3|73r67
+44m4*Time_Last{42M9} 3|74r67
+46o4*Time_Unit{duration} 3|25r56
+58I9*Time_Span<29|81I9> 3|26r44 35r29 38r29 43r29 47r46 57r30 61r27 76r38
 . 4|64r29 72r29 86r29 95r46 131r30 144r26
-58i4*Time_Span_Zero{55I9} 3|61r54 4|144r53
-61i4*Tick{55I9} 3|76r65
-64V14*"+"{43M9} 4|68s50
-65V14*"-"{43M9} 4|90s50
-66V14*"-"{55I9} 4|99s41
-68V14*"+"{43M9} 4|77s29
-110I9*Seconds_Count<long_long_integer> 3|56r30 60r27 4|130r30 143r26
-112U14*Split 4|135s21
-113V13*Time_Of{43M9} 4|148s38
+61i4*Time_Span_Zero{58I9} 3|61r54 4|144r53
+64i4*Tick{58I9} 3|76r65
+67V14*"+"{42M9} 4|68s50
+68V14*"-"{42M9} 4|90s50
+69V14*"-"{58I9} 4|99s41
+71V14*"+"{42M9} 4|77s29
+113I9*Seconds_Count<long_long_integer> 3|56r30 60r27 4|130r30 143r26
+115U14*Split 4|135s21
+116V13*Time_Of{42M9} 4|148s38
 X 8 a-taside.ads
 39K13*Task_Identification 3|16w10 29r15 30r17 4|34w10 34r40 107r15 108r13
 . 111r14 115r18 8|77e28

@@ -27,7 +27,7 @@
 
 with Ada.Task_Identification;
 
-package Ada.Task_Termination is
+package Ada.Task_Termination with SPARK_Mode => Off is
    pragma Preelaborate (Task_Termination);
 
    type Termination_Handler is access

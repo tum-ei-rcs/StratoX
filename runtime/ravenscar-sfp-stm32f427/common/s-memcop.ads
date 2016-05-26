@@ -36,7 +36,7 @@ pragma Restrictions (No_Elaboration_Code);
 
 with Interfaces.C;
 
-package System.Memory_Copy is
+package System.Memory_Copy with SPARK_Mode => Off is
    pragma Preelaborate;
 
    function memcpy

@@ -21,13 +21,13 @@ P DB
 RN
 RV NO_IMPLEMENTATION_PRAGMAS
 
-U machine_code%s	machcode.ads		68363d4e NE OL PU
+U machine_code%s	machcode.ads		f389f516 NE OL PU
 W system%s		system.ads		system.ali
 W system.machine_code%s	s-maccod.ads		s-maccod.ali
 
-D machcode.ads		20160519162255 678d4680 machine_code%s
-D system.ads		20160427145143 9eacb62e system%s
-D s-maccod.ads		20160519162255 0fbb7bce system.machine_code%s
+D machcode.ads		20160526162805 678d4680 machine_code%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-maccod.ads		20160526162805 9404b396 system.machine_code%s
 X 1 machcode.ads
 18K9*Machine_Code=18:37
 X 2 system.ads

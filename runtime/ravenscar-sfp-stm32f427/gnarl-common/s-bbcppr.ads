@@ -36,7 +36,7 @@ pragma Restrictions (No_Elaboration_Code);
 with System;
 with System.BB.Parameters;
 
-package System.BB.CPU_Primitives is
+package System.BB.CPU_Primitives with SPARK_Mode => Off is
    pragma Preelaborate;
 
    type Word is mod 2**System.Word_Size;

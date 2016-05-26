@@ -36,7 +36,7 @@
 --  and logging purposes. For example, an exception handler can print out
 --  the name of the source file in which the exception is handled.
 
-package GNAT.Source_Info is
+package GNAT.Source_Info with SPARK_Mode => Off is
    pragma Preelaborate;
    --  Note that this unit is Preelaborate, but not Pure, that's because the
    --  functions here such as Line are clearly not pure functions, and normally

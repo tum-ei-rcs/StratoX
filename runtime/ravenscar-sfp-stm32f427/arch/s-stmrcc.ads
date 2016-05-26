@@ -34,7 +34,7 @@
 
 pragma Restrictions (No_Elaboration_Code);
 
-package System.STM32F4.RCC is
+package System.STM32F4.RCC with SPARK_Mode => Off is
    pragma Preelaborate (System.STM32F4.RCC);
 
    subtype Frequency is Word;

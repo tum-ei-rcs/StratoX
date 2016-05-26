@@ -37,7 +37,7 @@
 
 with System.Tasking;
 
-package Ada.Synchronous_Task_Control is
+package Ada.Synchronous_Task_Control with SPARK_Mode => Off is
    pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 

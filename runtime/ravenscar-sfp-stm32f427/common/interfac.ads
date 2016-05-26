@@ -35,7 +35,7 @@
 
 pragma Compiler_Unit_Warning;
 
-package Interfaces is
+package Interfaces with SPARK_Mode is
    pragma Pure;
 
    --  All identifiers in this unit are implementation defined

@@ -16,12 +16,14 @@ package HIL is
    type Unsigned_16_Bit_ID is new Natural range 0 .. 15;
    
    subtype Byte_Bit_Position is Integer range 0 .. 7;
-
-
    
    -- Arrays
    
    type Byte_Array is array(Natural range <>) of Byte;
+
+   --subtype Byte_Array_2 is Byte_Array(1..2); -- not working (explicit raise in flow_utility.adb)
+
+   type Byte_Array_2 is array(1..2) of Byte;
    
    type Unsigned_8_Array  is array(Natural range <>) of Unsigned_8;
    type Unsigned_16_Array is array(Natural range <>) of Unsigned_16;  
@@ -36,9 +38,13 @@ package HIL is
 
 
    -- little endian (lowest byte first)
-   function toBytes(uint : Unsigned_16) return Byte_Array is
+   -- FAILS  (unsigned arg, unconstrained return)
+   function toBytes(uint : in Unsigned_16) return Byte_Array is
       (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
 
+    -- FAILS  (unsigned arg, constrained return)
+    function toBytes_uc(uint : Unsigned_16) return Byte_Array_2 is
+      (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
 
    function toUnsigned_16( bytes : Byte_Array) return Unsigned_16 
    is

@@ -49,7 +49,7 @@
 
 with System.Multiprocessors.Fair_Locks;
 
-package System.Tasking.Protected_Objects is
+package System.Tasking.Protected_Objects with SPARK_Mode => Off is
    pragma Elaborate_Body;
 
    ---------------------------------

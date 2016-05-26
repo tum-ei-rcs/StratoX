@@ -57,7 +57,7 @@ pragma Restrictions (No_Elaboration_Code);
 --  We want to guarantee the absence of elaboration code because the
 --  binder does not handle references to this package.
 
-package System.Secondary_Stack.Single_Task is
+package System.Secondary_Stack.Single_Task with SPARK_Mode => Off is
 
    function Get_Sec_Stack return Address;
    pragma Export (C, Get_Sec_Stack, "__gnat_get_secondary_stack");

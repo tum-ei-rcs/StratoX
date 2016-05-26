@@ -4,7 +4,7 @@ use type Units.Unit_Type;
 with HIL.SPI;   -- Hardware Interface to SPI
 with MS5611.Register; use MS5611.Register;
 
-package body MS5611.Driver is
+package body MS5611.Driver with SPARK_Mode is
 
    type Data_Array is array (Natural range <>) of HIL.Byte with
         Component_Size => 8;

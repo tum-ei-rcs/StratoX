@@ -16,7 +16,7 @@
 with Ada.Task_Identification;
 with Ada.Real_Time;
 
-package Ada.Execution_Time is
+package Ada.Execution_Time with SPARK_Mode => Off is
 
    type CPU_Time is private;
 

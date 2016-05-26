@@ -22,14 +22,14 @@ RN
 RV NO_IO
 RV NO_IMPLEMENTATION_PRAGMAS
 
-U text_io%s		text_io.ads		ba1e63fb NE OL
+U text_io%s		text_io.ads		cd623337 NE OL
 W ada%s			ada.ads			ada.ali
 W ada.text_io%s		a-textio.adb		a-textio.ali
 
-D ada.ads		20160519162255 3ffc8e18 ada%s
-D a-textio.ads		20160519162255 ffc84532 ada.text_io%s
-D system.ads		20160427145143 9eacb62e system%s
-D text_io.ads		20160519162255 45d626c9 text_io%s
+D ada.ads		20160526162845 3ffc8e18 ada%s
+D a-textio.ads		20160526162805 88b415fe ada.text_io%s
+D system.ads		20160526163742 7c5c108c system%s
+D text_io.ads		20160526162805 45d626c9 text_io%s
 X 1 ada.ads
 16K9*Ada 19e8 4|22r6 24r25
 X 2 a-textio.ads

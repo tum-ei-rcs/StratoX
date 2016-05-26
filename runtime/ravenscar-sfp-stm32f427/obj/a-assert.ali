@@ -28,18 +28,18 @@ U ada.assertions%b	a-assert.adb		9094876d NE OL PK
 W ada%s			ada.ads			ada.ali
 W ada.exceptions%s	a-except.adb		a-except.ali
 
-U ada.assertions%s	a-assert.ads		538f1e95 NE OL PU PK
+U ada.assertions%s	a-assert.ads		97fe0882 NE OL PU PK
 W ada%s			ada.ads			ada.ali
 W system%s		system.ads		system.ali
 W system.assertions%s	s-assert.adb		s-assert.ali
 
-D ada.ads		20160519162255 3ffc8e18 ada%s
-D a-assert.ads		20160519162255 a1febc19 ada.assertions%s
+D ada.ads		20160526162845 3ffc8e18 ada%s
+D a-assert.ads		20160526162805 a1febc19 ada.assertions%s
 D a-assert.adb		20160519162255 316a3b74 ada.assertions%b
-D a-except.ads		20160519162255 5b5f0f2f ada.exceptions%s
+D a-except.ads		20160526162805 05cada37 ada.exceptions%s
 D a-except.adb		20160519162255 0537fae3 ada.exceptions%b
-D system.ads		20160427145143 9eacb62e system%s
-D s-assert.ads		20160519162255 cd8d2c94 system.assertions%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-assert.ads		20160526162805 09fc3a83 system.assertions%s
 X 1 ada.ads
 16K9*Ada 19e8 2|50r9 66r5 3|32r14 42r16 49r16 53r5
 X 2 a-assert.ads

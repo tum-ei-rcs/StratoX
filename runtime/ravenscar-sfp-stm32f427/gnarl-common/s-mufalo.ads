@@ -28,7 +28,7 @@
 
 with System.Multiprocessors.Spin_Locks;
 
-package System.Multiprocessors.Fair_Locks is
+package System.Multiprocessors.Fair_Locks with SPARK_Mode => Off is
    pragma Preelaborate;
 
    --  Note: The locks implemented in this package are fair among CPUs. Using

@@ -43,7 +43,7 @@ pragma Restrictions (No_Elaboration_Code);
 with System.STM32F4;
 with System.STM32F4.RCC;
 
-package System.BB.Parameters is
+package System.BB.Parameters with SPARK_Mode => Off is
    pragma Preelaborate (System.BB.Parameters);
 
    Clock_Frequency : constant := 168_000_000;

@@ -35,7 +35,7 @@
 
 with System.BB.Timing_Events;
 
-package Ada.Real_Time.Timing_Events is
+package Ada.Real_Time.Timing_Events with SPARK_Mode => Off is
 
    type Timing_Event is tagged limited private;
 

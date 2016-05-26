@@ -40,7 +40,7 @@
 pragma Restrictions (No_Elaboration_Code);
 --  Ensure no elaboration code to avoid possible elaboration circularities
 
-package System.BB is
+package System.BB with SPARK_Mode => Off is
    pragma Pure;
 
    --  All of the package specifications in the System.BB hierarchy are system

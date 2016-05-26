@@ -23,25 +23,25 @@ RV NO_IMPLEMENTATION_PRAGMAS
 RV NO_IMPLEMENTATION_RESTRICTIONS
 RR NO_ELABORATION_CODE
 
-U system.bb.cpu_primitives.multiprocessors%b  s-bcprmu.adb  f22a3c08 NE OL PK
+U system.bb.cpu_primitives.multiprocessors%b  s-bcprmu.adb  6ffd6c15 NE OL PK
 W system.bb.cpu_primitives%s  s-bbcppr.adb	s-bbcppr.ali
 
-U system.bb.cpu_primitives.multiprocessors%s  s-bcprmu.ads  71f00eda BN NE OL PR PK
+U system.bb.cpu_primitives.multiprocessors%s  s-bcprmu.ads  709230d5 BN NE OL PR PK
 W system%s		system.ads		system.ali
 W system.bb.cpu_primitives%s  s-bbcppr.adb	s-bbcppr.ali
 W system.multiprocessors%s  s-multip.adb	s-multip.ali
 
-D system.ads		20160427145143 9eacb62e system%s
-D s-bb.ads		20160519162255 883768d6 system.bb%s
-D s-bbcppr.ads		20160519162255 37229a46 system.bb.cpu_primitives%s
-D s-bcprmu.ads		20160519162255 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-bb.ads		20160526162805 57eacf15 system.bb%s
+D s-bbcppr.ads		20160526162805 d37113a9 system.bb.cpu_primitives%s
+D s-bcprmu.ads		20160526162805 283bcab4 system.bb.cpu_primitives.multiprocessors%s
 D s-bcprmu.adb		20160519162255 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
-D s-bbpara.ads		20160525103512 d83742d1 system.bb.parameters%s
-D s-multip.ads		20160519162255 f33e0e35 system.multiprocessors%s
-D s-stm32f.ads		20160427145143 f14341ed system.stm32f4%s
-D s-stmrcc.ads		20160525113533 47f9e05b system.stm32f4.rcc%s
-D s-stoele.ads		20160519162255 2dc34a04 system.storage_elements%s
-D s-unstyp.ads		20160519162255 9d58a4c0 system.unsigned_types%s
+D s-bbpara.ads		20160526162805 36af0059 system.bb.parameters%s
+D s-multip.ads		20160526162805 8bd8e9c8 system.multiprocessors%s
+D s-stm32f.ads		20160526162805 2e787da2 system.stm32f4%s
+D s-stmrcc.ads		20160526162805 db2901a4 system.stm32f4.rcc%s
+D s-stoele.ads		20160526162805 5eeb52fd system.storage_elements%s
+D s-unstyp.ads		20160526163029 9d58a4c0 system.unsigned_types%s
 X 1 system.ads
 60K9*System 173e11 4|31r6 33r9 36r32 40r33 43r34 49r5 5|31r14 37r32 39r14
 . 46r33 55r34 69r5

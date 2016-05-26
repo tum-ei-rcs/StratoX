@@ -35,7 +35,7 @@
 
 with System.Interrupts;
 
-package Ada.Interrupts is
+package Ada.Interrupts with SPARK_Mode => Off is
 
    type Interrupt_ID is new System.Interrupts.Ada_Interrupt_ID;
 

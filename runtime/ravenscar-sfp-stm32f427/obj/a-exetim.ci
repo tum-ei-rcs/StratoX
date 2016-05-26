@@ -1,16 +1,15 @@
 graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-exetim.adb"
 node: { title: "system__bb__execution_time__global_interrupt_clock" label: "Global_Interrupt_Clock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-bbexti.ads:36:13" shape : ellipse }
-node: { title: "ada__real_time__time_of" label: "Time_Of\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:113:13" shape : ellipse }
-node: { title: "ada__real_time__split" label: "Split\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:112:14" shape : ellipse }
+node: { title: "ada__real_time__time_of" label: "Time_Of\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:116:13" shape : ellipse }
+node: { title: "ada__real_time__split" label: "Split\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:115:14" shape : ellipse }
 node: { title: "system__bb__execution_time__thread_clock" label: "Thread_Clock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-bbexti.ads:45:13" shape : ellipse }
 node: { title: "system__task_primitives__operations__get_thread_id" label: "Get_Thread_Id\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-taprop.ads:95:13" shape : ellipse }
 node: { title: "__gnat_last_chance_handler" label: "gnat_last_chance_handler\n<built-in>" shape : ellipse }
 node: { title: "ada__task_identification__Oeq" label: "=\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-taside.ads:48:13" shape : ellipse }
-node: { title: "ada__real_time__Osubtract__2" label: "-\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:66:13" shape : ellipse }
-node: { title: "ada__real_time__Osubtract" label: "-\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:65:13" shape : ellipse }
-node: { title: "ada__real_time__Oadd__2" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:68:13" shape : ellipse }
-node: { title: "ada__real_time__Oadd" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:64:13" shape : ellipse }
-node: { title: "ada__execution_time___elabs" label: "Execution_Time\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-exetim.ads:19:1\n4 bytes (static)\n0 dynamic objects" }
+node: { title: "ada__real_time__Osubtract__2" label: "-\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:69:13" shape : ellipse }
+node: { title: "ada__real_time__Osubtract" label: "-\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:68:13" shape : ellipse }
+node: { title: "ada__real_time__Oadd__2" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:71:13" shape : ellipse }
+node: { title: "ada__real_time__Oadd" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:67:13" shape : ellipse }
 node: { title: "ada__execution_time__clock_for_interrupts" label: "Clock_For_Interrupts\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-exetim.adb:155:4\n8 bytes (static)\n0 dynamic objects" }
 edge: { sourcename: "ada__execution_time__clock_for_interrupts" targetname: "system__bb__execution_time__global_interrupt_clock" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-exetim.adb:157:7" }
 node: { title: "ada__execution_time__time_of" label: "Time_Of\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-exetim.adb:142:4\n24 bytes (static)\n0 dynamic objects" }

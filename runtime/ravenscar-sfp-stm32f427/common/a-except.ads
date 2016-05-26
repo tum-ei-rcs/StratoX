@@ -39,7 +39,7 @@
 
 with System;
 
-package Ada.Exceptions is
+package Ada.Exceptions with SPARK_Mode => Off is
    pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 

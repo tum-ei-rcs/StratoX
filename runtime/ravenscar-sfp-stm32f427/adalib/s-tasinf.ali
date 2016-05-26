@@ -22,14 +22,14 @@ RN
 RV NO_IMPLEMENTATION_PRAGMAS
 RV SPARK_05
 
-U system.task_info%b	s-tasinf.adb		e0fce7f8 NE OL PK
+U system.task_info%b	s-tasinf.adb		caa2c4da NE OL PK
 W system%s		system.ads		system.ali
 
-U system.task_info%s	s-tasinf.ads		1eb60b2f EB NE OL PR PK
+U system.task_info%s	s-tasinf.ads		d6188eaf EB NE OL PR PK
 W system%s		system.ads		system.ali
 
-D system.ads		20160427145143 9eacb62e system%s
-D s-tasinf.ads		20160519162255 801abd01 system.task_info%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-tasinf.ads		20160526162805 aa449e23 system.task_info%s
 D s-tasinf.adb		20160519162255 60e65af9 system.task_info%b
 X 1 system.ads
 60K9*System 173e11 2|42r9 93r5 3|40r14 41r5

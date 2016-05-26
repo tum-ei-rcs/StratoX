@@ -15,7 +15,7 @@
 
 with Ada.Interrupts;
 
-package Ada.Execution_Time.Interrupts is
+package Ada.Execution_Time.Interrupts with SPARK_Mode => Off is
 
    function Clock (Interrupt : Ada.Interrupts.Interrupt_ID) return CPU_Time;
 

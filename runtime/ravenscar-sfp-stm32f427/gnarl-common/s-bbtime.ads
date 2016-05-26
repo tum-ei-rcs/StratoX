@@ -40,7 +40,7 @@ pragma Restrictions (No_Elaboration_Code);
 
 with System.Multiprocessors;
 
-package System.BB.Time is
+package System.BB.Time with SPARK_Mode => Off is
    pragma Preelaborate;
 
    type Time is mod 2 ** 64;

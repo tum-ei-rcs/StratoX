@@ -38,19 +38,22 @@
 with System.OS_Interface;
 pragma Elaborate_All (System.OS_Interface);
 
-package Ada.Real_Time is
-
+package Ada.Real_Time with SPARK_Mode is
    type Time is private;
    Time_First : constant Time;
    Time_Last  : constant Time;
 
    Time_Unit : constant Duration :=
-                 1.0 / Duration (System.OS_Interface.Ticks_Per_Second);
+      --  Duration (1.0 / System.OS_Interface.Ticks_Per_Second);
+      --  Ticks_Per_Second not allowed
+      Duration (0.000000007); -- ~148MHz
+      --  1.0 / Duration (System.OS_Interface.Ticks_Per_Second);
    --  This does not conform to the RM, which requires a named number here ???
    --  These platforms use a time stamp counter driven by the system clock,
    --  where the duration of the clock tick (Time_Unit) depends on the speed
    --  of the underlying hardware. The system clock frequency is used here to
    --  determine Time_Unit.
+   --  MBe: Duration is fixed-point
 
    type Time_Span is private;
    Time_Span_First : constant Time_Span;
@@ -113,6 +116,7 @@ package Ada.Real_Time is
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
 
 private
+pragma SPARK_Mode (Off);
    type Time is new System.OS_Interface.Time;
 
    Time_First : constant Time := Time'First;

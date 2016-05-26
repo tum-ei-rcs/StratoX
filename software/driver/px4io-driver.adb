@@ -10,7 +10,6 @@ package body PX4IO.Driver
 with SPARK_Mode
 is
 
-
    G_Servo_Angle_Left  : Servo_Angle_Type := Angle_Type (0.0);
    G_Servo_Angle_Right : Servo_Angle_Type := Angle_Type (0.0);
   
@@ -32,7 +31,7 @@ is
    
       Transmit_Loop : loop
          Data_TX(2) := 0;
-         Data_TX(2) := CRC8.calculateCRC8( Data_TX );
+         Data_TX(2) := CRC8.calculateCRC8( Data_TX );         
          HIL.UART.write(HIL.UART.PX4IO, Data_TX);
          HIL.UART.read(HIL.UART.PX4IO, Data_RX);  -- read response
       
@@ -44,6 +43,7 @@ is
       
       if retries >= 3 then
          Logger.log(Logger.WARN, "PX4IO write failed");
+         null;
       end if;
       
    end write;
@@ -104,6 +104,7 @@ is
    procedure handle_Error(msg : String) is
    begin
       Logger.log(Logger.ERROR, msg);
+      null;
    end handle_Error;
    
    
@@ -111,14 +112,14 @@ is
       check_data : Data_Type := data;
    begin
       check_data(2) := 0;   -- reset crc field for calculation
-      return CRC8.calculateCRC8( check_data ) = data(2);
+      return CRC8.calculateCRC8( check_data ) = data(2);      
    end valid_Package;
    
 
    -- init
    procedure initialize is
       protocol : Data_Type(1 .. 2) := (others => 0);
-      Data : Data_Type(1 .. 2) := (others => 0);
+      Data : Data_Type(1 .. 2) := (others => 0);       
    begin
       Logger.log(Logger.DEBUG, "Probe PX4IO");
       for i in Integer range 1 .. 3 loop
@@ -133,7 +134,7 @@ is
     
       -- set debug level to 5
       write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_SET_DEBUG, HIL.toBytes ( Unsigned_16(5) ) );
-      delay until Clock + Milliseconds ( 2 );
+      --delay until Clock + Milliseconds ( 2 ); -- delay until or Clock makes SPARK conk out      
 
        -- clear all Alarms
       write(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, (1 .. 2 => HIL.Byte ( 255 ) ) );   -- PX4IO clears Bits with 1 (inverted)
@@ -159,7 +160,7 @@ is
 		PX4IO_P_SETUP_ARMING_ALWAYS_PWM_ENABLE or
                 PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE or
                 PX4IO_P_SETUP_ARMING_LOCKDOWN );
-      delay until Clock + Milliseconds ( 2 );
+      --delay until Clock + Milliseconds ( 2 );
       
       
       -- read the setup
@@ -172,7 +173,7 @@ is
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_RELAY_COUNT, Data);
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_MAX_TRANSFER, Data);   -- substract -2 (because PX4 is doing it)
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_RC_INPUT_COUNT, Data);
-      delay until Clock + Milliseconds ( 2 );
+      --delay until Clock + Milliseconds ( 2 );
     
     
       -- set PWM limits
@@ -187,7 +188,7 @@ is
       
         -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
       --modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED); 
-      delay until Clock + Milliseconds ( 2 );
+      --delay until Clock + Milliseconds ( 2 );
 
 
       -- setup arming
@@ -209,7 +210,7 @@ is
       
 
       -- safety off
-      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes( PX4IO_FORCE_SAFETY_MAGIC ) ); -- force into armed state
+      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes (Unsigned_16 (PX4IO_FORCE_SAFETY_MAGIC ) ) ); -- force into armed state
 
    end initialize;
    
@@ -262,15 +263,16 @@ is
       return Unsigned_16(speed); -- Todo
    end esc_PWM;
    
-   
+
    procedure arm is
    begin
-      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes( PX4IO_FORCE_SAFETY_MAGIC ) );
+      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes( Unsigned_16 ( PX4IO_FORCE_SAFETY_MAGIC ) ) );
    end arm;
    
    procedure disarm is
    begin
-      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, HIL.toBytes( PX4IO_FORCE_SAFETY_MAGIC ) );
+        -- this cast is required to remove the constant; otherwise SPARK flow analyss fails
+        write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, Hil.toBytes ( Unsigned_16 (PX4IO_FORCE_SAFETY_MAGIC) ) );
    end disarm;  
    
    
@@ -298,8 +300,10 @@ is
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
       if HIL.isSet( HIL.toUnsigned_16( Status ), PX4IO_P_STATUS_FLAGS_FAILSAFE ) then
          Logger.log(Logger.WARN, "Failsafe");
+         null;
       else
          Logger.log(Logger.DEBUG, ".");
+         null;
       end if;
       
    end sync_Outputs;

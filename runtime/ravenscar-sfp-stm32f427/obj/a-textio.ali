@@ -24,19 +24,19 @@ RV NO_ELABORATION_CODE
 RV NO_OBSOLESCENT_FEATURES
 RV SPARK_05
 
-U ada.text_io%b		a-textio.adb		d3a2eabd OL PK
+U ada.text_io%b		a-textio.adb		47054b22 OL PK
 W ada%s			ada.ads			ada.ali
 W system%s		system.ads		system.ali
 W system.text_io%s	s-textio.adb		s-textio.ali
 
-U ada.text_io%s		a-textio.ads		c034cb2a EE NE OL PK
+U ada.text_io%s		a-textio.ads		b7489be6 EE NE OL PK
 W ada%s			ada.ads			ada.ali
 
-D ada.ads		20160519162255 3ffc8e18 ada%s
-D a-textio.ads		20160519162255 ffc84532 ada.text_io%s
+D ada.ads		20160526162845 3ffc8e18 ada%s
+D a-textio.ads		20160526162805 88b415fe ada.text_io%s
 D a-textio.adb		20160519162255 5958ff7e ada.text_io%b
-D system.ads		20160427145143 9eacb62e system%s
-D s-textio.ads		20160519162255 753250f1 system.text_io%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-textio.ads		20160526162805 96e9a1a2 system.text_io%s
 X 1 ada.ads
 16K9*Ada 19e8 2|36r9 52r5 3|36r14 98r5
 X 2 a-textio.ads

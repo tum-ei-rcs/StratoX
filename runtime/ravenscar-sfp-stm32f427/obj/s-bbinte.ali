@@ -26,7 +26,7 @@ RV NO_IMPLEMENTATION_RESTRICTIONS
 RR NO_ELABORATION_CODE
 RV SPARK_05
 
-U system.bb.interrupts%b  s-bbinte.adb		a7e82125 NE OL PK
+U system.bb.interrupts%b  s-bbinte.adb		59b5a374 NE OL PK
 W system%s		system.ads		system.ali
 W system.bb%s		s-bb.ads		s-bb.ali
 W system.bb.board_support%s  s-bbbosu.adb	s-bbbosu.ali
@@ -37,40 +37,40 @@ W system.bb.threads.queues%s  s-bbthqu.adb	s-bbthqu.ali
 W system.bb.time%s	s-bbtime.adb		s-bbtime.ali
 W system.storage_elements%s  s-stoele.adb	s-stoele.ali
 
-U system.bb.interrupts%s  s-bbinte.ads		7ad170ca BN NE OL PR PK
+U system.bb.interrupts%s  s-bbinte.ads		ebf602a4 BN NE OL PR PK
 W system%s		system.ads		system.ali
 W system.bb%s		s-bb.ads		s-bb.ali
 W system.bb.parameters%s  s-bbpara.ads		s-bbpara.ali
 W system.multiprocessors%s  s-multip.adb	s-multip.ali
 
-D ada.ads		20160519162255 3ffc8e18 ada%s
-D a-except.ads		20160519162255 5b5f0f2f ada.exceptions%s
-D a-unccon.ads		20160519162255 f9eb8f06 ada.unchecked_conversion%s
-D system.ads		20160427145143 9eacb62e system%s
-D s-bb.ads		20160519162255 883768d6 system.bb%s
-D s-bbbosu.ads		20160519162255 3f67a4b3 system.bb.board_support%s
+D ada.ads		20160526162845 3ffc8e18 ada%s
+D a-except.ads		20160526162805 05cada37 ada.exceptions%s
+D a-unccon.ads		20160526162805 f9eb8f06 ada.unchecked_conversion%s
+D system.ads		20160526163742 7c5c108c system%s
+D s-bb.ads		20160526162805 57eacf15 system.bb%s
+D s-bbbosu.ads		20160526162805 d379f5b2 system.bb.board_support%s
 D s-bbbosu.adb		20160427145143 53d21bd1 system.bb.board_support%b
-D s-bbcppr.ads		20160519162255 37229a46 system.bb.cpu_primitives%s
+D s-bbcppr.ads		20160526162805 d37113a9 system.bb.cpu_primitives%s
 D s-bbcppr.adb		20160519162255 7968ef8f system.bb.cpu_primitives%b
-D s-bcprmu.ads		20160519162255 b5ec9aa9 system.bb.cpu_primitives.multiprocessors%s
+D s-bcprmu.ads		20160526162805 283bcab4 system.bb.cpu_primitives.multiprocessors%s
 D s-bcprmu.adb		20160519162255 47c6a6a1 system.bb.cpu_primitives.multiprocessors%b
-D s-bbinte.ads		20160519162255 4743e2d6 system.bb.interrupts%s
+D s-bbinte.ads		20160526163811 7d3734ac system.bb.interrupts%s
 D s-bbinte.adb		20160519162255 e634b97e system.bb.interrupts%b
-D s-bbpara.ads		20160525103512 d83742d1 system.bb.parameters%s
-D s-bbprot.ads		20160519162255 f48a7e85 system.bb.protection%s
+D s-bbpara.ads		20160526162805 36af0059 system.bb.parameters%s
+D s-bbprot.ads		20160526162805 1fe659bc system.bb.protection%s
 D s-bbprot.adb		20160519162255 233a43fc system.bb.protection%b
-D s-bbthre.ads		20160519162255 d71e350d system.bb.threads%s
+D s-bbthre.ads		20160526162805 7a919fda system.bb.threads%s
 D s-bbthre.adb		20160519162255 fefd676c system.bb.threads%b
-D s-bbthqu.ads		20160519162255 6e3d132d system.bb.threads.queues%s
+D s-bbthqu.ads		20160526162805 cfaa9b91 system.bb.threads.queues%s
 D s-bbthqu.adb		20160519162255 e7db98e5 system.bb.threads.queues%b
-D s-bbtime.ads		20160519162255 2fd6b2f5 system.bb.time%s
-D s-maccod.ads		20160519162255 0fbb7bce system.machine_code%s
-D s-multip.ads		20160519162255 f33e0e35 system.multiprocessors%s
-D s-parame.ads		20160519162255 c9fe535f system.parameters%s
-D s-stm32f.ads		20160427145143 f14341ed system.stm32f4%s
-D s-stmrcc.ads		20160525113533 47f9e05b system.stm32f4.rcc%s
-D s-stoele.ads		20160519162255 2dc34a04 system.storage_elements%s
-D s-unstyp.ads		20160519162255 9d58a4c0 system.unsigned_types%s
+D s-bbtime.ads		20160526162805 015554bf system.bb.time%s
+D s-maccod.ads		20160526162805 9404b396 system.machine_code%s
+D s-multip.ads		20160526162805 8bd8e9c8 system.multiprocessors%s
+D s-parame.ads		20160526162805 284dab97 system.parameters%s
+D s-stm32f.ads		20160526162805 2e787da2 system.stm32f4%s
+D s-stmrcc.ads		20160526162805 db2901a4 system.stm32f4.rcc%s
+D s-stoele.ads		20160526162805 5eeb52fd system.storage_elements%s
+D s-unstyp.ads		20160526163029 9d58a4c0 system.unsigned_types%s
 X 4 system.ads
 60K9*System 173e11 12|42w6 43r6 44r6 46r9 49r32 82r23 90r5 13|39r6 40r6 41r6
 . 42r6 43r6 44r6 45r6 47r14 49r8 50r8 51r8 52r8 76r57 238r23 252r16 264r5

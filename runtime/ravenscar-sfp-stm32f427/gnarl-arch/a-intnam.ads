@@ -31,7 +31,7 @@
 
 --  This is the version for Cortex M4F STM32F4 targets
 
-package Ada.Interrupts.Names is
+package Ada.Interrupts.Names with SPARK_Mode => Off is
 
    --  All identifiers in this unit are implementation defined
 

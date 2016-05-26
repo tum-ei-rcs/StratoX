@@ -36,7 +36,7 @@
 --  This version contains only the type definitions for standard interfacing
 --  with C. All functions have been removed from the original spec.
 
-package Interfaces.C is
+package Interfaces.C with SPARK_Mode => Off is
    pragma Pure;
 
    --  Declaration's based on C's <limits.h>

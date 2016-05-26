@@ -5,9 +5,6 @@ node: { title: "system__tasking__initialize" label: "Initialize\n/home/becker/as
 node: { title: "system__bb__board_support__ticks_per_second" label: "Ticks_Per_Second\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-bbbosu.ads:75:13" shape : ellipse }
 node: { title: "system__task_primitives__operations__monotonic_clock" label: "Monotonic_Clock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-taprop.ads:100:13" shape : ellipse }
 node: { title: "__gnat_last_chance_handler" label: "gnat_last_chance_handler\n<built-in>" shape : ellipse }
-node: { title: "ada__real_time___elabs" label: "Real_Time\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:41:1\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time___elabs" targetname: "__aeabi_ldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:48:22" }
-edge: { sourcename: "ada__real_time___elabs" targetname: "system__bb__board_support__ticks_per_second" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:48:53" }
 node: { title: "ada__real_time___elabb" label: "Real_Time\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:41:1\n8 bytes (static)\n0 dynamic objects" }
 edge: { sourcename: "ada__real_time___elabb" targetname: "system__tasking__initialize" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:576:18" }
 node: { title: "ada__real_time__to_time_span" label: "To_Time_Span\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:544:4\n40 bytes (static)\n0 dynamic objects" }
@@ -87,6 +84,6 @@ edge: { sourcename: "ada__real_time__Omultiply__2" targetname: "ada__real_time__
 node: { title: "ada__real_time__Omultiply" label: "*\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:114:4\n56 bytes (static)\n0 dynamic objects" }
 edge: { sourcename: "ada__real_time__Omultiply" targetname: "__gnat_last_chance_handler" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:140:10" }
 edge: { sourcename: "ada__real_time__Omultiply" targetname: "__aeabi_uldivmod" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.adb:139:44" }
-node: { title: "ada__real_time__Oadd__2" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:68:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__real_time__Oadd__2" targetname: "ada__real_time__Oadd" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:69:13" }
+node: { title: "ada__real_time__Oadd__2" label: "+\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:71:4\n24 bytes (static)\n0 dynamic objects" }
+edge: { sourcename: "ada__real_time__Oadd__2" targetname: "ada__real_time__Oadd" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-reatim.ads:72:13" }
 }

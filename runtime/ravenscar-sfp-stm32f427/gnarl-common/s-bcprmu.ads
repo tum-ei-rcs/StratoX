@@ -30,7 +30,7 @@ pragma Restrictions (No_Elaboration_Code);
 
 with System.Multiprocessors;
 
-package System.BB.CPU_Primitives.Multiprocessors is
+package System.BB.CPU_Primitives.Multiprocessors with SPARK_Mode => Off is
    pragma Preelaborate;
 
    function Current_CPU return System.Multiprocessors.CPU;

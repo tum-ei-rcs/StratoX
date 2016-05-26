@@ -39,7 +39,7 @@
 --  The functionality in this unit is now provided by the predefined package
 --  System.Multiprocessors and the CPU aspect. This package is obsolescent.
 
-package System.Task_Info is
+package System.Task_Info with SPARK_Mode => Off is
    pragma Obsolescent (Task_Info, "use System.Multiprocessors and CPU aspect");
    pragma Preelaborate;
    pragma Elaborate_Body;

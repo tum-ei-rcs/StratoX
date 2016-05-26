@@ -44,7 +44,7 @@ with System.Task_Info;
 with System.Task_Primitives;
 with System.Multiprocessors;
 
-package System.Tasking is
+package System.Tasking with SPARK_Mode => Off is
    pragma Preelaborate;
 
    ---------------------------------

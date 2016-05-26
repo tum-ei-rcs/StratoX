@@ -36,7 +36,7 @@
 with System;
 with System.Tasking;
 
-package Ada.Task_Identification is
+package Ada.Task_Identification with SPARK_Mode => Off is
    pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 

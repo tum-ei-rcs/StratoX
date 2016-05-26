@@ -31,7 +31,7 @@
 
 --  Boolean'Image
 
-package System.Img_Bool is
+package System.Img_Bool with SPARK_Mode => Off is
    pragma Pure;
 
    procedure Image_Boolean
