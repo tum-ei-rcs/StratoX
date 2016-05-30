@@ -26,43 +26,85 @@ is
        end record;
    
    -- the type for the queue buffer
-   type Buffer_T is array (positive range <>) of Log_Msg;
-      
+   type Buffer_T is array (Natural range <>) of Log_Msg;
+   type bufpos is mod QUEUE_LENGTH;
+         
    -- protected type to implement the buffer
-   protected type Msg_Queue_T is    
-      procedure New_Msg (msg : in  Log_Msg);
+   protected type Msg_Queue_T is  
+      procedure New_Msg (msg : in  Log_Msg);        
       -- enqueue new message. this is not blocking, except to ensure mutex.
       -- can silently fail if buffer is full
+      -- FIXME: how can we specify a precondition on the private variable?
+      -- for now we put an assertion in the body
       
       entry Get_Msg (msg : out Log_Msg);
+      --  with Pre => Num_Queued > 0;
       -- try to get new message from buffer. if empty, this is blocking 
       -- until buffer has data, and then returns it.
-   private
-      Buffer : Buffer_T (1 .. QUEUE_LENGTH); 
-      -- cannot use a discriminant for this (would violate No_Implicit_Heap_Allocations)
+      -- FIXME: how can we specify a precondition on the private variable?
+      -- for now we put an assertion in the body
       
-      Not_Empty : Boolean := false;
+      function Get_Num_Overflows return Natural;
+      -- query how often the buffer overflowed. If this happens, either increase
+      -- the buffer QUEUE_LENGTH, or increase priority of the logger task.
+      
+      function Get_Length return Natural;
+      -- query number of messages waiting in the logging queue.
+   private
+      Buffer : Buffer_T (0 .. QUEUE_LENGTH - 1); 
+      -- cannot use a discriminant for this (would violate No_Implicit_Heap_Allocations)
+
       Num_Queued : Natural := 0;
+      Not_Empty : Boolean := false; -- simple barrier (Ravenscar)
+      Pos_Read : bufpos := 0;
+      Pos_Write : bufpos := 0;
+      Overflows : Natural := 0;
+      -- cannot use a dynamic predicate to etablish relationship, because this requires
+      -- a record. But we cannot have a record, since this would make Not_Empty a
+      -- non-simple barrier (=> Ravenscar violation).
    end Msg_Queue_T;   
    
    protected body Msg_Queue_T is       
       procedure New_Msg ( msg : in  Log_Msg ) is 
-      begin         
-         if (msg.valid and Num_Queued < Buffer'Last) then               
-            Num_Queued := Num_Queued + 1;
-            Buffer (Num_Queued) := msg;
-            Not_Empty := true;
+      begin
+         if (msg.valid) then         
+            Buffer ( Integer (Pos_Write)) := msg;
+            Pos_Write := Pos_Write + 1;
+            if (Num_Queued < Buffer'Last) then               
+               Num_Queued := Num_Queued + 1;    
+            else -- =Buffer'Last
+               Pos_Read := Pos_Read + 1; -- overwrite oldest
+               if (Overflows < Natural'Last) then
+                  Overflows := Overflows + 1;
+               end if;
+            end if;
          end if;
+         
+         Not_Empty := (Num_Queued > 0);
+         pragma Assert ( (Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)) );
       end New_Msg;
       
-      entry Get_Msg ( msg : out Log_Msg ) when Not_Empty is
+      entry Get_Msg ( msg : out Log_Msg ) when Not_Empty is      
       begin
-         msg := Buffer (Num_Queued); -- TODO: take oldest, not newest
+         pragma Assume ( Num_Queued > 0); -- via barrier and assert in New_Msg
+                  
+         msg := Buffer (Integer (Pos_Read));
+         Pos_Read := Pos_Read + 1;
          Num_Queued := Num_Queued - 1;
-         if (Num_Queued = 0) then
-            Not_Empty := false;
-         end if;
-      end Get_Msg;        
+
+         Not_Empty := Num_Queued > 0;
+         pragma Assert ( (Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)) );
+      end Get_Msg;      
+      
+      function Get_Num_Overflows return Natural is
+      begin
+         return Overflows;
+      end Get_Num_Overflows;
+      
+      function Get_Length return Natural is
+      begin
+         return Num_Queued;
+      end Get_Length;
    end Msg_Queue_T;
    
    -- internal states
@@ -81,7 +123,6 @@ is
          if (msg.valid) then
             null; -- TODO: write to SD card and forward to radio link
          end if;
-         -- TODO: enorce minimum inter-arrival time?
       end loop;
    end Logging_Task;   
    
