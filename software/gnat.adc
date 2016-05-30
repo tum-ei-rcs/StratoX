@@ -1,2 +1,3 @@
-pragma Partition_Elaboration_Policy (Sequential);
-pragma Restrictions (No_Fixed_Point);
+pragma Profile (Ravenscar);
+pragma Partition_Elaboration_Policy (Sequential); -- required by Ravenscar
+--pragma Restrictions (No_Fixed_Point); -- why?

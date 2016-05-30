@@ -31,6 +31,10 @@ project StratoX is
       end case;
    end Compiler;
 
+   package Binder is
+      for Default_Switches ("ada") use ("-r");
+   end Binder;
+
    package Builder is
 
       for Global_Configuration_Pragmas use "gnat.adc";
@@ -72,16 +76,15 @@ project StratoX is
    package Prove is
       -- switches for gnat2why et. al.
 
+      for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427", "--verbose", "--level=2", "-j2", "--assumptions", "-d");
+
       case Build_Mode is
 
          when "debug" =>
-            for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
 
          when "release" =>
-            for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
 
          when "analyze" =>
-            for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427");
       end case;
    end Prove;
 
