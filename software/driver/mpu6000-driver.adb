@@ -9,6 +9,7 @@ with Ada.Unchecked_Conversion;
 package body MPU6000.Driver is
 
 
+   READ_FLAG : constant Byte := Byte( 2#1000_0000# );
 
    --  Public procedures and functions
 
@@ -469,10 +470,11 @@ package body MPU6000.Driver is
      (Reg_Addr    : Byte;
       Data        : in out Data_Type) 
    is
-      
+      Data_TX : Data_Type := (Reg_Addr + READ_FLAG) & Data;
+      Data_RX : Data_Type(1 .. Data'Length + 1) := (others => Byte(0)); 
    begin
-      HIL.SPI.write(HIL.SPI.MPU6000, (1 => Reg_Addr) );
-      HIL.SPI.transfer(HIL.SPI.MPU6000, Data, Data );  -- send the amount of bytes that should be read
+      HIL.SPI.transfer(HIL.SPI.MPU6000, Data_TX, Data_RX );  -- send the amount of bytes that should be read
+      Data := Data_RX(2 .. Data_RX'Length);
    end Read_Register;
 
    -----------------------------------
@@ -483,11 +485,11 @@ package body MPU6000.Driver is
      (Reg_Addr : Byte;
       Data     : in out Byte) 
    is
-      Data_RX : Data_Type := (1 => Data);
+      Data_RX : Data_Type := (1 .. 2 => Byte( 0 ) );
    begin
-      HIL.SPI.write(HIL.SPI.MPU6000, (1 => Reg_Addr) );
-      HIL.SPI.transfer(HIL.SPI.MPU6000, (1 => Data), Data_RX );
-      Data := Data_RX(1);
+      --HIL.SPI.write(HIL.SPI.MPU6000, (1 => Reg_Addr) );
+      HIL.SPI.transfer(HIL.SPI.MPU6000, (1 => (Reg_Addr + READ_FLAG), 2 => Data), Data_RX );
+      Data := Data_RX(2);
    end Read_Byte_At_Register;
 
    ----------------------------------

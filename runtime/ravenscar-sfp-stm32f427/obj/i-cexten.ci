@@ -1,3 +1,0 @@
-graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/i-cexten.ads"
-node: { title: "interfaces__c__extensions__signed_128IP" label: "Signed_128ip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/i-cexten.ads:69:9\n16 bytes (static)\n0 dynamic objects" }
-}

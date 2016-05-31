@@ -11,7 +11,7 @@
 -- [ ] Implementation
 
 with HIL; use HIL;
-with HIL.UART; use type HIL.UART.Data_Type;
+with HIL.UART;
 with units; use units;
 
 package PX4IO.Driver 

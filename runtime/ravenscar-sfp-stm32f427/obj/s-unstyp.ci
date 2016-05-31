@@ -1,3 +1,0 @@
-graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-unstyp.ads"
-node: { title: "system__unsigned_types__packed_bytes1IP" label: "Packed_Bytes1ip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-unstyp.ads:59:9\n16 bytes (static)\n0 dynamic objects" }
-}

@@ -1,3 +1,0 @@
-graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-tasdeb.adb"
-node: { title: "system__tasking__debug__add_task_id" label: "Add_Task_Id\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-tasdeb.adb:54:4\n16 bytes (static)\n0 dynamic objects" }
-}

@@ -57,7 +57,7 @@ package System.BB.Interrupts with SPARK_Mode => On is
 
    type Interrupt_Handler is access procedure (Id : Interrupt_ID);
    --  Prototype of procedures used as low level handlers
-   -- FIXME SPARK: access type must go
+   --  FIXME SPARK: access type must go
 
    procedure Initialize_Interrupts;
    --  Initialize table containing the pointers to the different interrupt

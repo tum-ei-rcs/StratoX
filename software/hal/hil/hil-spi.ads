@@ -1,6 +1,6 @@
 
 
-package HIL.SPI is
+package HIL.SPI with Abstract_State => Deselect is
 
    type Device_ID_Type is (Barometer, Magneto, MPU6000, Extern);
 
@@ -10,7 +10,8 @@ package HIL.SPI is
 
    procedure select_Chip(Device : Device_ID_Type);
    
-   procedure deselect_Chip(Device : Device_ID_Type);
+   procedure deselect_Chip(Device : Device_ID_Type) with
+   Global => (input => (Deselect) );
 
    procedure write (Device : Device_ID_Type; Data : Data_Type);
 

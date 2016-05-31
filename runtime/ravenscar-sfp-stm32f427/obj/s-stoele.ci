@@ -1,3 +1,0 @@
-graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-stoele.adb"
-node: { title: "system__storage_elements__storage_arrayIP" label: "Storage_Arrayip\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-stoele.ads:70:9\n16 bytes (static)\n0 dynamic objects" }
-}

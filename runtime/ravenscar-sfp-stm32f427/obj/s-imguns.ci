@@ -1,8 +1,0 @@
-graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb"
-node: { title: "system__img_uns__set_image_unsigned" label: "Set_Image_Unsigned\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:56:4\n40 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "system__img_uns__set_image_unsigned" targetname: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:system__img_uns__set_image_unsigned__set_digits.4113" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:84:7" }
-node: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:system__img_uns__set_image_unsigned__set_digits.4113" label: "Set_Digits\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:68:7\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:system__img_uns__set_image_unsigned__set_digits.4113" targetname: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:system__img_uns__set_image_unsigned__set_digits.4113" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:71:13" }
-node: { title: "system__img_uns__image_unsigned" label: "Image_Unsigned\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:40:4\n40 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "system__img_uns__image_unsigned" targetname: "system__img_uns__set_image_unsigned" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/common/s-imguns.adb:49:7" }
-}

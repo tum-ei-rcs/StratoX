@@ -1,6 +1,0 @@
-graph: { title: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-extiin.adb"
-node: { title: "system__bb__execution_time__interrupt_clock" label: "Interrupt_Clock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/s-bbexti.ads:39:13" shape : ellipse }
-node: { title: "ada__execution_time__interrupts__supported" label: "Supported\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-extiin.adb:61:4\n16 bytes (static)\n0 dynamic objects" }
-node: { title: "ada__execution_time__interrupts__clock" label: "Clock\n/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-extiin.adb:54:4\n24 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "ada__execution_time__interrupts__clock" targetname: "system__bb__execution_time__interrupt_clock" label: "/home/becker/async/StratoX.git/runtime/ravenscar-sfp-stm32f427/gnarl-common/a-extiin.adb:55:7" }
-}

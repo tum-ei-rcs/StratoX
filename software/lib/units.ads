@@ -12,6 +12,7 @@
 -- [ ] Define all required types
 	
 
+with Ada.Real_Time; use Ada.Real_Time;
 
 package Units is
 
@@ -72,17 +73,12 @@ subtype Angular_Acceleration_Type is Unit_Type
 
 
 
-Meter : constant Length_Type := Length_Type(1.0);
-
-
-
-
 CELSIUS_0 : constant Temperature_Type := Temperature_Type( 273.15 );
 
 -- G : constant Linear_Acceleration_Type := 127137.6 * km/(hour ** 2); 
-m : constant Length_Type := Length_Type(1.0);
-mm : constant Length_Type := 0.001 * m; 
-km : constant Length_Type := 1000.0 * m;
+Meter : constant Length_Type := Length_Type(1.0);
+Milli_Meter : constant Length_Type := 0.001 * Meter; 
+km : constant Length_Type := 1000.0 * Meter;
 
 
 Second : constant Time_Type := Time_Type ( 1.0 );
@@ -96,6 +92,11 @@ Pascal : constant Pressure_Type := Pressure_Type( 1.0 );
 Bar    : constant Pressure_Type := Pressure_Type( 100_000.0 );
 
 Kelvin : constant Temperature_Type := Temperature_Type( 1.0 );
+
+
+-- converts Real_Time to Time_Type, precision is Nanosecond
+function To_Time(rtime : Ada.Real_Time.Time) return Time_Type is
+      ( Time_Type( Float ( (rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Nanoseconds(1) ) / 1.0e-9 ) );
 
 
 

@@ -76,7 +76,6 @@ package body HIL.UART is
 
 
    procedure read (Device : in Device_ID_Type; Data : out Data_Type) is
-      msg : String := "";
    begin
       case (Device) is
       when GPS =>

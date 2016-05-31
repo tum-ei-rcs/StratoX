@@ -101,6 +101,7 @@ package MPU6000.Driver is
    MPU6000_G_PER_LSB_8      : constant := (2.0 * 8.0) / 65536.0;
    MPU6000_G_PER_LSB_16     : constant := (2.0 * 16.0) / 65536.0;
 
+   
 
 
 
@@ -181,8 +182,8 @@ private
    Is_Init : Boolean := False;
    Device_Address : HIL.Byte;
 
-   --  MPU6000 Device ID. Use to test if we are connected via I2C
-   MPU6000_DEVICE_ID        : constant := 16#71#;
+   --  MPU6000 Device ID.
+   MPU6000_DEVICE_ID        : constant := 16#68#;
    --  Address pin low (GND), default for InvenSense evaluation board
    MPU6000_ADDRESS_AD0_LOW  : constant := 16#68#;
    --  Address pin high (VCC)

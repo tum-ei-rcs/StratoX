@@ -68,6 +68,7 @@ package body Main is
 --      end record;
 
    procedure initialize is
+      result : Boolean := False;
    begin
       CPU.initialize;
 
@@ -78,10 +79,19 @@ package body Main is
 
       -- wait to satisfy some timing
       delay until Clock + Milliseconds (20);
+      
       --MS5611.Driver.init;
+      
       PX4IO.Driver.initialize;
       
+      MPU6000.Driver.Reset;
       MPU6000.Driver.Init;
+      result := MPU6000.Driver.Test_Connection;
+      result := MPU6000.Driver.Self_Test;
+      
+      
+      
+      
    end initialize;
 
    procedure perform_Self_Test is

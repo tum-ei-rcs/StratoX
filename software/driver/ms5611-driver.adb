@@ -3,6 +3,7 @@ with Units;
 use type Units.Unit_Type;
 with HIL.SPI;   -- Hardware Interface to SPI
 with MS5611.Register; use MS5611.Register;
+with Ada.Real_Time; use Ada.Real_Time;
 
 package body MS5611.Driver with SPARK_Mode is
 
@@ -48,8 +49,12 @@ package body MS5611.Driver with SPARK_Mode is
    function calculateTemperatureDifference
      (Temp_Raw : Conversion_Data_Type;
       T_Ref    : Float) return DT_Type;
-   function calculateTEMP (thisDT : DT_Type; tempsens : Float) return TEMP_Type;
+      
    procedure compensateTemperature;
+   
+   function conversion_Finished(state : Baro_State_Type;
+                                conv_time : Conversion_Time_LUT_Type;
+                                now : Time) return Boolean; 
 
    function convertToKelvin (thisTemp : in TEMP_Type) return Temperature_Type;
 
@@ -242,29 +247,31 @@ package body MS5611.Driver with SPARK_Mode is
 
          when NOT_INITIALIZED =>
             null;
+            
          when READY =>
             startConversion (D2, OSR_4096);
             G_Baro_State.FSM_State := TEMPERATURE_CONVERSION;
 
          when TEMPERATURE_CONVERSION =>
             -- ToDo check time
-            null;
-            read_adc (Baro, temperature_raw);
-            dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
-            TEMP := 2000.0 + TEMP_Type (dT * G_tempsens);
-            OFF  := G_off_t1 + G_tco * dT;
-            SENS := G_sens_t1 + G_tcs * dT;
-            compensateTemperature;
-            temperature := convertToKelvin (TEMP);
-            startConversion (D1, OSR_4096);
-            G_Baro_State.FSM_State := PRESSURE_CONVERSION;
+            if conversion_Finished(G_Baro_State, Conversion_Time_LUT, Clock) then
+               read_adc (Baro, temperature_raw);
+               dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
+               TEMP := 2000.0 + TEMP_Type (dT * G_tempsens);
+               OFF  := G_off_t1 + G_tco * dT;
+               SENS := G_sens_t1 + G_tcs * dT;
+               compensateTemperature;
+               temperature := convertToKelvin (TEMP);
+               startConversion (D1, OSR_4096);
+               G_Baro_State.FSM_State := PRESSURE_CONVERSION;
+            end if;
 
          when PRESSURE_CONVERSION =>
-            -- ToDo check time
-            null;
-            read_adc (Baro, pressure_raw);
-            pressure := calculatePressure (pressure_raw, SENS, OFF);
-            G_Baro_State.FSM_State := READY;
+            if conversion_Finished(G_Baro_State, Conversion_Time_LUT, Clock) then
+               read_adc (Baro, pressure_raw);
+               pressure := calculatePressure (pressure_raw, SENS, OFF);
+               G_Baro_State.FSM_State := READY;
+            end if;
 
       end case;
 
@@ -327,6 +334,27 @@ package body MS5611.Driver with SPARK_Mode is
       writeToDevice (Baro, data);
 
    end startConversion;
+
+
+
+   function conversion_Finished(state     : Baro_State_Type; 
+                                conv_time : Conversion_Time_LUT_Type;
+                                now       : Time) return Boolean
+   is
+      result : Boolean := False;
+   begin
+      case(state.FSM_State) is
+         when TEMPERATURE_CONVERSION => 
+            result := (state.Conv_Info_Temp.Start + conv_time(state.Conv_Info_Temp.OSR) > units.To_Time( now) );
+         when PRESSURE_CONVERSION =>
+            result := (state.Conv_Info_Pres.Start + conv_time(state.Conv_Info_Pres.OSR) > units.To_Time( now) );
+         when others =>
+            result := False;
+      end case;
+      return result;
+   end conversion_Finished;
+
+
 
    function calculateTemperatureDifference
      (Temp_Raw : Conversion_Data_Type;
