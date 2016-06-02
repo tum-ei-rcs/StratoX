@@ -12,6 +12,8 @@
 
 with units;
 
+with IMU;
+
 package Controller is
 
    type System_Data_Type is new Integer;

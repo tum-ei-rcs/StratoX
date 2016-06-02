@@ -3,6 +3,7 @@ with "../../hal/STM32/HAL.gpr";
 
 library project STM32F42x is
 
+   for Languages use ("Ada");
    for Target use "arm-eabi";
    for Runtime ("Ada") use "-ravenscar-sfp-stm32f427";
 
@@ -25,6 +26,10 @@ library project STM32F42x is
       "drivers/ltdc");
 
    --package Compiler renames Config.Compiler;
-   --package Builder renames Config.Builder;
+   package Compiler is
+      --for Local_Configuration_Pragmas use "gnat.adc";
+      --for Default_Switches ("ada") use ("-gnatec=" &  project'Project_Dir & "gnat.adc");
+   end Compiler;
+
 
 end STM32F42x;

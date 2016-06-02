@@ -3,7 +3,9 @@
 with STM32.I2C;
 with STM32.Device;
 
-package body HIL.I2C is
+package body HIL.I2C with
+   SPARK_Mode => Off
+is
 
 
 

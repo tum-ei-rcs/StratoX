@@ -2,6 +2,7 @@
 
 pragma Restrictions (No_Elaboration_Code);
 pragma Ada_2012;
+pragma SPARK_Mode (Off);
 
 with HAL;
 with System;

@@ -45,7 +45,7 @@
 private with STM32_SVD.SPI;
 with HAL.SPI;
 
-package STM32.SPI is
+package STM32.SPI with SPARK_Mode => Off is
 
    type Internal_SPI_Port is private;
 

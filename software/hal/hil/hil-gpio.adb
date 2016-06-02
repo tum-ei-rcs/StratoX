@@ -2,7 +2,9 @@
 with STM32.GPIO;  use STM32.GPIO;
 with STM32.Device;
 
-package body HIL.GPIO is
+package body HIL.GPIO with
+   SPARK_Mode => Off
+is
 
    SPI1_SCK  : constant STM32.GPIO.GPIO_Point := STM32.Device.PA5;
    SPI1_MISO : constant STM32.GPIO.GPIO_Point := STM32.Device.PA6;
@@ -77,6 +79,17 @@ package body HIL.GPIO is
          when HIGH => STM32.GPIO.Set( stm32_point  );
       end case;
    end write;
+
+
+    procedure read (Point : GPIO_Point_Type; Signal : out GPIO_Signal_Type) is
+      stm32_point : constant GPIO_Point := map( Point );
+   begin
+      if STM32.GPIO.Set(stm32_point) then
+         Signal := HIGH;
+      else
+         Signal := LOW;
+      end if;
+   end read;
 
 
    procedure configure is

@@ -9,6 +9,8 @@ library project HAL is
    for Object_Dir use "obj";
 
    --package Compiler renames Config.Compiler;
-   --package Builder renames Config.Builder;
+   package Compiler is
+      for Local_Configuration_Pragmas use "gnat.adc";
+   end Compiler;
 
 end HAL;

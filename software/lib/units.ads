@@ -14,7 +14,7 @@
 
 with Ada.Real_Time; use Ada.Real_Time;
 
-package Units is
+package Units with SPARK_Mode is
 
 type Unit_Type is new Float
    	with Dimension_System => ( 

@@ -1,7 +1,9 @@
 with HAL;
 with Interfaces; use Interfaces;
 
-package HIL is
+package HIL with
+   SPARK_Mode
+is
    pragma Preelaborate;
 
 

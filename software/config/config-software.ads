@@ -35,6 +35,9 @@ package Config.Software is
 
 	-- PID configuration
 
+
+-- MPU6000
+MPU6000_SAMPLE_RATE_HZ : constant := 100;
 	
 
 end Config.Software;

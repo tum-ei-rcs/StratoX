@@ -1,11 +1,14 @@
 
-with STM32.SPI; use STM32.SPI;
+pragma SPARK_Mode (Off);
+
 with STM32.Device;
+with STM32.SPI;
 with HAL.SPI;
 with HIL.GPIO;
 
 package body HIL.SPI with
-   Refined_State => (Deselect => (SIGNAL_DESELECT) ) 
+   SPARK_Mode => Off
+   -- Refined_State => (Deselect => (SIGNAL_DESELECT) ) 
 is
 
  
@@ -29,17 +32,7 @@ is
                                                Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale)  ; max 20 MHz for Baro
 					       First_Bit => STM32.SPI.MSB,
 					       CRC_Poly => 16#00#);
-                                               
-      MPU6000_Config : constant STM32.SPI.SPI_Configuration := (
-					       Direction => STM32.SPI.D2Lines_FullDuplex,
-					       Mode => STM32.SPI.Master,
-					       Data_Size => HAL.SPI.Data_Size_8b,
-					       Clock_Polarity => STM32.SPI.Low,
-					       Clock_Phase => STM32.SPI.P1Edge,
-					       Slave_Management => STM32.SPI.Software_Managed,
-                                               Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale)  ; max 20 MHz for Baro
-					       First_Bit => STM32.SPI.MSB,
-					       CRC_Poly => 16#00#);
+                                            
 						
 					       
    begin
@@ -61,32 +54,29 @@ is
 
    -- postcondition: only drive pin low
    procedure select_Chip(Device : Device_ID_Type) is
-      LOW : constant HIL.GPIO.GPIO_Signal_Type := HIL.GPIO.LOW;
    begin
       case (Device) is
       when Barometer => 
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, LOW);
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, SIGNAL_SELECT);
       when MPU6000 =>
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_MPU6000, LOW);
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_MPU6000, SIGNAL_SELECT);
       when Extern =>
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, LOW);
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, SIGNAL_SELECT);
       when others => null;
       end case;
    end select_Chip;
       
 
    -- postcondition: only drive pin high
-   procedure deselect_Chip(Device : Device_ID_Type) 
-   is
-      HIGH : constant HIL.GPIO.GPIO_Signal_Type := HIL.GPIO.HIGH;
+   procedure deselect_Chip(Device : Device_ID_Type) is
    begin
       case (Device) is
       when Barometer => 
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, HIGH);
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, SIGNAL_DESELECT);
       when MPU6000 =>
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_MPU6000, HIGH);
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_MPU6000, SIGNAL_DESELECT);
       when Extern =>
-         HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, HIGH);
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, SIGNAL_DESELECT);
       when others => null;
       end case;
    end deselect_Chip;

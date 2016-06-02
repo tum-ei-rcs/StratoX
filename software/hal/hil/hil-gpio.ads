@@ -1,7 +1,13 @@
+-- Institution: Technische Universität München
+-- Department:  Realtime Computer Systems (RCS)
+-- Project:     StratoX
+--
+-- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--
+-- Description: Hardware Interface Layer for the GPIO
 
-package HIL.GPIO is
-   --pragma Preelaborate;
 
+package HIL.GPIO with SPARK_Mode is
 
    type GPIO_Signal_Type is(
       HIGH, LOW);
@@ -13,11 +19,11 @@ package HIL.GPIO is
       SPI_CS_LSM303D,
       SPI_CS_L3GD20H,
       SPI_CS_EXT
-
-      -- HITCH,
-      -- ELEVON_LEFT,   -- PWM shoud be access with write(ELEVON_LEFT, Angle)
-      -- ELEVON_RIGHT   -- PWM
    );
+
+   subtype Point_Out_Type is GPIO_Point_Type;
+
+   --subtype Ponit_In_Type is GPIO_Point_Type;
 
 
    --function init return Boolean;
@@ -27,6 +33,7 @@ package HIL.GPIO is
    -- precondition that Point is Output
    procedure write (Point : in GPIO_Point_Type; Signal : in GPIO_Signal_Type);
 
-   -- procedure read (Point : in GPIO_Point_Type; Signal : out GPIO_Signal_Type);
+
+   procedure read (Point : in GPIO_Point_Type; Signal : out GPIO_Signal_Type);
 
 end HIL.GPIO;

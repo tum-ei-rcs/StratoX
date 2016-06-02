@@ -43,7 +43,7 @@ with System;
 with System.BB.Parameters;
 with System.Multiprocessors;
 
-package System.BB.Interrupts with SPARK_Mode => On is
+package System.BB.Interrupts with SPARK_Mode => Off is
    pragma Preelaborate;
 
    Max_Interrupt : constant := System.BB.Parameters.Number_Of_Interrupt_ID;

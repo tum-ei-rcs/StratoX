@@ -4,7 +4,9 @@ with STM32.USARTs;
 with STM32.Device;
 with Logger;
 
-package body HIL.UART is
+package body HIL.UART with
+   SPARK_Mode => Off
+is
    
 
    

@@ -190,7 +190,7 @@ package body MS5611.Driver with SPARK_Mode is
    procedure read_adc
      (Device    :     Device_Type;
       adc_value : out Conversion_Data_Type) with
-      Pre => adc_value'Size = 24 is
+      Post => adc_value'Size = 24 is
       Data_TX : constant Data_Array (1 .. 4) :=
         (1 => HIL.Byte (CMD_ADC_READ), others => 0);
       Data_RX : Data_Array (1 .. 4) := (others => 0);
@@ -364,10 +364,10 @@ package body MS5611.Driver with SPARK_Mode is
       return DT_Type (Float (Temp_Raw) - T_Ref);
    end calculateTemperatureDifference;
 
-   function calculateTEMP (thisDT : DT_Type; tempsens : Float) return TEMP_Type is
-   begin
-      return 2000.0 + TEMP_Type (thisDT * tempsens);
-   end calculateTEMP;
+--     function calculateTEMP (thisDT : DT_Type; tempsens : Float) return TEMP_Type is
+--     begin
+--        return 2000.0 + TEMP_Type (thisDT * tempsens);
+--     end calculateTEMP;
 
    function convertToKelvin (thisTemp : in TEMP_Type) return Temperature_Type is
    begin

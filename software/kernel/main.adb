@@ -13,6 +13,9 @@ with HIL.UART;
 with HIL.SPI;
 with Logger;
 with Config.Software; use Config.Software;
+with Estimator;
+
+with Interfaces; use Interfaces;
 
 package body Main is
 
@@ -69,6 +72,9 @@ package body Main is
 
    procedure initialize is
       result : Boolean := False;
+      
+      
+      A, B, C, D, E, F : Integer_16 := 0;
    begin
       CPU.initialize;
 
@@ -76,18 +82,20 @@ package body Main is
       --perform_Self_Test;
 
       --MS5611.Driver.reset;
+      MPU6000.Driver.Reset;
 
       -- wait to satisfy some timing
-      delay until Clock + Milliseconds (20);
+      delay until Clock + Milliseconds (50);
       
       --MS5611.Driver.init;
       
       PX4IO.Driver.initialize;
       
-      MPU6000.Driver.Reset;
+      
       MPU6000.Driver.Init;
       result := MPU6000.Driver.Test_Connection;
       result := MPU6000.Driver.Self_Test;
+      MPU6000.Driver.Get_Motion_6(A, B, C, D, E, F);
       
       
       
@@ -144,7 +152,7 @@ package body Main is
             when '8' =>
                PX4IO.Driver.set_Servo_Angle
                  (PX4IO.Driver.RIGHT_ELEVON,
-                  -30.0 * Degree); -- Warning: value not in range of type "Servo_Angle_Type" defined at px4io-driver.ads:29
+                  0.0 * Degree); -- Warning: value not in range of type "Servo_Angle_Type" defined at px4io-driver.ads:29
             when '9' =>
                PX4IO.Driver.set_Servo_Angle
                  (PX4IO.Driver.RIGHT_ELEVON,

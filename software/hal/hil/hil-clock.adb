@@ -1,7 +1,8 @@
 
 with STM32.Device;
 
-package body HIL.Clock is
+package body HIL.Clock 
+is
 
    procedure configure is
    begin

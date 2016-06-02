@@ -53,7 +53,9 @@ with STM32.I2C;     use STM32.I2C;
 with STM32.Timers;  use STM32.Timers;
 with STM32.DAC;     use STM32.DAC;
 
-package STM32.Device is
+package STM32.Device with
+   SPARK_Mode => Off
+is
    pragma Elaborate_Body;
 
    Unknown_Device : exception;

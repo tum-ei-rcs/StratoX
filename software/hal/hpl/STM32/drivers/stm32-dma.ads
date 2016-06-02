@@ -86,7 +86,7 @@ with Ada.Real_Time;  use Ada.Real_Time;
 
 private with STM32_SVD.DMA;
 
-package STM32.DMA is
+package STM32.DMA with SPARK_Mode => Off is
 
    type DMA_Controller is limited private;
 

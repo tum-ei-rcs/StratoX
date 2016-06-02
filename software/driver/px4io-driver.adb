@@ -210,7 +210,7 @@ is
       
 
       -- safety off
-      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes (Unsigned_16 (PX4IO_FORCE_SAFETY_MAGIC ) ) ); -- force into armed state
+      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes (PX4IO_FORCE_SAFETY_MAGIC ) ); -- force into armed state
 
    end initialize;
    
@@ -266,13 +266,13 @@ is
 
    procedure arm is
    begin
-      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes( Unsigned_16 ( PX4IO_FORCE_SAFETY_MAGIC ) ) );
+      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes( PX4IO_FORCE_SAFETY_MAGIC ) );
    end arm;
    
    procedure disarm is
    begin
         -- this cast is required to remove the constant; otherwise SPARK flow analyss fails
-        write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, Hil.toBytes ( Unsigned_16 (PX4IO_FORCE_SAFETY_MAGIC) ) );
+        write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, Hil.toBytes ( PX4IO_FORCE_SAFETY_MAGIC ) );
    end disarm;  
    
    

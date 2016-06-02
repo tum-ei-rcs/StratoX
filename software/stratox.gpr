@@ -7,21 +7,50 @@ project StratoX is
 
    -- Specify Directories
    -----------------------------
-   for Source_Dirs use ("boot", "config", "driver", "hal/hil", "kernel", "modules", "lib");
+   for Source_Dirs use (
+      "boot",
+      "config",
+      "driver",
+      "hal/hil",
+      "kernel",
+      "modules",
+      "modules/sensors",
+      "lib"
+   );
+   
    for Object_Dir use "../obj";
    for Exec_Dir use "../obj";
    type Build_Modes is
       ("debug", "release", "analyze");
    Build_Mode : Build_Modes := external ("Build_Mode", "debug");
+
+   case Build_Mode is
+      when "analyze" =>
+         for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
+      when others => null;
+   end case;
+
    for Runtime ("ada") use "ravenscar-sfp-stm32f427";
    for Target use "arm-eabi";
 
    package Compiler is
 
+      --for Local_Configuration_Pragmas use "spark.adc";
+
       case Build_Mode is
 
          when "debug" =>
-            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", "-gnatet=../target-gen.atp");
+            for Default_Switches ("ada") use (
+               "-O0", "-gnatwa.Xh.k.o", 
+               "-gnatVaimrsd",
+               "-gnatQ", 
+               "-g", "-gnato",
+               "-gnatyak",
+               "-gnat12",
+               "-gnata",
+               "-gnatet=../target-gen.atp");
+
+            --for Switches ("ada") use ("-gnatec=" & project'Project_Dir & "spark.adc");
 
          when "release" =>
             for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.Xh.k.o", "-gnatVaimrs", "-gnato", "-gnat12");
@@ -36,7 +65,6 @@ project StratoX is
    end Binder;
 
    package Builder is
-
       for Global_Configuration_Pragmas use "gnat.adc";
 
       case Build_Mode is

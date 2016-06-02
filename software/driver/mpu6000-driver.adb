@@ -3,7 +3,7 @@ with MPU6000.Register; use MPU6000.Register;
 with Logger;
 
 with Ada.Unchecked_Conversion;
-
+with Config.Software;
 
 
 package body MPU6000.Driver is
@@ -24,14 +24,30 @@ package body MPU6000.Driver is
       if Is_Init then
          return;
       end if;
-
+       
       --  Wait for MPU6000 startup
       while Clock < MPU6000_STARTUP_TIME_MS loop
          null;
       end loop;
+      
+      -- Wake-Up 
+      Write_Bit_At_Register(MPU6000_RA_PWR_MGMT_1, MPU6000_PWR1_SLEEP_BIT, False);
+      delay until Clock + Milliseconds (10);  
 
       -- Disable I2C
-      --Write_Register(MPU6000_RA_CONFIG, I2C_IF_DIS); 
+      Write_Bit_At_Register(MPU6000_RA_USER_CTRL, MPU6000_USERCTRL_I2C_IF_DIS_BIT, True); 
+      
+      -- set Clock
+      Set_Clock_Source(Z_Gyro_Clk);
+      
+      -- set sample rate
+      -- Sample Rate = Gyroscope Output Rate / (1 + SMPLRT_DIV)
+      -- Gyroscope Output Rate = (if DLPF = enabled then 1kHz else 8kHz)
+      Set_Rate( Byte( 19 ) );   -- 50Hz
+      
+      
+      -- set digital low pass filter (DLPF)
+      Set_DLPF_Mode(MPU6000_DLPF_BW_20);
 
       --  Set the device address
       Device_Address := Shift_Left (MPU6000_ADDRESS_AD0_HIGH, 1);
