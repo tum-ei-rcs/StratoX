@@ -15,6 +15,8 @@ with Logger;
 with Config.Software; use Config.Software;
 with Estimator;
 
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+
 with Interfaces; use Interfaces;
 
 package body Main is
@@ -73,7 +75,7 @@ package body Main is
    procedure initialize is
       result : Boolean := False;
       
-      
+      Test : Float := Sin(100.0);
       A, B, C, D, E, F : Integer_16 := 0;
    begin
       CPU.initialize;
