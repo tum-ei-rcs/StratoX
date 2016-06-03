@@ -13,6 +13,7 @@
 	
 
 with Ada.Real_Time; use Ada.Real_Time;
+with Ada.Numerics.Generic_Elementary_Functions;
 
 package Units with SPARK_Mode is
 
@@ -23,7 +24,7 @@ type Unit_Type is new Float
 		(Unit_Name => Second,   Unit_Symbol => 's',   Dim_Symbol => 'T'),
 		(Unit_Name => Ampere,   Unit_Symbol => 'A',   Dim_Symbol => 'I'),
 		(Unit_Name => Kelvin,   Unit_Symbol => 'K',   Dim_Symbol => "Theta"),
-		(Unit_Name => Degree,   Unit_Symbol => "deg", Dim_Symbol => "A")
+		(Unit_Name => Radian,   Unit_Symbol => "Rad", Dim_Symbol => "A")
     );
 
 
@@ -44,7 +45,7 @@ subtype Temperature_Type is Unit_Type
 	with Dimension => (Symbol => 'K', Ampere => 1, others => 0);
 
 subtype Angle_Type is Unit_Type 
-	with Dimension => (Symbol => "deg", Degree => 1, others => 0);
+	with Dimension => (Symbol => "Rad", Radian => 1, others => 0);
 
 
 -- Derived Units
@@ -63,17 +64,21 @@ subtype Linear_Velocity_Type is Unit_Type
 	with Dimension => (Meter => 1, Second => -1, others => 0);
 
 subtype Angular_Velocity_Type is Unit_Type
-	with Dimension => (Degree => 1, Second => -1, others => 0);
+	with Dimension => (Radian => 1, Second => -1, others => 0);
 
 subtype Linear_Acceleration_Type is Unit_Type 
 	with Dimension => (Meter => 1, Second => -2, others => 0);
 
 subtype Angular_Acceleration_Type is Unit_Type 
-	with Dimension => (Degree => 1, Second => -2, others => 0);
+	with Dimension => (Radian => 1, Second => -2, others => 0);
 
 
+GRAVITY : constant Linear_Acceleration_Type := Linear_Acceleration_Type( 9.81 );
 
 CELSIUS_0 : constant Temperature_Type := Temperature_Type( 273.15 );
+
+DEGREE_360 : constant Angle_Type := Angle_Type( 360.0 );
+
 
 -- G : constant Linear_Acceleration_Type := 127137.6 * km/(hour ** 2); 
 Meter : constant Length_Type := Length_Type(1.0);
@@ -85,7 +90,11 @@ Second : constant Time_Type := Time_Type ( 1.0 );
 Milli_Second : constant Time_Type := 1.0e-3 * Second;
 Micro_Second : constant Time_Type := 1.0e-6 * Second;
 
-Degree : constant Angle_Type := Angle_Type ( 1.0 );
+
+-- Angular Units
+Radian : constant Angle_Type := Angle_Type ( 1.0 );
+Degree : constant Angle_Type := Angle_Type ( 1.0 / 360.0 * 2.0 * Ada.Numerics.Pi );
+Evolution : constant Angle_Type := Angle_Type ( 2.0 * Ada.Numerics.Pi );
 
 
 Pascal : constant Pressure_Type := Pressure_Type( 1.0 );
@@ -98,6 +107,15 @@ Kelvin : constant Temperature_Type := Temperature_Type( 1.0 );
 function To_Time(rtime : Ada.Real_Time.Time) return Time_Type is
       ( Time_Type( Float ( (rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Nanoseconds(1) ) / 1.0e-9 ) );
 
+
+-- possible nonsense? Only Sin( Angle ) = Length and Asin( Length ) = Angle are valid.
+-- What is Asin( Acceleration )?
+-- package Math is new Ada.Numerics.Generic_Elementary_Functions(Unit_Type);
+
+
+function Image (unit : Linear_Acceleration_Type) return String;
+   
+function AImage (unit : Angle_Type) return String;
 
 
 end Units;

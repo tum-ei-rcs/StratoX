@@ -32,7 +32,7 @@ is
    type Unsigned_32_Array is array(Natural range <>) of Unsigned_32;   
    
    type Integer_8_Array  is array(Natural range <>) of Integer_8;
-   type Integer_16_Array is array(Natural range <>) of Integer_16;  
+   type Integer_16_Array is array(Natural range <>) of Integer_16;
    type Integer_32_Array is array(Natural range <>) of Integer_32;
    
    

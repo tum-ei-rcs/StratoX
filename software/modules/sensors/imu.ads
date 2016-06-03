@@ -4,6 +4,8 @@ with MPU6000;
 with Generic_Sensor;
 with Interfaces; use Interfaces;
 
+with Units.Vectors; use Units.Vectors;
+
 
 package IMU is
 
@@ -20,14 +22,22 @@ package IMU is
    --type Data_Type is new IMU_Signal.Sample_Type;
 
 
-   package Sensor is new Generic_Sensor(IMU_Data_Type); use Sensor;
+   package IMU_Sensor is new Generic_Sensor(IMU_Data_Type); use IMU_Sensor;
 
-   type IMU_Tag is new Sensor.Sensor_Tag with record
-      X : Integer;
-   end record;
+   type IMU_Tag is new IMU_Sensor.Sensor_Tag with null record;
 
    overriding procedure initialize (Self : in out IMU_Tag);
 
-   overriding procedure get_Data(Self : in out IMU_Tag; Data : out Sample_Type);
+   overriding procedure read_Measurement(Self : in out IMU_Tag);
+
+   function get_Linear_Acceleration(Self : IMU_Tag) return Linear_Acceleration_Vector;
+
+   -- function get_Angular_Velocity (Self : IMU_Tag)
+
+
+   Sensor : IMU_Tag;
+
+
+
 
 end IMU;

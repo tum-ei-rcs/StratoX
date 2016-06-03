@@ -6,45 +6,59 @@
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 --
 -- Description: Estimates state data like orientation and velocity
--- 
+--
 -- ToDo:
 -- [ ] Implementation
 
-
 with Units; use Units;
-with IMU;
+with Units.Vectors; use Units.Vectors;
+with Dynamics3D;
 
 package Estimator is
 
+   subtype Roll_Type is Units.Angle_Type range -180.0 .. 180.0;
+   subtype Pitch_Type is Units.Angle_Type range -180.0 .. 180.0;
+   subtype Yaw_Type is Units.Angle_Type range -180.0 .. 180.0;
 
-   IMU_Data : IMU.Sensor.Sample_Type;
+   subtype Wind_Speed is
+     Units.Linear_Velocity_Type range 0.0 .. 50.0; -- 180 km/h
 
-	subtype Roll_Type is Units.Angle_Type range -180.0 .. 180.0;
-	subtype Pitch_Type is Units.Angle_Type range -180.0 .. 180.0;
-	subtype Yaw_Type is Units.Angle_Type range -180.0 .. 180.0;
+   type Longitude_Type is new Units.Angle_Type range -180.0 .. 180.0;
+   type Latitude_Type is new Units.Angle_Type range -90.0 .. 90.0;
+   type Altitute_Type is new Units.Length_Type range -10.0 .. 10_000.0;
 
-	subtype Altitute_Type is Units.Length_Type range -10.0 .. 10_000.0;
+   type Orientation_Type is record
+      Roll  : Roll_Type;
+      Pitch : Pitch_Type;
+      Yaw   : Yaw_Type;
+   end record;
 
-
-	type Orientation_Type is record
-		Roll : Integer;
-		Pitch : Integer;
-		Yaw : Integer;
-	end record;
-
-	type GPS_Loacation_Type is record
-		Longitude : Float;
-		Latitude : Float;
-		Altitute : Altitute_Type;
-	end record;
-
+   type GPS_Loacation_Type is record
+      Longitude : Longitude_Type;
+      Latitude  : Latitude_Type;
+      Altitute  : Altitute_Type;
+   end record;
+   
+   
    
 
-	-- init
-	procedure initialize;
+   type Karthesian_Coordinate_Dimension_Type is (X, Y, Z);
+   type Vector3D_Type is array (Karthesian_Coordinate_Dimension_Type) of Float;
 
-	-- fetch fresh measurement data
-	procedure update;
+   function Orientation
+     (gravity_vector : Linear_Acceleration_Vector) return Orientation_Type;
 
+   -- init
+   procedure initialize;
+
+   -- fetch fresh measurement data
+   procedure update;
+
+private
+   Object_Orientation : Orientation_Type := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
+--     Object_Pose : Dynamics3D.Pose_Type := (
+--        position => (0.0, 0.0, 0.0),
+--        orientation => (others => 0.0) );
+   
 
 end Estimator;

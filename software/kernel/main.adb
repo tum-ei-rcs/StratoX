@@ -16,6 +16,8 @@ with Config.Software; use Config.Software;
 with Estimator;
 
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+with Ada.Numerics.Real_Arrays; use Ada.Numerics.Real_Arrays;
+
 
 with Interfaces; use Interfaces;
 
@@ -76,8 +78,12 @@ package body Main is
       result : Boolean := False;
       
       Test : Float := Sin(100.0);
+      Foo : Real_Vector := (10.0, 10.0, 10.0);
       A, B, C, D, E, F : Integer_16 := 0;
    begin
+   
+      Test := abs(Foo); 
+   
       CPU.initialize;
 
       Logger.set_Log_Level (CFG_LOGGER_LEVEL_UART);
@@ -100,7 +106,7 @@ package body Main is
       MPU6000.Driver.Get_Motion_6(A, B, C, D, E, F);
       
       
-      
+      Estimator.initialize;
       
    end initialize;
 
@@ -181,7 +187,11 @@ package body Main is
          end case;
 
          -- PX4IO
-         PX4IO.Driver.sync_Outputs;
+         -- PX4IO.Driver.sync_Outputs;
+
+         -- Estimator
+         Estimator.update;
+
 
          -- MS5611 Test
          --MS5611.Driver.update_val;
