@@ -44,8 +44,8 @@ is
    function toBytes(uint : in Unsigned_16) return Byte_Array is
       (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
 
-    -- FAILS  (unsigned arg, constrained return)
-    function toBytes_uc(uint : Unsigned_16) return Byte_Array_2 is
+   -- FAILS  (unsigned arg, constrained return)
+   function toBytes_uc(uint : Unsigned_16) return Byte_Array_2 is
       (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
 
    function toUnsigned_16( bytes : Byte_Array) return Unsigned_16 

@@ -55,7 +55,7 @@ is
       -- cannot use a discriminant for this (would violate No_Implicit_Heap_Allocations)
 
       Num_Queued : Natural := 0;
-      Not_Empty : Boolean := false; -- simple barrier (Ravenscar)
+      Not_Empty : Boolean := False; -- simple barrier (Ravenscar)
       Pos_Read : bufpos := 0;
       Pos_Write : bufpos := 0;
       Overflows : Natural := 0;
@@ -67,14 +67,14 @@ is
    protected body Msg_Queue_T is       
       procedure New_Msg ( msg : in  Log_Msg ) is 
       begin
-         if (msg.valid) then         
+         if msg.valid then         
             Buffer ( Integer (Pos_Write)) := msg;
             Pos_Write := Pos_Write + 1;
-            if (Num_Queued < Buffer'Last) then               
+            if Num_Queued < Buffer'Last then               
                Num_Queued := Num_Queued + 1;    
             else -- =Buffer'Last
                Pos_Read := Pos_Read + 1; -- overwrite oldest
-               if (Overflows < Natural'Last) then
+               if Overflows < Natural'Last then
                   Overflows := Overflows + 1;
                end if;
             end if;
@@ -120,7 +120,7 @@ is
    begin
       loop
          queue.Get_Msg (msg);
-         if (msg.valid) then
+         if msg.valid then
             null; -- TODO: write to SD card and forward to radio link
          end if;
       end loop;
@@ -161,7 +161,7 @@ is
    end Image;
           
    procedure log(level : Log_Level; message : Message_Type) is
-      msg : constant Log_Msg := (level => level, valid => true);
+      msg : constant Log_Msg := (level => level, valid => True);
    begin
       if Log_Level'Pos(level) <= Log_Level'Pos(logger_level) then
          Adapter.write(Log_Level'Image (level) & message);

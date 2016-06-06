@@ -1,6 +1,5 @@
 
 
-with MPU6000;
 with Generic_Sensor;
 with Interfaces; use Interfaces;
 

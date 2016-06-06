@@ -12,7 +12,7 @@
 
 with HIL; use HIL;
 with HIL.UART;
-with units; use units;
+with Units; use Units;
 
 package PX4IO.Driver 
 with SPARK_Mode 
@@ -26,7 +26,7 @@ is
 
 
    type Servo_Type is (LEFT_ELEVON, RIGHT_ELEVON); 
-   subtype Servo_Angle_Type is units.Angle_Type range SERVO_ANGLE_MIN_LIMIT .. SERVO_ANGLE_MAX_LIMIT;
+   subtype Servo_Angle_Type is Units.Angle_Type range SERVO_ANGLE_MIN_LIMIT .. SERVO_ANGLE_MAX_LIMIT;
    
    subtype Motor_Speed_Type is Units.Angular_Velocity_Type range
        MOTOR_SPEED_LIMIT_MIN .. MOTOR_SPEED_LIMIT_MAX;

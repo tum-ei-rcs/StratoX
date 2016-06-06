@@ -33,22 +33,22 @@ package Generic_Sensor with SPARK_Mode is
       sample  : Sample_Type;
    end record;
 
-	procedure initialize(Self : in out Sensor_Tag) is null;
+   procedure initialize(Self : in out Sensor_Tag) is null;
         
-        -- start the measurement
-        procedure start_Measurement(Self : in out Sensor_Tag) is null;
+   -- start the measurement
+   procedure start_Measurement(Self : in out Sensor_Tag) is null;
         
-        -- read the result from the sensor, possible post processing
-        procedure read_Measurement(Self : in out Sensor_Tag) is null;
+   -- read the result from the sensor, possible post processing
+   procedure read_Measurement(Self : in out Sensor_Tag) is null;
         
-        --  update state, wait for finished conversion
-        procedure tick(Self : in out Sensor_Tag) is null;
+   --  update state, wait for finished conversion
+   procedure tick(Self : in out Sensor_Tag) is null;
 
         
-        function new_Sample(Self : in out Sensor_Tag) return Boolean is 
+   function new_Sample(Self : in out Sensor_Tag) return Boolean is 
            ( Self.state = NEW_DATA );
 
-	function get_Sample(Self : in out Sensor_Tag) return Sample_Type is
+   function get_Sample(Self : in out Sensor_Tag) return Sample_Type is
            ( Self.sample );
         
         --function get_State(Self : Sensor_Tag) return Sensor_State_Type;

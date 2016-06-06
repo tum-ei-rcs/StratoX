@@ -22,21 +22,21 @@ is
    
    
    procedure configure is
-      Config : constant STM32.SPI.SPI_Configuration := (
-					       Direction => STM32.SPI.D2Lines_FullDuplex,
-					       Mode => STM32.SPI.Master,
-					       Data_Size => HAL.SPI.Data_Size_8b,
-					       Clock_Polarity => STM32.SPI.Low,
-					       Clock_Phase => STM32.SPI.P1Edge,
-					       Slave_Management => STM32.SPI.Software_Managed,
-                                               Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale)  ; max 20 MHz for Baro
-					       First_Bit => STM32.SPI.MSB,
-					       CRC_Poly => 16#00#);
+      Config : constant STM32.SPI.SPI_Configuration := 
+      ( Direction => STM32.SPI.D2Lines_FullDuplex,
+        Mode => STM32.SPI.Master,
+        Data_Size => HAL.SPI.Data_Size_8b,
+        Clock_Polarity => STM32.SPI.Low,
+        Clock_Phase => STM32.SPI.P1Edge,
+        Slave_Management => STM32.SPI.Software_Managed,
+        Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale); max 20 MHz for Baro
+        First_Bit => STM32.SPI.MSB,
+        CRC_Poly => 16#00#);
                                             
 						
 					       
    begin
-       -- SPI 1 (Baro, MPU6000?)
+      -- SPI 1 (Baro, MPU6000?)
       STM32.Device.Enable_Clock( STM32.Device.SPI_1 );  
    
       STM32.SPI.Configure(Port => STM32.Device.SPI_1, Conf => Config);
@@ -90,7 +90,7 @@ is
          for i in Data'Range loop
 	    STM32.SPI.Transmit(STM32.Device.SPI_1, HAL.Byte( Data(i) ) );
          end loop;          
-       when Extern => 
+      when Extern => 
          for i in Data'Range loop
 	    STM32.SPI.Transmit(STM32.Device.SPI_4, HAL.Byte( Data(i) ) );
          end loop;  
@@ -116,7 +116,7 @@ is
                              STM32.SPI.Byte_Buffer( Data_TX ),
                              STM32.SPI.Byte_Buffer( Data_RX ),
                              Positive( Data_TX'Length ) );
-       when Extern => 
+      when Extern => 
 	 STM32.SPI.Transmit_Receive(
                              STM32.Device.SPI_4, 
                              STM32.SPI.Byte_Buffer( Data_TX ),

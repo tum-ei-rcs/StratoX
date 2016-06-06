@@ -1,20 +1,20 @@
-
 with Main;
 
 -- the entry point after POR
+
 procedure boot is
-   --pragma Priority (MAIN_TASK_PRIORITY);
-   -- Self_Test_Passed : Boolean;
+--pragma Priority (MAIN_TASK_PRIORITY);
+-- Self_Test_Passed : Boolean;
 begin
 
-	Main.initialize;
+   Main.initialize;
 
-	-- ToDo: check last system state
+   -- ToDo: check last system state
 
-	-- test_System;
-        -- Main.perform_Self_Test;
+   -- test_System;
+   -- Main.perform_Self_Test;
 
    -- finally jump to main
-	Main.run_Loop;
+   Main.run_Loop;
 
 end boot;

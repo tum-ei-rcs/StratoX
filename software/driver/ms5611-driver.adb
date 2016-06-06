@@ -111,18 +111,18 @@ package body MS5611.Driver with SPARK_Mode is
    -- the following procedures access the Hardware Interface Layer (HIL)
 
    procedure selectDevice (Device : Device_Type) is
-    begin
-        if Device = Baro then
-            HIL.SPI.select_Chip (HIL.SPI.Barometer);
-        end if;
-    end selectDevice;
+   begin
+      if Device = Baro then
+         HIL.SPI.select_Chip (HIL.SPI.Barometer);
+      end if;
+   end selectDevice;
 
    procedure deselectDevice (Device : Device_Type) is
-    begin
-        if Device = Baro then
-            HIL.SPI.deselect_Chip (HIL.SPI.Barometer);
-        end if;
-    end deselectDevice;
+   begin
+      if Device = Baro then
+         HIL.SPI.deselect_Chip (HIL.SPI.Barometer);
+      end if;
+   end deselectDevice;
 
    procedure writeToDevice (Device : Device_Type; data : in Data_Array) is
    begin
@@ -287,7 +287,7 @@ package body MS5611.Driver with SPARK_Mode is
 
       -- read coefficient again and check equality
       read_coefficient (Baro, COEFF_SENS_T1, c3);
-      if (Float (c3) /= G_tcs) then
+      if Float (c3) /= G_tcs then
          Status := FAILURE;
       else
          -- read D2
@@ -345,9 +345,9 @@ package body MS5611.Driver with SPARK_Mode is
    begin
       case(state.FSM_State) is
          when TEMPERATURE_CONVERSION => 
-            result := (state.Conv_Info_Temp.Start + conv_time(state.Conv_Info_Temp.OSR) > units.To_Time( now) );
+            result := (state.Conv_Info_Temp.Start + conv_time(state.Conv_Info_Temp.OSR) > Units.To_Time( now) );
          when PRESSURE_CONVERSION =>
-            result := (state.Conv_Info_Pres.Start + conv_time(state.Conv_Info_Pres.OSR) > units.To_Time( now) );
+            result := (state.Conv_Info_Pres.Start + conv_time(state.Conv_Info_Pres.OSR) > Units.To_Time( now) );
          when others =>
             result := False;
       end case;

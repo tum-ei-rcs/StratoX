@@ -16,8 +16,7 @@ with Config.Software; use Config.Software;
 with Estimator;
 
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
-with Ada.Numerics.Real_Arrays; use Ada.Numerics.Real_Arrays;
-
+with Ada.Numerics.Real_Arrays;          use Ada.Numerics.Real_Arrays;
 
 with Interfaces; use Interfaces;
 
@@ -54,11 +53,11 @@ package body Main is
 --      );
 --
 --
---      type Health_Status_Type is (
---              UNKNOWN,
---              OK,
---              EMERGENCY
---      );
+   type Health_Status_Type is (
+                               UNKNOWN,
+                               OK,
+                               EMERGENCY
+                              );
 --
 --      type Altitude_State_Type is (
 --              GROUND,
@@ -76,14 +75,14 @@ package body Main is
 
    procedure initialize is
       result : Boolean := False;
-      
-      Test : Float := Sin(100.0);
-      Foo : Real_Vector := (10.0, 10.0, 10.0);
-      A, B, C, D, E, F : Integer_16 := 0;
+
+      Test             : Float       := Sin (100.0);
+      Foo              : Real_Vector := (10.0, 10.0, 10.0);
+      A, B, C, D, E, F : Integer_16  := 0;
    begin
-   
-      Test := abs(Foo); 
-   
+
+      Test := abs (Foo);
+
       CPU.initialize;
 
       Logger.set_Log_Level (CFG_LOGGER_LEVEL_UART);
@@ -94,20 +93,18 @@ package body Main is
 
       -- wait to satisfy some timing
       delay until Clock + Milliseconds (50);
-      
+
       --MS5611.Driver.init;
-      
+
       PX4IO.Driver.initialize;
-      
-      
+
       MPU6000.Driver.Init;
       result := MPU6000.Driver.Test_Connection;
       result := MPU6000.Driver.Self_Test;
-      MPU6000.Driver.Get_Motion_6(A, B, C, D, E, F);
-      
-      
+      MPU6000.Driver.Get_Motion_6 (A, B, C, D, E, F);
+
       Estimator.initialize;
-      
+
    end initialize;
 
    procedure perform_Self_Test is
@@ -160,7 +157,8 @@ package body Main is
             when '8' =>
                PX4IO.Driver.set_Servo_Angle
                  (PX4IO.Driver.RIGHT_ELEVON,
-                  0.0 * Degree); -- Warning: value not in range of type "Servo_Angle_Type" defined at px4io-driver.ads:29
+                  0.0 *
+                  Degree); -- Warning: value not in range of type "Servo_Angle_Type" defined at px4io-driver.ads:29
             when '9' =>
                PX4IO.Driver.set_Servo_Angle
                  (PX4IO.Driver.RIGHT_ELEVON,
@@ -191,7 +189,6 @@ package body Main is
 
          -- Estimator
          Estimator.update;
-
 
          -- MS5611 Test
          --MS5611.Driver.update_val;

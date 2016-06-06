@@ -1,4 +1,5 @@
 with "hal/hpl/STM32/stm32f42x.gpr";
+with "style.gpr";
 
 project StratoX is
 
@@ -17,7 +18,7 @@ project StratoX is
       "modules/sensors",
       "lib"
    );
-   
+
    for Object_Dir use "../obj";
    for Exec_Dir use "../obj";
    type Build_Modes is
@@ -41,14 +42,15 @@ project StratoX is
 
          when "debug" =>
             for Default_Switches ("ada") use (
-               "-O0", "-gnatwa.Xh.k.o", 
+               "-O0", "-gnatwa.Xh.k.o",
                "-gnatVaimrsd",
-               "-gnatQ", 
+               "-gnatQ",
                "-g", "-gnato",
                "-gnatyak",
                "-gnat12",
                "-gnata",
-               "-gnatet=../target-gen.atp");
+               Style.STYLE_SWITCHES,
+                                             "-gnatet=../target-gen.atp");
 
             --for Switches ("ada") use ("-gnatec=" & project'Project_Dir & "spark.adc");
 
@@ -115,6 +117,9 @@ project StratoX is
          when "analyze" =>
       end case;
    end Prove;
+
+   -- pretty printer
+   package Pretty_Printer renames Style.Pretty_Printer;
 
 end StratoX;
 

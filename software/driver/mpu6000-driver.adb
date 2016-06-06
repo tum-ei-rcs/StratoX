@@ -486,7 +486,7 @@ package body MPU6000.Driver is
      (Reg_Addr    : Byte;
       Data        : in out Data_Type) 
    is
-      Data_TX : Data_Type := (Reg_Addr + READ_FLAG) & Data;
+      Data_TX : constant Data_Type := (Reg_Addr + READ_FLAG) & Data;
       Data_RX : Data_Type(1 .. Data'Length + 1) := (others => Byte(0)); 
    begin
       HIL.SPI.transfer(HIL.SPI.MPU6000, Data_TX, Data_RX );  -- send the amount of bytes that should be read
@@ -533,7 +533,7 @@ package body MPU6000.Driver is
      (Reg_Addr    : Byte;
       Data        : Data_Type) 
    is
-      Data_TX : Data_Type := Reg_Addr & Data;
+      Data_TX : constant Data_Type := Reg_Addr & Data;
    begin
       HIL.SPI.write(HIL.SPI.MPU6000, Data_TX);
    end Write_Register;
@@ -546,7 +546,7 @@ package body MPU6000.Driver is
      (Reg_Addr : Byte;
       Data     : Byte) 
    is
-      Data_TX : Data_Type := (1 => Reg_Addr) & Data;
+      Data_TX : constant Data_Type := (1 => Reg_Addr) & Data;
    begin
       HIL.SPI.write(HIL.SPI.MPU6000, Data_TX);
    end Write_Byte_At_Register;

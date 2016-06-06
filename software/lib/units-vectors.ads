@@ -10,8 +10,8 @@ package Units.Vectors with SPARK_Mode is
    type Vector3D_Type is array(1 .. 3) of Unit_Type;
 
 
-   type Polar_Dimesion_Type is (Phi, Rho, Psi);
-   type Earth_Dimension_Type is (LONGITUDE, LATITUDE, ALTITUDE);
+   type Polar_Coordinates_Type is (Phi, Rho, Psi);
+   type Earth_Coordinates_Type is (LONGITUDE, LATITUDE, ALTITUDE);
 
 
    type Cartesian_Coordinates_Type is (X, Y, Z);

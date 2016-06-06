@@ -1,7 +1,7 @@
 -- Institution: Technische Universität München
--- Department: Realtime Computer Systems (RCS)
--- Project: StratoX
--- Module: CPU
+-- Department:  Realtime Computer Systems (RCS)
+-- Project:     StratoX
+-- Module:      CPU
 --
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 --
@@ -13,9 +13,9 @@
 
 package CPU is
 
-	-- configures hardware registers
-	procedure initialize;
+   -- configures hardware registers
+   procedure initialize;
 
-	procedure sleep;
+   procedure sleep;
 
 end CPU;

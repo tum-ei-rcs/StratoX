@@ -2,7 +2,6 @@
 
 with IMU;
 
-with Units.Vectors; use Units.Vectors;
 with Units.Numerics; use Units.Numerics;
 
 with Logger;
@@ -12,9 +11,8 @@ with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 package body Estimator is
 
 
-  Test : Translation_Vector := (0.0 * Meter, 0.0 * Meter, 0.0 * Meter);
-  Foo : Translation_Vector := (0.0 * Meter, 3.0 * Meter, 0.0 * Meter);
-
+   Test : Translation_Vector := (0.0 * Meter, 0.0 * Meter, 0.0 * Meter);
+   Foo  : Translation_Vector := (0.0 * Meter, 3.0 * Meter, 0.0 * Meter);
 
 
    -- init

@@ -17,11 +17,11 @@ generic
 package Generic_Signal with SPARK_Mode is
 
 
-  type Sample_Type is record
-     data      : Data_Type;
-     timestamp : Time_Type;
-  end record;
+   type Sample_Type is record
+      data      : Data_Type;
+      timestamp : Time_Type;
+   end record;
 
-  type Signal_Type is array (Natural range <>) of Sample_Type;
+   type Signal_Type is array (Natural range <>) of Sample_Type;
 
 end Generic_Signal;

@@ -6,18 +6,16 @@
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 --
 -- Description: The main program
--- 
+--
 -- ToDo:
 -- [ ] Implementation
 
-
 package Main is
 
+   procedure initialize;
 
-	procedure initialize;
-        
-        procedure perform_Self_Test;
+   procedure perform_Self_Test;
 
-	procedure run_Loop;
+   procedure run_Loop;
 
 end Main;

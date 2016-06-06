@@ -63,15 +63,15 @@ is
       case (Device) is
       when GPS =>
          for i in Data'Range loop
-            STM32.USARTs.Transmit( STM32.Device.USART_1, HAL.Uint9( Data(i) ) );
+            STM32.USARTs.Transmit( STM32.Device.USART_1, HAL.UInt9( Data(i) ) );
          end loop;
       when Console =>
          for i in Data'Range loop
-            STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.Uint9( Data(i) ) );
+            STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9( Data(i) ) );
          end loop; 
       when PX4IO =>
          for i in Data'Range loop
-            STM32.USARTs.Transmit( STM32.Device.USART_6, HAL.Uint9( Data(i) ) );
+            STM32.USARTs.Transmit( STM32.Device.USART_6, HAL.UInt9( Data(i) ) );
          end loop; 
       end case;
    end write;
@@ -82,15 +82,15 @@ is
       case (Device) is
       when GPS =>
          for i in Data'Range loop
-            STM32.USARTs.Receive( STM32.Device.USART_1, HAL.Uint9( Data(i) ) );
+            STM32.USARTs.Receive( STM32.Device.USART_1, HAL.UInt9( Data(i) ) );
          end loop;
       when Console =>
          for i in Data'Range loop
-            STM32.USARTs.Receive( STM32.Device.USART_3, HAL.Uint9( Data(i) ) );
+            STM32.USARTs.Receive( STM32.Device.USART_3, HAL.UInt9( Data(i) ) );
          end loop; 
       when PX4IO =>
          for i in Data'Range loop
-            STM32.USARTs.Receive( STM32.Device.USART_6, HAL.Uint9( Data(i) ) );
+            STM32.USARTs.Receive( STM32.Device.USART_6, HAL.UInt9( Data(i) ) );
          end loop;
          
          Logger.log(Logger.TRACE, "IO: " &

@@ -74,8 +74,8 @@ is
          retries := retries + 1;
       end loop Transmit_Loop;
       
-     -- for pos in Data'Range loop
-     data( Data'Range ) := Data_RX(5 .. (4 + Data'Length));
+      -- for pos in Data'Range loop
+      data( data'Range ) := Data_RX(5 .. (4 + data'Length));
    end read;
    
    
@@ -136,7 +136,7 @@ is
       write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_SET_DEBUG, HIL.toBytes ( Unsigned_16(5) ) );
       --delay until Clock + Milliseconds ( 2 ); -- delay until or Clock makes SPARK conk out      
 
-       -- clear all Alarms
+      -- clear all Alarms
       write(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, (1 .. 2 => HIL.Byte ( 255 ) ) );   -- PX4IO clears Bits with 1 (inverted)
       delay until Clock + Milliseconds ( 2 );   
       
@@ -145,8 +145,8 @@ is
                    PX4IO_P_STATUS_FLAGS_FAILSAFE or 
                    PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED );
                    
-     -- set Mixer OK
-     modify_set(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
+      -- set Mixer OK
+      modify_set(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
                   PX4IO_P_STATUS_FLAGS_MIXER_OK or
                   PX4IO_P_STATUS_FLAGS_INIT_OK
                   );
@@ -186,7 +186,7 @@ is
       
       
       
-        -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
+      -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
       --modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED); 
       --delay until Clock + Milliseconds ( 2 );
 
@@ -219,7 +219,8 @@ is
       Status : Data_Type(1 .. 2) := (others => 0);
    begin
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
-      Logger.log(Logger.DEBUG, "PX4IO Status: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );
+      Logger.log(Logger.DEBUG, "PX4IO Status: " & 
+                 Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );
       
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, Status);
       Logger.log(Logger.DEBUG, "PX4IO Alarms: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );    
@@ -271,8 +272,8 @@ is
    
    procedure disarm is
    begin
-        -- this cast is required to remove the constant; otherwise SPARK flow analyss fails
-        write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, Hil.toBytes ( PX4IO_FORCE_SAFETY_MAGIC ) );
+      -- this cast is required to remove the constant; otherwise SPARK flow analyss fails
+      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, HIL.toBytes ( PX4IO_FORCE_SAFETY_MAGIC ) );
    end disarm;  
    
    

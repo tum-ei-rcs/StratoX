@@ -14,11 +14,11 @@ with HIL;
 
 package CRC8 is
 
-	subtype Byte is HIL.Byte;
+   subtype Byte is HIL.Byte;
+   
+   subtype Byte_Array is HIL.Byte_Array;
 
-	subtype Byte_Array is HIL.Byte_Array;
-
-crc8_tab : array ( Byte ) of Byte := (
+   crc8_tab : array ( Byte ) of Byte := (
 	16#00#, 16#07#, 16#0E#, 16#09#, 16#1C#, 16#1B#, 16#12#, 16#15#,
 	16#38#, 16#3F#, 16#36#, 16#31#, 16#24#, 16#23#, 16#2A#, 16#2D#,
 	16#70#, 16#77#, 16#7E#, 16#79#, 16#6C#, 16#6B#, 16#62#, 16#65#,
@@ -53,8 +53,8 @@ crc8_tab : array ( Byte ) of Byte := (
 	16#E6#, 16#E1#, 16#E8#, 16#EF#, 16#FA#, 16#FD#, 16#F4#, 16#F3#
 );
 
-	-- init
-	function calculateCRC8(Data : Byte_Array) return Byte;
+   -- init
+   function calculateCRC8(Data : Byte_Array) return Byte;
 
 
 end CRC8;

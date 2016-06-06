@@ -11,21 +11,12 @@
 -- [ ] Implementation
 
 with units;
-
+with Units.Vectors; use Units.Vectors;
 with IMU;
 
 package Controller is
 
    type System_Data_Type is new Integer;
-
-	type GPS_Loacation_Type is record
-		Longitude : Integer;
-		Latitude : Integer;
-		Altitute : Integer;
-	end record;
-
-	type Direction_Type is new Integer; -- Degree_Type, north is 0°
-	type Tilt_Type is new Integer; -- Degree_Type, 
 
 	-- init
 	procedure initialize;

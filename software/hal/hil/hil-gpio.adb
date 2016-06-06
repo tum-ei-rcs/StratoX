@@ -81,7 +81,7 @@ is
    end write;
 
 
-    procedure read (Point : GPIO_Point_Type; Signal : out GPIO_Signal_Type) is
+   procedure read (Point : GPIO_Point_Type; Signal : out GPIO_Signal_Type) is
       stm32_point : constant GPIO_Point := map( Point );
    begin
       if STM32.GPIO.Set(stm32_point) then

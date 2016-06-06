@@ -27,15 +27,20 @@ package Dynamics3D is
 --     end record;
 --
 --
---     type Longitude_Type is new Units.Angle_Type range -180.0 .. 180.0;
---     type Latitude_Type is new Units.Angle_Type range -90.0 .. 90.0;
---     type Altitute_Type is new Units.Length_Type range -10.0 .. 10_000.0;
---
---     type GPS_Loacation_Type is record
---        Longitude : Longitude_Type;
---        Latitude  : Latitude_Type;
---        Altitute  : Altitute_Type;
---     end record;
+   type Longitude_Type is new Units.Angle_Type range -180.0 .. 180.0;
+   type Latitude_Type is new Units.Angle_Type range -90.0 .. 90.0;
+   type Altitute_Type is new Units.Length_Type range -10.0 .. 10_000.0;
+
+   type GPS_Loacation_Type is record
+      Longitude : Longitude_Type;
+      Latitude  : Latitude_Type;
+      Altitute  : Altitute_Type;
+   end record;
+
+
+   type Tait_Bryan_Angle_Type is (ROLL, PITCH, YAW);
+   type Euler_Angle_Type is (X1, Z2, X3);
+
 --
 --
 --     type Pose_Type is record

@@ -41,10 +41,6 @@ package Estimator is
    
    
    
-
-   type Karthesian_Coordinate_Dimension_Type is (X, Y, Z);
-   type Vector3D_Type is array (Karthesian_Coordinate_Dimension_Type) of Float;
-
    function Orientation
      (gravity_vector : Linear_Acceleration_Vector) return Orientation_Type;
 
