@@ -273,7 +273,8 @@ package body STM32.Timers is
    is
    begin
       for Source of Sources loop
-         This.DIER := This.DIER or Source'Enum_Rep;
+         -- This.DIER := This.DIER or Source'Enum_Rep;
+         This.DIER := This.DIER or Timer_Interrupt'Enum_Rep (Source);
       end loop;
    end Enable_Interrupt;
 

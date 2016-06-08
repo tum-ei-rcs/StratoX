@@ -38,7 +38,12 @@
 with System.OS_Interface;
 pragma Elaborate_All (System.OS_Interface);
 
-package Ada.Real_Time with SPARK_Mode is
+package Ada.Real_Time with SPARK_Mode,
+  Abstract_State => (Clock_Time with Synchronous,
+                     External => (Async_Readers,
+                                  Async_Writers)),
+  Initializes    => Clock_Time
+is
    type Time is private;
    Time_First : constant Time;
    Time_Last  : constant Time;
@@ -62,7 +67,9 @@ package Ada.Real_Time with SPARK_Mode is
    Time_Span_Unit  : constant Time_Span;
 
    Tick : constant Time_Span;
-   function Clock return Time;
+   function Clock return Time with
+     Volatile_Function,
+     Global => Clock_Time;
 
    function "+"  (Left : Time; Right : Time_Span) return Time;
    function "-"  (Left : Time; Right : Time_Span) return Time;
