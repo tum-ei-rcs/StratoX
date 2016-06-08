@@ -34,7 +34,8 @@
 
 with System.Fat_Gen;
 
-package System.Fat_SFlt with SPARK_Mode => Off is
+package System.Fat_SFlt -- with SPARK_Mode => Off
+is
    pragma Pure;
 
    --  Note the only entity from this package that is accessed by Rtsfind

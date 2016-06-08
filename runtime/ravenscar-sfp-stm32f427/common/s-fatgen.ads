@@ -38,7 +38,8 @@
 generic
     type T is digits <>;
 
-package System.Fat_Gen with SPARK_Mode => Off is
+package System.Fat_Gen -- with SPARK_Mode => Off
+is
    pragma Pure;
 
    subtype UI is Integer;
