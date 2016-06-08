@@ -1,0 +1,53 @@
+Ref: U-Blox-8-M8 Receiver
+
+
+The u-blox receiver always uses only the Current Configuration.
+Unless the Current Configuration is made permanent by using UBX-CFG-CFG as described below, the Current
+Configuration will be lost when there is:
+• a power cycle
+• a hardware reset
+• a (complete) controlled software reset
+
+
+Protocols:
+NMEA (Strings), UBX (proprietary binary), RTCM(Real Time correction data, input only)
+
+UBX:
+* Every Message starts with 2 Bytes: 0xB5 0x62
+* 1 Byte Class Field
+* 1 Byte ID
+* 2 Bytes Payload Length
+* Payload
+* 2 Bytes Checksum
+
+All multi-byte values are ordered in Little Endian format
+
+For each message the receiver will send an "acknowledge" (ACK-AC
+K) or a "not acknowledge" (ACK-NAK) message back to the sender
+
+
+Configuration:
+https://github.com/PX4/GpsDrivers/blob/5c1ae956552c3887c5fddd303a8f242efa715333/src/ubx.cpp#L106
+
+1. Set binary protocol (CFG-PRT, own message)
+2. Set baudrate (CFG-PRT, again own message)
+3. Set message rates (CFG-MSG)
+4. set dynamic model
+
+
+
+Important Messages:
+
+CFG-PRT: set protocol
+CFG-MSG: set message rates
+CFG-NAV5: set dynamic model (to airborne) 
+
+MSG_POSLLH: long, lat, alt
+NAV-PVT: long, lat, alt, all velocities, time, HEADING OF VEHICLE! (in deg)
+
+
+
+
+
+
+
