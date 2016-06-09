@@ -11,6 +11,9 @@ package HIL.UART with
 
    type Device_ID_Type is (GPS, Console, PX4IO);
 
+   type Baudrates_Type is range 9_600 .. 1_500_000
+   with Static_Predicate => Baudrates_Type in 9600 | 38_400 | 1_500_000;
+
    subtype Data_Type is Byte_Array;
 
    procedure configure;

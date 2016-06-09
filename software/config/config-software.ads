@@ -31,5 +31,17 @@ package Config.Software is
 
    -- MPU6000
    MPU6000_SAMPLE_RATE_HZ : constant := 100;
+   
+   
+   -- PX4IO
+   PX4IO_BAUD_RATE_HZ : constant := 1_500_000;
+   
+   
+   -- UBLOX-
+   UBLOX_BAUD_RATE_HZ : constant := 38_400;
+   
+   
+   
+   
 
 end Config.Software;

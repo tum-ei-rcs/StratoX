@@ -1,6 +1,7 @@
 
 
 with IMU;
+with GPS;
 
 with Units.Numerics; use Units.Numerics;
 
@@ -21,6 +22,8 @@ package body Estimator is
       Test := Test + Foo;
 
       IMU.Sensor.initialize;
+
+      GPS.Sensor.initialize;
    end initialize;
 
    -- fetch fresh measurement data

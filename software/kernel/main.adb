@@ -5,7 +5,7 @@
 with CPU;
 with Units;           use Units;
 with Ada.Real_Time;   use Ada.Real_Time;
-with led_manager;
+with LED_Manager;
 with MS5611.Driver;
 with PX4IO.Driver;
 with MPU6000.Driver;
@@ -98,10 +98,6 @@ package body Main is
 
       PX4IO.Driver.initialize;
 
-      MPU6000.Driver.Init;
-      result := MPU6000.Driver.Test_Connection;
-      result := MPU6000.Driver.Self_Test;
-      MPU6000.Driver.Get_Motion_6 (A, B, C, D, E, F);
 
       Estimator.initialize;
 
@@ -124,7 +120,7 @@ package body Main is
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
    begin
-      led_manager.LED_blink (led_manager.SLOW);
+      LED_Manager.LED_blink (LED_Manager.SLOW);
 
       Logger.log (Logger.INFO, msg);
 
@@ -134,8 +130,8 @@ package body Main is
       loop
          loop_time_start := Clock;
 
-         led_manager.LED_tick (MAIN_TICK_RATE_MS);
-         led_manager.LED_sync;
+         LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
+         LED_Manager.LED_sync;
 
          -- UART Test
          --HIL.UART.write(HIL.UART.Console, (70, 65) );
@@ -173,7 +169,7 @@ package body Main is
             when 's' =>
                PX4IO.Driver.read_Status;
             when 'l' =>
-               led_manager.LED_blink (led_manager.FAST);
+               LED_Manager.LED_blink (LED_Manager.FAST);
             when 'd' =>
                PX4IO.Driver.disarm;
             when 'p' =>

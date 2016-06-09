@@ -3,6 +3,7 @@
 with STM32.USARTs;
 with STM32.Device;
 with Logger;
+with Config.Software;
 
 package body HIL.UART with
    SPARK_Mode => Off
@@ -28,13 +29,13 @@ is
       STM32.USARTs.Set_Stop_Bits( STM32.Device.USART_6, STM32.USARTs.Stopbits_1 );
       STM32.USARTs.Set_Word_Length( STM32.Device.USART_6, STM32.USARTs.Word_Length_8 );
       STM32.USARTs.Set_Parity( STM32.Device.USART_6, STM32.USARTs.No_Parity );
-      STM32.USARTs.Set_Baud_Rate( STM32.Device.USART_6, 1_500_000 );
+      STM32.USARTs.Set_Baud_Rate( STM32.Device.USART_6, Config.Software.PX4IO_BAUD_RATE_HZ );
       STM32.USARTs.Set_Oversampling_Mode( STM32.Device.USART_6, STM32.USARTs.Oversampling_By_16 );
       STM32.USARTs.Set_Mode( STM32.Device.USART_6, STM32.USARTs.Tx_Rx_Mode );
       STM32.USARTs.Set_Flow_Control( STM32.Device.USART_6, STM32.USARTs.No_Flow_Control );
       
       
-      -- UART 3 (Serial 2)
+      -- UART 3 (Serial 2, Tele 2, Console)
       STM32.USARTs.Enable( STM32.Device.USART_3 );
       STM32.USARTs.Set_Stop_Bits( STM32.Device.USART_3, STM32.USARTs.Stopbits_1 );
       STM32.USARTs.Set_Word_Length( STM32.Device.USART_3, STM32.USARTs.Word_Length_8 );
@@ -44,7 +45,16 @@ is
       STM32.USARTs.Set_Mode( STM32.Device.USART_3, STM32.USARTs.Tx_Rx_Mode );
       STM32.USARTs.Set_Flow_Control( STM32.Device.USART_3, STM32.USARTs.No_Flow_Control );
 
-
+      -- UART 4 (Serial 3, GPS)
+      STM32.USARTs.Enable( STM32.Device.UART_4 );
+      STM32.USARTs.Set_Stop_Bits( STM32.Device.UART_4, STM32.USARTs.Stopbits_1 );
+      STM32.USARTs.Set_Word_Length( STM32.Device.UART_4, STM32.USARTs.Word_Length_8 );
+      STM32.USARTs.Set_Parity( STM32.Device.UART_4, STM32.USARTs.No_Parity );
+      STM32.USARTs.Set_Baud_Rate( STM32.Device.UART_4, Config.Software.UBLOX_BAUD_RATE_HZ );
+      STM32.USARTs.Set_Oversampling_Mode( STM32.Device.UART_4, STM32.USARTs.Oversampling_By_16 );
+      STM32.USARTs.Set_Mode( STM32.Device.UART_4, STM32.USARTs.Tx_Rx_Mode );
+      STM32.USARTs.Set_Flow_Control( STM32.Device.UART_4, STM32.USARTs.No_Flow_Control );
+      
       -- UART 7 (SER 5)
       STM32.USARTs.Enable( STM32.Device.USART_7 );
       STM32.USARTs.Set_Stop_Bits( STM32.Device.USART_7, STM32.USARTs.Stopbits_1 );
@@ -63,12 +73,12 @@ is
       case (Device) is
       when GPS =>
          for i in Data'Range loop
-            STM32.USARTs.Transmit( STM32.Device.USART_1, HAL.UInt9( Data(i) ) );
+            STM32.USARTs.Transmit( STM32.Device.UART_4, HAL.UInt9( Data(i) ) );
          end loop;
       when Console =>
          for i in Data'Range loop
             STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9( Data(i) ) );
-         end loop; 
+         end loop;
       when PX4IO =>
          for i in Data'Range loop
             STM32.USARTs.Transmit( STM32.Device.USART_6, HAL.UInt9( Data(i) ) );
@@ -82,7 +92,7 @@ is
       case (Device) is
       when GPS =>
          for i in Data'Range loop
-            STM32.USARTs.Receive( STM32.Device.USART_1, HAL.UInt9( Data(i) ) );
+            STM32.USARTs.Receive( STM32.Device.UART_4, HAL.UInt9( Data(i) ) );
          end loop;
       when Console =>
          for i in Data'Range loop

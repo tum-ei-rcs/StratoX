@@ -6,40 +6,12 @@ with Units; use Units;
 
 package Dynamics3D is
 
-
-
-
---     type Linear_Dynamic_Vector is record
---        position : Position_Vector;
---        velocity : Linear_Velocity_Vector;
---        acceleration : Linear_Acceleration_Vector;
---     end record;
---
---     type Angular_Dynamic_Vector is record
---        orientation : Orientation_Vector;
---        velocity : Angular_Velocity_Vector;
---        acceleration : Angular_Acceleration_Vector;
---     end record;
---
---     type Transformation_Vector is record
---        translation : Translation_Vector;
---        rotation    : Rotation_Vector;
---     end record;
---
---
-   type Longitude_Type is new Units.Angle_Type range -180.0 .. 180.0;
-   type Latitude_Type is new Units.Angle_Type range -90.0 .. 90.0;
-   type Altitute_Type is new Units.Length_Type range -10.0 .. 10_000.0;
-
-   type GPS_Loacation_Type is record
-      Longitude : Longitude_Type;
-      Latitude  : Latitude_Type;
-      Altitute  : Altitute_Type;
-   end record;
-
-
+   -- Rotation Systems
    type Tait_Bryan_Angle_Type is (ROLL, PITCH, YAW);
    type Euler_Angle_Type is (X1, Z2, X3);
+
+
+
 
 --
 --
