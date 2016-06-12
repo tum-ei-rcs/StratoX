@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                          S Y S T E M . L I B M                           --
+--                    S Y S T E M . L I B M _ S I N G L E                   --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--         Copyright (C) 2014-2015, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,19 +29,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Ada Cert Math specific version of s-libm.adb
+--  This is the Ada Cert Math specific version of s-libsin.adb
 
 --  When Cody and Waite implementation is cited, it refers to the
 --  Software Manual for the Elementary Functions by William J. Cody, Jr.
 --  and William Waite, published by Prentice-Hall Series in Computational
---  Mathematics. Version??? ISBN???
+--  Mathematics. Copyright 1980. ISBN 0-13-822064-6.
 
 --  When Hart implementation is cited, it refers to
---  "The Computer Approximation" by John F. Hart, published by Krieger.
---  Version??? ISBN???
+--  "Computer Approximations" by John F. Hart, published by Krieger.
+--  Copyright 1968, Reprinted 1978 w/ corrections. ISBN 0-88275-642-7.
 
 with Ada.Numerics; use Ada.Numerics;
 with System.Libm; use System.Libm;
+with System.Libm_Single.Squareroot;
 
 package body System.Libm_Single is
    subtype F is Float;
@@ -165,7 +166,7 @@ package body System.Libm_Single is
    procedure Split_Veltkamp (X : Float; X_Hi, X_Lo : out Float)
       with Post => X = X_Hi + X_Lo;
 
-   function Multiply_Add (X, Y, Z : F)   return F  is (X * Y + Z);
+   function Multiply_Add (X, Y, Z : F) return F is (X * Y + Z);
 
    ---------------------
    -- Reconstruct_Pow --
@@ -347,7 +348,7 @@ package body System.Libm_Single is
    -- Acos --
    ----------
 
-   function Acos (X : F)  return F  is (Instantiations.Acos (X));
+   function Acos (X : F)  return F is (Instantiations.Acos (X));
 
    -----------
    -- Acosh --
@@ -373,7 +374,7 @@ package body System.Libm_Single is
    -- Asin --
    ----------
 
-   function Asin (X : F)  return F  is (Float_Approximations.Asin (X));
+   function Asin (X : F)  return F is (Float_Approximations.Asin (X));
 
    -----------
    -- Asinh --
@@ -405,13 +406,13 @@ package body System.Libm_Single is
    -- Atan --
    ----------
 
-   function Atan (X : F)  return F  is (Instantiations.Atan2 (X, 1.0));
+   function Atan (X : F)  return F is (Instantiations.Atan2 (X, 1.0));
 
    -----------
    -- Atan2 --
    -----------
 
-   function Atan2 (Y, X : F)  return F  is (Instantiations.Atan2 (Y, X));
+   function Atan2 (Y, X : F) return F is (Instantiations.Atan2 (Y, X));
 
    -----------
    -- Atanh --
@@ -584,7 +585,7 @@ package body System.Libm_Single is
       Exponent_X  : constant Integer := F'Exponent (X);
       XN          : F                := F (Exponent_X);
       Mantissa_X  : F                := F'Scaling (X, -Exponent_X);
-      HM_F        : constant Integer :=  Integer (F'Machine_Mantissa / 2);
+      HM_F        : constant Integer := Integer (F'Machine_Mantissa / 2);
       L1          : constant F       := F'Leading_Part (Ln_2, HM_F);
       L2          : constant F       := Ln_2 - L1;
       Result      : F;
@@ -804,6 +805,13 @@ package body System.Libm_Single is
          return Sign * ((Z - 1.0 / Z) / 2.0);
       end if;
    end Sinh;
+
+   ----------
+   -- Sqrt --
+   ----------
+
+   function Sqrt (X : Float) return Float renames
+     System.Libm_Single.Squareroot.Sqrt;
 
    ---------
    -- Tan --

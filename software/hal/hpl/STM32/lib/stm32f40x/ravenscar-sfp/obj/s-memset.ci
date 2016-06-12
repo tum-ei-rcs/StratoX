@@ -1,3 +1,0 @@
-graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-memset.adb"
-node: { title: "memset" label: "Memset\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-memset.adb:46:4\n0 bytes\n0 dynamic objects" }
-}

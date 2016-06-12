@@ -33,7 +33,7 @@
 
 with System.Storage_Elements;
 
-package System.Secondary_Stack with SPARK_Mode => Off is
+package System.Secondary_Stack is
 
    package SSE renames System.Storage_Elements;
 

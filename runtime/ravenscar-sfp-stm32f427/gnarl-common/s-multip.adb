@@ -1,17 +1,17 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --               S Y S T E M . M U L T I P R O C E S S O R S                --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 2010-2013, Free Software Foundation, Inc.          --
+--                         Copyright (C) 2010, AdaCore                      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
 -- ware  Foundation;  either version 3,  or (at your option) any later ver- --
--- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- sion. GNARL is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
@@ -26,7 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces.C; use Interfaces.C;
+--  Default body for Ravenscar run times (single processor)
 
 package body System.Multiprocessors is
 
@@ -36,16 +36,10 @@ package body System.Multiprocessors is
 
    function Number_Of_CPUs return CPU is
    begin
-      if CPU'Last = 1 then
-         return 1;
-      else
-         declare
-            function Gnat_Number_Of_CPUs return int;
-            pragma Import (C, Gnat_Number_Of_CPUs, "__gnat_number_of_cpus");
-         begin
-            return CPU (Gnat_Number_Of_CPUs);
-         end;
-      end if;
+      --  By default, on Ravenscar targets (including bare boards), the
+      --  number of CPU's is 1.
+
+      return 1;
    end Number_Of_CPUs;
 
 end System.Multiprocessors;

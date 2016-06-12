@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2004 The European Space Agency            --
---                     Copyright (C) 2003-2015, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ pragma Restrictions (No_Elaboration_Code);
 
 with System.Multiprocessors;
 
-package System.BB.Time with SPARK_Mode => Off is
+package System.BB.Time is
    pragma Preelaborate;
 
    type Time is mod 2 ** 64;
@@ -115,10 +115,6 @@ package System.BB.Time with SPARK_Mode => Off is
    Scheduling_Event_Hook : access procedure := null;
    --  This hooks must be called when the charged account change: in case of
    --  rescheduling and before and after the handling of interrupt.
-
-   Disable_Execution_Time_Hook : access procedure := null;
-   --  Called when all tasks become idle. Note that the time spent after the
-   --  last call to Scheduling_Event_Hook is not charged.
 
    --------------------
    -- Initialization --

@@ -28,6 +28,9 @@ is
    UART3_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD9;
    UART3_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD8;
 
+   UART4_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PA1;
+   UART4_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PA0;
+
    UART6_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PC7;
    UART6_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PC6;
 
@@ -161,6 +164,13 @@ is
       Configure_Alternate_Function(
                                    Points => (UART3_RX, UART3_TX),
                                    AF     => GPIO_AF_USART3);
+
+      -- configure UART 4 (Serial 3)
+      Configure_IO( Points => (UART4_RX, UART4_TX), Config => Config_UART3 );
+
+      Configure_Alternate_Function(
+                                   Points => (UART4_RX, UART4_TX),
+                                   AF     => GPIO_AF_USART4);
 
       -- configure UART 6 (PX4IO)
       Configure_IO( Points => (UART6_TX, UART6_RX), Config => Config_UART6 );

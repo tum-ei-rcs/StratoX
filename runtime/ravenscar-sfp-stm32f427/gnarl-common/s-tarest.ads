@@ -46,7 +46,7 @@
 with System.Task_Info;
 with System.Parameters;
 
-package System.Tasking.Restricted.Stages with SPARK_Mode => Off is
+package System.Tasking.Restricted.Stages is
    pragma Elaborate_Body;
 
    ---------------------------------

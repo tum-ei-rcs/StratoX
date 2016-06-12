@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,15 +39,16 @@ pragma Restrictions (No_Elaboration_Code);
 --  This could use a comment, why is it here???
 
 with System.Multiprocessors;
-with System.Parameters;
+with System.Storage_Elements;
 
 with System.BB.Threads.Queues;
 with System.BB.Time;
 with System.BB.Interrupts;
 with System.BB.Board_Support;
+with System.BB.Parameters;
 with System.BB.CPU_Primitives.Multiprocessors;
 
-package System.OS_Interface with SPARK_Mode => Off is
+package System.OS_Interface is
    pragma Preelaborate;
 
    ----------------
@@ -83,6 +84,9 @@ package System.OS_Interface with SPARK_Mode => Off is
      renames System.BB.Interrupts.Attach_Handler;
    --  Attach a handler to a hardware interrupt
 
+   procedure Power_Down renames System.BB.Board_Support.Power_Down;
+   --  Put current CPU in power-down mode
+
    ----------
    -- Time --
    ----------
@@ -94,8 +98,7 @@ package System.OS_Interface with SPARK_Mode => Off is
    --  Represents the length of time intervals in the underlying tasking
    --  system.
 
-   function Ticks_Per_Second return Natural
-      renames System.BB.Board_Support.Ticks_Per_Second;
+   Ticks_Per_Second : constant := System.BB.Parameters.Ticks_Per_Second;
    --  Number of clock ticks per second
 
    function Clock return Time renames System.BB.Time.Clock;
@@ -128,20 +131,22 @@ package System.OS_Interface with SPARK_Mode => Off is
      renames System.BB.Threads.Initialize;
    --  Procedure for initializing the underlying tasking system
 
-   procedure Initialize_Slave_Environment (Environment_Thread : Thread_Id)
-     renames System.BB.Threads.Initialize_Slave_Environment;
-   --  Procedure to initialize the fake environment thread on a slave CPU.
-   --  This thread is used to handle interrupt if the CPU doesn't have any
-   --  other task.
+   procedure Initialize_Slave
+     (Idle_Thread   : Thread_Id;
+      Idle_Priority : Integer;
+      Stack_Address : System.Address;
+      Stack_Size    : System.Storage_Elements.Storage_Offset)
+     renames System.BB.Threads.Initialize_Slave;
+   --  Procedure to initialize the idle thread
 
    procedure Thread_Create
      (Id            : Thread_Id;
       Code          : System.Address;
       Arg           : System.Address;
-      Priority      : System.Any_Priority;
+      Priority      : Integer;
       Base_CPU      : System.Multiprocessors.CPU_Range;
       Stack_Address : System.Address;
-      Stack_Size    : System.Parameters.Size_Type)
+      Stack_Size    : System.Storage_Elements.Storage_Offset)
      renames System.BB.Threads.Thread_Create;
    --  Create a new thread
 
@@ -152,9 +157,9 @@ package System.OS_Interface with SPARK_Mode => Off is
    -- ATCB --
    ----------
 
-   procedure Set_ATCB (ATCB : System.Address)
+   procedure Set_ATCB (Id : Thread_Id; ATCB : System.Address)
      renames System.BB.Threads.Set_ATCB;
-   --  Associate the specified ATCB to the currently running thread
+   --  Associate the specified ATCB to the thread ID
 
    function Get_ATCB return System.Address renames System.BB.Threads.Get_ATCB;
    --  Get the ATCB associated to the currently running thread
@@ -163,11 +168,11 @@ package System.OS_Interface with SPARK_Mode => Off is
    -- Scheduling --
    ----------------
 
-   procedure Set_Priority (Priority  : System.Any_Priority)
+   procedure Set_Priority (Priority : Integer)
      renames System.BB.Threads.Set_Priority;
    --  Set the active priority of the executing thread to the given value
 
-   function Get_Priority  (Id : Thread_Id) return System.Any_Priority
+   function Get_Priority  (Id : Thread_Id) return Integer
      renames System.BB.Threads.Get_Priority;
    --  Get the current base priority of a thread
 

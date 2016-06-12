@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2014, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +38,11 @@ with System.Task_Primitives.Operations;
 
 with Ada.Unchecked_Conversion;
 
-package body Ada.Real_Time with SPARK_Mode => Off is
+package body Ada.Real_Time with
+  SPARK_Mode => Off
+is
    pragma Suppress (Overflow_Check);
-   --  This package has careful manual overflow checks, and unsupresses them
+   --  This package has careful manual overflow checks, and unsuppresses them
    --  where appropriate. This default enables compilation with checks enabled
    --  on Ravenscar SFP, where 64-bit multiplication with overflow checking is
    --  not available.
@@ -68,7 +70,7 @@ package body Ada.Real_Time with SPARK_Mode => Off is
    --  with a clock frequency of 600 MHz the factor was 1.66, which was rounded
    --  to 1 (Integer), and hence with a 67% difference.
 
-   --  We tried also to have a better trade off (Contraint_Error being raised
+   --  We tried also to have a better tradeoff (Constraint_Error being raised
    --  when transforming very big values, but limiting a lot the loss of
    --  accuracy) using Clock_Frequency in MHz instead of Hz. Therefore, we
    --  multiplied first by 10 ** 3 (or Clock_Frequency / 10 ** 6 which is
@@ -79,6 +81,10 @@ package body Ada.Real_Time with SPARK_Mode => Off is
    --  "by hand" on the upper and the lower part of the 64-bit value. This is
    --  slightly heavier, but we can preserve the best accuracy and the lowest
    --  occurrence of overflows.
+
+   pragma Compile_Time_Error
+     (Duration'Size /= 64,
+      "this version of Ada.Real_Time requires 64-bit Duration");
 
    -----------------------
    -- Local definitions --
@@ -96,16 +102,32 @@ package body Ada.Real_Time with SPARK_Mode => Off is
    -- Local subprograms --
    -----------------------
 
+   function Mul_Div (V : LLI; M : Natural; D : Positive) return LLI;
+   --  Compute V * M / D where division rounds to the nearest integer, away
+   --  from zero if exactly halfway between. If the result would overflow then
+   --  Constraint_Error is raised.
+
+   function Rounded_Div (L, R : LLI) return LLI;
+   pragma Inline (Rounded_Div);
+   --  Return L / R rounded to the nearest integer, away from zero if exactly
+   --  halfway between; required to implement ARM D.8 (26). Assumes R > 0.
+
    function To_Duration is
      new Ada.Unchecked_Conversion (LLI, Duration);
 
    function To_Integer is
      new Ada.Unchecked_Conversion (Duration, LLI);
 
-   function Mul_Div (V : Uint_64; M : Natural; D : Natural) return Uint_64;
-   --  Compute V * M / D. Constraint_Error is raised in case of overflow,
-   --  results above (2 ** 63) - 1 are considered as overflow. Therefore,
-   --  the result can safely be converted to a signed 64-bit value.
+   function To_Integer is
+     new Ada.Unchecked_Conversion (Time_Span, LLI);
+
+   ---------------------
+   -- Local constants --
+   ---------------------
+
+   Duration_Units : constant Positive := Positive (1.0 / Duration'Small);
+   --  Number of units of Duration in one second. The result is correct (not
+   --  rounded) as Duration'Small is 10.0**(-9).
 
    ---------
    -- "*" --
@@ -113,17 +135,27 @@ package body Ada.Real_Time with SPARK_Mode => Off is
 
    function "*" (Left : Time_Span; Right : Integer) return Time_Span is
       Is_Negative : constant Boolean :=
-        (Left > 0 and then Right < 0) or else (Left < 0 and then Right > 0);
+        (if Left > 0 then
+            Right < 0
+         elsif Left < 0
+            then Right > 0
+         else
+            False);
       --  Sign of the result
 
       Max_Value : constant Uint_64 :=
-        (if Is_Negative then Max_Neg_Time_Span else Max_Pos_Time_Span);
+        (if Is_Negative then
+            Max_Neg_Time_Span
+         else
+            Max_Pos_Time_Span);
       --  Maximum absolute value that can be returned by the multiplication
       --  taking into account the sign of the operators.
 
       Abs_Left : constant Uint_64 :=
-        (if Left = Time_Span_First then Max_Neg_Time_Span
-         else Uint_64 (abs (Left)));
+        (if Left = Time_Span_First then
+            Max_Neg_Time_Span
+         else
+            Uint_64 (abs (Left)));
       --  Remove sign of left operator
 
       Abs_Right : constant Uint_64 := Uint_64 (abs (LLI (Right)));
@@ -154,7 +186,7 @@ package body Ada.Real_Time with SPARK_Mode => Off is
 
    function "+" (Left : Time; Right : Time_Span) return Time is
    begin
-      --  Overflow checks are be performed by hand assuming that Time and
+      --  Overflow checks are performed by hand assuming that Time and
       --  Time_Span are 64-bit unsigned and signed integers respectively.
       --  Otherwise these checks would need an intermediate type with more
       --  than 64 bits.
@@ -228,7 +260,7 @@ package body Ada.Real_Time with SPARK_Mode => Off is
       --  than 64-bit.
 
       if Left >= Right
-        and then Uint_64 (Left) - Uint_64 (Right) <= Uint_64 (Time_Span_Last)
+        and then Uint_64 (Left) - Uint_64 (Right) <= Max_Pos_Time_Span
       then
          return Time_Span (Uint_64 (Left) - Uint_64 (Right));
 
@@ -289,8 +321,8 @@ package body Ada.Real_Time with SPARK_Mode => Off is
    begin
       --  Overflow can't happen (Ticks_Per_Second is Natural)
 
-      return Time_Span
-        (LLI (US) * LLI (OSI.Ticks_Per_Second)) / Time_Span (10#1#E6);
+      return
+        Time_Span (Rounded_Div (LLI (US) * LLI (OSI.Ticks_Per_Second), 1E6));
    end Microseconds;
 
    ------------------
@@ -301,8 +333,8 @@ package body Ada.Real_Time with SPARK_Mode => Off is
    begin
       --  Overflow can't happen (Ticks_Per_Second is Natural)
 
-      return Time_Span
-        (LLI (MS) * LLI (OSI.Ticks_Per_Second)) / Time_Span (10#1#E3);
+      return
+        Time_Span (Rounded_Div (LLI (MS) * LLI (OSI.Ticks_Per_Second), 1E3));
    end Milliseconds;
 
    -------------
@@ -312,8 +344,8 @@ package body Ada.Real_Time with SPARK_Mode => Off is
    function Minutes (M : Integer) return Time_Span is
       Min_M : constant LLI := LLI'First / LLI (OSI.Ticks_Per_Second);
       Max_M : constant LLI := LLI'Last  / LLI (OSI.Ticks_Per_Second);
-      --  Bounds for Sec_M.  Note that we can't use unsupress overflow checks,
-      --  as this would require the use of arit64
+      --  Bounds for Sec_M. Note that we can't use unsuppress overflow checks,
+      --  as this would require the use of arit64.
 
       Sec_M : constant LLI := LLI (M) * 60;
       --  M converted to seconds
@@ -326,6 +358,128 @@ package body Ada.Real_Time with SPARK_Mode => Off is
       end if;
    end Minutes;
 
+   -------------
+   -- Mul_Div --
+   -------------
+
+   function Mul_Div (V : LLI; M : Natural; D : Positive) return LLI is
+
+      --  We first multiply V * M and then divide the result by D, while
+      --  avoiding overflow in intermediate calculations and detecting it in
+      --  the final result. To get the rounding to the nearest integer, away
+      --  from zero if exactly halfway between two values, we add +/- D/2
+      --  (depending on the sign on V) directly at the end of multiplication.
+      --
+      --  ----------------------------------------
+      --  Multiplication (and rounding adjustment)
+      --  ----------------------------------------
+      --
+      --  Since V is a signed 64-bit integer and M is signed (but non-negative)
+      --  32-bit integer, their product may not fit in 64-bits. To avoid
+      --  overflow we split V and into high and low parts
+      --
+      --    V_Hi = V  /  2 ** 32
+      --    V_Lo = V rem 2 ** 32
+      --
+      --  where each part is either zero or has the sign of the dividend; thus
+      --
+      --    V = V_Hi * 2 ** 32 + V_Lo
+      --
+      --  In either case V_Hi and V_Lo are in range of 32-bit signed integer,
+      --  yet stored in 64-bit signed variables. When multiplied by M, which is
+      --  in range of 0 .. 2 ** 31 - 1, the results will still fit in 64-bit
+      --  integer, even if we extend it by D/2 as required to implement
+      --  rounding. We will get the value of V * M ± D/2 as low and high part:
+      --
+      --    (V * M ± D/2)_Lo = (V_Lo * M ± D/2) with carry zeroed
+      --    (V * M ± D/2)_Hi = (V_Hi * M) with carry from (V_Lo * M ± D/2)
+      --
+      --  (carry flows only from low to high part), or mathematically speaking:
+      --
+      --    (V * M ± D/2)_Lo = (V * M ± D/2) rem 2 ** 32
+      --    (V * M ± D/2)_Hi = (V * M ± D/2)  /  2 ** 32
+      --
+      --  and thus
+      --
+      --    V * M ± D/2 = (V * M ± D/2)_Hi * 2 ** 32 + (V * M ± D/2)_Lo
+      --
+      --  with signs just like described for V_Hi and V_Lo.
+      --
+      --  --------
+      --  Division
+      --  --------
+      --
+      --  The final result (V * M ± D/2) / D is computed as a high and low
+      --  parts:
+      --
+      --    ((V * M ± D/2) / D)_Hi = (V * M ± D/2)_Hi / D
+      --    ((V * M ± D/2) / D)_Lo =
+      --        ((V * M ± D/2)_Lo + remainder from high part division) / D
+      --
+      --  (remainder flows only from high to low part, opposite to carry),
+      --  or mathematically speaking:
+      --
+      --    ((V * M ± D/2) / D)_Hi = ((V * M ± D/2) / D)  /  2 ** 32
+      --    ((V * M ± D/2) / D)_Lo = ((V * M ± D/2) / D) rem 2 ** 32
+      --
+      --  and thus
+      --
+      --    (V * M ± D/2) / D = ((V * M ± D/2) / D)_Hi * 2 ** 32
+      --                      + ((V * M ± D/2) / D)_Lo
+      --
+      --  with signs just like described for V_Hi and V_Lo.
+      --
+      --  References: this calculation is partly inspired by Knuth's algorithm
+      --  in TAoCP Vol.2, section 4.3.1, excercise 16. However, here it is
+      --  adapted it for signed arithmetic; has no loop (since the input number
+      --  has fixed width); and discard the remainder of the result.
+
+      V_Hi : constant LLI := V  /  2 ** 32;
+      V_Lo : constant LLI := V rem 2 ** 32;
+      --  High and low parts of V
+
+      V_M_Hi : LLI;
+      V_M_Lo : LLI;
+      --  High and low parts of V * M (+-) D / 2
+
+      Result_Hi : LLI;
+      --  High part of the result
+
+      Result_Lo : LLI;
+      --  Low part of the result
+
+      Remainder : LLI;
+      --  Remainder of the first division
+
+   begin
+      --  Multiply V * M and add/subtract D/2
+
+      V_M_Lo := V_Lo * LLI (M) + (if V >= 0 then 1 else -1) * LLI (D / 2);
+      V_M_Hi := V_Hi * LLI (M) + V_M_Lo / 2 ** 32;
+      V_M_Lo := V_M_Lo rem 2 ** 32;
+
+      --  First quotient
+
+      Result_Hi := V_M_Hi / LLI (D);
+
+      --  The final result would overflow
+
+      if Result_Hi not in -(2 ** 31) .. 2 ** 31 - 1 then
+         raise Constraint_Error;
+      end if;
+
+      Remainder := V_M_Hi rem LLI (D);
+      Result_Hi := Result_Hi * 2 ** 32;
+
+      --  Second quotient
+
+      Result_Lo := (V_M_Lo + Remainder * 2 ** 32) / LLI (D);
+
+      --  Combine low and high parts of the result
+
+      return Result_Hi + Result_Lo;
+   end Mul_Div;
+
    -----------------
    -- Nanoseconds --
    -----------------
@@ -334,9 +488,25 @@ package body Ada.Real_Time with SPARK_Mode => Off is
    begin
       --  Overflow can't happen (Ticks_Per_Second is Natural)
 
-      return Time_Span
-        (LLI (NS) * LLI (OSI.Ticks_Per_Second)) / Time_Span (10#1#E9);
+      return
+        Time_Span (Rounded_Div (LLI (NS) * LLI (OSI.Ticks_Per_Second), 1E9));
    end Nanoseconds;
+
+   -----------------
+   -- Rounded_Div --
+   -----------------
+
+   function Rounded_Div (L, R : LLI) return LLI is
+      Left : LLI;
+   begin
+      if L >= 0 then
+         Left := L + R / 2;
+      else
+         Left := L - R / 2;
+      end if;
+
+      return Left / R;
+   end Rounded_Div;
 
    -------------
    -- Seconds --
@@ -379,13 +549,13 @@ package body Ada.Real_Time with SPARK_Mode => Off is
       --  The approach is to first extract the number of seconds from TS, then
       --  add the result to SC, and finally include the remainder from TS.
 
-      --  Note that SC is always positive
+      --  Note that SC is always nonnegative
 
       if TS < 0 then
          declare
             Seconds_From_Ts : constant Seconds_Count :=
               Seconds_Count (abs (TS / Time_Span (Res))) +
-              (if TS rem Time_Span (Res) = 0 then 0 else 1);
+                (if TS rem Time_Span (Res) = 0 then 0 else 1);
             --  Absolute value of the number of seconds in TS. Round towards
             --  infinity so that Remainder_Ts is always positive.
 
@@ -398,7 +568,7 @@ package body Ada.Real_Time with SPARK_Mode => Off is
             --  Time_Span_First this multiplication would overflow.
 
          begin
-            --  Both operands in the inner substraction are positive. Hence,
+            --  Both operands in the inner subtraction are positive. Hence,
             --  there will be no positive overflow in SC - Seconds_From_Ts. If
             --  there is a negative overflow then the result of adding SC and
             --  TS would overflow anyway.
@@ -412,7 +582,7 @@ package body Ada.Real_Time with SPARK_Mode => Off is
             end if;
          end;
 
-      --  SC and TS are positive. Check whether  Time (SC) * Res overflows
+      --  SC and TS are nonnegative. Check whether Time (SC) * Res overflows
 
       elsif Time_Last / Res < Time (SC) then
          raise Constraint_Error;
@@ -427,114 +597,15 @@ package body Ada.Real_Time with SPARK_Mode => Off is
       end if;
    end Time_Of;
 
-   -------------
-   -- Mul_Div --
-   -------------
-
-   function Mul_Div (V : Uint_64; M : Natural; D : Natural) return Uint_64 is
-
-      --  Upper case letters represent one word (32-bit words in our case).
-      --  If we can compute, PQ = AB / D, then we can compute ABC / D using
-      --  the following method (pencil and paper algorithm):
-
-      --  MN  := AB / D       (first quotient)
-      --  R   := AB - MN * D  (remainder on one word, as R < D)
-      --  OP  := RC / D       (second quotient)
-      --  res := MN0 + OP
-
-      --  We check absence of overflow in the final result by checking that
-      --  M is 0, and that there is no carry when adding N0 and OP.
-
-      --  Initially, A = 0, BC = V
-
-      V_Hi : Uint_64 := V / 2 ** 32;   -- AB
-      V_Lo : Uint_64 := V rem 2 ** 32; --  C
-
-      Result_Hi : Uint_64;
-      --  High part of the result
-
-      Result_Lo : Uint_64;
-      --  Low part of the result
-
-      Remainder : Uint_64;
-      --  Remainder of the first division (denoted R above)
-
-   begin
-      --  Multiply V by M
-
-      V_Hi := V_Hi * Uint_64 (M);
-      V_Lo := V_Lo * Uint_64 (M);
-      V_Hi := V_Hi + V_Lo / 2 ** 32;
-      V_Lo := V_Lo rem 2 ** 32;
-
-      --  First quotient
-
-      Result_Hi := V_Hi / Uint_64 (D);
-
-      if Result_Hi > (2 ** 31 - 1) then
-
-         --  The final result conversion would overflow: Result_Hi will be
-         --  the high 32 bit part of the result.
-
-         raise Constraint_Error;
-      end if;
-
-      Remainder := V_Hi - Result_Hi * Uint_64 (D);
-
-      Result_Hi := Result_Hi * 2 ** 32;
-
-      --  Second quotient. To improve rounding, D / 2 is added
-
-      Result_Lo :=
-        (V_Lo + Remainder * 2 ** 32 + Uint_64 (D / 2)) / Uint_64 (D);
-
-      if Result_Lo > (2 ** 63 - 1) - Result_Hi then
-
-         --  The final conversion for the result (just below) would overflow
-
-         raise Constraint_Error;
-      end if;
-
-      return Result_Hi + Result_Lo;
-   end Mul_Div;
-
    -----------------
    -- To_Duration --
    -----------------
 
    function To_Duration (TS : Time_Span) return Duration is
-      Duration_Units : constant Natural := Natural (1.0 / Duration'Small);
-      --  Number of units of Duration in one second. The result is correct
-      --  (not rounded) as Duration'Small is 10.0**(-9)
-
-      Result : LLI;
-      --  Contains the temporary result
-
-      Is_Negative : constant Boolean := TS < 0;
-      --  Remove the sign to simplify the intermediate computations
-
-      TPS : constant Natural := OSI.Ticks_Per_Second;
-      --  Capture ticks per second value
-
    begin
-      --  See comment at the beginning of this file about this implementation
-
-      --  We need to accurately compute TS * Duration_Units / Ticks_Per_Second
-      --  TS being a 64-bit integer, both Duration_Units and Ticks_Per_Second
-      --  are 32-bit integers.
-
-      Result :=
-        (if TS = Time_Span'First
-         then LLI (Mul_Div (Max_Neg_Time_Span, Duration_Units, TPS))
-         else LLI (Mul_Div (Uint_64 (abs TS),  Duration_Units, TPS)));
-
-      --  Handle the sign of the result
-
-      if Is_Negative then
-         Result := -Result;
-      end if;
-
-      return To_Duration (Result);
+      return
+        To_Duration
+          (Mul_Div (To_Integer (TS), Duration_Units, OSI.Ticks_Per_Second));
    end To_Duration;
 
    ------------------
@@ -542,30 +613,10 @@ package body Ada.Real_Time with SPARK_Mode => Off is
    ------------------
 
    function To_Time_Span (D : Duration) return Time_Span is
-      Duration_Units : constant Natural := Natural (1.0 / Duration'Small);
-      --  Number of units of Duration in one second
-
-      Result : LLI;
-      --  Contains the temporary results
-
-      Is_Negative : constant Boolean := D < 0.0;
-      --  Remove the sign to simplify the intermediate computations
-
    begin
-      --  See comment at the beginning of this file about this implementation
-
-      Result := LLI
-        (Mul_Div (Uint_64 (abs To_Integer (D)),
-                  OSI.Ticks_Per_Second,
-                  Duration_Units));
-
-      --  Handle the sign of the result
-
-      if Is_Negative then
-         Result := -Result;
-      end if;
-
-      return Time_Span (Result);
+      return
+        Time_Span
+          (Mul_Div (To_Integer (D), OSI.Ticks_Per_Second, Duration_Units));
    end To_Time_Span;
 
 begin

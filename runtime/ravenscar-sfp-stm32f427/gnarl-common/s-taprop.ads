@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                     Copyright (C) 2001-2014, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@ with System.Parameters;
 with System.Tasking;
 with System.OS_Interface;
 
-package System.Task_Primitives.Operations with SPARK_Mode => Off is
+package System.Task_Primitives.Operations is
    pragma Preelaborate;
 
    package ST renames System.Tasking;
@@ -58,14 +58,11 @@ package System.Task_Primitives.Operations with SPARK_Mode => Off is
    --  operation of the tasking run-time. This must be called once, before any
    --  other subprograms of this package are called.
 
-   procedure Initialize_Slave (Environment_Task : ST.Task_Id);
-   pragma Inline (Initialize_Slave);
-
    procedure Create_Task
      (T          : ST.Task_Id;
       Wrapper    : System.Address;
       Stack_Size : System.Parameters.Size_Type;
-      Priority   : System.Any_Priority;
+      Priority   : ST.Extended_Priority;
       Base_CPU   : System.Multiprocessors.CPU_Range;
       Succeeded  : out Boolean);
    pragma Inline (Create_Task);
@@ -79,12 +76,10 @@ package System.Task_Primitives.Operations with SPARK_Mode => Off is
    function Self return ST.Task_Id;
    pragma Inline (Self);
 
-   procedure Set_Priority
-     (T    : ST.Task_Id;
-      Prio : System.Any_Priority);
+   procedure Set_Priority (T : ST.Task_Id; Prio : ST.Extended_Priority);
    pragma Inline (Set_Priority);
 
-   function Get_Priority (T : ST.Task_Id) return System.Any_Priority;
+   function Get_Priority (T : ST.Task_Id) return ST.Extended_Priority;
    pragma Inline (Get_Priority);
 
    function Get_Affinity

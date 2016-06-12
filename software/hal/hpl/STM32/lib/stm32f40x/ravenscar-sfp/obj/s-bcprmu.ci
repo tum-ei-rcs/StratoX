@@ -1,6 +1,0 @@
-graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-bcprmu.adb"
-node: { title: "system__bb__cpu_primitives__multiprocessors__start_all_cpus" label: "Start_All_Cpus\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-bcprmu.adb:64:4\n0 bytes\n0 dynamic objects" }
-node: { title: "system__bb__cpu_primitives__multiprocessors__start_cpu" label: "Start_Cpu\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-bcprmu.adb:55:4\n0 bytes\n0 dynamic objects" }
-node: { title: "system__bb__cpu_primitives__multiprocessors__poke_cpu" label: "Poke_Cpu\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-bcprmu.adb:46:4\n0 bytes\n0 dynamic objects" }
-node: { title: "system__bb__cpu_primitives__multiprocessors__current_cpu" label: "Current_Cpu\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-bcprmu.adb:37:4\n0 bytes\n0 dynamic objects" }
-}

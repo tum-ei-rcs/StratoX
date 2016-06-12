@@ -34,7 +34,7 @@
 
 with System;
 
-package Interfaces.C.Extensions with SPARK_Mode => Off is
+package Interfaces.C.Extensions is
    pragma Pure;
 
    --  Definitions for C "void" and "void *" types

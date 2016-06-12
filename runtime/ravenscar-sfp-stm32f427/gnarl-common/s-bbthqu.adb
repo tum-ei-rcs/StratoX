@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2005 The European Space Agency            --
---                     Copyright (C) 2003-2013, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,59 +53,127 @@ package body System.BB.Threads.Queues is
    -- Change_Priority --
    ---------------------
 
-   procedure Change_Priority
-     (Thread   : Thread_Id;
-      Priority : System.Any_Priority)
+   procedure Change_Priority (Thread : Thread_Id; Priority : Integer)
    is
-      Aux_Pointer : Thread_Id;
-      CPU_Id      : constant CPU := Get_CPU (Thread);
+      CPU_Id       : constant CPU := Current_CPU;
+      Head         : Thread_Id;
+      Prev_Pointer : Thread_Id;
 
    begin
       --  A CPU can only change the priority of its own tasks
 
-      pragma Assert (CPU_Id = Current_CPU);
+      pragma Assert (CPU_Id = Get_CPU (Thread));
+
+      --  Return now if there is no change. This is a rather common case, as
+      --  it happens if user is not using priorities, or if the priority of
+      --  an interrupt handler is the same as the priority of the interrupt.
+      --  In any case, the check is quick enough.
+
+      if Thread.Active_Priority = Priority then
+         return;
+      end if;
 
       --  Change the active priority. The base priority does not change
 
       Thread.Active_Priority := Priority;
 
-      --  When raising the priority, it is not possible that there is another
-      --  task with a higher priority (otherwise the other task would be
-      --  running). Hence, there is no displacement required within the
-      --  queue, because the thread is already in the first position.
+      --  Outside of the executive kernel, the running thread is also the first
+      --  thread in the First_Thread_Table list. This is also true in general
+      --  within the kernel, except during transcient period when a task is
+      --  extracted from the list (blocked by a delay until or on an entry),
+      --  when a task is inserted (after a wakeup), after a yield or after
+      --  this procedure. But then a context_switch put things in order.
 
-      if Thread.Next /= Null_Thread_Id
-        and then Priority < Thread.Next.Active_Priority
-      then
-         --  If we are here it is because the currently executing thread
-         --  is lowering its priority, and there is a thread with a higher
-         --  priority ready to execute.
+      --  However, on ARM Cortex-M, context switches can be delayed by
+      --  interrupts. They are performed via a special interrupt (Pend_SV),
+      --  which is at the lowest priority. This has three consequences:
+      --   A) it is not possible to have tasks in the Interrupt_Priority range
+      --   B) the head of First_Thread_Table list may be different from the
+      --      running thread within user interrupt handler
+      --   C) the running thread may not be in the First_Thread_Table list.
+      --  The following scenario shows case B: while a thread is running, an
+      --  interrupt awakes a task at a higher priority; it is put in front of
+      --  the First_Thread_Table queue, and a context switch is requested. But
+      --  before the end of the interrupt, another interrupt triggers. It
+      --  increases the priority of  the current thread, which is not the
+      --  first in queue.
+      --  The following scenario shows case C: a task is executing a delay
+      --  until and therefore it is removed from the First_Thread_Table. But
+      --  before the context switch, an interrupt triggers and change the
+      --  priority of the running thread.
 
-         --  The running thread is no longer the highest priority thread
+      --  First, find THREAD in the queue and remove it temporarly.
 
-         First_Thread_Table (CPU_Id) := Thread.Next;
+      Head := First_Thread_Table (CPU_Id);
 
-         Aux_Pointer := First_Thread_Table (CPU_Id);
+      if Head = Thread then
 
-         --  FIFO_Within_Priorities dispatching policy. In ALRM D.2.2 it is
-         --  said that when the active priority is lowered due to the loss of
-         --  inherited priority (the only possible case within the Ravenscar
-         --  profile) the task is added at the head of the ready queue for
-         --  its new active priority. Next loop will look for the value of
-         --  Aux_Pointer that contains the last thread with a higher priority
-         --  (so that we insert the thread just after it).
+         --  This is the very common case: THREAD is the first in the queue
 
-         while Aux_Pointer.Next /= Null_Thread_Id
-           and then Priority < Aux_Pointer.Next.Active_Priority
+         if Thread.Next = Null_Thread_Id
+           or else Priority >= Thread.Next.Active_Priority
+         then
+            --  Already at the right place.
+            return;
+         end if;
+
+         --  Remove THREAD from the queue
+
+         Head := Thread.Next;
+      else
+
+         --  Uncommon case: less than 0.1% on a Cortex-M test.
+
+         --  Search the thread before THREAD.
+
+         Prev_Pointer := Head;
          loop
-            Aux_Pointer := Aux_Pointer.Next;
+            if Prev_Pointer = null then
+               --  THREAD is not in the queue. This corresponds to case B.
+               return;
+            end if;
+
+            exit when Prev_Pointer.Next = Thread;
+
+            Prev_Pointer := Prev_Pointer.Next;
          end loop;
 
-         --  Insert the thread just after the Aux_Pointer
+         --  Remove THREAD from the queue.
 
-         Thread.Next := Aux_Pointer.Next;
-         Aux_Pointer.Next := Thread;
+         Prev_Pointer.Next := Thread.Next;
       end if;
+
+      --  Now insert THREAD.
+
+      --  FIFO_Within_Priorities dispatching policy. In ALRM D.2.2 it is
+      --  said that when the active priority is lowered due to the loss of
+      --  inherited priority (the only possible case within the Ravenscar
+      --  profile) the task is added at the head of the ready queue for
+      --  its new active priority.
+
+      if Priority >= Head.Active_Priority then
+
+         --  THREAD is the highest priority thread, so put it in the front of
+         --  the queue.
+
+         Thread.Next := Head;
+         Head := Thread;
+      else
+
+         --  Search the right place in the queue.
+
+         Prev_Pointer := Head;
+         while Prev_Pointer.Next /= Null_Thread_Id
+           and then Priority < Prev_Pointer.Next.Active_Priority
+         loop
+            Prev_Pointer := Prev_Pointer.Next;
+         end loop;
+
+         Thread.Next := Prev_Pointer.Next;
+         Prev_Pointer.Next := Thread;
+      end if;
+
+      First_Thread_Table (CPU_Id) := Head;
    end Change_Priority;
 
    ---------------------------
@@ -126,7 +194,7 @@ package body System.BB.Threads.Queues is
    ----------------------
 
    function Current_Priority
-     (CPU_Id : System.Multiprocessors.CPU) return System.Any_Priority
+     (CPU_Id : System.Multiprocessors.CPU) return Integer
    is
       Thread : constant Thread_Id := Running_Thread_Table (CPU_Id);
    begin
@@ -347,9 +415,9 @@ package body System.BB.Threads.Queues is
    procedure Wakeup_Expired_Alarms (Now : Time.Time) is
       use Time;
 
-      Wakeup_Thread : Thread_Id;
-      Next_Alarm    : Time.Time;
       CPU_Id        : constant CPU := Current_CPU;
+      Next_Alarm    : Time.Time;
+      Wakeup_Thread : Thread_Id;
 
    begin
       --  Extract all the threads whose delay has expired
@@ -381,9 +449,9 @@ package body System.BB.Threads.Queues is
    -----------
 
    procedure Yield (Thread : Thread_Id) is
+      CPU_Id      : constant CPU     := Get_CPU (Thread);
       Prio        : constant Integer := Thread.Active_Priority;
       Aux_Pointer : Thread_Id;
-      CPU_Id      : constant CPU := Get_CPU (Thread);
 
    begin
       --  A CPU can only modify its own tasks queues
@@ -410,5 +478,51 @@ package body System.BB.Threads.Queues is
          Aux_Pointer.Next := Thread;
       end if;
    end Yield;
+
+   ------------------
+   -- Queue_Length --
+   ------------------
+
+   function Queue_Length return Natural is
+      Res : Natural   := 0;
+      T   : Thread_Id := First_Thread_Table (Current_CPU);
+
+   begin
+      while T /= null loop
+         Res := Res + 1;
+         T := T.Next;
+      end loop;
+
+      return Res;
+   end Queue_Length;
+
+   -------------------
+   -- Queue_Ordered --
+   -------------------
+
+   function Queue_Ordered return Boolean is
+      T : Thread_Id := First_Thread_Table (Current_CPU);
+      N : Thread_Id;
+
+   begin
+      if T = Null_Thread_Id then
+         --  True if the queue is empty
+         return True;
+      end if;
+
+      loop
+         N := T.Next;
+         if N = Null_Thread_Id then
+            --  True if at end of the queue
+            return True;
+         end if;
+
+         if T.Active_Priority < N.Active_Priority then
+            return False;
+         end if;
+
+         T := N;
+      end loop;
+   end Queue_Ordered;
 
 end System.BB.Threads.Queues;

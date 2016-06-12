@@ -33,7 +33,7 @@
 --  signed integer types larger than Size Integer'Size, and also for conversion
 --  operations required in Text_IO.Integer_IO for such types.
 
-package System.Img_LLI with SPARK_Mode => Off is
+package System.Img_LLI is
    pragma Pure;
 
    procedure Image_Long_Long_Integer

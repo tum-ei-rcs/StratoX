@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ with System.Task_Info;
 with System.Task_Primitives;
 with System.Multiprocessors;
 
-package System.Tasking with SPARK_Mode => Off is
+package System.Tasking is
    pragma Preelaborate;
 
    ---------------------------------
@@ -208,6 +208,13 @@ package System.Tasking with SPARK_Mode => Off is
    -- Other Task-Related Definitions --
    ------------------------------------
 
+   Idle_Priority : constant Integer := Any_Priority'First - 1;
+   --  A priority lower than any user priority. Used by the idle task
+
+   subtype Extended_Priority is
+     Integer range Idle_Priority .. Any_Priority'Last;
+   --  Priority range that also includes the idle priority
+
    type Activation_Chain is limited private;
 
    type Activation_Chain_Access is access all Activation_Chain;
@@ -265,7 +272,7 @@ package System.Tasking with SPARK_Mode => Off is
       Base_CPU : System.Multiprocessors.CPU_Range;
       --  Protection: Only written during initialization, accessed by anyone
 
-      Base_Priority : System.Any_Priority;
+      Base_Priority : Extended_Priority;
       --  Base priority
       --
       --  Protection: Only written by Self, accessed by anyone
@@ -363,7 +370,8 @@ package System.Tasking with SPARK_Mode => Off is
    --  is in general a non-static value that can depend on discriminants
    --  of the task.
 
-   Unspecified_Priority : constant Integer := System.Priority'First - 1;
+   Unspecified_Priority : constant := -1;
+   --  No specified priority. This value is also hard-coded in gnatbind.
 
    Unspecified_CPU : constant := -1;
    --  No affinity specified
@@ -385,7 +393,7 @@ package System.Tasking with SPARK_Mode => Off is
    procedure Initialize_ATCB
      (Task_Entry_Point : Task_Procedure_Access;
       Task_Arg         : System.Address;
-      Base_Priority    : System.Any_Priority;
+      Base_Priority    : Extended_Priority;
       Base_CPU         : System.Multiprocessors.CPU_Range;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Address    : System.Address;
@@ -394,16 +402,6 @@ package System.Tasking with SPARK_Mode => Off is
       Success          : out Boolean);
    --  Initialize fields of a TCB and link into global TCB structures
    --  Call this only with abort deferred and holding All_Tasks_L.
-
-   ----------------------
-   -- Initialize_Slave --
-   ----------------------
-
-   procedure Initialize_Slave (CPU_Id : System.Multiprocessors.CPU);
-   pragma Export (Asm, Initialize_Slave, "__gnat_initialize_slave");
-   --  Initialize a fake environment task for the current CPU. This fake task
-   --  is used to give a context during interrupt handling if the CPU doesn't
-   --  have regular task.
 
 private
 

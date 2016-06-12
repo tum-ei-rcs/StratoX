@@ -71,8 +71,8 @@
 with System;
 with System.Storage_Elements;
 
-package Ada.Tags with SPARK_Mode => Off is
-   --  pragma Preelaborate;
+package Ada.Tags is
+   pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
    type Tag is private;

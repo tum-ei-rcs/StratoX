@@ -33,7 +33,7 @@ with System.Task_Primitives.Operations;
 --  Used for Timed_Delay
 --           Self
 
-package body Ada.Real_Time.Delays with SPARK_Mode => Off is
+package body Ada.Real_Time.Delays is
 
    package STPO renames System.Task_Primitives.Operations;
 

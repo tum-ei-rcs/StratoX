@@ -46,7 +46,7 @@
 --  Note: do not introduce any pragma Inline statements into this unit, since
 --  otherwise the relinking and rebinding capability would be deactivated.
 
-package System.Parameters with SPARK_Mode => Off is
+package System.Parameters is
    pragma Pure;
 
    ---------------------------------------

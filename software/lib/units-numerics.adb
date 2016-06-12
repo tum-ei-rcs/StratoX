@@ -15,6 +15,12 @@ package body Units.Numerics is
       return Elementary_Functions."**" (Float (Left), Float (Right));
    end "**";
 
+   function "**" (Left : Unit_Type; Right : Float) return Unit_Type is
+   begin
+      return Unit_Type( Elementary_Functions.Exp( Right * Elementary_Functions.Log( Float(Left) ) ) );
+   end "**";
+
+
    function Arctan
      (Y     : Unit_Type;
       X     : Unit_Type := 1.0;

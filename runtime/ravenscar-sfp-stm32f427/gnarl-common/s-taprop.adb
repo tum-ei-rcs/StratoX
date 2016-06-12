@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                     Copyright (C) 2001-2014, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,12 +37,14 @@ with Ada.Unchecked_Conversion;
 
 with System.Storage_Elements;
 with System.Tasking.Debug;
+with System.Task_Info;
 
 package body System.Task_Primitives.Operations is
 
    use System.OS_Interface;
    use System.Parameters;
    use System.Storage_Elements;
+   use System.Multiprocessors;
 
    use type System.Tasking.Task_Id;
 
@@ -55,6 +57,40 @@ package body System.Task_Primitives.Operations is
 
    function To_Task_Id is new
      Ada.Unchecked_Conversion (System.Address, ST.Task_Id);
+
+   procedure Initialize_Idle (CPU_Id : CPU);
+   --  Initialize an Idle task for CPU_ID
+
+   procedure Initialize_Slave (CPU_Id : System.Multiprocessors.CPU);
+   pragma Export (Asm, Initialize_Slave, "__gnat_initialize_slave");
+   --  Initialize a fake environment task for the current CPU. This fake task
+   --  is used to give a context during interrupt handling if the CPU doesn't
+   --  have a regular task.
+
+   procedure Idle (Param : Address);
+   --  Procedure executed by an idle task
+
+   Idle_Stack_Size : constant System.Storage_Elements.Storage_Count :=
+     (2048 / Standard'Maximum_Alignment) * Standard'Maximum_Alignment;
+   --  2 KB stacks for each of the idle tasks
+
+   type Idle_Stack_Space is
+     new Storage_Elements.Storage_Array (1 .. Idle_Stack_Size);
+   for Idle_Stack_Space'Alignment use Standard'Maximum_Alignment;
+   --  Stack for idle tasks
+
+   Idle_Stacks : array (CPU) of Idle_Stack_Space;
+   --  Array that contains the stack space for idle tasks
+
+   Idle_Stacks_Table : array (CPU) of System.Address;
+   pragma Export (Asm, Idle_Stacks_Table, "__gnat_idle_stack_table");
+   --  Array that contains the stack pointers for idle tasks
+
+   Idle_Tasks : array (Multiprocessors.CPU) of
+                   aliased Tasking.Ada_Task_Control_Block (Entry_Num => 0);
+   --  ATCB for the idle tasks. They are used to put the cpu in idle mode,
+   --  and for slave cpus, they are also present to correctly handle interrupts
+   --  (changing the current priority).
 
    ----------
    -- Self --
@@ -117,7 +153,7 @@ package body System.Task_Primitives.Operations is
    -- Set_Priority --
    ------------------
 
-   procedure Set_Priority (T : ST.Task_Id; Prio : System.Any_Priority) is
+   procedure Set_Priority (T : ST.Task_Id; Prio : ST.Extended_Priority) is
    begin
       --  A task can only change its own priority
 
@@ -132,7 +168,7 @@ package body System.Task_Primitives.Operations is
    -- Get_Priority --
    ------------------
 
-   function Get_Priority (T : ST.Task_Id) return System.Any_Priority is
+   function Get_Priority (T : ST.Task_Id) return ST.Extended_Priority is
    begin
       --  Get current active priority
 
@@ -175,11 +211,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : ST.Task_Id) is
    begin
-      --  Notify the underlying executive about the Ada task that is being
-      --  executed by the running thread.
-
-      System.OS_Interface.Set_ATCB (To_Address (Self_ID));
-
       --  Set lwp (for gdb)
 
       Self_ID.Common.LL.Lwp := Lwp_Self;
@@ -194,6 +225,22 @@ package body System.Task_Primitives.Operations is
       System.OS_Interface.Set_Priority (Self_ID.Common.Base_Priority);
    end Enter_Task;
 
+   ----------
+   -- Idle --
+   ----------
+
+   procedure Idle (Param : Address)
+   is
+      pragma Unreferenced (Param);
+      T : constant Tasking.Task_Id := Self;
+   begin
+      Enter_Task (T);
+
+      loop
+         OS_Interface.Power_Down;
+      end loop;
+   end Idle;
+
    --------------------
    -- Initialize_TCB --
    --------------------
@@ -206,6 +253,38 @@ package body System.Task_Primitives.Operations is
       Succeeded := True;
    end Initialize_TCB;
 
+   ----------------------
+   -- Initialize_Slave --
+   ----------------------
+
+   procedure Initialize_Slave (CPU_Id : CPU) is
+      Idle_Task : Tasking.Ada_Task_Control_Block renames Idle_Tasks (CPU_Id);
+
+      Success  : Boolean;
+      pragma Warnings (Off, Success);
+
+   begin
+      --  Initialize ATCB for the idle task
+
+      Initialize_Idle (CPU_Id);
+
+      --  Initialize the environment thread
+
+      System.OS_Interface.Initialize_Slave
+        (Idle_Task.Common.LL.Thread, Idle_Task.Common.Base_Priority,
+         Idle_Task.Common.Compiler_Data.Pri_Stack_Info.Start_Address,
+         Idle_Task.Common.Compiler_Data.Pri_Stack_Info.Size);
+
+      --  Link the underlying executive thread to the Ada task
+
+      System.OS_Interface.Set_ATCB
+        (Idle_Task.Common.LL.Thread, To_Address (Idle_Task'Access));
+
+      --  Run the idle procedure
+
+      Idle (Null_Address);
+   end Initialize_Slave;
+
    -----------------
    -- Create_Task --
    -----------------
@@ -214,7 +293,7 @@ package body System.Task_Primitives.Operations is
      (T          : ST.Task_Id;
       Wrapper    : System.Address;
       Stack_Size : System.Parameters.Size_Type;
-      Priority   : System.Any_Priority;
+      Priority   : ST.Extended_Priority;
       Base_CPU   : System.Multiprocessors.CPU_Range;
       Succeeded  : out Boolean)
    is
@@ -237,9 +316,13 @@ package body System.Task_Primitives.Operations is
          Priority,
          Base_CPU,
          T.Common.Compiler_Data.Pri_Stack_Info.Start_Address,
-         Size_Type (T.Common.Compiler_Data.Pri_Stack_Info.Size));
+         T.Common.Compiler_Data.Pri_Stack_Info.Size);
 
-      Succeeded :=  True;
+      --  Link the underlying executive thread to the Ada task
+
+      System.OS_Interface.Set_ATCB (T.Common.LL.Thread, To_Address (T));
+
+      Succeeded := True;
    end Create_Task;
 
    ----------------
@@ -247,19 +330,25 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Initialize (Environment_Task : ST.Task_Id) is
+      T : Thread_Id renames Environment_Task.Common.LL.Thread;
    begin
-      Environment_Task.Common.LL.Thread :=
-        Environment_Task.Common.LL.Thread_Desc'Access;
+      --  Set the thread
+
+      T := Environment_Task.Common.LL.Thread_Desc'Access;
 
       --  Clear Activation_Link, as required by Add_Task_Id
 
       Environment_Task.Common.Activation_Link := null;
 
-      --  First the underlying multitasking executive must be initialized
+      --  First the underlying multitasking executive must be initialized.
+      --  The ATCB is already initialized and task priority is set.
 
       System.OS_Interface.Initialize
-        (Environment_Task.Common.LL.Thread,
-         Environment_Task.Common.Base_Priority);
+        (T, Environment_Task.Common.Base_Priority);
+
+      --  Link the underlying executive thread to the Ada task
+
+      System.OS_Interface.Set_ATCB (T, To_Address (Environment_Task));
 
       --  The environment task must also execute its initialization
 
@@ -268,30 +357,58 @@ package body System.Task_Primitives.Operations is
       --  Store the identifier for the environment task
 
       Operations.Environment_Task := Environment_Task;
+
+      --  Compute the stack pointers of idle tasks
+
+      for CPU_Id in CPU loop
+         Idle_Stacks_Table (CPU_Id) :=
+           (if System.Parameters.Stack_Grows_Down
+            then (Idle_Stacks (CPU_Id)'Address + Idle_Stack_Size)
+            else Idle_Stacks (CPU_Id)'Address);
+      end loop;
+
+      --  Create the idle task for the main cpu
+
+      declare
+         Idle_Task : Tasking.Ada_Task_Control_Block renames
+                        Idle_Tasks (CPU'First);
+         Success : Boolean;
+         pragma Unreferenced (Success);
+
+      begin
+         Initialize_Idle (CPU'First);
+
+         Create_Task
+           (Idle_Task'Access, Idle'Address,
+            Parameters.Size_Type
+              (Idle_Task.Common.Compiler_Data.Pri_Stack_Info.Size),
+            Tasking.Idle_Priority, CPU'First, Success);
+      end;
    end Initialize;
 
-   ----------------------
-   -- Initialize_Slave --
-   ----------------------
+   ---------------------
+   -- Initialize_Idle --
+   ---------------------
 
-   procedure Initialize_Slave (Environment_Task : ST.Task_Id) is
+   procedure Initialize_Idle (CPU_Id : CPU) is
+      Success  : Boolean;
+      pragma Warnings (Off, Success);
+
+      Idle_Task : Tasking.Ada_Task_Control_Block renames Idle_Tasks (CPU_Id);
    begin
-      Environment_Task.Common.LL.Thread :=
-        Environment_Task.Common.LL.Thread_Desc'Access;
+      --  Initialize a fake environment task for this slave CPU
 
-      --  Clear Activation_Link, as required by Add_Task_Id
+      Tasking.Initialize_ATCB
+        (Idle'Access, Null_Address, Tasking.Idle_Priority, CPU_Id,
+         Task_Info.Unspecified_Task_Info,
+         Idle_Stacks (CPU_Id)'Address,
+         Parameters.Size_Type (Idle_Stack_Size),
+         Idle_Task'Access, Success);
 
-      Environment_Task.Common.Activation_Link := null;
-
-      --  Initialize the environment thread
-
-      System.OS_Interface.Initialize_Slave_Environment
-        (Environment_Task.Common.LL.Thread);
-
-      --  The environment task must also execute its initialization
-
-      Enter_Task (Environment_Task);
-   end Initialize_Slave;
+      Idle_Task.Common.LL.Thread := Idle_Task.Common.LL.Thread_Desc'Access;
+      Idle_Task.Entry_Call.Self := Idle_Task'Access;
+      Idle_Task.Common.State := Tasking.Runnable;
+   end Initialize_Idle;
 
    ---------------------
    -- Is_Task_Context --

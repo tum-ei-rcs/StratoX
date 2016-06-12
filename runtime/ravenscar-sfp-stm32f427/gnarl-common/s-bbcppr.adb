@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2005 The European Space Agency            --
---                     Copyright (C) 2003-2015, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -156,10 +156,6 @@ package body System.BB.CPU_Primitives is
    function PRIMASK return Word with Inline, Export, Convention => C;
    --  Function returning the contents of the PRIMASK register
 
-   procedure Initialize_CPU;
-   --  Set the CPU up to use the proper stack for interrupts, initialize and
-   --  enable system trap handlers.
-
    -------------
    -- PRIMASK --
    -------------
@@ -227,7 +223,7 @@ package body System.BB.CPU_Primitives is
 
       --  Enable usage, bus and memory management fault
 
-      SHCSR := SHCSR or 16#7_000#;
+      SHCSR := SHCSR or 16#7_0000#;
 
       --  Unmask Fault
 
@@ -512,7 +508,7 @@ package body System.BB.CPU_Primitives is
    -- Enable_Interrupts --
    -----------------------
 
-   procedure Enable_Interrupts (Level : System.Any_Priority) is
+   procedure Enable_Interrupts (Level : Integer) is
    begin
       --  Set the BASEPRI according to the specified level. PRIMASK is still
       --  set, so the change does not take effect until the next Asm.
@@ -530,9 +526,4 @@ package body System.BB.CPU_Primitives is
            Clobber => "memory", Volatile => True);
    end Enable_Interrupts;
 
-   -------------------------------
-   -- Initialize_Floating_Point --
-   -------------------------------
-
-   procedure Initialize_Floating_Point renames Initialize_CPU;
 end System.BB.CPU_Primitives;

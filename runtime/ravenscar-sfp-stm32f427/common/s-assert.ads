@@ -38,7 +38,7 @@
 
 pragma Compiler_Unit_Warning;
 
-package System.Assertions with SPARK_Mode => Off is
+package System.Assertions is
 
    Assert_Failure : exception;
    --  Exception raised when assertion fails

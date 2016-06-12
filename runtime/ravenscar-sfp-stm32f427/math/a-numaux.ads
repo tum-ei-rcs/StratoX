@@ -5,9 +5,9 @@
 --                     A D A . N U M E R I C S . A U X                      --
 --                                                                          --
 --                                 S p e c                                  --
---                       (C Library Version, VxWorks)                       --
+--                        (Ada Cert Math Version)                           --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,68 +30,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Version for use on VxWorks (where we have no libm.a library), so the pragma
---  Linker_Options ("-lm") is omitted in this version.
+--  This is the Ada Cert Math specific version of a-numaux.ads
 
 package Ada.Numerics.Aux is
    pragma Pure;
-
-   type Double is digits 15;
-   --  Type Double is the type used to call the C routines
-
-   --  We import these functions directly from C. Note that we label them
-   --  all as pure functions, because indeed all of them are in fact pure.
-
-   function Sin (X : Double) return Double;
-   pragma Import (C, Sin, "sin");
-   pragma Pure_Function (Sin);
-
-   function Cos (X : Double) return Double;
-   pragma Import (C, Cos, "cos");
-   pragma Pure_Function (Cos);
-
-   function Tan (X : Double) return Double;
-   pragma Import (C, Tan, "tan");
-   pragma Pure_Function (Tan);
-
-   function Exp (X : Double) return Double;
-   pragma Import (C, Exp, "exp");
-   pragma Pure_Function (Exp);
-
-   function Sqrt (X : Double) return Double;
-   pragma Import (C, Sqrt, "sqrt");
-   pragma Pure_Function (Sqrt);
-
-   function Log (X : Double) return Double;
-   pragma Import (C, Log, "log");
-   pragma Pure_Function (Log);
-
-   function Acos (X : Double) return Double;
-   pragma Import (C, Acos, "acos");
-   pragma Pure_Function (Acos);
-
-   function Asin (X : Double) return Double;
-   pragma Import (C, Asin, "asin");
-   pragma Pure_Function (Asin);
-
-   function Atan (X : Double) return Double;
-   pragma Import (C, Atan, "atan");
-   pragma Pure_Function (Atan);
-
-   function Sinh (X : Double) return Double;
-   pragma Import (C, Sinh, "sinh");
-   pragma Pure_Function (Sinh);
-
-   function Cosh (X : Double) return Double;
-   pragma Import (C, Cosh, "cosh");
-   pragma Pure_Function (Cosh);
-
-   function Tanh (X : Double) return Double;
-   pragma Import (C, Tanh, "tanh");
-   pragma Pure_Function (Tanh);
-
-   function Pow (X, Y : Double) return Double;
-   pragma Import (C, Pow, "pow");
-   pragma Pure_Function (Pow);
-
 end Ada.Numerics.Aux;

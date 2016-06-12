@@ -1,3 +1,0 @@
-graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/arch/setup_pll.adb"
-node: { title: "_ada_setup_pll" label: "Setup_Pll\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/arch/setup_pll.adb:39:1\n4 bytes (static)\n0 dynamic objects" }
-}

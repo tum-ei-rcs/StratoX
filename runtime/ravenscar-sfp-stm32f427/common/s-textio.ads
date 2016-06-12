@@ -32,7 +32,7 @@
 --  This package defines the console I/O interface for the simplified version
 --  of Ada.Text_IO used in ZFP runtimes or bare board platforms.
 
-package System.Text_IO with SPARK_Mode => Off is
+package System.Text_IO is
    pragma Preelaborate;
 
    --  The interface uses two subprograms for each direction: one for the ready

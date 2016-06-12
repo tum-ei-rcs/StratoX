@@ -29,8 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package System.Tasking.Protected_Objects.Multiprocessors
-with SPARK_Mode => Off is
+package System.Tasking.Protected_Objects.Multiprocessors is
 
    procedure Served (Entry_Call : Entry_Call_Link);
    --  Signal the served Entry_Call to the caller CPU

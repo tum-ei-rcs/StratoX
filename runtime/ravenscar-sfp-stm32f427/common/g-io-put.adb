@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2013, AdaCore                     --
+--                     Copyright (C) 2011-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,15 @@ procedure Put (C : Character) is
 begin
    if not Initialized then
       Initialize;
+   end if;
+
+   --  GNAT.IO calls Put (ASCII.LF) for New_Line. Compensate.
+   if C = ASCII.LF and then Use_Cr_Lf_For_New_Line then
+      while not Is_Tx_Ready loop
+         null;
+      end loop;
+
+      System.Text_IO.Put (ASCII.CR);
    end if;
 
    while not Is_Tx_Ready loop

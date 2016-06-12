@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                          (ARM Cortex M4 Version)                         --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -52,12 +52,17 @@ pragma Restrictions (No_Finalization);
 pragma Profile (Ravenscar);
 --  This is a Ravenscar run time
 
+pragma Restrictions (No_Task_At_Interrupt_Priority);
+--  On Cortex-M, it is not possible to have tasks at Interrupt_Priority, as
+--  the context switch is triggered by the Pend_SV interrupt, which is at
+--  lowest priority.
+
 pragma Discard_Names;
 --  Disable explicitly the generation of names associated with entities in
 --  order to reduce the amount of storage used. These names are not used anyway
 --  (attributes such as 'Image and 'Value are not supported in this run time).
 
-package System with SPARK_Mode is
+package System is
    pragma Pure;
    --  Note that we take advantage of the implementation permission to make
    --  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada
@@ -168,6 +173,7 @@ private
    Always_Compatible_Rep     : constant Boolean := True;
    Suppress_Standard_Library : constant Boolean := True;
    Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := False;
+   Frontend_Exceptions       : constant Boolean := False;
+   ZCX_By_Default            : constant Boolean := True;
 
 end System;

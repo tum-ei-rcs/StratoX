@@ -33,7 +33,7 @@
 --  signed integer types up to Size Integer'Size, and also for conversion
 --  operations required in Text_IO.Integer_IO for such types.
 
-package System.Img_Int with SPARK_Mode => Off is
+package System.Img_Int is
    pragma Pure;
 
    procedure Image_Integer

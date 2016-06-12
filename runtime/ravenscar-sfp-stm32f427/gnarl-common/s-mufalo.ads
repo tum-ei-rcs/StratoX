@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                    Copyright (C) 2010-2014, AdaCore                      --
+--                    Copyright (C) 2010-2016, AdaCore                      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,7 @@
 
 with System.Multiprocessors.Spin_Locks;
 
-package System.Multiprocessors.Fair_Locks with SPARK_Mode => Off is
+package System.Multiprocessors.Fair_Locks is
    pragma Preelaborate;
 
    --  Note: The locks implemented in this package are fair among CPUs. Using
@@ -46,6 +46,7 @@ package System.Multiprocessors.Fair_Locks with SPARK_Mode => Off is
       Spinning : Spinning_Array := (others => False);
       Lock     : Spin_Locks.Spin_Lock;
    end record;
+   --  Note: the default value of a Fair_Lock is the unlocked state
 
    procedure Initialize (Flock : in out Fair_Lock);
    pragma Inline (Initialize);

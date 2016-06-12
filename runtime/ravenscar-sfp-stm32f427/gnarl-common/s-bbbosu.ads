@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2006 The European Space Agency            --
---                     Copyright (C) 2003-2013, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ pragma Restrictions (No_Elaboration_Code);
 with System.BB.Interrupts;
 with System.BB.CPU_Primitives;
 
-package System.BB.Board_Support with SPARK_Mode => Off is
+package System.BB.Board_Support is
    pragma Preelaborate;
 
    -----------------------------
@@ -71,11 +71,6 @@ package System.BB.Board_Support with SPARK_Mode => Off is
    --  Read_Clock may return, and the longest interval that Set_Alarm may use.
    --  The hardware clock period is Max_Timer_Interval + 1 clock ticks. An
    --  interrupt occurs after this number of ticks.
-
-   function Ticks_Per_Second return Natural;
-   pragma Inline (Ticks_Per_Second);
-   --  Return number of clock ticks per second taking into account that the
-   --  prescaler divides the system clock rate.
 
    procedure Set_Alarm (Ticks : Timer_Interval);
    --  Set an alarm that will expire after the specified number of clock ticks.
@@ -139,7 +134,7 @@ package System.BB.Board_Support with SPARK_Mode => Off is
    --  processor status register. Prio is the priority for the interrupt, and
    --  the hardware can be programmed to use that priority.
 
-   procedure Set_Current_Priority (Priority : Any_Priority);
+   procedure Set_Current_Priority (Priority : Integer);
    pragma Inline (Set_Current_Priority);
    --  Only allow interrupts higher than the specified priority. This routine
    --  differes from the Enable_Interrupts/Disable_Interrupts procedures
@@ -149,6 +144,11 @@ package System.BB.Board_Support with SPARK_Mode => Off is
    --  routine will be needed. On other systems, where the processor has this
    --  control, or where only a single interrupt priority is supported, this
    --  may be a null procedure.
+
+   procedure Power_Down;
+   pragma Inline (Power_Down);
+   --  Power-down the current CPU. This procedure is called only by the idle
+   --  task, with interrupt enabled.
 
    ---------------------
    -- Multiprocessors --

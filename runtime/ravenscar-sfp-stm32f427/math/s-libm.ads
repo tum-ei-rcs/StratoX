@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--           Copyright (C) 2014-2015, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,7 @@ package System.Libm is
       with function "/" (X, Y : T) return T is <>;
       with function "<=" (X, Y : T) return Boolean is <>;
       with function "abs" (X : T) return T is <>;
-      with function Exact (X : Long_Float) return T is <>;
+      with function Exact (X : Long_Long_Float) return T is <>;
       with function Maximum_Relative_Error (X : T) return Float is <>;
       with function Sqrt (X : T) return T is <>;
    package Generic_Approximations is

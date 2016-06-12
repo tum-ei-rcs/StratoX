@@ -37,7 +37,9 @@ with System.BB.Execution_Time;
 with System.BB.Interrupts;
 with System.BB.Time;
 
-package body Ada.Execution_Time.Interrupts is
+package body Ada.Execution_Time.Interrupts with
+  SPARK_Mode => Off
+is
 
    package SBET renames System.BB.Execution_Time;
    package SBI  renames System.BB.Interrupts;

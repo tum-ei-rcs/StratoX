@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                     Copyright (C) 2011-2014, AdaCore                     --
+--                     Copyright (C) 2011-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -276,7 +276,7 @@ package body System.BB.Timing_Events is
       Handler         : Timing_Event_Handler;
       Was_First       : Boolean;
       Self_Id         : Thread_Id;
-      Caller_Priority : Any_Priority;
+      Caller_Priority : Integer;
 
    begin
       --  Fast path: no timing event

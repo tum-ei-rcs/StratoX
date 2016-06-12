@@ -15,7 +15,7 @@
 
 with System.BB.Parameters;
 
-package System.Multiprocessors with SPARK_Mode => Off is
+package System.Multiprocessors is
    pragma Preelaborate (Multiprocessors);
 
    type CPU_Range is range 0 .. System.BB.Parameters.Max_Number_Of_CPUs;

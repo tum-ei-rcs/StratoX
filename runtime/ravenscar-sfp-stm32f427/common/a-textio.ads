@@ -33,7 +33,7 @@
 --  Reference Manual. It is a stripped down version for ZFP and bare-board
 --  runtimes.
 
-package Ada.Text_IO with SPARK_Mode => Off is
+package Ada.Text_IO is
    procedure Get (C : out Character);
    --  Read from console
 

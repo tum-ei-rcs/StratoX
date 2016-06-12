@@ -29,7 +29,7 @@
 with System.BB.Time;
 with System.Multiprocessors;
 
-package System.Bb.Timing_Events with SPARK_Mode => Off is
+package System.Bb.Timing_Events is
    pragma Preelaborate;
 
    type Timing_Event;

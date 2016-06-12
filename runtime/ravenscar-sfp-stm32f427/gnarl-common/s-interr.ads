@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                     Copyright (C) 2001-2013, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ with System.Tasking.Protected_Objects.Single_Entry;
 with System.OS_Interface;
 --  used for Max_Interrupt
 
-package System.Interrupts with SPARK_Mode => Off is
+package System.Interrupts is
    pragma Elaborate_Body;
 
    package ST renames System.Tasking;
@@ -92,7 +92,11 @@ package System.Interrupts with SPARK_Mode => Off is
    procedure Install_Restricted_Handlers
      (Prio     : Any_Priority;
       Handlers : Handler_Array);
-   --  Install the static Handlers for the given Interrupts
+   --  Install the static Handlers for the given Interrupts. There is one call
+   --  per protected object, and one element in Handlers for each handler of
+   --  the protected object (typically only one). Prio is the priority of
+   --  the protected object, so that interrupt controler can be set to that
+   --  priority (if possible).
 
    procedure Install_Restricted_Handlers_Sequential;
    pragma Export (C, Install_Restricted_Handlers_Sequential,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--          Copyright (C) 2014-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,13 +31,18 @@
 
 --  This is the Ada Cert Math specific implementation of sqrt for IEEE 64 bit
 
+with System.Libm_Prefix;
 package System.Libm_Double.Squareroot is
+   pragma Pure;
+
+   package SLP renames System.Libm_Prefix;
 
    function Sqrt (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "sqrt";
+     with Export, Convention => C, External_Name => SLP.Prefix & "sqrt";
    --  The Sqrt function returns the following special values:
    --  C99 special values:
    --    Sqrt (+-0) = +-0
    --    Sqrt (INF) = INF
    --    Sqrt (X)   = NaN, for X < 0.0
+
 end System.Libm_Double.Squareroot;

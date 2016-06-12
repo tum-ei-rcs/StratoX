@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,8 +62,12 @@ package body System.Tasking.Protected_Objects is
       Object.Ceiling := System.Any_Priority (Init_Priority);
       Object.Caller_Priority := System.Any_Priority'First;
       Object.Owner := Null_Task;
-      Multiprocessors.Fair_Locks.Initialize (Object.Lock);
 
+      --  Only for multiprocessor
+
+      if Multiprocessor then
+         Multiprocessors.Fair_Locks.Initialize (Object.Lock);
+      end if;
    end Initialize_Protection;
 
    ----------

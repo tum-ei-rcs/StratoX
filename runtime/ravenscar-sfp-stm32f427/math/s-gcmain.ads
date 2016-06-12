@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,11 +30,6 @@
 ------------------------------------------------------------------------------
 
 --  This is the Ada Cert Math specific version of s-gcmain.ads.
-
---  The separate version is necessary, because this system does not
---  provide an implementation of tanh, among other hyperbolic functions.
---  The run time currently has no code to implement this function,
---  so the only short term option was to remove the hyperbolic functions.
 
 --  @llrset s-gcmain.ads
 --  Generic C Math Interface
@@ -91,7 +86,8 @@ generic
 package System.Generic_C_Math_Interface is
 pragma Pure (Generic_C_Math_Interface);
 
-   pragma Assert (Float_Type'Signed_Zeros);
+   --  pragma Assert (Float_Type'Signed_Zeros);
+   --  Assertion fails on e500v2 targets
    pragma Assert (Float_Type'Machine_Radix = 2);
 
    function Sqrt (X : Float_Type'Base) return Float_Type'Base;

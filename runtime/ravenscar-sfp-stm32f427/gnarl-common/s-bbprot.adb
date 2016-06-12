@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2005 The European Space Agency            --
---                     Copyright (C) 2003-2014, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,61 +88,8 @@ package body System.BB.Protection is
          Wakeup_Served_Entry_Callback.all;
       end if;
 
-      --  If there is nothing to execute (no tasks or interrupt handlers) then
-      --  we just wait until there is something to do. It means that we need to
-      --  wait until there is any thread ready to execute. Interrupts are
-      --  handled just after enabling interrupts.
-
-      if Threads.Queues.First_Thread = Threads.Null_Thread_Id then
-
-         --  There is no task ready to execute so we need to wait until there
-         --  is one, unless we are currently handling an interrupt.
-
-         --  In the meantime, we put the task temporarily in the ready queue
-         --  so interrupt handling is performed normally. Note that the task
-         --  is inserted in the queue but its state is not Runnable.
-
-         Threads.Queues.Insert (Threads.Queues.Running_Thread);
-
-         --  Update execution time for the current task
-
-         if Scheduling_Event_Hook /= null then
-            Scheduling_Event_Hook.all;
-         end if;
-
-         --  Wait until a task has been made ready to execute (including the
-         --  one that has been temporarily added to the ready queue).
-
-         while Threads.Queues.Running_Thread.State /= Threads.Runnable
-           and then Threads.Queues.Running_Thread.Next = Threads.Null_Thread_Id
-         loop
-            --  CPU goes to idle loop, we can disable the CPU clock
-
-            if Disable_Execution_Time_Hook /= null then
-               Disable_Execution_Time_Hook.all;
-            end if;
-
-            --  Allow all external interrupts for a while
-
-            CPU_Primitives.Enable_Interrupts (0);
-            CPU_Primitives.Disable_Interrupts;
-
-            --  When we are here, the running task must also be the first in
-            --  the ready queue. If an interrupt has made another task ready
-            --  to execute, when we are back here it is because this task has
-            --  become again the first in the ready queue.
-
-            pragma Loop_Invariant
-              (Threads.Queues.First_Thread = Threads.Queues.Running_Thread);
-         end loop;
-
-         --  A task has been made ready to execute. We remove the one that was
-         --  temporarily inserted in the ready queue, if needed.
-
-         if Threads.Queues.Running_Thread.State /= Threads.Runnable then
-            Threads.Queues.Extract (Threads.Queues.Running_Thread);
-         end if;
-      end if;
+      --  The idle task is always runnable, so there is always a task to be
+      --  run.
 
       --  We need to check whether a context switch is needed
 
@@ -159,6 +106,10 @@ package body System.BB.Protection is
 
          CPU_Primitives.Context_Switch;
       end if;
+
+      --  There is always a running thread (at worst the idle thread)
+
+      pragma Assert (Threads.Queues.Running_Thread.State = Threads.Runnable);
 
       --  Now we need to set the hardware interrupt masking level equal to the
       --  software priority of the task that is executing.

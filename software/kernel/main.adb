@@ -6,7 +6,6 @@ with CPU;
 with Units;           use Units;
 with Ada.Real_Time;   use Ada.Real_Time;
 with LED_Manager;
-with MS5611.Driver;
 with PX4IO.Driver;
 with MPU6000.Driver;
 with HIL.UART;

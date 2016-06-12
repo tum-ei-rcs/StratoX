@@ -2,11 +2,11 @@
 
 with IMU;
 with GPS;
+with Barometer;
 
 with Units.Numerics; use Units.Numerics;
 
 with Logger;
-with Interfaces; use Interfaces;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 package body Estimator is
@@ -22,6 +22,8 @@ package body Estimator is
       Test := Test + Foo;
 
       IMU.Sensor.initialize;
+
+      Barometer.Sensor.initialize;
 
       GPS.Sensor.initialize;
    end initialize;

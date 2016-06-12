@@ -33,7 +33,7 @@ pragma Restrictions (No_Elaboration_Code);
 
 with Interfaces.C;
 
-package System.Memory_Set with SPARK_Mode => Off is
+package System.Memory_Set is
    pragma Preelaborate;
 
    function Memset

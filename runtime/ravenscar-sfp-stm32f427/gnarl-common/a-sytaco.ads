@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -37,28 +37,56 @@
 
 with System.Tasking;
 
-package Ada.Synchronous_Task_Control with SPARK_Mode => Off is
+with Ada.Task_Identification;
+
+package Ada.Synchronous_Task_Control with
+  SPARK_Mode
+is
    pragma Preelaborate;
    --  In accordance with Ada 2005 AI-362
 
    type Suspension_Object is limited private;
+   --  There was a 'Default_Initial_Condition' but it is removed as it resulted
+   --  in an undefined symbol.
 
-   procedure Set_True (S : in out Suspension_Object);
+   procedure Set_True (S : in out Suspension_Object) with
+     Global  => null,
+     Depends => (S    => null,
+                 null => S);
 
-   procedure Set_False (S : in out Suspension_Object);
+   procedure Set_False (S : in out Suspension_Object) with
+     Global  => null,
+     Depends => (S    => null,
+                 null => S);
 
-   function Current_State (S : Suspension_Object) return Boolean;
+   function Current_State (S : Suspension_Object) return Boolean with
+     Volatile_Function,
+     Global => Ada.Task_Identification.Tasking_State;
 
-   procedure Suspend_Until_True (S : in out Suspension_Object);
+   procedure Suspend_Until_True (S : in out Suspension_Object) with
+     Global  => null,
+     Depends => (S    => null,
+                 null => S);
 
 private
-   type Suspension_Object is record
-      Open : Boolean := False;
-      pragma Atomic (Open);
-      --  Status
+   pragma SPARK_Mode (Off);
 
-      Id : System.Tasking.Task_Id := System.Tasking.Null_Task;
-      --  Task waiting on the suspension object
-   end record;
+   --  Using a protected object may seem overkill, but assuming the
+   --  appropriate restrictions (such as those imposed by the Ravenscar
+   --  profile) protected operations are very efficient. Moreover, this
+   --  allows for a generic implementation that is not dependent on the
+   --  underlying operating system.
+
+   protected type Suspension_Object is
+      entry Wait;
+      procedure Set_False;
+      procedure Set_True;
+      function Get_Open return Boolean;
+
+      pragma Interrupt_Priority;
+   private
+      Open : Boolean := False;
+      --  Status
+   end Suspension_Object;
 
 end Ada.Synchronous_Task_Control;

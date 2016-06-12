@@ -31,7 +31,7 @@
 
 --  This is the parent package for a library of useful units provided with GNAT
 
-package GNAT with SPARK_Mode => Off is
+package GNAT is
    pragma Pure;
 
 end GNAT;

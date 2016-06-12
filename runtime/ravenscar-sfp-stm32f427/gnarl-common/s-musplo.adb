@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                       Copyright (C) 2010, AdaCore                        --
+--                    Copyright (C) 2010-2016, AdaCore                      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,11 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Interfaces;
-
 package body System.Multiprocessors.Spin_Locks is
-
-   use Interfaces;
 
    ----------
    -- Lock --
@@ -84,6 +80,9 @@ package body System.Multiprocessors.Spin_Locks is
                        "__sync_lock_release_1");
 
    begin
+      --  Clear Flag. This is a release barrier: all previous memory load
+      --  are satisfied before this write access.
+
       Lock_Release (Slock.Flag'Access);
    end Unlock;
 

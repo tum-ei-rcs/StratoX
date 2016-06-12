@@ -42,7 +42,7 @@ package Units with
         Dimension => (Symbol => 'A', Ampere => 1, others => 0);
 
    subtype Temperature_Type is Unit_Type with
-        Dimension => (Symbol => 'K', Ampere => 1, others => 0);
+        Dimension => (Symbol => 'K', Kelvin => 1, others => 0);
 
    subtype Angle_Type is Unit_Type with
         Dimension => (Symbol => "Rad", Radian => 1, others => 0);

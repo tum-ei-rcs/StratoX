@@ -6,6 +6,11 @@ package Units.Numerics is
 
    function Sqrt (X : Unit_Type) return Float;
    function "**" (Left : Unit_Type; Right : Integer) return Float;
+   function "**" (Left : Unit_Type; Right : Float) return Unit_Type;
+
+--   function Exp (X : Unit_Type) return Float;
+--   function Log (X : Unit_Type) return Float;
+
 --  
 --     function Sin (X : Angle_Type) return Unit_Type is
 --        (Elementary_Functions.Sin( Float( X ) );

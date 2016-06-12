@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2004 The European Space Agency            --
---                     Copyright (C) 2003-2015, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ pragma Restrictions (No_Elaboration_Code);
 with System;
 with System.BB.Parameters;
 
-package System.BB.CPU_Primitives with SPARK_Mode => Off is
+package System.BB.CPU_Primitives is
    pragma Preelaborate;
 
    type Word is mod 2**System.Word_Size;
@@ -117,14 +117,14 @@ package System.BB.CPU_Primitives with SPARK_Mode => Off is
    --  Board_Support.Set_Current_Priority routine must also be implemented in
    --  order to do the board-specific enable/disable operations.
 
-   procedure Enable_Interrupts (Level : System.Any_Priority);
+   procedure Enable_Interrupts (Level : Integer);
    pragma Inline (Enable_Interrupts);
    --  Interrupts are enabled if they are above the value given by Level
 
-   procedure Initialize_Floating_Point;
-   pragma Inline (Initialize_Floating_Point);
-   --  Install the floating point trap handler in charge of performing
-   --  floating-point context switches.
+   procedure Initialize_CPU;
+   pragma Inline (Initialize_CPU);
+   --  Set the CPU up to use the proper stack for interrupts, initialize and
+   --  enable system trap handlers.
 
 private
    Context_Buffer_Size : constant :=

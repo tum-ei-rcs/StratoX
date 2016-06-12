@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@
 
 with System.Multiprocessors.Fair_Locks;
 
-package System.Tasking.Protected_Objects with SPARK_Mode => Off is
+package System.Tasking.Protected_Objects is
    pragma Elaborate_Body;
 
    ---------------------------------
@@ -221,5 +221,6 @@ private
       Lock : Multiprocessors.Fair_Locks.Fair_Lock;
       --  SMP lock
    end record;
+   pragma Suppress_Initialization (Protection);
 
 end System.Tasking.Protected_Objects;

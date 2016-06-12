@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2005 The European Space Agency            --
---                     Copyright (C) 2003-2014, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,14 +39,14 @@
 pragma Restrictions (No_Elaboration_Code);
 
 with System;
-with System.Parameters;
+with System.Storage_Elements;
 with System.BB.CPU_Primitives;
 with System.BB.Time;
 with System.BB.Interrupts;
 with System.Multiprocessors;
 with System.BB.CPU_Primitives.Multiprocessors;
 
-package System.BB.Threads with SPARK_Mode => Off is
+package System.BB.Threads is
    pragma Preelaborate;
 
    use type System.Multiprocessors.CPU;
@@ -92,10 +92,10 @@ package System.BB.Threads with SPARK_Mode => Off is
       Base_CPU : System.Multiprocessors.CPU_Range;
       --  CPU affinity of the thread
 
-      Base_Priority : System.Any_Priority;
+      Base_Priority : Integer;
       --  Base priority of the thread
 
-      Active_Priority : System.Any_Priority;
+      Active_Priority : Integer;
       pragma Volatile (Active_Priority);
       --  Active priority that differs from the base priority due to dynamic
       --  priority changes required by the Ceiling Priority Protocol.
@@ -195,42 +195,37 @@ package System.BB.Threads with SPARK_Mode => Off is
 
        and then not Initialized;
 
-   procedure Initialize_Slave_Environment (Environment_Thread : Thread_Id) with
-   --  Procedure to initialize the fake environment thread on a slave CPU.
+   procedure Initialize_Slave
+     (Idle_Thread   : Thread_Id;
+      Idle_Priority : Integer;
+      Stack_Address : System.Address;
+      Stack_Size    : System.Storage_Elements.Storage_Offset) with
+   --  Procedure to initialize the idle thread on a slave CPU.
    --  This thread is used to handle interrupt if the CPU doesn't have any
    --  other task. The initialization for the main CPU must have been
    --  performed. The operations to perform are:
-   --    - Initialize the thread descriptor for the environment task
-   --       * Set base CPU for the environment task to the one on which this
-   --         initialization code executes
-   --       * Set the base and active priority of the environment task
-   --       * Store the boundaries of the stack for the environment task.
-   --         These stacks are 1 KB
+   --    - Initialize the thread descriptor
+   --       * Set base CPU to the one on which this code executes
+   --       * Set the base and active priority
+   --       * Store the boundaries of the stack
    --       * Initialize the register context
    --    - Initialize the global queues
-   --       * Set the environment task as the currently executing task in this
-   --         processor. Set its state as suspended to signal that this is a
-   --         fake task not intended to execute once there are other tasks
-   --         ready
+   --       * Set the task as the currently executing task in this processor.
 
      Pre =>
 
-       --  This procedure must be called by a slave CPU and never by the master
-
-       CPU_Primitives.Multiprocessors.Current_CPU > Multiprocessors.CPU'First
-
        --  It must happen after the initialization of the master CPU
 
-       and then Initialized;
+       Initialized;
 
    procedure Thread_Create
      (Id            : Thread_Id;
       Code          : System.Address;
       Arg           : System.Address;
-      Priority      : System.Any_Priority;
+      Priority      : Integer;
       Base_CPU      : System.Multiprocessors.CPU_Range;
       Stack_Address : System.Address;
-      Stack_Size    : System.Parameters.Size_Type) with
+      Stack_Size    : System.Storage_Elements.Storage_Offset) with
    --  Create a new thread
    --
    --  The new thread executes the code at address Code and using Args as
@@ -254,11 +249,11 @@ package System.BB.Threads with SPARK_Mode => Off is
    -- Scheduling --
    ----------------
 
-   procedure Set_Priority (Priority : System.Any_Priority);
+   procedure Set_Priority (Priority : Integer);
    pragma Inline (Set_Priority);
    --  Set the active priority of the executing thread to the given value
 
-   function Get_Priority  (Id : Thread_Id) return System.Any_Priority with
+   function Get_Priority  (Id : Thread_Id) return Integer with
    --  Get the current active priority of any thread
 
      Pre => Id /= Null_Thread_Id,
@@ -294,10 +289,9 @@ package System.BB.Threads with SPARK_Mode => Off is
    -- ATCB --
    ----------
 
-   procedure Set_ATCB (ATCB : System.Address);
+   procedure Set_ATCB (Id : Thread_Id; ATCB : System.Address);
    pragma Inline (Set_ATCB);
-   --  This procedure sets the ATCB passed as argument for the currently
-   --  running thread.
+   --  This procedure sets the ATCB passed as argument for the thread ID
 
    function Get_ATCB return System.Address;
    pragma Inline (Get_ATCB);

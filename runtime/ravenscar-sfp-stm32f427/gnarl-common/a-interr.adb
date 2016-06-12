@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                     Copyright (C) 2001-2010, AdaCore                     --
+--                     Copyright (C) 2001-2015, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,6 +78,18 @@ package body Ada.Interrupts is
    begin
       raise Program_Error;
    end Exchange_Handler;
+
+   -------------
+   -- Get_CPU --
+   -------------
+
+   function Get_CPU
+     (Interrupt : Interrupt_ID) return System.Multiprocessors.CPU_Range
+   is
+   begin
+      raise Program_Error;
+      return System.Multiprocessors.Not_A_Specific_CPU;
+   end Get_CPU;
 
    -----------------
    -- Is_Attached --

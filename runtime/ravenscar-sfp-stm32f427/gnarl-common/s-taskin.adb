@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                     Copyright (C) 2001-2014, AdaCore                     --
+--                     Copyright (C) 2001-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,13 +67,10 @@ package body System.Tasking is
    --  undefined, and can be set by using pragma CPU in the main program.
    --  Switching the environment task to the right CPU is left to the user.
 
-   Environment_Task : array (Multiprocessors.CPU) of
-                         aliased Ada_Task_Control_Block (Entry_Num => 0);
-   --  ATCB for the environment tasks. The environment task for the main CPU
-   --  is the real one, while the others are phantom tasks only present to
-   --  correctly handle interrupts (changing the current priority). The name
-   --  is of this array is 'Environment_Task' so that there is a nice display
-   --  of the environmental task in GDB (which uses the suffix of the symbol).
+   Environment_Task : aliased Ada_Task_Control_Block (Entry_Num => 0);
+   --  ATCB for the environment task. The name of this array is
+   --  'Environment_Task', so that there is a nice display of the environment
+   --  task in GDB (which uses the suffix of the symbol).
 
    -------------------
    -- Get_Sec_Stack --
@@ -91,7 +88,7 @@ package body System.Tasking is
    procedure Initialize_ATCB
      (Task_Entry_Point : Task_Procedure_Access;
       Task_Arg         : System.Address;
-      Base_Priority    : System.Any_Priority;
+      Base_Priority    : Extended_Priority;
       Base_CPU         : System.Multiprocessors.CPU_Range;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Address    : System.Address;
@@ -134,18 +131,16 @@ package body System.Tasking is
                                (Default_Secondary_Stack_Size));
    for Secondary_Stack'Alignment use Standard'Maximum_Alignment;
    pragma Warnings (Off, Secondary_Stack);
+   --  Secondary stack of the environmental task
 
    Initialized : Boolean := False;
    --  Used to prevent multiple calls to Initialize
 
    procedure Initialize is
       Base_Priority : Any_Priority;
-      Base_CPU      : System.Multiprocessors.CPU;
 
       Success : Boolean;
       pragma Warnings (Off, Success);
-
-      CPU_Not_In_Range : Boolean := False;
 
    begin
       if Initialized then
@@ -154,39 +149,7 @@ package body System.Tasking is
 
       Initialized := True;
 
-      --  Legal values of CPU are the special Unspecified_CPU value which is
-      --  inserted by the compiler for tasks without CPU aspect, and those in
-      --  the range of CPU_Range but no greater than Number_Of_CPUs. Otherwise
-      --  the task is defined to have failed, and it becomes a completed task
-      --  (RM D.16(14/3)).
-
-      if Main_CPU /= Unspecified_CPU
-        and then (Main_CPU < Integer (System.Multiprocessors.CPU_Range'First)
-                    or else
-                  Main_CPU > Integer (System.Multiprocessors.Number_Of_CPUs))
-      then
-         --  Invalid CPU, will raise Tasking_Error after the environment task
-         --  is initialized (as exception propagation is supported in full
-         --  ravenscar profile)
-
-         CPU_Not_In_Range := True;
-
-         --  Use the default CPU as Main_CPU
-
-         Base_CPU := CPU'First;
-
-      else
-         Base_CPU :=
-           (if Main_CPU = Unspecified_CPU
-              or else CPU_Range (Main_CPU) = Not_A_Specific_CPU
-            then CPU'First -- Default CPU
-            else CPU (Main_CPU));
-      end if;
-
-      --  Set Main_CPU with the selected CPU value
-      --  (instead of Unspecified_CPU or Not_A_Specific_CPU)
-
-      Main_CPU := Integer (Base_CPU);
+      --  Compute priority
 
       if Main_Priority = Unspecified_Priority then
          Base_Priority := Default_Priority;
@@ -195,23 +158,22 @@ package body System.Tasking is
       end if;
 
       Initialize_ATCB
-        (null, Null_Address, Base_Priority, Base_CPU,
+        (null, Null_Address, Base_Priority, CPU'First,
          Task_Info.Unspecified_Task_Info, Null_Address, 0,
-         Environment_Task (Base_CPU)'Access, Success);
+         Environment_Task'Access, Success);
 
       Task_Primitives.Operations.Initialize
-        (Environment_Task (Base_CPU)'Access);
+        (Environment_Task'Access);
 
       --  Note: we used to set the priority at this point, but it is already
       --  done in Enter_Task via s-taprop.Initialize.
 
-      Environment_Task (Base_CPU).Common.State := Runnable;
-      Environment_Task (Base_CPU).Entry_Call.Self :=
-        Environment_Task (Base_CPU)'Access;
+      Environment_Task.Common.State := Runnable;
+      Environment_Task.Entry_Call.Self := Environment_Task'Access;
 
       --  Initialize the secondary stack
 
-      Environment_Task (Base_CPU).Common.Compiler_Data.Sec_Stack_Addr :=
+      Environment_Task.Common.Compiler_Data.Sec_Stack_Addr :=
         Secondary_Stack'Address;
       SS_Init (Secondary_Stack'Address, Default_Secondary_Stack_Size);
 
@@ -219,50 +181,24 @@ package body System.Tasking is
 
       Fall_Back_Handler := null;
 
-      --  Deferred exception if CPU is invalid
+      --  Legal values of CPU are the special Unspecified_CPU value, which is
+      --  inserted by the compiler for tasks without CPU aspect, and those in
+      --  the range of CPU_Range but no greater than Number_Of_CPUs. Otherwise
+      --  the task is defined to have failed, and it becomes a completed task
+      --  (RM D.16(14/3)).
 
-      if CPU_Not_In_Range then
-         raise Tasking_Error with "Main CPU not in range";
+      --  Only accept CPU'First for CPU value, starting on a slave CPU is not
+      --  supported.
+
+      if Main_CPU /= Unspecified_CPU and then Main_CPU /= Integer (CPU'First)
+      then
+         --  Invalid CPU, will raise Tasking_Error after the environment task
+         --  is initialized (as exception propagation is supported in the full
+         --  Ravenscar profile).
+
+         raise Tasking_Error with "Main CPU is not the master one";
       end if;
    end Initialize;
-
-   ----------------------
-   -- Initialize_Slave --
-   ----------------------
-
-   procedure Initialize_Slave (CPU_Id : CPU) is
-      Base_Priority : constant Any_Priority := System.Any_Priority'First;
-
-      Success  : Boolean;
-      pragma Warnings (Off, Success);
-
-   begin
-      --  Initialize a fake environment task for this slave CPU
-
-      Initialize_ATCB
-        (null, Null_Address, Base_Priority, CPU_Id,
-         Task_Info.Unspecified_Task_Info, Null_Address, 0,
-         Environment_Task (CPU_Id)'Access, Success);
-
-      Task_Primitives.Operations.Initialize_Slave
-        (Environment_Task (CPU_Id)'Access);
-
-      Task_Primitives.Operations.Set_Priority
-        (Environment_Task (CPU_Id)'Access, Base_Priority);
-
-      Environment_Task (CPU_Id).Entry_Call.Self :=
-        Environment_Task (CPU_Id)'Access;
-
-      --  The task has no code to execute and will stay in an unactivated state
-
-      Environment_Task (CPU_Id).Common.State := Unactivated;
-
-      --  This call to the sleep procedure will force the current CPU to start
-      --  execution of its tasks.
-
-      Task_Primitives.Operations.Sleep
-        (Environment_Task (CPU_Id)'Access, Unactivated);
-   end Initialize_Slave;
 
    ----------
    -- Self --

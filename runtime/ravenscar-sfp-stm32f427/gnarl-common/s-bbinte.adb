@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2005 The European Space Agency            --
---                     Copyright (C) 2003-2013, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,10 +61,7 @@ package body System.BB.Interrupts is
    --  Type used to represent the stack area for each interrupt. The stack must
    --  be aligned to 8 bytes to allow double word data movements.
 
-   type Int_Stack_Id is range 1 .. Natural
-     (Interrupt_Priority'Last - Interrupt_Priority'First + 1);
-
-   Interrupt_Stacks : array (CPU, Int_Stack_Id) of Stack_Space;
+   Interrupt_Stacks : array (CPU) of Stack_Space;
    pragma Linker_Section (Interrupt_Stacks, ".interrupt_stacks");
    --  Array that contains the stack used for each interrupt priority on each
    --  CPU. Note that multiple interrupts with the same priority will share
@@ -73,7 +70,7 @@ package body System.BB.Interrupts is
    --  so the linker script can put them at a specific place and avoid useless
    --  initialization.
 
-   Interrupt_Stack_Table : array (CPU, Int_Stack_Id) of System.Address;
+   Interrupt_Stack_Table : array (CPU) of System.Address;
    pragma Export (Asm, Interrupt_Stack_Table, "interrupt_stack_table");
    --  Table that contains a pointer to the top of the stack for each interrupt
    --  level on each CPU.
@@ -152,11 +149,11 @@ package body System.BB.Interrupts is
 
    procedure Interrupt_Wrapper (Vector : CPU_Primitives.Vector_Id) is
       Self_Id         : constant Threads.Thread_Id := Threads.Thread_Self;
-      Caller_Priority : constant Any_Priority :=
+      Caller_Priority : constant Integer :=
                          Threads.Get_Priority (Self_Id);
       Interrupt       : constant Interrupt_ID :=
                           Board_Support.Get_Interrupt_Request (Vector);
-      Int_Priority    : constant Any_Priority :=
+      Int_Priority    : constant Interrupt_Priority :=
                           Board_Support.Priority_Of_Interrupt (Interrupt);
       CPU_Id          : constant CPU          := Current_CPU;
       Previous_Int    : constant Interrupt_ID :=
@@ -238,11 +235,9 @@ package body System.BB.Interrupts is
      (Stack_Address : System.Address) return Boolean
    is
       (Current_Interrupt /= No_Interrupt and then Stack_Address in
-          Interrupt_Stacks (Current_CPU, Int_Stack_Id'First)
-            (Stack_Space'First)'Address
+          Interrupt_Stacks (CPU'First)(Stack_Space'First)'Address
              ..
-          Interrupt_Stacks (Current_CPU, Int_Stack_Id'Last)
-            (Stack_Space'Last)'Address);
+          Interrupt_Stacks (CPU'Last)(Stack_Space'Last)'Address);
 
    ---------------------------
    -- Initialize_Interrupts --
@@ -252,13 +247,11 @@ package body System.BB.Interrupts is
       use type System.Storage_Elements.Storage_Offset;
    begin
       for Proc in CPU'Range loop
-         for Index in Int_Stack_Id'Range loop
 
-            --  Store the pointer in the last double word
+         --  Store the pointer in the last double word
 
-            Interrupt_Stack_Table (Proc, Index) :=
-              Interrupt_Stacks (Proc, Index)(Stack_Space'Last - 7)'Address;
-         end loop;
+         Interrupt_Stack_Table (Proc) :=
+              Interrupt_Stacks (Proc)(Stack_Space'Last - 7)'Address;
       end loop;
    end Initialize_Interrupts;
 end System.BB.Interrupts;

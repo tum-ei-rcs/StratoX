@@ -7,7 +7,7 @@
 --                                                                          --
 --                               B o d y                                    --
 --                                                                          --
---                       Copyright (C) 2010, AdaCore                        --
+--                    Copyright (C) 2010-2015, AdaCore                      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,6 +48,7 @@ package body System.Tasking.Protected_Objects.Multiprocessors is
    use System.Multiprocessors.Fair_Locks;
 
    package STPO renames System.Task_Primitives.Operations;
+   package BCPRMU renames System.BB.CPU_Primitives.Multiprocessors;
 
    type Entry_Call_List is limited record
       List : Entry_Call_Link;
@@ -128,7 +129,7 @@ package body System.Tasking.Protected_Objects.Multiprocessors is
    -------------------------
 
    procedure Wakeup_Served_Entry is
-      CPU_Id     : constant CPU := STPO.Get_CPU (STPO.Self);
+      CPU_Id     : constant CPU := BCPRMU.Current_CPU;
       Entry_Call : Entry_Call_Link;
 
    begin

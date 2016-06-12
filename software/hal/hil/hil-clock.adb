@@ -21,6 +21,7 @@ is
       
       -- UART (UART3 is Ser2 is Telemtrie2)
       STM32.Device.Enable_Clock( STM32.Device.USART_3 );
+      STM32.Device.Enable_Clock( STM32.Device.UART_4 );  --  GPS
       STM32.Device.Enable_Clock( STM32.Device.USART_6 );   -- PX4IO 
       STM32.Device.Enable_Clock( STM32.Device.USART_7 );   -- SER 5
  

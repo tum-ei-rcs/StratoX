@@ -37,7 +37,7 @@ pragma Polling (Off);
 
 with System.OS_Interface;
 
-package System.Task_Primitives with SPARK_Mode => Off is
+package System.Task_Primitives is
    pragma Preelaborate;
 
    type Task_Body_Access is access procedure;

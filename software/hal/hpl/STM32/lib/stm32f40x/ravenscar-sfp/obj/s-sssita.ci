@@ -1,5 +1,0 @@
-graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-sssita.adb"
-node: { title: "system__secondary_stack__ss_init" label: "Ss_Init\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-secsta.ads:43:14" shape : ellipse }
-node: { title: "__gnat_get_secondary_stack" label: "Get_Sec_Stack\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-sssita.adb:57:4\n8 bytes (static)\n0 dynamic objects" }
-edge: { sourcename: "__gnat_get_secondary_stack" targetname: "system__secondary_stack__ss_init" label: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-sssita.adb:62:10" }
-}

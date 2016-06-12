@@ -31,7 +31,7 @@
 
 with Interfaces.C;
 
-package System.Memory_Compare with SPARK_Mode => Off is
+package System.Memory_Compare is
    pragma Preelaborate;
 
    function memcmp

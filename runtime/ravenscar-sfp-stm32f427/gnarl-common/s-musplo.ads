@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                       Copyright (C) 2010, AdaCore                        --
+--                     Copyright (C) 2010-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package System.Multiprocessors.Spin_Locks with SPARK_Mode => Off is
+package System.Multiprocessors.Spin_Locks is
    pragma Preelaborate;
 
    ---------------
@@ -41,6 +41,7 @@ package System.Multiprocessors.Spin_Locks with SPARK_Mode => Off is
    type Spin_Lock is limited record
       Flag : aliased Atomic_Flag := Unlocked;
    end record;
+   --  The default value of a Spin_Lock is unlocked
 
    procedure Lock (Slock : in out Spin_Lock);
    pragma Inline (Lock);

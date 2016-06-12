@@ -1,3 +1,0 @@
-graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-taspri.ads"
-node: { title: "system__task_primitives__private_dataIP" label: "Private_Dataip\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/gnarl-common/s-taspri.ads:61:9\n0 bytes\n0 dynamic objects" }
-}

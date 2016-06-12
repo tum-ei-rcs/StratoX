@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--          Copyright (C) 2014-2016, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,16 @@
 
 --  This is the Ada Cert Math specific version of s-libdou.ads
 
+with System.Libm_Prefix;
+
 --  @llrset Libm
 --  LLR Libm
 --  ========
 
 package System.Libm_Double is
    pragma Pure;
+
+   package SLP renames System.Libm_Prefix;
 
    --  This package provides an implementation of the various C99 functions
    --  used in the Ada run time. It is intended to be used for targets that
@@ -72,7 +76,7 @@ package System.Libm_Double is
    ----------
 
    function Acos (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "acos";
+     with Export, Convention => C, External_Name => SLP.Prefix & "acos";
    --  @llr acos (Long_Float) Special Values
    --  The Acos function shall return the following special values:
    --
@@ -97,7 +101,7 @@ package System.Libm_Double is
    -----------
 
    function Acosh (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "acosh";
+     with Export, Convention => C, External_Name => SLP.Prefix & "acosh";
    --  @llr acosh (Long_Float) Special Values
    --  The Acosh function shall return the following special values:
    --
@@ -118,7 +122,7 @@ package System.Libm_Double is
    ----------
 
    function Asin (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "asin";
+     with Export, Convention => C, External_Name => SLP.Prefix & "asin";
    --  @llr asin (Long_Float) Special Values
    --  The Asin function shall return the following special values:
    --
@@ -143,7 +147,7 @@ package System.Libm_Double is
    -----------
 
    function Asinh (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "asinh";
+     with Export, Convention => C, External_Name => SLP.Prefix & "asinh";
    --  @llr asinh (Long_Float) Special Values
    --  The Asinh function shall return the following special values:
    --
@@ -163,7 +167,7 @@ package System.Libm_Double is
    ----------
 
    function Atan (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "atan";
+     with Export, Convention => C, External_Name => SLP.Prefix & "atan";
    --  @llr atan (Long_Float) Special Values
    --  The Atan function shall return the following special values:
    --
@@ -179,7 +183,7 @@ package System.Libm_Double is
    -----------
 
    function Atan2 (Y : Long_Float; X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "atan2";
+     with Export, Convention => C, External_Name => SLP.Prefix & "atan2";
    --  @llr atan2 (Long_Float; Long_Float) Special Values
    --  The Atan2 function shall return the following special values:
    --
@@ -213,7 +217,7 @@ package System.Libm_Double is
    -----------
 
    function Atanh (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "atanh";
+     with Export, Convention => C, External_Name => SLP.Prefix & "atanh";
    --  @llr atanh (Long_Float) Special Values
    --  The Atanh function shall return the following special values:
    --
@@ -234,7 +238,7 @@ package System.Libm_Double is
    ---------
 
    function Cos (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "cos";
+     with Export, Convention => C, External_Name => SLP.Prefix & "cos";
    --  @llr cos (Long_Float) Special Values
    --  The Cos function shall return the following special values:
    --
@@ -257,7 +261,7 @@ package System.Libm_Double is
    ----------
 
    function Cosh (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "cosh";
+     with Export, Convention => C, External_Name => SLP.Prefix & "cosh";
    --  @llr cosh (Long_Float) Special Values
    --  The Cosh function shall return the following special values:
    --
@@ -280,7 +284,7 @@ package System.Libm_Double is
    ---------
 
    function Exp (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "exp";
+     with Export, Convention => C, External_Name => SLP.Prefix & "exp";
    --  @llr exp (Long_Float) Special Values
    --  The Exp function shall return the following special values:
    --
@@ -301,7 +305,7 @@ package System.Libm_Double is
    ----------
 
    function Exp2 (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "exp2";
+     with Export, Convention => C, External_Name => SLP.Prefix & "exp2";
    --  @llr exp2 (Long_Float) Special Values
    --  The Exp2 function shall return the following special values:
    --
@@ -322,7 +326,7 @@ package System.Libm_Double is
    ---------
 
    function Log (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "log";
+     with Export, Convention => C, External_Name => SLP.Prefix & "log";
    --  @llr log (Long_Float) Special Values
    --  The Log function shall return the following special values:
    --
@@ -344,7 +348,7 @@ package System.Libm_Double is
    -----------
 
    function Log1p (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "log1p";
+     with Export, Convention => C, External_Name => SLP.Prefix & "log1p";
    --  @llr log1p (Long_Float) Special Values:
    --  The Log1p function shall return the following special values:
    --
@@ -366,7 +370,7 @@ package System.Libm_Double is
    ----------
 
    function Log2 (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "log2";
+     with Export, Convention => C, External_Name => SLP.Prefix & "log2";
    --  @llr log2 (Long_Float) Special Values
    --  The Log2 function shall return the following special values:
    --
@@ -387,7 +391,7 @@ package System.Libm_Double is
    ---------
 
    function Pow (Left, Right : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "pow";
+     with Export, Convention => C, External_Name => SLP.Prefix & "pow";
    --  @llr pow (Long_Float; Long_Float) Special Values
    --  The Pow function shall return the following special values
    --
@@ -423,7 +427,7 @@ package System.Libm_Double is
    ---------
 
    function Sin (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "sin";
+     with Export, Convention => C, External_Name => SLP.Prefix & "sin";
    --  @llr sin (Long_Float) Special Values
    --  The Sin function shall return the following special values
    --
@@ -443,7 +447,7 @@ package System.Libm_Double is
    ----------
 
    function Sinh (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "sinh";
+     with Export, Convention => C, External_Name => SLP.Prefix & "sinh";
    --  @llr sinh (Long_Float) Special Values
    --  The Sinh function shall return the following special values:
    --
@@ -463,7 +467,7 @@ package System.Libm_Double is
    ----------
 
    function Sqrt (X : Long_Float) return Long_Float
-      with Import, Convention => Intrinsic, External_Name => "__builtin_sqrt";
+     with Convention => C;
    --  The Sqrt function shall return the following special values:
    --
    --  C99 special values:
@@ -476,7 +480,7 @@ package System.Libm_Double is
    ---------
 
    function Tan (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "tan";
+     with Export, Convention => C, External_Name => SLP.Prefix & "tan";
    --  @llr tan (Long_Float) Special Values
    --  The Tan function shall return the following special values:
    --
@@ -496,7 +500,7 @@ package System.Libm_Double is
    ----------
 
    function Tanh (X : Long_Float) return Long_Float
-      with Export, Convention => C, External_Name => "tanh";
+     with Export, Convention => C, External_Name => SLP.Prefix & "tanh";
    --  @llr tanh (Long_Float) Special Values
    --  The Tanh function shall return the following special values:
    --
@@ -514,11 +518,12 @@ package System.Libm_Double is
 private
    function Identity (X : Long_Float) return Long_Float is (X);
 
-   function Infinity return Long_Float is (1.0 / Identity (0.0));
+   function Infinity return Long_Float
+     with Import, Convention => Intrinsic, External_Name => "__builtin_inf";
 
    function NaN return Long_Float is (Infinity - Infinity);
 
-   function Exact (X : Long_Float) return Long_Float is (X);
+   function Exact (X : Long_Long_Float) return Long_Float is (Long_Float (X));
 
    function Epsilon return Long_Float is (Long_Float'Model_Epsilon);
 

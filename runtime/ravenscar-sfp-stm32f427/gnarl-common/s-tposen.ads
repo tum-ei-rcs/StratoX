@@ -56,7 +56,7 @@
 --  Any changes to this interface may require corresponding compiler changes
 --  in exp_ch9.adb and possibly exp_ch7.adb
 
-package System.Tasking.Protected_Objects.Single_Entry with SPARK_Mode => Off is
+package System.Tasking.Protected_Objects.Single_Entry is
    pragma Elaborate_Body;
 
    ---------------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--         Copyright (C) 2014-2015, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,11 +34,11 @@
 --  When Cody and Waite implementation is cited, it refers to the
 --  Software Manual for the Elementary Functions by William J. Cody, Jr.
 --  and William Waite, published by Prentice-Hall Series in Computational
---  Mathematics. Version??? ISBN???
+--  Mathematics. Copyright 1980. ISBN 0-13-822064-6.
 
 --  When Hart implementation is cited, it refers to
---  "The Computer Approximation" by John F. Hart, published by Krieger.
---  Version??? ISBN???
+--  "Computer Approximations" by John F. Hart, published by Krieger.
+--  Copyright 1968, Reprinted 1978 w/ corrections. ISBN 0-88275-642-7.
 
 with Ada.Numerics; use Ada.Numerics;
 
@@ -197,30 +197,48 @@ package body System.Libm is
       end Approx_Atan;
 
       function Approx_Cos (X : T) return T is
+         --  Note: The reference tables named below for cosine lists
+         --  constants for cos((pi/4) * x) ~= P (x^2), in order to get
+         --  cos (x), the constants have been adjusted by division of
+         --  appropriate  powers of (pi/4) ^ n, for n 0,2,4,6 etc.
          Cos_P : constant Polynomial :=
                    (if Mantissa <= 24
                     then
-                      --  Hart's constants : #COS 3822# (p. 209)
-                      --  Approximation MRE = 8.1948E-9
+                      --  Hart's constants : #COS 3821# (p. 209)
+                      --  Approximation MRE = 8.1948E-9 ???
 
-                      (0 => Exact (1.0),
-                       1 => Exact (-0.49999_99404),
-                       2 => Exact (0.41666_66046E-1),
-                       3 => Exact (-0.13888_87875E-2),
-                       4 => Exact (0.24827_63739E-4))
+                      (0 => Exact (0.99999_99999),
+                       1 => Exact (-0.49999_99957),
+                       2 => Exact (0.41666_61323E-1),
+                       3 => Exact (-0.13888_52915E-2),
+                       4 => Exact (0.24372_67909E-4))
 
-                    else
+                    elsif Mantissa <= 53
+                    then
                       --  Hart's constants : #COS 3824# (p. 209)
                       --  Approximation MRE = 1.2548E-18
 
-                      (0 => Exact (1.0),
-                       1 => Exact (-0.5),
-                       2 => Exact (+0.04166_66666_66666_43537),
-                       3 => Exact (-0.13888_88888_88589_63271E-2),
-                       4 => Exact (+0.24801_58728_28994_71149E-4),
-                       5 => Exact (-0.27557_31286_56960_91429E-6),
-                       6 => Exact (+0.20875_55514_56778_91895E-8),
-                       7 => Exact (-0.11352_12320_57839_46664E-10)));
+                      (0 => Exact (0.99999_99999_99999_99995),
+                       1 => Exact (-0.49999_99999_99999_99279),
+                       2 => Exact (+0.04166_66666_66666_430254),
+                       3 => Exact (-0.13888_88888_88589_60433E-2),
+                       4 => Exact (+0.24801_58728_28994_63022E-4),
+                       5 => Exact (-0.27557_31286_56960_82219E-6),
+                       6 => Exact (+0.20875_55514_56778_82872E-8),
+                       7 => Exact (-0.11352_12320_57839_39582E-10))
+                    else
+                      --  Hart's constants : #COS 3825# (p. 209-210)
+                      --  Approximation MRE = ???
+
+                      (0 => Exact (+1.0),
+                       1 => Exact (-0.49999_99999_99999_99994_57899),
+                       2 => Exact (+0.41666_66666_66666_66467_89627E-1),
+                       3 => Exact (-0.13888_88888_88888_57508_03579E-2),
+                       4 => Exact (+0.24801_58730_15616_31808_80662E-4),
+                       5 => Exact (-0.27557_31921_21557_14660_22522E-6),
+                       6 => Exact (+0.20876_75377_75228_35357_18906E-8),
+                       7 => Exact (-0.11470_23678_56189_18819_10735E-10),
+                       8 => Exact (+0.47358_93914_72413_21156_01793E-13)));
       begin
          return Compute_Horner (Cos_P, X * X);
       end Approx_Cos;
@@ -230,25 +248,37 @@ package body System.Libm is
       ----------------
 
       function Approx_Exp (X : T) return T is
+         --  Cody and Waite implementation (page 69)
          Exp_P : constant Polynomial :=
                    (if Mantissa <= 24
                     then --  Approximation MRE = 8.1529E-10
                       (0 => Exact (0.24999_99995_0),
                        1 => Exact (0.41602_88626_0E-2))
-                    else --  Approximation MRE = 1.0259E-17
+                    elsif Mantissa <= 53
+                    then --  Approximation MRE = 1.0259E-17
                       (0 => Exact (0.24999_99999_99999_993),
                        1 => Exact (0.69436_00015_11792_852E-2),
-                       2 => Exact (0.16520_33002_68279_130E-4)));
+                       2 => Exact (0.16520_33002_68279_130E-4))
+                    else
+                      (0 => Exact (0.25),
+                       1 => Exact (0.75753_18015_94227_76666E-2),
+                       2 => Exact (0.31555_19276_56846_46356E-4)));
 
          Exp_Q : constant Polynomial :=
                    (if Mantissa <= 24
                     then
                       (0 => Exact (0.5),
                        1 => Exact (0.49987_17877_8E-1))
-                    else
+                    elsif Mantissa <= 53
+                    then
                       (0 => Exact (0.5),
                        1 => Exact (0.55553_86669_69001_188E-1),
-                       2 => Exact (0.49586_28849_05441_294E-3)));
+                       2 => Exact (0.49586_28849_05441_294E-3))
+                    else
+                      (0 => Exact (0.5),
+                       1 => Exact (0.56817_30269_85512_21787E-1),
+                       2 => Exact (0.63121_89437_43985_03557E-3),
+                       3 => Exact (0.75104_02839_98700_46114E-6)));
 
          G  : constant T := X * X;
          P  : T;
@@ -360,29 +390,37 @@ package body System.Libm is
       ----------------
 
       function Approx_Sin  (X : T) return T is
+         --  Note: The reference tables named below for sine lists constants
+         --  for sin((pi/4) * x) ~= x * P (x^2), in order to get sin (x),
+         --  the constants have been adjusted by division of appropriate
+         --  powers of (pi/4) ^ n, for n 1,3,5, etc.
          Sin_P  : constant Polynomial :=
                     (if Mantissa <= 24
-                     then --  Hart's constants: #SIN 3040# (p. 199)
-                       (1 => Exact (-0.16666_66567),
-                        2 => Exact (0.83320_15015E-2),
-                        3 => Exact (-0.19501_81031E-3))
-                     else --  Hart's constants: #SIN 3044# (p. 199)
-                       --  Approximation MRE = 2.4262E-18
-                       (1 => Exact (-0.16666_66666_66666_71293),
-                        2 => Exact (0.83333_33333_33332_28093E-2),
-                        3 => Exact (-0.19841_26984_12531_12013E-3),
-                        4 => Exact (0.27557_31921_33901_79497E-5),
-                        5 => Exact (-0.25052_10473_82673_44045E-7),
-                        6 => Exact (0.16058_34762_32246_14953E-9),
-                        7 => Exact (-0.75778_67884_01271_54819E-12)));
+                     then
+                       --  Hart's constants: #SIN 3040# (p. 199)
+
+                       (1 => Exact (-0.16666_65022),
+                        2 => Exact (0.83320_16396E-2),
+                        3 => Exact (-0.19501_81843E-3))
+                     else
+                       --  Hart's constants: #SIN 3044# (p. 199)
+                       --  Approximation MRE = 2.4262E-18 ???
+
+                       (1 => Exact (-0.16666_66666_66666_66628),
+                        2 => Exact (0.83333_33333_33332_03335E-2),
+                        3 => Exact (-0.19841_26984_12531_05860E-3),
+                        4 => Exact (0.27557_31921_33901_68712E-5),
+                        5 => Exact (-0.25052_10473_82673_30950E-7),
+                        6 => Exact (0.16058_34762_32246_06553E-9),
+                        7 => Exact (-0.75778_67884_01271_15607E-12)));
+
+         Sqrt_Epsilon_LLF : constant Long_Long_Float :=
+                       Sqrt_2 ** (1 - Long_Long_Float'Machine_Mantissa);
 
          G  : constant T := X * X;
 
-         Sqrt_Epsilon_LF : constant Long_Float :=
-                       Sqrt_2 ** (1 - Long_Float'Machine_Mantissa);
-
       begin
-         if abs X <= Exact (Sqrt_Epsilon_LF) then
+         if abs X <= Exact (Sqrt_Epsilon_LLF) then
             return X;
          end if;
 
@@ -652,7 +690,7 @@ package body System.Libm is
          end if;
 
          if F > 2.0 - Sqrt_3 then
-            F :=  (((Sqrt_3 - 1.0) * F - 1.0) + F) / (Sqrt_3 + F);
+            F := (((Sqrt_3 - 1.0) * F - 1.0) + F) / (Sqrt_3 + F);
             N := N + 1;
          end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2010-2013, AdaCore                     --
+--                     Copyright (C) 2010-2015, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@ pragma Restrictions (No_Elaboration_Code);
 
 with System.Multiprocessors;
 
-package System.BB.CPU_Primitives.Multiprocessors with SPARK_Mode => Off is
+package System.BB.CPU_Primitives.Multiprocessors is
    pragma Preelaborate;
 
    function Current_CPU return System.Multiprocessors.CPU;
@@ -44,6 +44,7 @@ package System.BB.CPU_Primitives.Multiprocessors with SPARK_Mode => Off is
    --  Start given CPU
 
    procedure Start_All_CPUs;
+   pragma Export (C, Start_All_CPUs, "__gnat_start_slave_cpus");
    --  Start all CPUs
 
 end System.BB.CPU_Primitives.Multiprocessors;

@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2005 The European Space Agency            --
---                     Copyright (C) 2003-2014, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@
 
 pragma Restrictions (No_Elaboration_Code);
 
-with System.Storage_Elements;
+with System.Parameters;
 with System.BB.Parameters;
 with System.BB.Board_Support;
 with System.BB.Protection;
@@ -57,29 +57,14 @@ package body System.BB.Threads is
    use type System.Parameters.Size_Type;
    use type System.Storage_Elements.Storage_Offset;
 
-   Slave_Stack_Size : constant System.Storage_Elements.Storage_Count := 1024;
-   --  1 KB stacks for each of the environment tasks for slave processors
-
-   type Slave_Stack_Space is
-     new Storage_Elements.Storage_Array (1 .. Slave_Stack_Size);
-   for Slave_Stack_Space'Alignment use 8;
-   --  A minimum stack for the slave CPUs
-
-   subtype Slave_CPUs is Multiprocessors.CPU
-     range Multiprocessors.CPU'First + 1 .. Multiprocessors.CPU'Last;
-   --  List of slave CPUs (all CPUs excluding the master which is the first
-   --  one).
-
-   Slave_Stacks : array (Slave_CPUs) of Slave_Stack_Space;
-   --  Array that contains the environment stack space for slave CPUs (all
-   --  CPUs except the first one which is considered the master). This is a
-   --  null array on monoprocessor systems.
-
-   Slave_Stacks_Table : array (Slave_CPUs) of System.Address;
-   pragma Export (Asm, Slave_Stacks_Table, "slave_stack_table");
-   --  Array that contains the environment stack pointers for slave CPUs (all
-   --  CPUs except the first one which is considered the master). This is a
-   --  null array on monoprocessor systems.
+   procedure Initialize_Thread
+     (Id            : Thread_Id;
+      Code          : System.Address;
+      Arg           : System.Address;
+      Priority      : Integer;
+      This_CPU      : System.Multiprocessors.CPU_Range;
+      Stack_Top     : System.Address;
+      Stack_Bottom  : System.Address);
 
    -----------------------
    -- Stack information --
@@ -127,14 +112,16 @@ package body System.BB.Threads is
 
    function Get_ATCB return System.Address is
    begin
-      return System.BB.Threads.Queues.Running_Thread.ATCB;
+      --  This is not a light operation as there is a function call
+
+      return Queues.Running_Thread.ATCB;
    end Get_ATCB;
 
    ------------------
    -- Get_Priority --
    ------------------
 
-   function Get_Priority (Id : Thread_Id) return System.Any_Priority is
+   function Get_Priority (Id : Thread_Id) return Integer is
    begin
       --  This function does not need to be protected by Enter_Kernel and
       --  Leave_Kernel, because the Active_Priority value is only updated by
@@ -143,6 +130,81 @@ package body System.BB.Threads is
 
       return Id.Active_Priority;
    end Get_Priority;
+
+   -----------------------------
+   -- Initialize_Thread --
+   -----------------------------
+
+   procedure Initialize_Thread
+     (Id            : Thread_Id;
+      Code          : System.Address;
+      Arg           : System.Address;
+      Priority      : Integer;
+      This_CPU      : System.Multiprocessors.CPU_Range;
+      Stack_Top     : System.Address;
+      Stack_Bottom  : System.Address) is
+   begin
+      --  The environment thread executes the main procedure of the program
+
+      --  CPU of the environment thread is current one (initialization CPU)
+
+      Id.Base_CPU := This_CPU;
+
+      --  The active priority is initially equal to the base priority
+
+      Id.Base_Priority   := Priority;
+      Id.Active_Priority := Priority;
+
+      --  Insert in the global list
+      --  ??? Not thread safe.
+
+      Id.Global_List := Queues.Global_List;
+      Queues.Global_List := Id;
+
+      --  Insert task inside the ready list (as last within its priority)
+
+      Queues.Insert (Id);
+
+      --  Store stack information
+
+      Id.Top_Of_Stack := Stack_Top;
+      Id.Bottom_Of_Stack := Stack_Bottom;
+
+      --  The initial state is Runnable
+
+      Id.State := Runnable;
+
+      --  Not currently in an interrupt handler
+
+      Id.In_Interrupt := False;
+
+      --  No wakeup has been yet signaled
+
+      Id.Wakeup_Signaled := False;
+
+      --  Initialize alarm status
+
+      Id.Alarm_Time := System.BB.Time.Time'Last;
+      Id.Next_Alarm := Null_Thread_Id;
+
+      --  Reset execution time
+
+      Id.Execution_Time :=
+        System.BB.Time.Initial_Composite_Execution_Time;
+
+      --  Initialize the saved registers. We can ignore the stack and code to
+      --  execute because the environment task is already executing. We are
+      --  interested in the initialization of the rest of the state, such as
+      --  the interrupt nesting level and the cache state.
+
+      Initialize_Context
+        (Buffer          => Id.Context'Access,
+         Program_Counter => Code,
+         Argument        => Arg,
+         Stack_Pointer   => (if System.Parameters.Stack_Grows_Down
+                             then Id.Top_Of_Stack
+                             else Id.Bottom_Of_Stack));
+   end Initialize_Thread;
 
    ----------------
    -- Initialize --
@@ -158,28 +220,18 @@ package body System.BB.Threads is
       --  Perform some basic hardware initialization (clock, timer, and
       --  interrupt handlers).
 
-      Board_Support.Initialize_Board;
+      --  First initialize interrupt stacks
+
       Interrupts.Initialize_Interrupts;
+
+      --  Then the CPU (which set interrupt stack pointer)
+
+      Initialize_CPU;
+
+      --  Then the devices
+
+      Board_Support.Initialize_Board;
       Time.Initialize_Timers;
-
-      --  Set addresses of the stacks allocated to main procedures for the
-      --  slave CPUs.
-
-      pragma Warnings (Off, "loop range is null*");
-      --  On monoprocessor targets, the following loop will never execute (no
-      --  slave CPUs).
-
-      --  Compute the stack pointers to be used by each slave CPU
-
-      for CPU_Id in Slave_CPUs loop
-         Slave_Stacks_Table (CPU_Id) :=
-           (if System.Parameters.Stack_Grows_Down
-            then ((Slave_Stacks (CPU_Id)'Address + Slave_Stack_Size) /
-                     Standard'Maximum_Alignment) * Standard'Maximum_Alignment
-            else Slave_Stacks (CPU_Id)'Address);
-      end loop;
-
-      pragma Warnings (On, "loop range is null*");
 
       --  Initialize internal queues and the environment task
 
@@ -187,70 +239,13 @@ package body System.BB.Threads is
 
       --  The environment thread executes the main procedure of the program
 
-      --  CPU of the environment thread is current one (initialization CPU)
-
-      Environment_Thread.Base_CPU := Main_CPU;
-
-      --  The active priority is initially equal to the base priority
-
-      Environment_Thread.Base_Priority   := Main_Priority;
-      Environment_Thread.Active_Priority := Main_Priority;
-
-      --  The currently executing thread (and the only one) is the
-      --  environment thread.
+      Initialize_Thread
+        (Environment_Thread, Null_Address, Null_Address,
+         Main_Priority, Main_CPU,
+         Top_Of_Environment_Stack'Address,
+         Bottom_Of_Environment_Stack'Address);
 
       Queues.Running_Thread_Table (Main_CPU) := Environment_Thread;
-      Queues.First_Thread_Table (Main_CPU)   := Environment_Thread;
-      Queues.Global_List                     := Environment_Thread;
-
-      Environment_Thread.Next        := Null_Thread_Id;
-      Environment_Thread.Global_List := Null_Thread_Id;
-
-      --  Store stack information
-
-      Environment_Thread.Top_Of_Stack := Top_Of_Environment_Stack'Address;
-
-      Environment_Thread.Bottom_Of_Stack :=
-        Bottom_Of_Environment_Stack'Address;
-
-      --  The initial state is Runnable
-
-      Environment_Thread.State := Runnable;
-
-      --  Not currently in an interrupt handler
-
-      Environment_Thread.In_Interrupt := False;
-
-      --  No wakeup has been yet signaled
-
-      Environment_Thread.Wakeup_Signaled := False;
-
-      --  Initialize alarm status
-
-      Environment_Thread.Alarm_Time := System.BB.Time.Time'Last;
-      Environment_Thread.Next_Alarm := Null_Thread_Id;
-
-      --  Reset execution time
-
-      Environment_Thread.Execution_Time :=
-        System.BB.Time.Initial_Composite_Execution_Time;
-
-      --  Initialize the saved registers. We can ignore the stack and code to
-      --  execute because the environment task is already executing. We are
-      --  interested in the initialization of the rest of the state, such as
-      --  the interrupt nesting level and the cache state.
-
-      Initialize_Context
-        (Buffer          => Environment_Thread.Context'Access,
-         Program_Counter => Null_Address,
-         Argument        => Null_Address,
-         Stack_Pointer   => (if System.Parameters.Stack_Grows_Down
-                             then Environment_Thread.Top_Of_Stack
-                             else Environment_Thread.Bottom_Of_Stack));
-
-      --  Enable use of the floating point unit in a multitasking environment
-
-      Initialize_Floating_Point;
 
       --  The tasking executive is initialized
 
@@ -259,109 +254,43 @@ package body System.BB.Threads is
       Protection.Leave_Kernel;
    end Initialize;
 
-   ----------------------------------
-   -- Initialize_Slave_Environment --
-   ----------------------------------
+   ----------------------
+   -- Initialize_Slave --
+   ----------------------
 
-   procedure Initialize_Slave_Environment (Environment_Thread : Thread_Id) is
+   procedure Initialize_Slave
+     (Idle_Thread   : Thread_Id;
+      Idle_Priority : Integer;
+      Stack_Address : System.Address;
+      Stack_Size    : System.Storage_Elements.Storage_Offset)
+   is
       CPU_Id : constant System.Multiprocessors.CPU := Current_CPU;
 
    begin
-      --  This procedure should only be called from a multiprocessor
-      --  environment.
+      Initialize_Thread
+        (Idle_Thread, Null_Address, Null_Address,
+         Idle_Priority, CPU_Id,
+         Stack_Address + Stack_Size, Stack_Address);
 
-      pragma Warnings (Off);
-      --  On monoprocessor targets, the following decision is always True and
-      --  we expect the compiler to optimize out the else.
-
-      if System.Multiprocessors.CPU'Range_Length = 1 then
-
-         pragma Warnings (On);
-
-         raise Program_Error;
-
-      else
-         --  Initialize internal queues and the environment task
-
-         Protection.Enter_Kernel;
-
-         Environment_Thread.Base_CPU        := CPU_Id;
-         Environment_Thread.Base_Priority   := Any_Priority'First;
-         Environment_Thread.Active_Priority := Any_Priority'First;
-
-         --  The currently executing thread is a virtual one, created only to
-         --  have a context for slave processors until the actual tasks are
-         --  activated. Hence, we set it as running thread, but we do not
-         --  insert it in the ready list nor in the global list.
-
-         Queues.Running_Thread_Table (CPU_Id) := Environment_Thread;
-
-         Environment_Thread.Next        := Null_Thread_Id;
-         Environment_Thread.Global_List := Null_Thread_Id;
-
-         --  Set a minimal stack
-
-         Environment_Thread.Top_Of_Stack :=
-           ((Slave_Stacks (CPU_Id)'Address + Slave_Stack_Size) /
-              Standard'Maximum_Alignment) * Standard'Maximum_Alignment;
-
-         Environment_Thread.Bottom_Of_Stack := Slave_Stacks (CPU_Id)'Address;
-
-         --  The state is Suspended
-
-         Environment_Thread.State := Suspended;
-
-         --  Not in an interrupt
-
-         Environment_Thread.In_Interrupt := False;
-
-         --  No wakeup
-
-         Environment_Thread.Wakeup_Signaled := False;
-
-         --  No Alarm
-
-         Environment_Thread.Alarm_Time := System.BB.Time.Time'Last;
-         Environment_Thread.Next_Alarm := Null_Thread_Id;
-
-         --  Reset execution time
-
-         Environment_Thread.Execution_Time :=
-           System.BB.Time.Initial_Composite_Execution_Time;
-
-         --  Initialize the saved registers. We can ignore the stack and code
-         --  to execute because the environment will never realy execute any
-         --  code. We are interested in the initialization of the rest of the
-         --  state, such as the interrupt nesting level and the cache state.
-
-         Initialize_Context
-           (Buffer          => Environment_Thread.Context'Access,
-            Program_Counter => Null_Address,
-            Argument        => Null_Address,
-            Stack_Pointer   => Slave_Stacks_Table (CPU_Id));
-
-         Protection.Leave_Kernel;
-      end if;
-   end Initialize_Slave_Environment;
+      Queues.Running_Thread_Table (CPU_Id) := Idle_Thread;
+   end Initialize_Slave;
 
    --------------
    -- Set_ATCB --
    --------------
 
-   procedure Set_ATCB (ATCB : System.Address) is
+   procedure Set_ATCB (Id : Thread_Id; ATCB : System.Address) is
    begin
-      --  Set_ATCB is only called in the initialization of the task, and just
-      --  by the owner of the thread, so there is no need of explicit kernel
-      --  protection when calling this function.
+      --  Set_ATCB is only called in the initialization of the task
 
-      System.BB.Threads.Queues.Running_Thread.ATCB := ATCB;
+      Id.ATCB := ATCB;
    end Set_ATCB;
 
    ------------------
    -- Set_Priority --
    ------------------
 
-   procedure Set_Priority (Priority  : System.Any_Priority) is
+   procedure Set_Priority (Priority : Integer) is
    begin
       Protection.Enter_Kernel;
 
@@ -452,73 +381,19 @@ package body System.BB.Threads is
      (Id            : Thread_Id;
       Code          : System.Address;
       Arg           : System.Address;
-      Priority      : System.Any_Priority;
+      Priority      : Integer;
       Base_CPU      : System.Multiprocessors.CPU_Range;
       Stack_Address : System.Address;
-      Stack_Size    : System.Parameters.Size_Type)
+      Stack_Size    : System.Storage_Elements.Storage_Offset)
    is
    begin
       Protection.Enter_Kernel;
 
-      --  Set the CPU affinity
-
-      Id.Base_CPU := Base_CPU;
-
-      --  Set the base and active priority
-
-      Id.Base_Priority   := Priority;
-      Id.Active_Priority := Priority;
-
-      --  Insert in the global list
-
-      Id.Global_List := Queues.Global_List;
-      Queues.Global_List := Id;
-
-      --  Insert task inside the ready list (as last within its priority)
-
-      Queues.Insert (Id);
-
-      --  Store stack information
-
-      Id.Top_Of_Stack :=
-        ((Stack_Address + Storage_Elements.Storage_Offset (Stack_Size)) /
-            Standard'Maximum_Alignment) * Standard'Maximum_Alignment;
-
-      Id.Bottom_Of_Stack := Stack_Address;
-
-      --  The initial state is Runnable
-
-      Id.State := Runnable;
-
-      --  Not in an interrupt
-
-      Id.In_Interrupt := False;
-
-      --  No wakeup has been yet signaled
-
-      Id.Wakeup_Signaled := False;
-
-      --  Initialize the saved registers, including the program counter and
-      --  stack pointer. The thread will execute the Thread_Caller procedure
-      --  and the stack pointer points to the top of the stack assigned to the
-      --  thread.
-
-         Initialize_Context
-           (Buffer          => Id.Context'Access,
-            Program_Counter => Code,
-            Argument        => Arg,
-            Stack_Pointer   => (if System.Parameters.Stack_Grows_Down
-                                then Id.Top_Of_Stack
-                                else Id.Bottom_Of_Stack));
-
-      --  Initialize alarm status
-
-      Id.Alarm_Time := System.BB.Time.Time'Last;
-      Id.Next_Alarm := Null_Thread_Id;
-
-      --  Reset execution time
-
-      Id.Execution_Time := System.BB.Time.Initial_Composite_Execution_Time;
+      Initialize_Thread
+        (Id, Code, Arg, Priority, Base_CPU,
+         ((Stack_Address + Stack_Size) /
+            Standard'Maximum_Alignment) * Standard'Maximum_Alignment,
+         Stack_Address);
 
       Protection.Leave_Kernel;
    end Thread_Create;

@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2004 The European Space Agency            --
---                     Copyright (C) 2003-2015, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ with System.BB.Time;
 with System.BB.CPU_Primitives.Multiprocessors;
 with System.Multiprocessors;
 
-package System.BB.Threads.Queues with SPARK_Mode => Off is
+package System.BB.Threads.Queues is
    pragma Preelaborate;
 
    use type System.BB.Time.Time;
@@ -116,9 +116,7 @@ package System.BB.Threads.Queues with SPARK_Mode => Off is
 
      Inline => True;
 
-   procedure Change_Priority
-     (Thread   : Thread_Id;
-      Priority : System.Any_Priority) with
+   procedure Change_Priority (Thread : Thread_Id; Priority : Integer) with
    --  Move the thread to a new priority within the ready queue
 
      Pre =>
@@ -129,41 +127,23 @@ package System.BB.Threads.Queues with SPARK_Mode => Off is
 
        and then Thread = Running_Thread
 
-       --  Additionally, this thread must be the first in the ready queue
-       --  (otherwise, it would not be executing).
-
-       and then Thread = First_Thread
-
        --  The new priority can never be lower than the base priority,
 
        and then Priority >= Thread.Base_Priority,
 
      Post =>
-       Thread.all.Active_Priority = Priority
-         and then Thread = Running_Thread
+       --  Priority has changed
 
-         --  When raising the priority, it is not possible that there is
-         --  another thread with a higher priority (otherwise the other thread
-         --  would be running). Hence, there is no displacement required within
-         --  the queue, because the thread is already in the first position.
+       Thread.Active_Priority = Priority
 
-         and then (if Priority >= Thread.Active_Priority'Old then
-                     First_Thread = Thread
+       --  Queue is still ordered and has the same elements (weaken form: has
+       --  the same length).
 
-                   --  When reducing the priority, if there is a thread with a
-                   --  higher priority then the currently executing thread is
-                   --  no longer the first in the ready queue.
-
-                   else (if First_Thread = Thread then
-                            Thread.Next = Null_Thread_Id
-                              or else Thread.Next.Active_Priority <= Priority
-                         else
-                            First_Thread.Active_Priority > Priority)),
-
-     Inline => True;
+       and Queue_Ordered
+       and Queue_Length = Queue_Length'Old;
 
    function Current_Priority
-     (CPU_Id : System.Multiprocessors.CPU) return System.Any_Priority with
+     (CPU_Id : System.Multiprocessors.CPU) return Integer with
    --  Return the active priority of the current thread or
    --  System.Any_Priority'First if no threads are running.
 
@@ -198,24 +178,14 @@ package System.BB.Threads.Queues with SPARK_Mode => Off is
 
      Post =>
 
+       Queue_Ordered
+         and then
+
        --  The next thread to execute is the one just next in the ready queue
        --  if it has the same priority of the currently running thread.
 
-       (if First_Thread /= Thread then
-           Thread.all.Active_Priority = First_Thread.Active_Priority
-             and then
-               (Thread.Next = Null_Thread_Id
-                 or else Thread.Next.Active_Priority < Thread.Active_Priority)
-
-        --  Otherwise, nothing changes
-
-        else Thread = First_Thread)
-
-       --  The thread must have been moved as last in its priority queue
-
-       and then
-         (Thread.all.Next = Null_Thread_Id
-            or else Thread.all.Next.Active_Priority < Thread.Active_Priority)
+         (Thread.Next = Null_Thread_Id
+          or else Thread.Next.Active_Priority < Thread.Active_Priority)
 
        --  In any case, the thread must remain runnable, and no context switch
        --  is possible within this procedure.
@@ -365,5 +335,13 @@ package System.BB.Threads.Queues with SPARK_Mode => Off is
    --  This variable is the starting point of the list containing all threads
    --  in the system. No protection (for concurrent access) is needed for
    --  this variable because task creation is serialized.
+
+   function Queue_Length return Natural with Ghost;
+   --  Return the length of the thread list headed by HEAD, following the
+   --  next link.
+
+   function Queue_Ordered return Boolean with Ghost;
+   --  Return True iff thread list headed by HEAD is correctly ordered by
+   --  priority.
 
 end System.BB.Threads.Queues;

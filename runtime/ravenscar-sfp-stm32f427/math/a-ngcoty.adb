@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,11 +29,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Numerics.Aux; use Ada.Numerics.Aux;
+--  This is the Ada Cert Math specific version of a-ngcoty.adb
+
+with Ada.Numerics.Long_Long_Elementary_Functions;
+use Ada.Numerics.Long_Long_Elementary_Functions;
 
 package body Ada.Numerics.Generic_Complex_Types is
 
    subtype R is Real'Base;
+
+   subtype LLF is Long_Long_Float;
 
    Two_Pi  : constant R := R (2.0) * Pi;
    Half_Pi : constant R := Pi / R (2.0);
@@ -43,7 +48,6 @@ package body Ada.Numerics.Generic_Complex_Types is
    ---------
 
    function "*" (Left, Right : Complex) return Complex is
-
       Scale : constant R := R (R'Machine_Radix) ** ((R'Machine_Emax - 1) / 2);
       --  In case of overflow, scale the operands by the largest power of the
       --  radix (to avoid rounding error), so that the square of the scale does
@@ -119,9 +123,9 @@ package body Ada.Numerics.Generic_Complex_Types is
    ----------
 
    function "**" (Left : Complex; Right : Integer) return Complex is
-      Result : Complex := (1.0, 0.0);
-      Factor : Complex := Left;
       Exp    : Integer := Right;
+      Factor : Complex := Left;
+      Result : Complex := (1.0, 0.0);
 
    begin
       --  We use the standard logarithmic approach, Exp gets shifted right
@@ -142,7 +146,7 @@ package body Ada.Numerics.Generic_Complex_Types is
             end if;
 
             Factor := Factor * Factor;
-            Exp := Exp / 2;
+            Exp    := Exp / 2;
          end loop;
 
          return Result;
@@ -161,7 +165,7 @@ package body Ada.Numerics.Generic_Complex_Types is
                end if;
 
                Factor := Factor * Factor;
-               Exp := Exp / 2;
+               Exp    := Exp / 2;
             end loop;
 
             return R'(1.0) / Result;
@@ -298,17 +302,17 @@ package body Ada.Numerics.Generic_Complex_Types is
    ---------
 
    function "/" (Left, Right : Complex) return Complex is
-      a : constant R := Left.Re;
-      b : constant R := Left.Im;
-      c : constant R := Right.Re;
-      d : constant R := Right.Im;
+      A : constant R := Left.Re;
+      B : constant R := Left.Im;
+      C : constant R := Right.Re;
+      D : constant R := Right.Im;
 
    begin
-      if c = 0.0 and then d = 0.0 then
+      if C = 0.0 and then D = 0.0 then
          raise Constraint_Error;
       else
-         return Complex'(Re => ((a * c) + (b * d)) / (c ** 2 + d ** 2),
-                         Im => ((b * c) - (a * d)) / (c ** 2 + d ** 2));
+         return Complex'(Re => ((A * C) + (B * D)) / (C ** 2 + D ** 2),
+                         Im => ((B * C) - (A * D)) / (C ** 2 + D ** 2));
       end if;
    end "/";
 
@@ -323,31 +327,32 @@ package body Ada.Numerics.Generic_Complex_Types is
    end "/";
 
    function "/" (Left : Real'Base; Right : Complex) return Complex is
-      a : constant R := Left;
-      c : constant R := Right.Re;
-      d : constant R := Right.Im;
+      A : constant R := Left;
+      C : constant R := Right.Re;
+      D : constant R := Right.Im;
+
    begin
-      return Complex'(Re =>   (a * c) / (c ** 2 + d ** 2),
-                      Im => -((a * d) / (c ** 2 + d ** 2)));
+      return Complex'(Re =>   (A * C) / (C ** 2 + D ** 2),
+                      Im => -((A * D) / (C ** 2 + D ** 2)));
    end "/";
 
    function "/" (Left : Complex; Right : Imaginary) return Complex is
-      a : constant R := Left.Re;
-      b : constant R := Left.Im;
-      d : constant R := R (Right);
+      A : constant R := Left.Re;
+      B : constant R := Left.Im;
+      D : constant R := R (Right);
 
    begin
-      return (b / d,  -(a / d));
+      return (B / D,  -(A / D));
    end "/";
 
    function "/" (Left : Imaginary; Right : Complex) return Complex is
-      b : constant R := R (Left);
-      c : constant R := Right.Re;
-      d : constant R := Right.Im;
+      B : constant R := R (Left);
+      C : constant R := Right.Re;
+      D : constant R := Right.Im;
 
    begin
-      return (Re => b * d / (c ** 2 + d ** 2),
-              Im => b * c / (c ** 2 + d ** 2));
+      return (Re => B * D / (C ** 2 + D ** 2),
+              Im => B * C / (C ** 2 + D ** 2));
    end "/";
 
    function "/" (Left : Imaginary; Right : Real'Base) return Imaginary is
@@ -410,49 +415,47 @@ package body Ada.Numerics.Generic_Complex_Types is
    --------------
 
    function Argument (X : Complex) return Real'Base is
-      a   : constant R := X.Re;
-      b   : constant R := X.Im;
-      arg : R;
+      A   : constant R := X.Re;
+      B   : constant R := X.Im;
+      Arg : R;
 
    begin
-      if b = 0.0 then
-
-         if a >= 0.0 then
+      if B = 0.0 then
+         if A >= 0.0 then
             return 0.0;
          else
-            return R'Copy_Sign (Pi, b);
+            return R'Copy_Sign (Pi, B);
          end if;
 
-      elsif a = 0.0 then
-
-         if b >= 0.0 then
+      elsif A = 0.0 then
+         if B >= 0.0 then
             return Half_Pi;
          else
             return -Half_Pi;
          end if;
 
       else
-         arg := R (Atan (Double (abs (b / a))));
+         Arg := R (Arctan (LLF (abs (B / A))));
 
-         if a > 0.0 then
-            if b > 0.0 then
-               return arg;
-            else                  --  b < 0.0
-               return -arg;
+         if A > 0.0 then
+            if B > 0.0 then
+               return Arg;
+            else                  --  B < 0.0
+               return -Arg;
             end if;
 
-         else                     --  a < 0.0
-            if b >= 0.0 then
-               return Pi - arg;
-            else                  --  b < 0.0
-               return -(Pi - arg);
+         else                     --  A < 0.0
+            if B >= 0.0 then
+               return Pi - Arg;
+            else                  --  B < 0.0
+               return -(Pi - Arg);
             end if;
          end if;
       end if;
 
    exception
       when Constraint_Error =>
-         if b > 0.0 then
+         if B > 0.0 then
             return Half_Pi;
          else
             return -Half_Pi;
@@ -491,22 +494,23 @@ package body Ada.Numerics.Generic_Complex_Types is
    -- Compose_From_Polar --
    ------------------------
 
-   function Compose_From_Polar (
-     Modulus, Argument : Real'Base)
-     return Complex
+   function Compose_From_Polar
+     (Modulus  : Real'Base;
+      Argument : Real'Base) return Complex
    is
    begin
       if Modulus = 0.0 then
          return (0.0, 0.0);
       else
-         return (Modulus * R (Cos (Double (Argument))),
-                 Modulus * R (Sin (Double (Argument))));
+         return (Modulus * R (Cos (LLF (Argument))),
+                 Modulus * R (Sin (LLF (Argument))));
       end if;
    end Compose_From_Polar;
 
-   function Compose_From_Polar (
-     Modulus, Argument, Cycle : Real'Base)
-     return Complex
+   function Compose_From_Polar
+     (Modulus  : Real'Base;
+      Argument : Real'Base;
+      Cycle    : Real'Base) return Complex
    is
       Arg : Real'Base;
 
@@ -528,8 +532,8 @@ package body Ada.Numerics.Generic_Complex_Types is
             return (0.0, -Modulus);
          else
             Arg := Two_Pi * Argument / Cycle;
-            return (Modulus * R (Cos (Double (Arg))),
-                    Modulus * R (Sin (Double (Arg))));
+            return (Modulus * R (Cos (LLF (Arg))),
+                    Modulus * R (Sin (LLF (Arg))));
          end if;
       else
          raise Argument_Error;
@@ -564,10 +568,10 @@ package body Ada.Numerics.Generic_Complex_Types is
    -------------
 
    function Modulus (X : Complex) return Real'Base is
-      Re2, Im2 : R;
+      Im2 : R;
+      Re2 : R;
 
    begin
-
       begin
          Re2 := X.Re ** 2;
 
@@ -588,8 +592,9 @@ package body Ada.Numerics.Generic_Complex_Types is
 
       exception
          when Constraint_Error =>
-            return R (Double (abs (X.Re))
-              * Sqrt (1.0 + (Double (X.Im) / Double (X.Re)) ** 2));
+            return
+              R (LLF (abs (X.Re))
+                * Sqrt (1.0 + (LLF (X.Im) / LLF (X.Re)) ** 2));
       end;
 
       begin
@@ -602,8 +607,9 @@ package body Ada.Numerics.Generic_Complex_Types is
 
       exception
          when Constraint_Error =>
-            return R (Double (abs (X.Im))
-              * Sqrt (1.0 + (Double (X.Re) / Double (X.Im)) ** 2));
+            return
+              R (LLF (abs (X.Im))
+                * Sqrt (1.0 + (LLF (X.Re) / LLF (X.Im)) ** 2));
       end;
 
       --  Now deal with cases of underflow. If only one of the squares
@@ -611,24 +617,22 @@ package body Ada.Numerics.Generic_Complex_Types is
       --  squares underflow, use scaling as above.
 
       if Re2 = 0.0 then
-
          if X.Re = 0.0 then
             return abs (X.Im);
 
          elsif Im2 = 0.0 then
-
             if X.Im = 0.0 then
                return abs (X.Re);
 
             else
                if abs (X.Re) > abs (X.Im) then
                   return
-                    R (Double (abs (X.Re))
-                      * Sqrt (1.0 + (Double (X.Im) / Double (X.Re)) ** 2));
+                    R (LLF (abs (X.Re))
+                      * Sqrt (1.0 + (LLF (X.Im) / LLF (X.Re)) ** 2));
                else
                   return
-                    R (Double (abs (X.Im))
-                      * Sqrt (1.0 + (Double (X.Re) / Double (X.Im)) ** 2));
+                    R (LLF (abs (X.Im))
+                      * Sqrt (1.0 + (LLF (X.Re) / LLF (X.Im)) ** 2));
                end if;
             end if;
 
@@ -642,7 +646,7 @@ package body Ada.Numerics.Generic_Complex_Types is
       --  In all other cases, the naive computation will do
 
       else
-         return R (Sqrt (Double (Re2 + Im2)));
+         return R (Sqrt (LLF (Re2 + Im2)));
       end if;
    end Modulus;
 

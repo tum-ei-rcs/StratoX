@@ -8,7 +8,7 @@
 --                                                                          --
 --        Copyright (C) 1999-2002 Universidad Politecnica de Madrid         --
 --             Copyright (C) 2003-2005 The European Space Agency            --
---                     Copyright (C) 2003-2015, AdaCore                     --
+--                     Copyright (C) 2003-2016, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,18 +36,21 @@
 
 --  This package defines basic parameters used by the low level tasking system
 
---  This is the TMS570 (ARMv7) version of this package
+--  This is the STM32F40x (ARMv7) version of this package
 
 pragma Restrictions (No_Elaboration_Code);
 
-with System.STM32F4;
-with System.STM32F4.RCC;
+with Interfaces.STM32.RCC;
+with System.STM32;
+with System.BB.Board_Parameters;
+with System.BB.MCU_Parameters;
 
-package System.BB.Parameters with SPARK_Mode => Off is
+package System.BB.Parameters is
    pragma Preelaborate (System.BB.Parameters);
 
-   Clock_Frequency : constant := 168_000_000;
-   pragma Assert (Clock_Frequency in STM32F4.RCC.SYSCLK_Range);
+   Clock_Frequency : constant := Board_Parameters.Clock_Frequency;
+   pragma Assert (Clock_Frequency in System.STM32.SYSCLK_Range);
+   Ticks_Per_Second : constant := Clock_Frequency;
 
    --  Set the requested SYSCLK frequency. Setup_Pll will try to set configure
    --  PLL to match this value when possible or reset the board.
@@ -56,23 +59,24 @@ package System.BB.Parameters with SPARK_Mode => Off is
    -- Prescalers --
    ----------------
 
-   AHB_PRE  : constant STM32F4.RCC.CFGR.AHB_PRE_Value  :=
-                STM32F4.RCC.CFGR.AHBPRE_DIV1;
-   APB1_PRE : constant STM32F4.RCC.CFGR.APB1_PRE_Value :=
-                STM32F4.RCC.CFGR.APB1PRE_DIV4;
-   APB2_PRE : constant STM32F4.RCC.CFGR.APB2_PRE_Value :=
-                STM32F4.RCC.CFGR.APB2PRE_DIV2;
+   AHB_PRE  : constant System.STM32.AHB_Prescaler := System.STM32.AHBPRE_DIV1;
+   APB1_PRE : constant System.STM32.APB_Prescaler :=
+                (Enabled => True, Value => System.STM32.DIV4);
+   APB2_PRE : constant System.STM32.APB_Prescaler :=
+                (Enabled => True, Value => System.STM32.DIV2);
 
    --------------------
    -- External Clock --
    --------------------
 
    --  The external clock can be specific for each board. We provide here
-   --  values for the most common STM32 boards that we identify with the
-   --  MCU used. Change the return value based on the external clock used on
-   --  your specific hardware.
+   --  a value for the most common STM32 boards.
+   --  Change the value based on the external clock used on your specific
+   --  hardware.
 
-   HSE_Clock : constant STM32F4.RCC.HSECLK_Range := 24_000_000;
+   HSE_Clock : constant := Board_Parameters.HSE_Clock_Frequency;
+
+   HSI_Clock : constant := 16_000_000;
 
    Has_FPU : constant Boolean := True;
    --  Set to true if core has a FPU
@@ -84,7 +88,7 @@ package System.BB.Parameters with SPARK_Mode => Off is
    --  These definitions are in this package in order to isolate target
    --  dependencies.
 
-   Number_Of_Interrupt_ID : constant := 93;
+   Number_Of_Interrupt_ID : constant := MCU_Parameters.Number_Of_Interrupts;
    --  Number of interrupts (for both the interrupt controller and the
    --  Sys_Tick_Trap). This static constant is used to declare a type, and
    --  the handler table.

@@ -1,5 +1,0 @@
-graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/arch/s-macres.adb"
-node: { title: "system__machine_reset__stop" label: "Stop\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/arch/s-macres.adb:79:4\n0 bytes\n0 dynamic objects" }
-node: { title: "exit" label: "Os_Exit\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/arch/s-macres.adb:58:4\n0 bytes\n0 dynamic objects" }
-node: { title: "abort" label: "Os_Abort\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/arch/s-macres.adb:49:4\n0 bytes\n0 dynamic objects" }
-}

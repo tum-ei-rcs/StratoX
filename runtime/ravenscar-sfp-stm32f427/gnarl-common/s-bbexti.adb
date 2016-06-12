@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2011-2015, AdaCore                     --
+--                     Copyright (C) 2011-2016, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,24 +61,14 @@ package body System.BB.Execution_Time is
    CPU_Clock : array (CPU) of System.BB.Time.Time;
    --  Date of the last Interrupt
 
-   Disabled : array (CPU) of Boolean := (1 => False, others => True);
-   --  If the CPU clock is disabled the next elapsed time will be discarded (to
-   --  handle CPU idle time). At the start, only the first CPU is enabled.
-
-   procedure Disable_Execution_Time;
-   --  Disable the CPU clock of the current processor. The clock remains
-   --  disabled until the next call to Scheduling_Event.
-
    procedure Scheduling_Event;
    --  Assign elapsed time to the executing Task/Interrupt and reset CPU clock.
-   --  If the clock is disabled, the elapsed time is discarded and the clock
-   --  re-enabled. This must be called at the end of an execution period:
+   --  This must be called at the end of an execution period:
    --
    --    When the run-time switches from a task to another task
    --                                    a task to an interrupt
    --                                    an interrupt to a task
    --                                    an interrupt to another interrupt
-   --  and before an idle loop.
 
    function Elapsed_Time return System.BB.Time.Time;
    --  Function returning the time elapsed since the last scheduling event,
@@ -99,26 +89,12 @@ package body System.BB.Execution_Time is
      (T : Time.Time) return Time.Composite_Execution_Time;
    --  Low level routine to convert a time to a composite execution time
 
-   ----------------------------
-   -- Disable_Execution_Time --
-   ----------------------------
-
-   procedure Disable_Execution_Time is
-      CPU_Id : constant CPU := System.OS_Interface.Current_CPU;
-   begin
-      Disabled (CPU_Id) := True;
-   end Disable_Execution_Time;
-
    ------------------
    -- Elapsed_Time --
    ------------------
 
    function Elapsed_Time return System.BB.Time.Time is
       CPU_Id : constant CPU := System.OS_Interface.Current_CPU;
-      pragma Assert (not Disabled (CPU_Id));
-      --  As the thread or interrupt handler is executing, the execution time
-      --  accounting must not be disabled (it is disabled only while in the
-      --  idle loop when neither threads nor interrupts execute).
 
       Now  : constant BB.Time.Time := System.BB.Time.Clock;
       pragma Assert (Now >= CPU_Clock (CPU_Id));
@@ -248,14 +224,6 @@ package body System.BB.Execution_Time is
 
       CPU_Clock (CPU_Id) := Now;
 
-      if Disabled (CPU_Id) then
-
-         --  Discard the elapsed time and re-enable the clock
-
-         Disabled (CPU_Id) := False;
-         return;
-      end if;
-
       --  Case of CPU currently executing an interrupt
 
       if Current_Interrupt /= No_Interrupt then
@@ -361,7 +329,6 @@ begin
    --  Set the hooks to enable computation
 
    System.BB.Time.Scheduling_Event_Hook       := Scheduling_Event'Access;
-   System.BB.Time.Disable_Execution_Time_Hook := Disable_Execution_Time'Access;
 
    --  Initialize CPU_Clock
 

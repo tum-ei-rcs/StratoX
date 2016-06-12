@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                     Copyright (C) 2001-2014, AdaCore                    --
+--                     Copyright (C) 2001-2016, AdaCore                    --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,27 +38,28 @@
 with System.OS_Interface;
 pragma Elaborate_All (System.OS_Interface);
 
-package Ada.Real_Time with SPARK_Mode,
+package Ada.Real_Time with
+  SPARK_Mode,
   Abstract_State => (Clock_Time with Synchronous,
-                     External => (Async_Readers,
-                                  Async_Writers)),
+                                     External => (Async_Readers,
+                                                  Async_Writers)),
   Initializes    => Clock_Time
 is
+   pragma Assert
+     (System.OS_Interface.Ticks_Per_Second >= 50_000,
+      "Ada RM D.8 (30) requires " &
+      "that Time_Unit shall be less than or equal to 20 microseconds");
+
    type Time is private;
    Time_First : constant Time;
    Time_Last  : constant Time;
 
-   Time_Unit : constant Duration :=
-      --  Duration (1.0 / System.OS_Interface.Ticks_Per_Second);
-      --  Ticks_Per_Second not allowed
-      Duration (0.000000007); -- ~148MHz
-      --  1.0 / Duration (System.OS_Interface.Ticks_Per_Second);
-   --  This does not conform to the RM, which requires a named number here ???
-   --  These platforms use a time stamp counter driven by the system clock,
+   Time_Unit : constant :=
+                 1.0 / Duration (System.OS_Interface.Ticks_Per_Second);
+   --  The BB platforms use a time stamp counter driven by the system clock,
    --  where the duration of the clock tick (Time_Unit) depends on the speed
    --  of the underlying hardware. The system clock frequency is used here to
    --  determine Time_Unit.
-   --  MBe: Duration is fixed-point
 
    type Time_Span is private;
    Time_Span_First : constant Time_Span;
@@ -123,21 +124,19 @@ is
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;
 
 private
-pragma SPARK_Mode (Off);
+   pragma SPARK_Mode (Off);
+
    type Time is new System.OS_Interface.Time;
 
    Time_First : constant Time := Time'First;
-
    Time_Last  : constant Time := Time'Last;
 
    type Time_Span is new System.OS_Interface.Time_Span;
 
    Time_Span_First : constant Time_Span := Time_Span'First;
-
    Time_Span_Last  : constant Time_Span := Time_Span'Last;
 
    Time_Span_Zero  : constant Time_Span := 0;
-
    Time_Span_Unit  : constant Time_Span := 1;
 
    Tick : constant Time_Span := 1;

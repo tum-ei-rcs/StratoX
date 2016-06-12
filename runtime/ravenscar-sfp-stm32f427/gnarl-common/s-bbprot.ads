@@ -39,7 +39,7 @@
 
 pragma Restrictions (No_Elaboration_Code);
 
-package System.BB.Protection with SPARK_Mode => Off is
+package System.BB.Protection is
    pragma Preelaborate;
 
    Wakeup_Served_Entry_Callback : access procedure := null;

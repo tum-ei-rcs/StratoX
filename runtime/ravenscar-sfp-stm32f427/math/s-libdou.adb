@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                          S Y S T E M . L I B M                           --
+--                   S Y S T E M . L I B M _ D O U B L E                    --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2014, Free Software Foundation, Inc.           --
+--           Copyright (C) 2014-2015, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,19 +29,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Ada Cert Math specific version of s-libm.adb
+--  This is the Ada Cert Math specific version of s-libdou.adb
 
 --  When Cody and Waite implementation is cited, it refers to the
 --  Software Manual for the Elementary Functions by William J. Cody, Jr.
 --  and William Waite, published by Prentice-Hall Series in Computational
---  Mathematics. Version??? ISBN???
+--  Mathematics. Copyright 1980. ISBN 0-13-822064-6.
 
 --  When Hart implementation is cited, it refers to
---  "The Computer Approximation" by John F. Hart, published by Krieger.
---  Version??? ISBN???
+--  "Computer Approximations" by John F. Hart, published by Krieger.
+--  Copyright 1968, Reprinted 1978 w/ corrections. ISBN 0-88275-642-7.
 
 with Ada.Numerics; use Ada.Numerics;
 with System.Libm; use System.Libm;
+with System.Libm_Double.Squareroot;
 
 package body System.Libm_Double is
    subtype LF is Long_Float;
@@ -120,7 +121,7 @@ package body System.Libm_Double is
    procedure Split_Veltkamp (X : Long_Float; X_Hi, X_Lo : out Long_Float)
       with Post => X = X_Hi + X_Lo;
 
-   function Multiply_Add (X, Y, Z : LF)  return LF is (X * Y + Z);
+   function Multiply_Add (X, Y, Z : LF) return LF is (X * Y + Z);
 
    --  The following functions reduce a positive X into the range
    --  -ln (2) / 2 .. ln (2) / 2
@@ -819,6 +820,13 @@ package body System.Libm_Double is
          return Sign * ((Z - 1.0 / Z) / 2.0);
       end if;
    end Sinh;
+
+   ----------
+   -- Sqrt --
+   ----------
+
+   function Sqrt (X : Long_Float) return Long_Float renames
+     System.Libm_Double.Squareroot.Sqrt;
 
    ---------
    -- Tan --

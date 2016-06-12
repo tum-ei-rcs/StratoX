@@ -1,3 +1,0 @@
-graph: { title: "/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-memcop.adb"
-node: { title: "memcpy" label: "Memcpy\n/boron.a/gnatmail/sandbox/gpl-2015/arm-elf-linux/recompilablerts/src/bb-runtimes/obj/ravenscar-sfp-stm32f4.build/common/s-memcop.adb:76:4\n12 bytes (static)\n0 dynamic objects" }
-}
