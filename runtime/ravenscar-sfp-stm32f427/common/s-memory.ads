@@ -36,7 +36,8 @@
 --  This package provides the low level memory allocation/deallocation
 --  mechanisms used by GNAT.
 
-package System.Memory is
+package System.Memory
+with SPARK_Mode => On is
    pragma Elaborate_Body;
 
    type size_t is mod 2 ** Standard'Address_Size;
@@ -66,6 +67,7 @@ package System.Memory is
    --  with the additional semantics as described above.
 
 private
+pragma SPARK_Mode (Off);
    --  The following names are used from the generated compiler code
 
    pragma Export (C, Alloc,   "__gnat_malloc");

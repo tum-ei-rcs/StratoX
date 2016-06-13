@@ -44,7 +44,8 @@ with System.Task_Info;
 with System.Task_Primitives;
 with System.Multiprocessors;
 
-package System.Tasking is
+package System.Tasking
+with SPARK_Mode => On is
    pragma Preelaborate;
 
    ---------------------------------
@@ -404,6 +405,7 @@ package System.Tasking is
    --  Call this only with abort deferred and holding All_Tasks_L.
 
 private
+pragma SPARK_Mode (Off);
 
    type Activation_Chain is limited record
       T_ID : Task_Id;

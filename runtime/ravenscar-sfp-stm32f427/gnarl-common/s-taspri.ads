@@ -37,7 +37,8 @@ pragma Polling (Off);
 
 with System.OS_Interface;
 
-package System.Task_Primitives is
+package System.Task_Primitives
+with SPARK_Mode => On is
    pragma Preelaborate;
 
    type Task_Body_Access is access procedure;
@@ -57,6 +58,7 @@ package System.Task_Primitives is
    --  No alternate signal stack is used on this platform
 
 private
+pragma SPARK_Mode (Off);
 
    type Private_Data is limited record
       Thread_Desc : aliased System.OS_Interface.Thread_Descriptor;

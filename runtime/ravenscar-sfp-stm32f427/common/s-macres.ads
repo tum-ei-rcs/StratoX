@@ -33,7 +33,8 @@
 --  On bareboard platform, this returns to the monitor or reset the board.
 --  In the context of an OS, this terminates the process.
 
-package System.Machine_Reset is
+package System.Machine_Reset
+with SPARK_Mode => On is
    procedure Stop;
    pragma No_Return (Stop);
    --  Abruptly stop the program

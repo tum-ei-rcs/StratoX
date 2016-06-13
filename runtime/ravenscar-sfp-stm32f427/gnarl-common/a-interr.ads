@@ -37,7 +37,8 @@ with System.Interrupts;
 with System.Multiprocessors;
 with Ada.Task_Identification;
 
-package Ada.Interrupts is
+package Ada.Interrupts
+with SPARK_Mode => On is
 
    type Interrupt_ID is new System.Interrupts.Ada_Interrupt_ID;
 
@@ -90,6 +91,7 @@ package Ada.Interrupts is
      Global => Ada.Task_Identification.Tasking_State;
 
 private
+pragma SPARK_Mode (Off);
    pragma Inline (Is_Reserved);
    pragma Inline (Is_Attached);
    pragma Inline (Current_Handler);

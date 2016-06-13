@@ -43,7 +43,8 @@ pragma Restrictions (No_Elaboration_Code);
 with System.BB.Interrupts;
 with System.BB.CPU_Primitives;
 
-package System.BB.Board_Support is
+package System.BB.Board_Support
+with SPARK_Mode => On is
    pragma Preelaborate;
 
    -----------------------------

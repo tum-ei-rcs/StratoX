@@ -31,5 +31,6 @@
 
 --  This is the parent package of the GNAT restricted tasking run time
 
-package System.Tasking.Restricted is
+package System.Tasking.Restricted
+with SPARK_Mode => On is
 end System.Tasking.Restricted;

@@ -35,7 +35,8 @@
 
 with System.BB.Timing_Events;
 
-package Ada.Real_Time.Timing_Events is
+package Ada.Real_Time.Timing_Events
+with SPARK_Mode => On is
 
    type Timing_Event is tagged limited private;
 
@@ -57,6 +58,7 @@ package Ada.Real_Time.Timing_Events is
    function Time_Of_Event (Event : Timing_Event) return Time;
 
 private
+pragma SPARK_Mode (Off);
 
    pragma Inline (Set_Handler);
    pragma Inline (Current_Handler);

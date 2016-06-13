@@ -5,7 +5,8 @@
 --  This spec has been automatically generated from STM32F429x.svd
 
 --  This is a version for the STM32F429x MCU
-package Ada.Interrupts.Names is
+package Ada.Interrupts.Names
+with SPARK_Mode => On is
 
    --  All identifiers in this unit are implementation defined
 

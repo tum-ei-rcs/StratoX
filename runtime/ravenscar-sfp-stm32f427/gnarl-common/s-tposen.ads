@@ -56,7 +56,8 @@
 --  Any changes to this interface may require corresponding compiler changes
 --  in exp_ch9.adb and possibly exp_ch7.adb
 
-package System.Tasking.Protected_Objects.Single_Entry is
+package System.Tasking.Protected_Objects.Single_Entry
+with SPARK_Mode => On is
    pragma Elaborate_Body;
 
    ---------------------------------
@@ -229,6 +230,7 @@ package System.Tasking.Protected_Objects.Single_Entry is
    --  required by the LRM (C.7.1(14)).
 
 private
+pragma SPARK_Mode (Off);
    type Protection_Entry is record
       Common : aliased Protection;
       --  State of the protected object. This part is common to any protected

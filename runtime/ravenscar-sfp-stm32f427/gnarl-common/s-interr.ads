@@ -44,7 +44,8 @@ with System.Tasking.Protected_Objects.Single_Entry;
 with System.OS_Interface;
 --  used for Max_Interrupt
 
-package System.Interrupts is
+package System.Interrupts
+with SPARK_Mode => On is
    pragma Elaborate_Body;
 
    package ST renames System.Tasking;

@@ -41,7 +41,8 @@ with System.Parameters;
 with System.Tasking;
 with System.OS_Interface;
 
-package System.Task_Primitives.Operations is
+package System.Task_Primitives.Operations
+with SPARK_Mode => On is
    pragma Preelaborate;
 
    package ST renames System.Tasking;

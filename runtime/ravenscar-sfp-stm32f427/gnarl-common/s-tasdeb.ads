@@ -36,7 +36,8 @@
 with System.Tasking;
 with System.OS_Interface;
 
-package System.Tasking.Debug is
+package System.Tasking.Debug
+with SPARK_Mode => On is
    pragma Preelaborate;
 
    -------------------------

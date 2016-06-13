@@ -33,7 +33,8 @@
 
 with System.Storage_Elements;
 
-package System.Secondary_Stack is
+package System.Secondary_Stack
+with SPARK_Mode => On is
 
    package SSE renames System.Storage_Elements;
 
@@ -68,6 +69,7 @@ package System.Secondary_Stack is
    --  additional chunk have been allocated, it will never be freed during a
 
 private
+pragma SPARK_Mode (Off);
 
    SS_Pool : Integer;
    --  Unused entity that is just present to ease the sharing of the pool

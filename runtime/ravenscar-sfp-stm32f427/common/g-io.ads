@@ -40,7 +40,8 @@
 
 --  This is the zfp version of GNAT.IO package
 
-package GNAT.IO is
+package GNAT.IO
+with SPARK_Mode => On is
    pragma Preelaborate;
 
    procedure Put (X : Integer);

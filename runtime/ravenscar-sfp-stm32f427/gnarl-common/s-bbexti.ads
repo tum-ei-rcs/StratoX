@@ -32,7 +32,8 @@ with System.BB.Threads;
 with System.BB.Time;
 with System.BB.Interrupts;
 
-package System.BB.Execution_Time is
+package System.BB.Execution_Time
+with SPARK_Mode => On is
    function Global_Interrupt_Clock return System.BB.Time.Time;
    --  Sum of the interrupt clocks
 

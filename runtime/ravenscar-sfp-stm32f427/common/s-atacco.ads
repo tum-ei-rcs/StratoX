@@ -36,7 +36,8 @@
 generic
    type Object (<>) is limited private;
 
-package System.Address_To_Access_Conversions is
+package System.Address_To_Access_Conversions
+with SPARK_Mode => On is
    pragma Preelaborate;
 
    pragma Compile_Time_Warning

@@ -9,7 +9,8 @@ pragma Ada_2012;
 with Interfaces.Bit_Types;
 with System;
 
-package Interfaces.STM32.PWR is
+package Interfaces.STM32.PWR
+with SPARK_Mode => On is
    pragma Preelaborate;
    pragma No_Elaboration_Code_All;
 

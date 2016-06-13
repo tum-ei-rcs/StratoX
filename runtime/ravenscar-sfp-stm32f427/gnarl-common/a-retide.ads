@@ -34,7 +34,8 @@
 --  Note: the compiler generates direct calls to this interface, in the
 --  processing of time types.
 
-package Ada.Real_Time.Delays is
+package Ada.Real_Time.Delays
+with SPARK_Mode => On is
 
    function To_Duration (T : Real_Time.Time) return Duration;
    --  Convert Time to Duration

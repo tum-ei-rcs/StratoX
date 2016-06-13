@@ -36,7 +36,8 @@ pragma Restrictions (No_Elaboration_Code);
 
 with Interfaces.C;
 
-package System.Memory_Move is
+package System.Memory_Move
+with SPARK_Mode => On is
    pragma Preelaborate;
 
    function memmove

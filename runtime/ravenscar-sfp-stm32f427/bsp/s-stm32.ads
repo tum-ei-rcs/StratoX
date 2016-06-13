@@ -32,7 +32,8 @@ pragma Restrictions (No_Elaboration_Code);
 
 with Interfaces.Bit_Types;
 
-package System.STM32 is
+package System.STM32
+with SPARK_Mode => On is
    pragma Preelaborate (System.STM32);
 
    subtype Frequency is Interfaces.Bit_Types.Word;

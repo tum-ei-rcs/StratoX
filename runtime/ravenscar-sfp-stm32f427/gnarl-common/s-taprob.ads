@@ -49,7 +49,8 @@
 
 with System.Multiprocessors.Fair_Locks;
 
-package System.Tasking.Protected_Objects is
+package System.Tasking.Protected_Objects
+with SPARK_Mode => On is
    pragma Elaborate_Body;
 
    ---------------------------------
@@ -202,6 +203,7 @@ package System.Tasking.Protected_Objects is
    --  be given the lock and allowed to return from the Lock call.
 
 private
+pragma SPARK_Mode (Off);
    type Protection is record
       Ceiling : System.Any_Priority;
       --  Ceiling priority associated to the protected object

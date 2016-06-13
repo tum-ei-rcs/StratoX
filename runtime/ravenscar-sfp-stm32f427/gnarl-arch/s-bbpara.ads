@@ -45,7 +45,8 @@ with System.STM32;
 with System.BB.Board_Parameters;
 with System.BB.MCU_Parameters;
 
-package System.BB.Parameters is
+package System.BB.Parameters
+with SPARK_Mode => On is
    pragma Preelaborate (System.BB.Parameters);
 
    Clock_Frequency : constant := Board_Parameters.Clock_Frequency;
