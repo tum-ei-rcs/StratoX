@@ -138,7 +138,16 @@ is
 
       -- clear all Alarms
       write(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, (1 .. 2 => HIL.Byte ( 255 ) ) );   -- PX4IO clears Bits with 1 (inverted)
-      delay until Clock + Milliseconds ( 2 );   
+      declare 
+         -- SPARK RM 7.1.3: Clock() has side-effects, so it must
+         -- be used in a "non-interfering context". That means, we have
+         -- to make it a proper R-value here and cannot directly
+         -- increment it with Milliseconds:
+         t_abs : ada.Real_Time.Time := Clock;
+      begin
+         t_abs := t_abs + Milliseconds( 2 );
+         delay until t_abs;
+      end;
       
       -- clear status flags
       modify_clear(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
