@@ -10,13 +10,13 @@
 --     Logger.init  -- initializes the Logger
 --     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
 
-
-with System;
 with HIL.UART;
 with SDIO.Driver;
 
-package body Logger with SPARK_Mode 
-is
+package body Logger with SPARK_Mode,
+  Refined_State => (LogState => (queue, logger_level))
+is  
+  
    -- one message object
    type Log_Msg is
        record
@@ -28,17 +28,20 @@ is
    -- the type for the queue buffer
    type Buffer_T is array (Natural range <>) of Log_Msg;
    type bufpos is mod QUEUE_LENGTH;
-         
+   
+   -- if GNATprove crashes with reference to that file,
+   -- then you have run into bug KP-160-P601-005.
+   -- workaround: move decl of protected type to package spec.
+   
    -- protected type to implement the buffer
    protected type Msg_Queue_T is  
-      procedure New_Msg (msg : in  Log_Msg);        
+      procedure New_Msg (msg : in  Log_Msg);      
       -- enqueue new message. this is not blocking, except to ensure mutex.
       -- can silently fail if buffer is full
       -- FIXME: how can we specify a precondition on the private variable?
-      -- for now we put an assertion in the body
+      -- for now we put an assertion in the body     
       
       entry Get_Msg (msg : out Log_Msg);
-      --  with Pre => Num_Queued > 0;
       -- try to get new message from buffer. if empty, this is blocking 
       -- until buffer has data, and then returns it.
       -- FIXME: how can we specify a precondition on the private variable?
@@ -55,27 +58,44 @@ is
       -- cannot use a discriminant for this (would violate No_Implicit_Heap_Allocations)
 
       Num_Queued : Natural := 0;
-      Not_Empty : Boolean := False; -- simple barrier (Ravenscar)
+      Not_Empty : Boolean := false; -- simple barrier (Ravenscar)
       Pos_Read : bufpos := 0;
       Pos_Write : bufpos := 0;
-      Overflows : Natural := 0;
+      Num_Overflows : Natural := 0;
       -- cannot use a dynamic predicate to etablish relationship, because this requires
       -- a record. But we cannot have a record, since this would make Not_Empty a
       -- non-simple barrier (=> Ravenscar violation).
-   end Msg_Queue_T;   
+   end Msg_Queue_T; 
+      
+--     -- the task which logs in the background
+--     task body Logging_Task is 
+--        msg : Log_Msg;
+--     begin
+--        loop
+--           queue.Get_Msg (msg);
+--           if (msg.valid) then
+--              null; -- TODO: write to SD card and forward to radio link
+--           end if;
+--        end loop;
+--     end Logging_Task;   
    
+   -- internal states
+   queue : Msg_Queue_T;  
+   logger_level : Log_Level := DEBUG;
+   
+   -- implementation of the message queue
    protected body Msg_Queue_T is       
       procedure New_Msg ( msg : in  Log_Msg ) is 
       begin
-         if msg.valid then         
+         if (msg.valid) then         
             Buffer ( Integer (Pos_Write)) := msg;
             Pos_Write := Pos_Write + 1;
-            if Num_Queued < Buffer'Last then               
+            if (Num_Queued < Buffer'Last) then               
                Num_Queued := Num_Queued + 1;    
             else -- =Buffer'Last
                Pos_Read := Pos_Read + 1; -- overwrite oldest
-               if Overflows < Natural'Last then
-                  Overflows := Overflows + 1;
+               if (Num_Overflows < Natural'Last) then
+                  Num_Overflows := Num_Overflows + 1;
                end if;
             end if;
          end if;
@@ -96,35 +116,10 @@ is
          pragma Assert ( (Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)) );
       end Get_Msg;      
       
-      function Get_Num_Overflows return Natural is
-      begin
-         return Overflows;
-      end Get_Num_Overflows;
-      
-      function Get_Length return Natural is
-      begin
-         return Num_Queued;
-      end Get_Length;
+      function Get_Num_Overflows return Natural is (Num_Overflows);      
+      function Get_Length return Natural is (Num_Queued);
    end Msg_Queue_T;
-   
-   -- internal states
-   logger_level : Log_Level := DEBUG;
-   queue : Msg_Queue_T;
-   
-   -- sporadic logging task waiting for non-empty queue
-   task Logging_Task is
-      pragma Priority (System.Priority'First); -- lowest prio for logging
-   end Logging_Task;
-   task body Logging_Task is 
-      msg : Log_Msg;
-   begin
-      loop
-         queue.Get_Msg (msg);
-         if msg.valid then
-            null; -- TODO: write to SD card and forward to radio link
-         end if;
-      end loop;
-   end Logging_Task;   
+      
    
    -- HAL, only change Adapter to port Code
    package body Adapter is
@@ -146,8 +141,7 @@ is
    begin
       Adapter.init(status);
    end init;
-
-   -- FIXME: re-write as Image(level : Log_Level)
+   
    function Image (level : Log_Level) return String is 
    begin
       return (case level is
@@ -155,13 +149,13 @@ is
                  when WARN  => "W: ",		
                  when INFO  => "I: ",	
                  when DEBUG => "D: ",
-                 when TRACE => "  > ",
-                 when others => ""
+                 when TRACE => "  > "
              );
    end Image;
           
-   procedure log(level : Log_Level; message : Message_Type) is
-      msg : constant Log_Msg := (level => level, valid => True);
+   procedure log(level : Log_Level; message : Message_Type) 
+   is
+      msg : constant Log_Msg := (level => level, valid => true);
    begin
       if Log_Level'Pos(level) <= Log_Level'Pos(logger_level) then
          Adapter.write(Log_Level'Image (level) & message);
