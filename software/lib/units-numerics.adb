@@ -1,6 +1,8 @@
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics;
 
-package body Units.Numerics is
+package body Units.Numerics with
+   SPARK_Mode => Off
+is
 
    function Sqrt (X : Unit_Type) return Float is
    begin

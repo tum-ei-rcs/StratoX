@@ -37,7 +37,9 @@ pragma Warnings (On, "* is an internal GNAT unit");
 
 with STM32_SVD.RCC; use STM32_SVD.RCC;
 
-package body STM32.Device is
+package body STM32.Device with
+   SPARK_Mode => Off
+is
 
    HSE_VALUE : constant Word :=
                  Word (System.BB.Parameters.HSE_Clock);

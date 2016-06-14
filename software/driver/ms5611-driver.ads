@@ -11,7 +11,10 @@ with Units;
 -- ToDo:
 --  - Adjustment to current System
 --  - Use HIL.I2C
-package MS5611.Driver with SPARK_Mode is
+package MS5611.Driver with
+   SPARK_Mode,
+   Abstract_State => (State, Coefficients)
+is
 
    type Device_Type is (Baro, NONE);
 
@@ -36,7 +39,8 @@ package MS5611.Driver with SPARK_Mode is
    procedure reset;
    -- send a soft-reset to the device.
 
-   procedure init;
+   procedure init with
+   Global => (IN_Out => State);
    -- initialize the device, get chip-specific compensation values
 
    procedure update_val;

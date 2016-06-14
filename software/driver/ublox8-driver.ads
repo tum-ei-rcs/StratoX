@@ -13,7 +13,10 @@
 with Units.Navigation; use Units.Navigation;
 with HIL.UART;
 
-package ublox8.Driver is
+package ublox8.Driver with
+SPARK_Mode,
+Abstract_State => State
+is
 
    type Error_Type is (SUCCESS, FAILURE);
 

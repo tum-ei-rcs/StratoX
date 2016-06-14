@@ -12,7 +12,8 @@
 
 with HIL;
 
-package CRC8 is
+package CRC8 with 
+SPARK_Mode is
 
    subtype Byte is HIL.Byte;
    

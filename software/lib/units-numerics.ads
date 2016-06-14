@@ -2,7 +2,7 @@
 
 
 
-package Units.Numerics is
+package Units.Numerics with SPARK_Mode is
 
    function Sqrt (X : Unit_Type) return Float;
    function "**" (Left : Unit_Type; Right : Integer) return Float;

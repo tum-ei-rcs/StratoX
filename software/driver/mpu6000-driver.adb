@@ -6,7 +6,9 @@ with Ada.Unchecked_Conversion;
 with Config.Software;
 
 
-package body MPU6000.Driver is
+package body MPU6000.Driver with
+Refined_State => (State => Is_Init)
+is
 
 
    READ_FLAG : constant Byte := Byte( 2#1000_0000# );

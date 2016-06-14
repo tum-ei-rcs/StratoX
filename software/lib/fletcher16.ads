@@ -10,7 +10,8 @@
 
 with HIL;
 
-package Fletcher16 is
+package Fletcher16 with
+SPARK_Mode is
 
    subtype Byte is HIL.Byte;
    

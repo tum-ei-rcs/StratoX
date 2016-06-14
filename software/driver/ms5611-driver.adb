@@ -5,7 +5,12 @@ with HIL.SPI;   -- Hardware Interface to SPI
 with MS5611.Register; use MS5611.Register;
 with Ada.Real_Time; use Ada.Real_Time;
 
-package body MS5611.Driver with SPARK_Mode is
+package body MS5611.Driver with 
+SPARK_Mode,
+Refined_State => (State => (G_Baro_State, temperature_raw, temperature, pressure_raw, pressure),
+Coefficients => (Conversion_Time_LUT, G_sens_t1, G_off_t1, G_tcs, G_tco, G_t_ref, G_tempsens, dT, SENS, OFF, TEMP)
+)
+is
 
    type Data_Array is array (Natural range <>) of HIL.Byte with
         Component_Size => 8;

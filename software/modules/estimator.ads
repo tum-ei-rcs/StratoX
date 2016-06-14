@@ -14,7 +14,7 @@ with Units; use Units;
 with Units.Vectors; use Units.Vectors;
 --with Dynamics3D;
 
-package Estimator is
+package Estimator with SPARK_Mode is
 
    subtype Roll_Type is Units.Angle_Type range -180.0 .. 180.0;
    subtype Pitch_Type is Units.Angle_Type range -180.0 .. 180.0;

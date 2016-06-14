@@ -10,7 +10,9 @@
 -- ToDo:
 -- [ ] Implementation
 
-package Main is
+package Main with
+   SPARK_Mode
+is
 
    procedure initialize;
 

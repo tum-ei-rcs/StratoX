@@ -1,9 +1,9 @@
 
-pragma SPARK_Mode(Off);
-
 with Ada.Real_Time;
 
-package HIL.Clock is
+package HIL.Clock with
+   SPARK_Mode
+is
 
    procedure configure;
 

@@ -11,7 +11,9 @@ with Logger;
 
 with ublox8.Protocol; use ublox8.Protocol;
 
-package body ublox8.Driver is
+package body ublox8.Driver with
+Refined_State => (State => (G_position, G_heading))
+is
 
    G_position : GPS_Loacation_Type := 
       ( Longitude => 0.0 * Degree,
@@ -21,7 +23,7 @@ package body ublox8.Driver is
    G_heading : Heading_Type := NORTH;
 
 
-   UBLOX_M8N : HIL.UART.Device_ID_Type := HIL.UART.GPS;
+   UBLOX_M8N : constant HIL.UART.Device_ID_Type := HIL.UART.GPS;
 
 
    procedure reset is
@@ -45,7 +47,10 @@ package body ublox8.Driver is
       check : Byte_Array (1 .. 2) := (others => Byte( 0 ));
       cks : Checksum_Type := (others => Byte( 0 ));
    begin
-      HIL.UART.read(UBLOX_M8N, sync);
+      while sync(1) /= UBX_SYNC1 loop
+         HIL.UART.read(UBLOX_M8N, sync(1 .. 1));
+      end loop;
+      HIL.UART.read(UBLOX_M8N, sync(2 .. 2));
       if sync(1) = UBX_SYNC1 and sync(2) = UBX_SYNC2 then
          
          HIL.UART.read(UBLOX_M8N, head);
@@ -126,8 +131,10 @@ package body ublox8.Driver is
 
    -- read measurements values. Should be called periodically.
    procedure update_val is
+      data_rx : Data_Type(1 .. 92) := (others => 0);
    begin
-      null;
+      readFromDevice(data_rx);
+      G_position.Longitude := Unit_Type(Float( HIL.toUnsigned_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
    end update_val;
 
 

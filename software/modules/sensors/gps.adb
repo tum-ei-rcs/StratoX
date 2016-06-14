@@ -5,7 +5,8 @@ with Generic_Sensor;
 with ublox8.Driver; use ublox8;
 
 
-package body GPS is
+package body GPS
+is
 
 
    overriding procedure initialize (Self : in out GPS_Tag) is
@@ -15,7 +16,7 @@ package body GPS is
 
    overriding procedure read_Measurement(Self : in out GPS_Tag) is
    begin
-      null;
+      Driver.update_val;
    end read_Measurement;
 
    function get_Position(Self : GPS_Tag) return GPS_Data_Type is

@@ -14,12 +14,14 @@ with units;
 with Units.Vectors; use Units.Vectors;
 with IMU;
 
-package Controller is
+package Controller with SPARK_Mode is
 
    type System_Data_Type is new Integer;
 
 	-- init
 	procedure initialize;
+        
+        procedure activate;
 
 	procedure setTarget(location : GPS_Loacation_Type);
 

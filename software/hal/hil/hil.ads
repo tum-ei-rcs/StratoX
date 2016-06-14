@@ -14,13 +14,21 @@ is
    -- Unsigned_8
    -- Integer_8
    
+   
+   type Unsigned_8_Mask is new Unsigned_8;
+   type Unsigned_8_Index is new Natural range 0 .. 7;  
+   
    type Unsigned_16_Mask is new Unsigned_16;
    type Unsigned_16_Bit_ID is new Natural range 0 .. 15;
    
+   type Unsigned_32_Mask is new Unsigned_32;
+   type Unsigned_32_Bit_ID is new Natural range 0 .. 31;   
+   
+   
    subtype Byte_Bit_Position is Integer range 0 .. 7;
    
-   -- Arrays
    
+   -- Arrays
    type Byte_Array is array(Natural range <>) of Byte;
 
    --subtype Byte_Array_2 is Byte_Array(1..2); -- not working (explicit raise in flow_utility.adb)
@@ -48,12 +56,19 @@ is
    function toBytes_uc(uint : Unsigned_16) return Byte_Array_2 is
       (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
 
-   function toUnsigned_16( bytes : Byte_Array) return Unsigned_16 
+   function toUnsigned_16( bytes : Byte_Array) return Unsigned_16
    is
-      (Unsigned_16( bytes(1) ) + Unsigned_16( bytes(2) ) * 2**8 )
+      (Unsigned_16( bytes( bytes'First ) ) 
+      + Unsigned_16( bytes'First + 1 ) * 2**8 )
    with pre => bytes'Length = 2;
       
-   
+
+   function toUnsigned_32( bytes : Byte_Array) return Unsigned_32
+   is
+      (Unsigned_32( bytes( bytes'First ) ) + Unsigned_32( bytes'First + 1 ) * 2**8 + Unsigned_32( bytes'First + 2 ) * 2**16 + Unsigned_32( bytes'First + 3 ) * 2**24 )
+   with pre => bytes'Length = 2;
+
+
 --     procedure set_Bit( reg : in out Unsigned_16, bit : Unsigned_16_Bit_ID) is
 --        mask : Unsigned_16_Mask 
       

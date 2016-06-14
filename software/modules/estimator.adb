@@ -55,6 +55,9 @@ package body Estimator is
                  ", " & AImage( Object_Orientation.Pitch ) &
                  ", " & AImage( Object_Orientation.Yaw ) );
 
+
+      GPS.Sensor.read_Measurement;
+
    end update;
 
 

@@ -1,7 +1,8 @@
 
 with STM32.Device;
 
-package body HIL.Clock 
+package body HIL.Clock with
+   SPARK_Mode => Off 
 is
 
    procedure configure is

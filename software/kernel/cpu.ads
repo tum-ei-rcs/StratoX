@@ -11,7 +11,9 @@
 -- [ ] Implementation
 
 
-package CPU is
+package CPU with 
+   SPARK_Mode
+is
 
    -- configures hardware registers
    procedure initialize;

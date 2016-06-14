@@ -3,9 +3,11 @@
 with Generic_Sensor;
 
 with Units.Navigation; use Units.Navigation;
+with ublox8.Driver;
 
-
-package GPS is
+package GPS with
+SPARK_Mode
+is
 
    subtype GPS_Data_Type is GPS_Loacation_Type;
 
@@ -15,9 +17,11 @@ package GPS is
       Protocol_UBX : Boolean;
    end record;
 
-   overriding procedure initialize (Self : in out GPS_Tag);
+   overriding procedure initialize (Self : in out GPS_Tag) with
+   Global => (ublox8.Driver.State);
 
-   overriding procedure read_Measurement(Self : in out GPS_Tag);
+   overriding procedure read_Measurement(Self : in out GPS_Tag) with
+   Global => (ublox8.Driver.State);
 
    function get_Position(Self : GPS_Tag) return GPS_Data_Type;
 

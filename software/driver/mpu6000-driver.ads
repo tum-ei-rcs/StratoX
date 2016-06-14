@@ -16,11 +16,14 @@ with HIL.SPI; use HIL;
 
 use type HIL.SPI.Data_Type;
 
-package MPU6000.Driver is
+package MPU6000.Driver with
+Abstract_State => State
+is
 
    --  Types and subtypes
 
    --  Type used to represent teh data we want to send via I2C
+   -- FIXME: Data_Type not allowed in SPARK?!?
    subtype Data_Type is HIL.SPI.Data_Type; 
 
    --  Type reprensnting all the different clock sources of the MPU6000.
@@ -179,7 +182,7 @@ private
 
    --  Global variables and constants
 
-   Is_Init : Boolean := False;
+   Is_Init : Boolean := False with Part_Of => State;
    Device_Address : HIL.Byte;
 
    --  MPU6000 Device ID.

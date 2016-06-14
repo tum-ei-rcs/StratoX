@@ -1,6 +1,8 @@
 
 
-package body HIL is
+package body HIL with
+   SPARK_Mode => Off
+is
 
    procedure set_Bits( register : in out Unsigned_16; bit_mask : Unsigned_16_Mask) is
    begin

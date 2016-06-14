@@ -6,7 +6,6 @@ with CPU;
 with Units;           use Units;
 with Ada.Real_Time;   use Ada.Real_Time;
 with LED_Manager;
-with PX4IO.Driver;
 with MPU6000.Driver;
 with HIL.UART;
 with HIL.SPI;
@@ -75,12 +74,12 @@ package body Main is
    procedure initialize is
       result : Boolean := False;
 
-      Test             : Float       := Sin (100.0);
-      Foo              : Real_Vector := (10.0, 10.0, 10.0);
-      A, B, C, D, E, F : Integer_16  := 0;
+--        Test             : Float       := Sin (100.0);
+--        Foo              : Real_Vector := (10.0, 10.0, 10.0);
+--        A, B, C, D, E, F : Integer_16  := 0;
    begin
 
-      Test := abs (Foo);
+--        Test := abs (Foo);
 
       CPU.initialize;
 
@@ -93,9 +92,8 @@ package body Main is
       -- wait to satisfy some timing
       delay until Clock + Milliseconds (50);
 
-      --MS5611.Driver.init;
 
-      PX4IO.Driver.initialize;
+      --PX4IO.Driver.initialize;
 
 
       Estimator.initialize;
@@ -124,7 +122,8 @@ package body Main is
       Logger.log (Logger.INFO, msg);
 
       -- arm PX4IO
-      --PX4IO.Driver.arm;
+      -- Controller.activate;
+
 
       loop
          loop_time_start := Clock;
@@ -137,40 +136,42 @@ package body Main is
          HIL.UART.read (HIL.UART.Console, data_rx);
 
          case (Character'Val (data_rx (1))) is
-            when '1' =>
-               PX4IO.Driver.set_Servo_Angle
-                 (PX4IO.Driver.LEFT_ELEVON,
-                  20.0 * Degree);
-            when '2' =>
-               PX4IO.Driver.set_Servo_Angle
-                 (PX4IO.Driver.LEFT_ELEVON,
-                  90.0 * Degree);
-            when '3' =>
-               PX4IO.Driver.set_Servo_Angle
-                 (PX4IO.Driver.LEFT_ELEVON,
-                  180.0 * Degree);
-            when '8' =>
-               PX4IO.Driver.set_Servo_Angle
-                 (PX4IO.Driver.RIGHT_ELEVON,
-                  0.0 *
-                  Degree); -- Warning: value not in range of type "Servo_Angle_Type" defined at px4io-driver.ads:29
-            when '9' =>
-               PX4IO.Driver.set_Servo_Angle
-                 (PX4IO.Driver.RIGHT_ELEVON,
-                  90.0 * Degree);
-            when '0' =>
-               PX4IO.Driver.set_Servo_Angle
-                 (PX4IO.Driver.RIGHT_ELEVON,
-                  180.0 * Degree);
+--              when '1' =>
+--                 PX4IO.Driver.set_Servo_Angle
+--                   (PX4IO.Driver.LEFT_ELEVON,
+--                    20.0 * Degree);
+--              when '2' =>
+--                 PX4IO.Driver.set_Servo_Angle
+--                   (PX4IO.Driver.LEFT_ELEVON,
+--                    90.0 * Degree);
+--              when '3' =>
+--                 PX4IO.Driver.set_Servo_Angle
+--                   (PX4IO.Driver.LEFT_ELEVON,
+--                    180.0 * Degree);
+--              when '8' =>
+--                 PX4IO.Driver.set_Servo_Angle
+--                   (PX4IO.Driver.RIGHT_ELEVON,
+--                    0.0 *
+--                    Degree); -- Warning: value not in range of type "Servo_Angle_Type" defined at px4io-driver.ads:29
+--              when '9' =>
+--                 PX4IO.Driver.set_Servo_Angle
+--                   (PX4IO.Driver.RIGHT_ELEVON,
+--                    90.0 * Degree);
+--              when '0' =>
+--                 PX4IO.Driver.set_Servo_Angle
+--                   (PX4IO.Driver.RIGHT_ELEVON,
+--                    180.0 * Degree);
 
             when 't' =>
                perform_Self_Test;
             when 's' =>
-               PX4IO.Driver.read_Status;
+               null;
+               --PX4IO.Driver.read_Status;
             when 'l' =>
                LED_Manager.LED_blink (LED_Manager.FAST);
             when 'd' =>
-               PX4IO.Driver.disarm;
+               null;
+               --PX4IO.Driver.disarm;
             when 'p' =>
                Logger.log
                  (Logger.INFO,
@@ -179,14 +180,11 @@ package body Main is
                null;
          end case;
 
-         -- PX4IO
-         -- PX4IO.Driver.sync_Outputs;
-
          -- Estimator
          Estimator.update;
-
-         -- MS5611 Test
-         --MS5611.Driver.update_val;
+         
+         
+         -- Controller;
 
          -- SPI Test
          --HIL.SPI.select_Chip(HIL.SPI.Extern);

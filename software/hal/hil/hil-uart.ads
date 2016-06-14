@@ -7,7 +7,8 @@
 -- Description: Hardware Interface Layer for the UART Bus
 
 package HIL.UART with
-     Spark_Mode is
+     Spark_Mode
+is
 
    type Device_ID_Type is (GPS, Console, PX4IO);
 
