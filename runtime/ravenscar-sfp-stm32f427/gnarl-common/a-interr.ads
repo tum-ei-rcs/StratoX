@@ -39,10 +39,13 @@ with Ada.Task_Identification;
 
 package Ada.Interrupts
 with SPARK_Mode => On is
+   --  because of access types there is a violation of SPARK;
+   --  but there are SPARK annotations below, so we need it on
 
    type Interrupt_ID is new System.Interrupts.Ada_Interrupt_ID;
 
-   type Parameterless_Handler is access protected procedure;
+   type Parameterless_Handler is private;
+   --  type Parameterless_Handler is access protected procedure;
 
    function Is_Reserved (Interrupt : Interrupt_ID) return Boolean with
      SPARK_Mode,
@@ -99,4 +102,6 @@ pragma SPARK_Mode (Off);
    pragma Inline (Detach_Handler);
    pragma Inline (Exchange_Handler);
    pragma Inline (Get_CPU);
+
+   type Parameterless_Handler is access protected procedure;
 end Ada.Interrupts;

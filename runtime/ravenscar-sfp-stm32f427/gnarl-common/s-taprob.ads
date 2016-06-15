@@ -50,7 +50,7 @@
 with System.Multiprocessors.Fair_Locks;
 
 package System.Tasking.Protected_Objects
-with SPARK_Mode => On is
+with SPARK_Mode => Off is -- because of access types
    pragma Elaborate_Body;
 
    ---------------------------------
