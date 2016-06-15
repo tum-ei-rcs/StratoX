@@ -12,6 +12,7 @@
 
 with units;
 with Units.Vectors; use Units.Vectors;
+with Units.Navigation; use Units.Navigation;
 with IMU;
 
 package Controller with SPARK_Mode is
