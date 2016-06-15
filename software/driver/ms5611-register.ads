@@ -6,8 +6,7 @@
 -- Module Description:
 -- Driver for the Barometer MS5611-01BA03
 
--- 08152/93020
--- 
+
 
 private package MS5611.Register is
 

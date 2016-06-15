@@ -17,6 +17,7 @@ with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Ada.Numerics.Real_Arrays;          use Ada.Numerics.Real_Arrays;
 
 with Interfaces; use Interfaces;
+with Crash;
 
 package body Main is
 

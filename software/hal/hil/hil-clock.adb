@@ -18,7 +18,7 @@ is
       STM32.Device.Enable_Clock(STM32.Device.SPI_1);
       
       -- I2C
-      
+      STM32.Device.Enable_Clock( STM32.Device.I2C_1 ); -- I2C
       
       -- UART (UART3 is Ser2 is Telemtrie2)
       STM32.Device.Enable_Clock( STM32.Device.USART_3 );

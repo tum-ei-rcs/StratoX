@@ -21,6 +21,10 @@ is
    SPI4_MOSI       : constant STM32.GPIO.GPIO_Point := STM32.Device.PE6;
    SPI4_CS         : constant STM32.GPIO.GPIO_Point := STM32.Device.PE4;
 
+   I2C1_SCL : constant STM32.GPIO.GPIO_Point := STM32.Device.PB8;
+   I2C1_SDA : constant STM32.GPIO.GPIO_Point := STM32.Device.PB9;
+
+
 
    UART2_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD6;
    UART2_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD5;
@@ -39,6 +43,12 @@ is
 
 
    Config_SPI1 : constant GPIO_Port_Configuration := (
+                                                      Mode => Mode_AF,
+                                                      Output_Type => Push_Pull,
+                                                      Speed => Speed_50MHz,
+                                                      Resistors => Floating );
+
+   Config_I2C1 : constant GPIO_Port_Configuration := (
                                                       Mode => Mode_AF,
                                                       Output_Type => Push_Pull,
                                                       Speed => Speed_50MHz,
@@ -148,6 +158,13 @@ is
       Point := map(SPI_CS_EXT);
       STM32.GPIO.Set( This => Point );
 
+      -- I2C
+      -- -----------------------------------------------------------------------
+      Configure_IO( Points => (I2C1_SDA, I2C1_SCL), Config => Config_I2C1 );
+
+      Configure_Alternate_Function(
+                                   Points => (I2C1_SDA, I2C1_SCL),
+                                   AF     => GPIO_AF_I2C);
 
       -- UART
       -- -----------------------------------------------------------------------
