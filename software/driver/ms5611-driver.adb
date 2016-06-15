@@ -54,12 +54,12 @@ is
    function calculateTemperatureDifference
      (Temp_Raw : Conversion_Data_Type;
       T_Ref    : Float) return DT_Type;
-      
+
    procedure compensateTemperature;
-   
+
    function conversion_Finished(state : Baro_State_Type;
                                 conv_time : Conversion_Time_LUT_Type;
-                                now : Time) return Boolean; 
+                                now : Time) return Boolean;
 
    function convertToKelvin (thisTemp : in TEMP_Type) return Temperature_Type;
 
@@ -252,31 +252,39 @@ is
 
          when NOT_INITIALIZED =>
             null;
-            
+
          when READY =>
             startConversion (D2, OSR_4096);
             G_Baro_State.FSM_State := TEMPERATURE_CONVERSION;
 
          when TEMPERATURE_CONVERSION =>
             -- ToDo check time
-            if conversion_Finished(G_Baro_State, Conversion_Time_LUT, Clock) then
-               read_adc (Baro, temperature_raw);
-               dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
-               TEMP := 2000.0 + TEMP_Type (dT * G_tempsens);
-               OFF  := G_off_t1 + G_tco * dT;
-               SENS := G_sens_t1 + G_tcs * dT;
-               compensateTemperature;
-               temperature := convertToKelvin (TEMP);
-               startConversion (D1, OSR_4096);
-               G_Baro_State.FSM_State := PRESSURE_CONVERSION;
-            end if;
+            declare
+               t_abs : Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12 (Clock cannot be a direct parameter)
+            begin
+               if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
+                  read_adc (Baro, temperature_raw);
+                  dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
+                  TEMP := 2000.0 + TEMP_Type (dT * G_tempsens);
+                  OFF  := G_off_t1 + G_tco * dT;
+                  SENS := G_sens_t1 + G_tcs * dT;
+                  compensateTemperature;
+                  temperature := convertToKelvin (TEMP);
+                  startConversion (D1, OSR_4096);
+                  G_Baro_State.FSM_State := PRESSURE_CONVERSION;
+               end if;
+            end;
 
-         when PRESSURE_CONVERSION =>
-            if conversion_Finished(G_Baro_State, Conversion_Time_LUT, Clock) then
-               read_adc (Baro, pressure_raw);
-               pressure := calculatePressure (pressure_raw, SENS, OFF);
-               G_Baro_State.FSM_State := READY;
-            end if;
+               when PRESSURE_CONVERSION =>
+               declare
+                  t_abs : Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12 (Clock cannot be a direct parameter)
+               begin
+                  if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
+                     read_adc (Baro, pressure_raw);
+                     pressure := calculatePressure (pressure_raw, SENS, OFF);
+                     G_Baro_State.FSM_State := READY;
+                  end if;
+               end;
 
       end case;
 
@@ -342,14 +350,14 @@ is
 
 
 
-   function conversion_Finished(state     : Baro_State_Type; 
+   function conversion_Finished(state     : Baro_State_Type;
                                 conv_time : Conversion_Time_LUT_Type;
                                 now       : Time) return Boolean
    is
       result : Boolean := False;
    begin
       case(state.FSM_State) is
-         when TEMPERATURE_CONVERSION => 
+         when TEMPERATURE_CONVERSION =>
             result := (state.Conv_Info_Temp.Start + conv_time(state.Conv_Info_Temp.OSR) > Units.To_Time( now) );
          when PRESSURE_CONVERSION =>
             result := (state.Conv_Info_Pres.Start + conv_time(state.Conv_Info_Pres.OSR) > Units.To_Time( now) );
