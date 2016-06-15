@@ -57,7 +57,7 @@
 --  in exp_ch9.adb and possibly exp_ch7.adb
 
 package System.Tasking.Protected_Objects.Single_Entry
-with SPARK_Mode => On is
+with SPARK_Mode => Off is -- because of access types
    pragma Elaborate_Body;
 
    ---------------------------------

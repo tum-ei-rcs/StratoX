@@ -1,5 +1,5 @@
 package HIL.SPI with
-     Spark_Mode => Off
+     Spark_Mode => On
      -- Abstract_State => Deselect 
 is
 

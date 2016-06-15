@@ -45,7 +45,7 @@ with System.Task_Primitives;
 with System.Multiprocessors;
 
 package System.Tasking
-with SPARK_Mode => On is
+with SPARK_Mode => Off is -- because of access types
    pragma Preelaborate;
 
    ---------------------------------

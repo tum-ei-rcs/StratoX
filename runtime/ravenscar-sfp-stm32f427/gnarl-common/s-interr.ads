@@ -45,7 +45,8 @@ with System.OS_Interface;
 --  used for Max_Interrupt
 
 package System.Interrupts
-with SPARK_Mode => On is
+   --  with SPARK_Mode => Off -- because of access types
+is
    pragma Elaborate_Body;
 
    package ST renames System.Tasking;

@@ -28,7 +28,7 @@ project StratoX is
    case Build_Mode is
       when "analyze" =>
          for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
---         for Excluded_Source_Files use ("px4io-driver.ads", "px4io-driver.adb");
+         for Excluded_Source_Files use ("generic_vector3d.ads", "genereic_quaternions.ads", "generic_quaternions.adb");
       when others => null;
    end case;
 

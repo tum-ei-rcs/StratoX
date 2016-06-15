@@ -1,7 +1,7 @@
 
 
 
-package HIL.I2C is
+package HIL.I2C with SPARK_Mode => On is
 
    type Data_Type is array(Natural range <>) of Byte;
    
