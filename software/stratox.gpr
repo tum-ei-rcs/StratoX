@@ -12,7 +12,6 @@ project StratoX is
       "boot",
       "config",
       "driver",
-      "driver/fs",
       "hal/hil",
       "kernel",
       "modules",
