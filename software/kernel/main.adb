@@ -2,56 +2,34 @@
 -- Main System File
 -- todo: better unit name
 
+with Ada.Real_Time;                     use Ada.Real_Time;
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+with Ada.Numerics.Real_Arrays;          use Ada.Numerics.Real_Arrays;
+
 with CPU;
 with Units;           use Units;
-with Ada.Real_Time;   use Ada.Real_Time;
-with LED_Manager;
+with Units.Vectors;   use Units.Vectors;
+with Units.Navigation;   use Units.Navigation;
+
 with MPU6000.Driver;
 with HIL.UART;
 with HIL.SPI;
 with Logger;
 with Config.Software; use Config.Software;
-with Estimator;
 
-with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
-with Ada.Numerics.Real_Arrays;          use Ada.Numerics.Real_Arrays;
+
+with Estimator;
+with Controller;
+with LED_Manager;
+
 
 with Interfaces; use Interfaces;
 with Crash;
 
 package body Main is
 
---      -- the mission can only go forward
---      type Mission_State_Type is (
---              UNKNOWN,
---              INITIALIZING,
---              SELF_TESTING,
---              READY_TO_START,
---              ASCENDING,
---              HOLDING,
---              DESCENDING,
---              LANDED,
---              FOUND,
---              EVALUATING
---      );
---
---
---      type Mission_Event_Type is (
---              UNKNOWN,
---              INITIALIZATION_START,
---              INITIALIZATION_END,
---              SELF_TEST_START,
---              SELF_TEST_END,
---              ARMED,
---              RELEASED,
---              BALLOON_CUT,
---              DESCENDING,
---              LANDED,
---              FOUND,
---              EVALUATED
---      );
---
---
+
+
    type Health_Status_Type is (
                                UNKNOWN,
                                OK,
@@ -98,6 +76,7 @@ package body Main is
 
 
       Estimator.initialize;
+      Controller.initialize;
 
    end initialize;
 
@@ -117,18 +96,24 @@ package body Main is
 
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
+      
+      
+      body_info : Body_Type;
+      
+      
    begin
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
       Logger.log (Logger.INFO, msg);
 
       -- arm PX4IO
-      -- Controller.activate;
+      Controller.activate;
 
 
       loop
          loop_time_start := Clock;
 
+         -- LED alive
          LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
          LED_Manager.LED_sync;
 
@@ -184,8 +169,13 @@ package body Main is
          -- Estimator
          Estimator.update;
          
+         body_info.orientation := Estimator.get_Orientation;
          
-         -- Controller;
+         -- Controller
+         Controller.set_Current_Orientation( body_info.orientation );
+         Controller.runOneCycle;
+         
+         
 
          -- SPI Test
          --HIL.SPI.select_Chip(HIL.SPI.Extern);

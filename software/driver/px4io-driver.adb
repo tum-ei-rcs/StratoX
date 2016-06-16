@@ -246,7 +246,7 @@ is
             when LEFT_ELEVON  => G_Servo_Angle_Left  := angle;
             when RIGHT_ELEVON => G_Servo_Angle_Right := angle;
       end case;
-      Logger.log(Logger.DEBUG, "Servo Angle set");
+      Logger.log(Logger.TRACE, "Servo Angle " & AImage(angle) );
    end set_Servo_Angle;
    
    

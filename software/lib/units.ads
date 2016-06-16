@@ -234,6 +234,9 @@ package Units with
      (Time_Type
         (Float ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Nanoseconds (1)) / 1.0e-9));
 
+
+   -- function Radian( degree : Float ) return Float
+
    -- Image functions
    function Image (unit : Linear_Acceleration_Type) return String;
 

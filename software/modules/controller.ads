@@ -10,28 +10,52 @@
 -- ToDo:
 -- [ ] Implementation
 
-with units;
+with Units; use Units;
 with Units.Vectors; use Units.Vectors;
 with Units.Navigation; use Units.Navigation;
 with IMU;
 
 package Controller with SPARK_Mode is
 
-   type System_Data_Type is new Integer;
 
-	-- init
-	procedure initialize;
+   -- init
+   procedure initialize;
         
-        procedure activate;
+   procedure activate;
+        
+   procedure deactivate;
 
-	procedure setTarget(location : GPS_Loacation_Type);
+   procedure set_Target_Position(location : GPS_Loacation_Type);
+        
+   procedure set_Current_Position(location : GPS_Loacation_Type);
+        
+   procedure set_Target_Pitch (pitch : Pitch_Type);
+        
+   procedure set_Current_Orientation (orientation : Orientation_Type);
 
-	procedure runOneCycle(systemData : System_Data_Type);
+   procedure runOneCycle;
 
--- private
---  	procedure controlDirection(directionError : Direction_Type);
---  
---  	procedure controlTilt(tiltError : Tilt_Type);
+private
 
+   subtype Elevator_Angle_Type is Angle_Type range -45.0 * Degree .. 45.0 * Degree;
+   subtype Aileron_Angle_Type  is Angle_Type range -45.0 * Degree .. 45.0 * Degree;   
+   subtype Elevon_Angle_Type   is Angle_Type range -45.0 * Degree .. 45.0 * Degree;
+
+   type Elevon_Index_Type is (LEFT, RIGHT);
+   
+   
+   
+   type Elevon_Angle_Array is array(Elevon_Index_Type) of Elevon_Angle_Type;
+
+   type Plane_Control_Type is record
+      Elevator : Elevator_Angle_Type;
+      Aileron  : Aileron_Angle_Type;
+   end record; 
+
+   procedure control_Pitch;
+   
+   procedure control_Heading;
+
+   function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type ) return Elevon_Angle_Array;
 
 end Controller;

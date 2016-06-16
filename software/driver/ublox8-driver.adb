@@ -153,12 +153,12 @@ is
    begin
       null;
       -- 1. Set binary protocol (CFG-PRT, own message)
-      writeToDevice(msg_cfg_prt_head, msg_cfg_prt);
+      writeToDevice(msg_cfg_prt_head, msg_cfg_prt);  -- no ACK is expected here
 
       -- 2. Set baudrate (CFG-PRT, again own message)
 
       -- 3. Set message rates (CFG-MSG)
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
+      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
       
       -- set other to 0
       msg_cfg_msg(2) := Byte( 0 );

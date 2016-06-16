@@ -18,11 +18,11 @@ package PX4IO.Driver
 with SPARK_Mode 
 is
 
-   SERVO_ANGLE_MIN_LIMIT : constant := 0.0;
-   SERVO_ANGLE_MAX_LIMIT : constant := 180.0;
+   SERVO_ANGLE_MIN_LIMIT : constant := 0.0 * Degree;
+   SERVO_ANGLE_MAX_LIMIT : constant := 180.0 * Degree;
    
-   MOTOR_SPEED_LIMIT_MIN : constant := 0.0;
-   MOTOR_SPEED_LIMIT_MAX : constant := 360.0*10.0;  -- Degree per Second
+   MOTOR_SPEED_LIMIT_MIN : constant := 0.0 * Degree / Second;
+   MOTOR_SPEED_LIMIT_MAX : constant := 10.0 * 360.0 * Degree / Second;  -- Degree per Second
 
 
    type Servo_Type is (LEFT_ELEVON, RIGHT_ELEVON); 

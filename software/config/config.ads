@@ -8,10 +8,14 @@
 -- Description:
 -- Hardware Configuration of the board.
 
+
 package Config is
 
    LED_PIN : constant := 12;
 
    BARO_I2C_ADDRESS : constant := 0;
+
+
+   OPTIMAL_PITCH : constant := -5.0;
 
 end Config;

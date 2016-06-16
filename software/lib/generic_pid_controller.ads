@@ -11,26 +11,28 @@
 -- ToDo:
 -- [ ] Implementation
 
-with units; use units;
+with Units; use Units;
 
 generic
-   type PID_Data_Type is new Unit_Type;
-   type PID_Time_Type is new Unit_Type;
-   type PID_Coefficient_Type is private;
+   type PID_Data_Type   is new Unit_Type;
+   type PID_Output_Type is new Unit_Type;
+   type PID_Coefficient_Type is new Unit_Type;
    PID_INTEGRAL_LIMIT_LOW  : PID_Data_Type;
    PID_INTEGRAL_LIMIT_HIGH : PID_Data_Type;
-package PID_Controller
+package Generic_PID_Controller
 --with SPARK_Mode
 is
 
     type Pid_Object is private;
-    subtype PID_Integral_Type is PID_Data_Type range PID_INTEGRAL_LIMIT_LOW.. PID_INTEGRAL_LIMIT_HIGH;
+    subtype PID_Integral_Type is PID_Data_Type; -- range PID_INTEGRAL_LIMIT_LOW.. PID_INTEGRAL_LIMIT_HIGH;
        
 
-	-- init
-	procedure initialize(pid : out Pid_Object; Kp : PID_Coefficient_Type; Ki : PID_Coefficient_Type; Kd : PID_Coefficient_Type);
+   -- init
+   procedure initialize(pid : out Pid_Object; Kp : PID_Coefficient_Type; Ki : PID_Coefficient_Type; Kd : PID_Coefficient_Type);
 
-	function step(pid : in out Pid_Object; error : PID_Data_Type; dt : PID_Time_Type) return PID_Data_Type;
+   procedure reset (pid : out Pid_Object);
+
+   function step(pid : in out Pid_Object; error : PID_Data_Type; dt : Time_Type) return PID_Output_Type;
 
 private
 
@@ -45,4 +47,4 @@ private
       I_Limit_High : PID_Data_Type;     --  Limit of integral term
    end record;
 
-end PID_Controller;
+end Generic_PID_Controller;
