@@ -12,6 +12,8 @@ package Dynamics3D is
 
 
 
+   subtype Wind_Speed is
+     Units.Linear_Velocity_Type range 0.0 .. 50.0; -- 180 km/h
 
 --
 --
@@ -25,14 +27,7 @@ package Dynamics3D is
 --     type Shape_Type is (SPHERE, BOX);
 --
 --
---     type Body_Tag is tagged record
---        mass        : Mass_Type;
---        shape       : Shape_Type;
---        position    : Position_Vector;
---        orientation : Orientation_Vector;
---        linear_dynamic : Linear_Dynamic_Vector;
---        angular_dynamic : Angular_Dynamic_Vector;
---     end record;
+
 
 
 

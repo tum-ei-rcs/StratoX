@@ -16,7 +16,7 @@ is
    
    
    type Unsigned_8_Mask is new Unsigned_8;
-   type Unsigned_8_Index is new Natural range 0 .. 7;  
+   type Unsigned_8_Bit_Index is new Natural range 0 .. 7;  
    
    type Unsigned_16_Mask is new Unsigned_16;
    type Unsigned_16_Bit_ID is new Natural range 0 .. 15;
@@ -67,6 +67,26 @@ is
    is
       (Unsigned_32( bytes( bytes'First ) ) + Unsigned_32( bytes'First + 1 ) * 2**8 + Unsigned_32( bytes'First + 2 ) * 2**16 + Unsigned_32( bytes'First + 3 ) * 2**24 )
    with pre => bytes'Length = 4;
+
+
+
+   procedure write_Bits( register : in out Unsigned_8; 
+                         start_index : Unsigned_8_Bit_Index; 
+                         length : Natural; 
+                         value : Integer) with 
+                         pre => length > 0 and 
+                         Natural( start_index ) + length <= Natural( Unsigned_8_Bit_Index'Last ) + 1 and
+                         value < 2**length;
+                         
+   
+   function read_Bits( register : in Unsigned_8; 
+                        start_index : Unsigned_8_Bit_Index; 
+                        length      : Natural) return Unsigned_8
+   with pre => length > 0 and 
+   Natural( start_index ) + length <= Natural(Unsigned_8_Bit_Index'Last) + 1,
+   post => read_Bits'Result < 2**length;
+
+
 
 
 --     procedure set_Bit( reg : in out Unsigned_16, bit : Unsigned_16_Bit_ID) is

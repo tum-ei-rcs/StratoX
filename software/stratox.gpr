@@ -16,6 +16,7 @@ project StratoX is
       "kernel",
       "modules",
       "modules/sensors",
+      "modules/actuators",
       "lib"
    );
 

@@ -41,7 +41,13 @@ package Config.Software is
    UBLOX_BAUD_RATE_HZ : constant := 38_400;
    
    
+   -- PID Controller
+   CFG_PID_PITCH_P : constant := 0.550;
+   CFG_PID_PITCH_I : constant := 0.040;
+   CFG_PID_PITCH_D : constant := 0.020;
    
-   
+   CFG_PID_ROLL_P : constant := 0.450;
+   CFG_PID_ROLL_I : constant := 0.060;
+   CFG_PID_ROLL_D : constant := 0.020;
 
 end Config.Software;
