@@ -1,0 +1,653 @@
+diff -w stm32f429x/stm32_svd-adc.ads stm32f429_regen/stm32_svd-adc.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd.ads stm32f429_regen/stm32_svd.ads
+0a1
+> with HAL;
+5a7
+> with Interfaces;  use Interfaces;
+10a13,78
+> 
+>    ---------------
+>    -- Base type --
+>    ---------------
+> 
+>    subtype Word is Interfaces.Unsigned_32;
+>    subtype Short is Interfaces.Unsigned_16;
+>    subtype Byte is Interfaces.Unsigned_8;
+>    type Bit is mod 2**1
+>      with Size => 1;
+>    type UInt2 is mod 2**2
+>      with Size => 2;
+>    type UInt3 is mod 2**3
+>      with Size => 3;
+>    type UInt4 is mod 2**4
+>      with Size => 4;
+>    type UInt5 is mod 2**5
+>      with Size => 5;
+>    type UInt6 is mod 2**6
+>      with Size => 6;
+>    type UInt7 is mod 2**7
+>      with Size => 7;
+>    type UInt9 is mod 2**9
+>      with Size => 9;
+>    type UInt10 is mod 2**10
+>      with Size => 10;
+>    type UInt11 is mod 2**11
+>      with Size => 11;
+>    type UInt12 is mod 2**12
+>      with Size => 12;
+>    type UInt13 is mod 2**13
+>      with Size => 13;
+>    type UInt14 is mod 2**14
+>      with Size => 14;
+>    type UInt15 is mod 2**15
+>      with Size => 15;
+>    type UInt17 is mod 2**17
+>      with Size => 17;
+>    type UInt18 is mod 2**18
+>      with Size => 18;
+>    type UInt19 is mod 2**19
+>      with Size => 19;
+>    type UInt20 is mod 2**20
+>      with Size => 20;
+>    type UInt21 is mod 2**21
+>      with Size => 21;
+>    type UInt22 is mod 2**22
+>      with Size => 22;
+>    type UInt23 is mod 2**23
+>      with Size => 23;
+>    type UInt24 is mod 2**24
+>      with Size => 24;
+>    type UInt25 is mod 2**25
+>      with Size => 25;
+>    type UInt26 is mod 2**26
+>      with Size => 26;
+>    type UInt27 is mod 2**27
+>      with Size => 27;
+>    type UInt28 is mod 2**28
+>      with Size => 28;
+>    type UInt29 is mod 2**29
+>      with Size => 29;
+>    type UInt30 is mod 2**30
+>      with Size => 30;
+>    type UInt31 is mod 2**31
+>      with Size => 31;
+diff -w stm32f429x/stm32_svd-can.ads stm32f429_regen/stm32_svd-can.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-crc.ads stm32f429_regen/stm32_svd-crc.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-dac.ads stm32f429_regen/stm32_svd-dac.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-dbg.ads stm32f429_regen/stm32_svd-dbg.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-dcmi.ads stm32f429_regen/stm32_svd-dcmi.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-dma2d.ads stm32f429_regen/stm32_svd-dma2d.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-dma.ads stm32f429_regen/stm32_svd-dma.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-ethernet.ads stm32f429_regen/stm32_svd-ethernet.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-exti.ads stm32f429_regen/stm32_svd-exti.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-flash.ads stm32f429_regen/stm32_svd-flash.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-fsmc.ads stm32f429_regen/stm32_svd-fsmc.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-gpio.ads stm32f429_regen/stm32_svd-gpio.ads
+0a1
+> with HAL;
+5d5
+< pragma SPARK_Mode (Off);
+7d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-i2c.ads stm32f429_regen/stm32_svd-i2c.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-iwdg.ads stm32f429_regen/stm32_svd-iwdg.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-ltdc.ads stm32f429_regen/stm32_svd-ltdc.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-nvic.ads stm32f429_regen/stm32_svd-nvic.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-pwr.ads stm32f429_regen/stm32_svd-pwr.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-rcc.ads stm32f429_regen/stm32_svd-rcc.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-rng.ads stm32f429_regen/stm32_svd-rng.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-rtc.ads stm32f429_regen/stm32_svd-rtc.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-sai.ads stm32f429_regen/stm32_svd-sai.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-sdio.ads stm32f429_regen/stm32_svd-sdio.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-spi.ads stm32f429_regen/stm32_svd-spi.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-syscfg.ads stm32f429_regen/stm32_svd-syscfg.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-tim.ads stm32f429_regen/stm32_svd-tim.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+1904,1924c1904,1906
+<    type CCMR1_Discriminent is
+<      (
+<       Output,
+<       Input);
+< 
+<    type CCMR1_Aliased_Register
+<      (Disc : CCMR1_Discriminent := Output)
+<    is record
+<       case Disc is
+<          when Output =>
+<             Output : CCMR1_Output_Register;
+<          when Input =>
+<             Input : CCMR1_Input_Register;
+<       end case;
+<    end record
+<      with Unchecked_Union;
+< 
+<    for CCMR1_Aliased_Register use record
+<       Output at 0 range 0 .. 31;
+<       Input  at 0 range 0 .. 31;
+<    end record;
+---
+>    -----------------
+>    -- Peripherals --
+>    -----------------
+1926c1908
+<    type CCMR2_Discriminent is
+---
+>    type TIM2_Disc is
+1931,2002d1912
+<    type CCMR2_Aliased_Register
+<      (Disc : CCMR2_Discriminent := Output)
+<    is record
+<       case Disc is
+<          when Output =>
+<             Output : CCMR2_Output_Register;
+<          when Input =>
+<             Input : CCMR2_Input_Register;
+<       end case;
+<    end record
+<      with Unchecked_Union;
+< 
+<    for CCMR2_Aliased_Register use record
+<       Output at 0 range 0 .. 31;
+<       Input  at 0 range 0 .. 31;
+<    end record;
+< 
+<    type CCMR2_Aliased_Register_1
+<      (Disc : CCMR2_Discriminent := Output)
+<    is record
+<       case Disc is
+<          when Output =>
+<             Output : CCMR2_Output_Register_1;
+<          when Input =>
+<             Input : CCMR2_Input_Register;
+<       end case;
+<    end record
+<      with Unchecked_Union;
+< 
+<    for CCMR2_Aliased_Register_1 use record
+<       Output at 0 range 0 .. 31;
+<       Input  at 0 range 0 .. 31;
+<    end record;
+< 
+<    type CCMR1_Aliased_Register_1
+<      (Disc : CCMR1_Discriminent := Output)
+<    is record
+<       case Disc is
+<          when Output =>
+<             Output : CCMR1_Output_Register_1;
+<          when Input =>
+<             Input : CCMR1_Input_Register_1;
+<       end case;
+<    end record
+<      with Unchecked_Union;
+< 
+<    for CCMR1_Aliased_Register_1 use record
+<       Output at 0 range 0 .. 31;
+<       Input  at 0 range 0 .. 31;
+<    end record;
+< 
+<    type CCMR1_Aliased_Register_2
+<      (Disc : CCMR1_Discriminent := Output)
+<    is record
+<       case Disc is
+<          when Output =>
+<             Output : CCMR1_Output_Register_2;
+<          when Input =>
+<             Input : CCMR1_Input_Register_2;
+<       end case;
+<    end record
+<      with Unchecked_Union;
+< 
+<    for CCMR1_Aliased_Register_2 use record
+<       Output at 0 range 0 .. 31;
+<       Input  at 0 range 0 .. 31;
+<    end record;
+< 
+<    -----------------
+<    -- Peripherals --
+<    -----------------
+< 
+2004c1914,1916
+<    type TIM2_Peripheral is record
+---
+>    type TIM2_Peripheral
+>      (Discriminent : TIM2_Disc := Output)
+>    is record
+2017,2020d1928
+<       --  capture/compare mode register 1 (output mode)
+<       CCMR1 : CCMR1_Aliased_Register;
+<       --  capture/compare mode register 2 (output mode)
+<       CCMR2 : CCMR2_Aliased_Register_1;
+2042a1951,1962
+>       case Discriminent is
+>          when Output =>
+>             --  capture/compare mode register 1 (output mode)
+>             CCMR1_Output : CCMR1_Output_Register;
+>             --  capture/compare mode register 2 (output mode)
+>             CCMR2_Output : CCMR2_Output_Register_1;
+>          when Input =>
+>             --  capture/compare mode register 1 (input mode)
+>             CCMR1_Input : CCMR1_Input_Register;
+>             --  capture/compare mode register 2 (input mode)
+>             CCMR2_Input : CCMR2_Input_Register;
+>       end case;
+2044c1964
+<      with Volatile;
+---
+>      with Unchecked_Union, Volatile;
+2053,2054d1972
+<       CCMR1 at 24 range 0 .. 31;
+<       CCMR2 at 28 range 0 .. 31;
+2065a1984,1987
+>       CCMR1_Output at 24 range 0 .. 31;
+>       CCMR2_Output at 28 range 0 .. 31;
+>       CCMR1_Input  at 24 range 0 .. 31;
+>       CCMR2_Input  at 28 range 0 .. 31;
+2071a1994,1998
+>    type TIM3_Disc is
+>      (
+>       Output,
+>       Input);
+> 
+2073c2000,2002
+<    type TIM3_Peripheral is record
+---
+>    type TIM3_Peripheral
+>      (Discriminent : TIM3_Disc := Output)
+>    is record
+2086,2089d2014
+<       --  capture/compare mode register 1 (output mode)
+<       CCMR1 : CCMR1_Aliased_Register;
+<       --  capture/compare mode register 2 (output mode)
+<       CCMR2 : CCMR2_Aliased_Register_1;
+2109a2035,2046
+>       case Discriminent is
+>          when Output =>
+>             --  capture/compare mode register 1 (output mode)
+>             CCMR1_Output : CCMR1_Output_Register;
+>             --  capture/compare mode register 2 (output mode)
+>             CCMR2_Output : CCMR2_Output_Register_1;
+>          when Input =>
+>             --  capture/compare mode register 1 (input mode)
+>             CCMR1_Input : CCMR1_Input_Register;
+>             --  capture/compare mode register 2 (input mode)
+>             CCMR2_Input : CCMR2_Input_Register;
+>       end case;
+2111c2048
+<      with Volatile;
+---
+>      with Unchecked_Union, Volatile;
+2120,2121d2056
+<       CCMR1 at 24 range 0 .. 31;
+<       CCMR2 at 28 range 0 .. 31;
+2131a2067,2070
+>       CCMR1_Output at 24 range 0 .. 31;
+>       CCMR2_Output at 28 range 0 .. 31;
+>       CCMR1_Input  at 24 range 0 .. 31;
+>       CCMR2_Input  at 28 range 0 .. 31;
+2141a2081,2085
+>    type TIM5_Disc is
+>      (
+>       Output,
+>       Input);
+> 
+2143c2087,2089
+<    type TIM5_Peripheral is record
+---
+>    type TIM5_Peripheral
+>      (Discriminent : TIM5_Disc := Output)
+>    is record
+2156,2159d2101
+<       --  capture/compare mode register 1 (output mode)
+<       CCMR1 : CCMR1_Aliased_Register;
+<       --  capture/compare mode register 2 (output mode)
+<       CCMR2 : CCMR2_Aliased_Register_1;
+2181a2124,2135
+>       case Discriminent is
+>          when Output =>
+>             --  capture/compare mode register 1 (output mode)
+>             CCMR1_Output : CCMR1_Output_Register;
+>             --  capture/compare mode register 2 (output mode)
+>             CCMR2_Output : CCMR2_Output_Register_1;
+>          when Input =>
+>             --  capture/compare mode register 1 (input mode)
+>             CCMR1_Input : CCMR1_Input_Register;
+>             --  capture/compare mode register 2 (input mode)
+>             CCMR2_Input : CCMR2_Input_Register;
+>       end case;
+2183c2137
+<      with Volatile;
+---
+>      with Unchecked_Union, Volatile;
+2192,2193d2145
+<       CCMR1 at 24 range 0 .. 31;
+<       CCMR2 at 28 range 0 .. 31;
+2204a2157,2160
+>       CCMR1_Output at 24 range 0 .. 31;
+>       CCMR2_Output at 28 range 0 .. 31;
+>       CCMR1_Input  at 24 range 0 .. 31;
+>       CCMR2_Input  at 28 range 0 .. 31;
+2250a2207,2211
+>    type TIM12_Disc is
+>      (
+>       Output,
+>       Input);
+> 
+2252c2213,2215
+<    type TIM12_Peripheral is record
+---
+>    type TIM12_Peripheral
+>      (Discriminent : TIM12_Disc := Output)
+>    is record
+2265,2266d2227
+<       --  capture/compare mode register 1 (output mode)
+<       CCMR1 : CCMR1_Aliased_Register_1;
+2278a2240,2247
+>       case Discriminent is
+>          when Output =>
+>             --  capture/compare mode register 1 (output mode)
+>             CCMR1_Output : CCMR1_Output_Register_1;
+>          when Input =>
+>             --  capture/compare mode register 1 (input mode)
+>             CCMR1_Input : CCMR1_Input_Register_1;
+>       end case;
+2280c2249
+<      with Volatile;
+---
+>      with Unchecked_Union, Volatile;
+2289d2257
+<       CCMR1 at 24 range 0 .. 31;
+2295a2264,2265
+>       CCMR1_Output at 24 range 0 .. 31;
+>       CCMR1_Input  at 24 range 0 .. 31;
+2305a2276,2280
+>    type TIM13_Disc is
+>      (
+>       Output,
+>       Input);
+> 
+2307c2282,2284
+<    type TIM13_Peripheral is record
+---
+>    type TIM13_Peripheral
+>      (Discriminent : TIM13_Disc := Output)
+>    is record
+2316,2317d2292
+<       --  capture/compare mode register 1 (output mode)
+<       CCMR1 : CCMR1_Aliased_Register_2;
+2327a2303,2310
+>       case Discriminent is
+>          when Output =>
+>             --  capture/compare mode register 1 (output mode)
+>             CCMR1_Output : CCMR1_Output_Register_2;
+>          when Input =>
+>             --  capture/compare mode register 1 (input mode)
+>             CCMR1_Input : CCMR1_Input_Register_2;
+>       end case;
+2329c2312
+<      with Volatile;
+---
+>      with Unchecked_Union, Volatile;
+2336d2318
+<       CCMR1 at 24 range 0 .. 31;
+2341a2324,2325
+>       CCMR1_Output at 24 range 0 .. 31;
+>       CCMR1_Input  at 24 range 0 .. 31;
+2355a2340,2344
+>    type TIM1_Disc is
+>      (
+>       Output,
+>       Input);
+> 
+2357c2346,2348
+<    type TIM1_Peripheral is record
+---
+>    type TIM1_Peripheral
+>      (Discriminent : TIM1_Disc := Output)
+>    is record
+2370,2373d2360
+<       --  capture/compare mode register 1 (output mode)
+<       CCMR1 : CCMR1_Aliased_Register;
+<       --  capture/compare mode register 2 (output mode)
+<       CCMR2 : CCMR2_Aliased_Register;
+2397a2385,2396
+>       case Discriminent is
+>          when Output =>
+>             --  capture/compare mode register 1 (output mode)
+>             CCMR1_Output : CCMR1_Output_Register;
+>             --  capture/compare mode register 2 (output mode)
+>             CCMR2_Output : CCMR2_Output_Register;
+>          when Input =>
+>             --  capture/compare mode register 1 (input mode)
+>             CCMR1_Input : CCMR1_Input_Register;
+>             --  capture/compare mode register 2 (input mode)
+>             CCMR2_Input : CCMR2_Input_Register;
+>       end case;
+2399c2398
+<      with Volatile;
+---
+>      with Unchecked_Union, Volatile;
+2408,2409d2406
+<       CCMR1 at 24 range 0 .. 31;
+<       CCMR2 at 28 range 0 .. 31;
+2421a2419,2422
+>       CCMR1_Output at 24 range 0 .. 31;
+>       CCMR2_Output at 28 range 0 .. 31;
+>       CCMR1_Input  at 24 range 0 .. 31;
+>       CCMR2_Input  at 28 range 0 .. 31;
+2431a2433,2437
+>    type TIM11_Disc is
+>      (
+>       Output,
+>       Input);
+> 
+2433c2439,2441
+<    type TIM11_Peripheral is record
+---
+>    type TIM11_Peripheral
+>      (Discriminent : TIM11_Disc := Output)
+>    is record
+2442,2443d2449
+<       --  capture/compare mode register 1 (output mode)
+<       CCMR1 : CCMR1_Aliased_Register_2;
+2455a2462,2469
+>       case Discriminent is
+>          when Output =>
+>             --  capture/compare mode register 1 (output mode)
+>             CCMR1_Output : CCMR1_Output_Register_2;
+>          when Input =>
+>             --  capture/compare mode register 1 (input mode)
+>             CCMR1_Input : CCMR1_Input_Register_2;
+>       end case;
+2457c2471
+<      with Volatile;
+---
+>      with Unchecked_Union, Volatile;
+2464d2477
+<       CCMR1 at 24 range 0 .. 31;
+2470a2484,2485
+>       CCMR1_Output at 24 range 0 .. 31;
+>       CCMR1_Input  at 24 range 0 .. 31;
+diff -w stm32f429x/stm32_svd-usart.ads stm32f429_regen/stm32_svd-usart.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+diff -w stm32f429x/stm32_svd-usb_otg_fs.ads stm32f429_regen/stm32_svd-usb_otg_fs.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+1905c1905
+<    type OTG_FS_Mode is
+---
+>    type OTG_FS_GLOBAL_Disc is
+1907,1908c1907,1908
+<       Host,
+<       Device);
+---
+>       Device,
+>       Host);
+1912c1912
+<      (Mode : OTG_FS_Mode := Host)
+---
+>      (Discriminent : OTG_FS_GLOBAL_Disc := Device)
+1948,1953c1948
+<       case Mode is
+<          when Host =>
+<             --  OTG_FS Receive status debug read(Host mode)
+<             FS_GRXSTSR_Host : FS_GRXSTSR_Host_Register;
+<             --  OTG_FS non-periodic transmit FIFO size register (Host mode)
+<             FS_GNPTXFSIZ_Host : FS_GNPTXFSIZ_Host_Register;
+---
+>       case Discriminent is
+1958a1954,1958
+>          when Host =>
+>             --  OTG_FS Receive status debug read(Host mode)
+>             FS_GRXSTSR_Host : FS_GRXSTSR_Host_Register;
+>             --  OTG_FS non-periodic transmit FIFO size register (Host mode)
+>             FS_GNPTXFSIZ_Host : FS_GNPTXFSIZ_Host_Register;
+1979,1980d1978
+<       FS_GRXSTSR_Host     at 28 range 0 .. 31;
+<       FS_GNPTXFSIZ_Host   at 40 range 0 .. 31;
+1982a1981,1982
+>       FS_GRXSTSR_Host     at 28 range 0 .. 31;
+>       FS_GNPTXFSIZ_Host   at 40 range 0 .. 31;
+diff -w stm32f429x/stm32_svd-usb_otg_hs.ads stm32f429_regen/stm32_svd-usb_otg_hs.ads
+0a1
+> with HAL;
+6d6
+< with HAL;
+2200c2200
+<    type OTG_HS_Mode is
+---
+>    type OTG_HS_GLOBAL_Disc is
+2203c2203,2205
+<       Peripheral);
+---
+>       Peripheral,
+>       Gnptxfsiz_Host,
+>       Tx0Fsiz_Peripheral);
+2207c2209
+<      (Mode : OTG_HS_Mode := Host)
+---
+>      (Discriminent : OTG_HS_GLOBAL_Disc := Host)
+2247c2249
+<       case Mode is
+---
+>       case Discriminent is
+2253,2254d2254
+<             --  OTG_HS nonperiodic transmit FIFO size register (host mode)
+<             OTG_HS_GNPTXFSIZ_Host : OTG_HS_GNPTXFSIZ_Host_Register;
+2260a2261,2264
+>          when Gnptxfsiz_Host =>
+>             --  OTG_HS nonperiodic transmit FIFO size register (host mode)
+>             OTG_HS_GNPTXFSIZ_Host : OTG_HS_GNPTXFSIZ_Host_Register;
+>          when Tx0Fsiz_Peripheral =>
+2289d2292
+<       OTG_HS_GNPTXFSIZ_Host     at 40 range 0 .. 31;
+2291a2295
+>       OTG_HS_GNPTXFSIZ_Host     at 40 range 0 .. 31;
+diff -w stm32f429x/stm32_svd-wwdg.ads stm32f429_regen/stm32_svd-wwdg.ads
+0a1
+> with HAL;
+6d6
+< with HAL;

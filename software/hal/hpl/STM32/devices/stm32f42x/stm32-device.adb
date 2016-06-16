@@ -584,10 +584,10 @@ is
 
    function System_Clock_Frequencies return RCC_System_Clocks
    is
-      Source       : constant UInt2 := RCC_Periph.CFGR.SWS;
+      Source       : constant CFGR_SWS_Field := RCC_Periph.CFGR.SWS;
       Result       : RCC_System_Clocks;
    begin
-      case Source is
+      case Source.Val is
          when 0 =>
             --  HSI as source
             Result.SYSCLK := HSI_VALUE;
@@ -599,11 +599,11 @@ is
             declare
                HSE_Source : constant Boolean := RCC_Periph.PLLCFGR.PLLSRC;
                Pllm       : constant Word :=
-                              Word (RCC_Periph.PLLCFGR.PLLM);
+                              Word (RCC_Periph.PLLCFGR.PLLM.Val);
                Plln       : constant Word :=
-                              Word (RCC_Periph.PLLCFGR.PLLN);
+                              Word (RCC_Periph.PLLCFGR.PLLN.Val);
                Pllp       : constant Word :=
-                              (Word (RCC_Periph.PLLCFGR.PLLP) + 1) * 2;
+                              (Word (RCC_Periph.PLLCFGR.PLLP.Val) + 1) * 2;
                Pllvco     : Word;
             begin
                if not HSE_Source then

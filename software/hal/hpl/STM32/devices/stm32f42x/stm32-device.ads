@@ -415,12 +415,12 @@ is
    -----------------------------
 
    type RCC_System_Clocks is record
-      SYSCLK  : Word;
-      HCLK    : Word;
-      PCLK1   : Word;
-      PCLK2   : Word;
-      TIMCLK1 : Word;
-      TIMCLK2 : Word;
+      SYSCLK  : HAL.Word;
+      HCLK    : HAL.Word;
+      PCLK1   : HAL.Word;
+      PCLK2   : HAL.Word;
+      TIMCLK1 : HAL.Word;
+      TIMCLK2 : HAL.Word;
    end record;
 
    function System_Clock_Frequencies return RCC_System_Clocks;

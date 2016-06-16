@@ -1,4 +1,4 @@
-with "hal/hpl/STM32/stm32f42x.gpr";
+with "hal/hpl/STM32/stm32f427.gpr";
 with "style.gpr";
 
 project StratoX is
@@ -12,6 +12,7 @@ project StratoX is
       "boot",
       "config",
       "driver",
+      "driver/fs",
       "hal/hil",
       "kernel",
       "modules",
@@ -64,9 +65,9 @@ project StratoX is
    end Compiler;
 
    package Binder is
-      for Default_Switches ("ada") use ("-r", 
+      for Default_Switches ("ada") use ("-r",
          "-E" -- Backtrace for exceptions
-         ); 
+         );
    end Binder;
 
    package Builder is
@@ -112,7 +113,7 @@ project StratoX is
 
       for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427", "--verbose", "--level=2", "-j2", "-d"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
       -- for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427", "--verbose", "--level=2", "-j2", "--assumptions", "-d");
-      
+
       case Build_Mode is
 
          when "debug" =>
