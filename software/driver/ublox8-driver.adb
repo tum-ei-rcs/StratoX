@@ -10,6 +10,7 @@ with Logger;
 
 
 with ublox8.Protocol; use ublox8.Protocol;
+with Ada.Real_Time; use Ada.Real_Time;
 
 package body ublox8.Driver with
 Refined_State => (State => (G_position, G_heading))
@@ -32,26 +33,67 @@ is
    end reset;
 
 
+   procedure waitForSync(isReceived : out Boolean) is
+      sync : Byte_Array (1 .. 2) := (others => Byte( 0 ));
+      start : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      timeout : Ada.Real_Time.Time_Span := Ada.Real_Time.Microseconds( 100 );
+   begin
+      while sync(1) /= UBX_SYNC1 and now < start + timeout loop
+         HIL.UART.read(UBLOX_M8N, sync(1 .. 1));
+         now := Ada.Real_Time.Clock;
+      end loop;
+      HIL.UART.read(UBLOX_M8N, sync(2 .. 2));
+      if sync(1) = UBX_SYNC1 and sync(2) = UBX_SYNC2 then
+         isReceived := True;
+      else 
+         isReceived := False;
+      end if;
+   end waitForSync;
+
+   procedure waitForAck(isReceived : out Boolean) is
+      head : Byte_Array (3 .. 6) := (others => Byte( 0 ));
+   begin
+      waitForSync(isReceived);
+      if isReceived then
+         HIL.UART.read(UBLOX_M8N, head);
+         if head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
+            Logger.log(Logger.DEBUG, "UBX Ack");
+         elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_NAK and head(5) = UBX_LENGTH_ACK_ACK then
+            Logger.log(Logger.DEBUG, "UBX NAK");
+            isReceived := False;
+         end if;
+      end if;
+   end waitForAck;
+
    procedure writeToDevice(header: UBX_Header_Array; data : Data_Type) is
       cks : Checksum_Type := Fletcher16.Checksum( header(3 .. 6) & data );
       check : UBX_Checksum_Array := (1 => cks.ck_a, 2 => cks.ck_b);
+      isReceived : Boolean := False;
+      retries : Natural := 3;
    begin
-      HIL.UART.write(UBLOX_M8N, header & data & check);
+      while isReceived = False and retries > 0 loop
+         HIL.UART.write(UBLOX_M8N, header & data & check);
+         waitForAck(isReceived);
+         retries := retries - 1;
+      end loop;
+      if retries = 0 then
+         Logger.log(Logger.DEBUG, "Timeout");
+      end if;
    end writeToDevice;
    
    
    procedure readFromDevice(data : out Data_Type) is
-      sync : Byte_Array (1 .. 2) := (others => Byte( 0 ));
+      
       head : Byte_Array (3 .. 6) := (others => Byte( 0 ));
       data_rx : Byte_Array (1 .. 92) := (others => Byte( 0 ));
       check : Byte_Array (1 .. 2) := (others => Byte( 0 ));
       cks : Checksum_Type := (others => Byte( 0 ));
+      isReceived : Boolean := False;
    begin
-      while sync(1) /= UBX_SYNC1 loop
-         HIL.UART.read(UBLOX_M8N, sync(1 .. 1));
-      end loop;
-      HIL.UART.read(UBLOX_M8N, sync(2 .. 2));
-      if sync(1) = UBX_SYNC1 and sync(2) = UBX_SYNC2 then
+      data := (others => Byte( 0 ) );
+      waitForSync(isReceived);
+      if isReceived then
          
          HIL.UART.read(UBLOX_M8N, head);
          if head(3) = UBX_CLASS_NAV and head(4) = UBX_ID_NAV_PVT and head(5) = UBX_LENGTH_NAV_PVT then
@@ -66,9 +108,14 @@ is
                data := (others => Byte( 0 ));
                Logger.log(Logger.DEBUG, "UBX invalid");
             end if;
+            
+         elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
+            Logger.log(Logger.DEBUG, "UBX Ack");
          end if;  
          
-         Logger.log(Logger.DEBUG, "UBX msg");
+         -- got class 1, id 3, length 16 -> NAV_STATUS
+         Logger.log(Logger.DEBUG, "UBX msg class " & Integer'Image(Integer(head(3))) & ", id "
+                    & Integer'Image(Integer(head(4))));
       end if;
    end readFromDevice;   
 
@@ -102,7 +149,7 @@ is
                                               
       msg_cfg_msg : Data_Type(0 .. 2) := (0 => UBX_CLASS_NAV,
                                           1 => UBX_ID_NAV_PVT,
-                                          2 => Byte( 1 ) );  -- rate in Hz?                                 
+                                          2 => Byte( 10 ) );  -- rate in Hz?                                 
    begin
       null;
       -- 1. Set binary protocol (CFG-PRT, own message)
@@ -123,7 +170,9 @@ is
       
       msg_cfg_msg(1) := UBX_ID_NAV_VELNED;
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  
-      
+
+      msg_cfg_msg(1) := UBX_ID_NAV_STATUS;
+      writeToDevice(msg_cfg_msg_head, msg_cfg_msg); 
       -- 4. set dynamic model
       
       

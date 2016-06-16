@@ -41,6 +41,7 @@ package ublox8.Protocol is
 
    -- Message IDs 
    UBX_ID_NAV_POSLLH : constant := 16#02#;
+   UBX_ID_NAV_STATUS : constant := 16#03#;
    UBX_ID_NAV_DOP : constant := 16#04#;
    UBX_ID_NAV_SOL : constant := 16#06#;
    UBX_ID_NAV_PVT : constant := 16#07#;
@@ -69,6 +70,7 @@ package ublox8.Protocol is
    UBX_LENGTH_CFG_PRT : constant := 20;
    UBX_LENGTH_CFG_MSG : constant := 8;
    UBX_LENGTH_NAV_PVT : constant := 92;
+   UBX_LENGTH_ACK_ACK : constant := 2;
 
 
    -- Message Classes and IDs 

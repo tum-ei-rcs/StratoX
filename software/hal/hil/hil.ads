@@ -66,7 +66,7 @@ is
    function toUnsigned_32( bytes : Byte_Array) return Unsigned_32
    is
       (Unsigned_32( bytes( bytes'First ) ) + Unsigned_32( bytes'First + 1 ) * 2**8 + Unsigned_32( bytes'First + 2 ) * 2**16 + Unsigned_32( bytes'First + 3 ) * 2**24 )
-   with pre => bytes'Length = 2;
+   with pre => bytes'Length = 4;
 
 
 --     procedure set_Bit( reg : in out Unsigned_16, bit : Unsigned_16_Bit_ID) is

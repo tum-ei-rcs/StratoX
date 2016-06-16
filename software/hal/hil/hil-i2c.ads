@@ -5,7 +5,7 @@ package HIL.I2C with SPARK_Mode => On is
 
    type Data_Type is array(Natural range <>) of Byte;
    
-   type Device_Type is (UNKNOWN, BARO);
+   type Device_Type is (UNKNOWN, HMC5883L);
 
    procedure initialize;
 

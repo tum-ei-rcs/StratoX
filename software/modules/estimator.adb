@@ -26,6 +26,8 @@ package body Estimator is
       Barometer.Sensor.initialize;
 
       GPS.Sensor.initialize;
+
+      Logger.log(Logger.INFO, "Estimator initialized");
    end initialize;
 
    -- fetch fresh measurement data
@@ -70,15 +72,25 @@ package body Estimator is
    begin
       -- normalize vector
 
-      -- Arctan: Only X = Y = 0 raises exception
-      -- Output range: -Cycle/2.0 to Cycle/2.0, thus -180° to 180°
-      angles.Roll  := Roll_Type ( Arctan(
-                              -gravity_vector(Z),
-                              gravity_vector(Y) ) );
 
-      g_length := Sqrt( Float(gravity_vector(Y))**2 + Float(gravity_vector(Z))**2 );
-      angles.Pitch := Pitch_Type ( Arctan( Linear_Acceleration_Type( g_length ) , gravity_vector(X) ) );
-      angles.Yaw := 0.0 * Degree;
+      -- check valid
+      if gravity_vector(Y) = 0.0 * Meter / Second**2 and gravity_vector(Z) = 0.0 * Meter / Second**2 then
+         angles.Roll := 0.0 * Degree;
+         angles.Pitch := 0.0 * Degree;
+         angles.Yaw := 0.0 * Degree;
+      else
+
+         -- Arctan: Only X = Y = 0 raises exception
+         -- Output range: -Cycle/2.0 to Cycle/2.0, thus -180° to 180°
+         angles.Roll  := Roll_Type ( Arctan(
+                                     -gravity_vector(Z),
+                                     gravity_vector(Y) ) );
+
+         g_length := Sqrt( Float(gravity_vector(Y))**2 + Float(gravity_vector(Z))**2 );
+         angles.Pitch := Pitch_Type ( Arctan( Linear_Acceleration_Type( g_length ) , gravity_vector(X) ) );
+         angles.Yaw := 0.0 * Degree;
+
+      end if;
 
       return angles;
    end Orientation;
