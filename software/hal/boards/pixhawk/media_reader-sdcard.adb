@@ -6,9 +6,9 @@ with STM32.GPIO;              use STM32.GPIO;
 with STM32.SDMMC;             use STM32.SDMMC;
 with Cortex_M.Cache;
 
-with SDIO.Driver.SDConfig; use SDIO.Driver.SDConfig;
+with Media_Reader.SDCard.Config; use Media_Reader.SDCard.Config;
 
-package body SDIO.Driver.SDCard is
+package body Media_Reader.SDCard is
 
 --     Tx_IRQ            : constant Interrupt_ID :=
 --                           Ada.Interrupts.Names.DMA2_Stream6_Interrupt;
@@ -52,7 +52,7 @@ package body SDIO.Driver.SDCard is
 
    private
       procedure Interrupt
-        with Attach_Handler => Device_SD_Configuration.SD_Interrupt,
+        with Attach_Handler => SDCard.Config.SD_Interrupt,
              Unreferenced;
       Finished  : Boolean := True;
       SD_Status : SD_Error;
@@ -425,4 +425,4 @@ package body SDIO.Driver.SDCard is
         and then DMA_Err = DMA_No_Error;
    end Read_Block;
 
-end SDIO.Driver.SDCard;
+end Media_Reader.SDCard;

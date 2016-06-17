@@ -1,0 +1,2 @@
+This directory contains hardware-specific code. For example, to read CPU registers,
+or to access on-board peripherals.

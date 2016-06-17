@@ -1,6 +1,6 @@
 with STM32.SDMMC;
 
-package SDIO.Driver.SDCard is
+package Media_Reader.SDCard is
 
    type SDCard_Controller is limited new Media_Controller with private;
 
@@ -35,4 +35,4 @@ private
       Card_Detected : Boolean := False;
    end record;
 
-end SDIO.Driver.SDCard;
+end Media_Reader.SDCard;

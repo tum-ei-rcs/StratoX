@@ -1,0 +1,3 @@
+This directory contains high-level driver. Those read/write data from/to peripherals,
+provide the necessary pre- and postprocessing, and offer an interface for the rest of
+the application.

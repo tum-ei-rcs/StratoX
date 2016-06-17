@@ -54,4 +54,23 @@ package body Cortex_M.Cache is
       null;
    end Clean_DCache;
 
+   procedure Invalidate_DCache
+     (Start : System.Address;
+      Len   : Natural)
+   is
+      pragma Unreferenced (Start, Len);
+   begin
+      null;
+   end Invalidate_DCache;
+
+   procedure Clean_Invalidate_DCache
+     (Start : System.Address;
+      Len   : Natural)
+   is
+      pragma Unreferenced (Start, Len);
+   begin
+      null;
+   end Clean_Invalidate_DCache;
+
+
 end Cortex_M.Cache;

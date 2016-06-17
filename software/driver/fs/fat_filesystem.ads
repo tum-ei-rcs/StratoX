@@ -1,5 +1,5 @@
-with Interfaces;         use Interfaces;
-with SDIO.Driver.SDCard; use SDIO.Driver.SDCard;
+with Interfaces;   use Interfaces;
+with Media_Reader; use Media_Reader;
 
 package FAT_Filesystem is
 

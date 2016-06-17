@@ -2,11 +2,14 @@
 -- System:  Stratosphere Balloon Flight Controller
 -- Author: Martin Becker (becker@rcs.ei.tum.de)
 
--- @summary raw input and output to SD card
-package SDIO.Driver is
-   procedure init;
+-- @summary read/write SD card using a file system
+
+package SDMemory.Driver is
+   procedure Init_Filesys;
    -- initialize the interface
 
    procedure SDCard_Demo;
    -- example copied from AdaCore/Ada_Drivers_Library
-end SDIO.Driver;
+
+   -- TODO: add file-style I/O procedures
+end SDMemory.Driver;

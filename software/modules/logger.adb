@@ -11,7 +11,7 @@
 --     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
 
 with HIL.UART;
-with SDIO.Driver;
+with SDMemory;
 
 package body Logger with SPARK_Mode,
   Refined_State => (LogState => (queue, logger_level))
@@ -58,7 +58,7 @@ is
       -- cannot use a discriminant for this (would violate No_Implicit_Heap_Allocations)
 
       Num_Queued : Natural := 0;
-      Not_Empty : Boolean := false; -- simple barrier (Ravenscar)
+      Not_Empty : Boolean := False; -- simple barrier (Ravenscar)
       Pos_Read : bufpos := 0;
       Pos_Write : bufpos := 0;
       Num_Overflows : Natural := 0;
@@ -87,14 +87,14 @@ is
    protected body Msg_Queue_T is       
       procedure New_Msg ( msg : in  Log_Msg ) is 
       begin
-         if (msg.valid) then         
+         if msg.valid then         
             Buffer ( Integer (Pos_Write)) := msg;
             Pos_Write := Pos_Write + 1;
-            if (Num_Queued < Buffer'Last) then               
+            if Num_Queued < Buffer'Last then               
                Num_Queued := Num_Queued + 1;    
             else -- =Buffer'Last
                Pos_Read := Pos_Read + 1; -- overwrite oldest
-               if (Num_Overflows < Natural'Last) then
+               if Num_Overflows < Natural'Last then
                   Num_Overflows := Num_Overflows + 1;
                end if;
             end if;
@@ -140,6 +140,7 @@ is
    procedure init(status : out Init_Error_Code) is
    begin
       Adapter.init(status);
+      SDMemory.Init;
    end init;
    
    function Image (level : Log_Level) return String is 
@@ -155,7 +156,7 @@ is
           
    procedure log(level : Log_Level; message : Message_Type) 
    is
-      msg : constant Log_Msg := (level => level, valid => true);
+      msg : constant Log_Msg := (level => level, valid => True);
    begin
       if Log_Level'Pos(level) <= Log_Level'Pos(logger_level) then
          Adapter.write(Log_Level'Image (level) & message);
