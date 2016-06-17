@@ -1,5 +1,5 @@
 --with "../../config.gpr";
-with "../../hal/STM32/HAL.gpr";
+with "../../hal/HAL.gpr";
 
 library project STM32F427 is
 
