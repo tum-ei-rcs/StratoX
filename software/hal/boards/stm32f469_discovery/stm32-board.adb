@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                    Copyright (C) 2016, AdaCore                           --
+--                    Copyright (C) 2015, AdaCore                           --
 --                                                                          --
 --  Redistribution and use in source and binary forms, with or without      --
 --  modification, are permitted provided that the following conditions are  --
@@ -11,9 +11,9 @@
 --        notice, this list of conditions and the following disclaimer in   --
 --        the documentation and/or other materials provided with the        --
 --        distribution.                                                     --
---     3. Neither the name of AdaCore nor the names of its contributors may --
---        be used to endorse or promote products derived from this software --
---        without specific prior written permission.
+--     3. Neither the name of STMicroelectronics nor the names of its       --
+--        contributors may be used to endorse or promote products derived   --
+--        from this software without specific prior written permission.     --
 --                                                                          --
 --   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    --
 --   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      --
@@ -29,48 +29,57 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Cortex_M.Cache is
+package body STM32.Board is
 
    ------------------
-   -- Clean_DCache --
+   -- All_LEDs_Off --
    ------------------
 
-   procedure Clean_DCache (Start, Stop : System.Address)
-   is
-      pragma Unreferenced (Start, Stop);
+   procedure All_LEDs_Off is
    begin
-      null;
-   end Clean_DCache;
+      Set (All_LEDs);
+   end All_LEDs_Off;
 
-   ------------------
-   -- Clean_DCache --
-   ------------------
+   -----------------
+   -- All_LEDs_On --
+   -----------------
 
-   procedure Clean_DCache (Start : System.Address;
-                           Len   : Natural)
-   is
-      pragma Unreferenced (Start, Len);
+   procedure All_LEDs_On is
    begin
-      null;
-   end Clean_DCache;
+      Clear (All_LEDs);
+   end All_LEDs_On;
 
-   procedure Invalidate_DCache
-     (Start : System.Address;
-      Len   : Natural)
-   is
-      pragma Unreferenced (Start, Len);
+   ---------------------
+   -- Initialize_LEDs --
+   ---------------------
+
+   procedure Initialize_LEDs is
+      Conf : GPIO_Port_Configuration;
    begin
-      null;
-   end Invalidate_DCache;
+      Enable_Clock (All_LEDs);
 
-   procedure Clean_Invalidate_DCache
-     (Start : System.Address;
-      Len   : Natural)
-   is
-      pragma Unreferenced (Start, Len);
+      Conf.Mode        := Mode_Out;
+      Conf.Output_Type := Push_Pull;
+      Conf.Speed       := Speed_100MHz;
+      Conf.Resistors   := Floating;
+
+      Configure_IO (All_LEDs, Conf);
+      All_LEDs_Off;
+   end Initialize_LEDs;
+
+   --------------------------------
+   -- Configure_User_Button_GPIO --
+   --------------------------------
+
+   procedure Configure_User_Button_GPIO is
+      Config : GPIO_Port_Configuration;
    begin
-      null;
-   end Clean_Invalidate_DCache;
+      Enable_Clock (User_Button_Point);
 
+      Config.Mode := Mode_In;
+      Config.Resistors := Floating;
 
-end Cortex_M.Cache;
+      Configure_IO (User_Button_Point, Config);
+   end Configure_User_Button_GPIO;
+
+end STM32.Board;

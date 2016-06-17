@@ -2,7 +2,8 @@
 --  V1.0.4
 --  09-December-2015
 --
---  SDCard driver. Controls the SD peripheral, SDIO version.
+-- @summary
+-- low-level SDCard driver. Controls the SD peripheral, SDIO version.
 
 with System;
 with STM32_SVD.SDIO; use STM32_SVD.SDIO;

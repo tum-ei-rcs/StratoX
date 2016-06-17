@@ -1,4 +1,4 @@
-with "hal/hpl/STM32/stm32f427.gpr";
+with "hal/boards/pixhawk.gpr";
 with "style.gpr";
 
 project StratoX is
@@ -12,6 +12,7 @@ project StratoX is
       "boot",
       "config",
       "driver",
+      "driver/fs",
       "hal/hil",
       "kernel",
       "modules",
@@ -33,7 +34,8 @@ project StratoX is
       when others => null;
    end case;
 
-   for Runtime ("ada") use "ravenscar-sfp-stm32f427";
+   --for Runtime ("ada") use "ravenscar-sfp-stm32f427";
+   for Runtime ("Ada") use Pixhawk'Runtime ("Ada");
    for Target use "arm-eabi";
 
    package Compiler is

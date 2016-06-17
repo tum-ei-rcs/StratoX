@@ -1,2 +1,5 @@
 doc/
 codepeer/
+check/
+gnatinspect.db
+default-loc.xml

@@ -1,0 +1,23 @@
+with "../hpl/STM32/stm32f427.gpr"; -- this STM device is on the pixhawk board
+
+library project Pixhawk is
+
+   for Target use "arm-eabi";
+   for Runtime ("Ada") use STM32F427'Runtime ("Ada"); -- device defines run-time
+
+   for Library_Name use "pixhawk";
+   for Library_Kind use "static";
+   for Library_Dir use "lib/pixhawk/"; -- & Config.RTS & "/" & Config.BUILD;
+   for Object_Dir use "obj/pixhawk/"; -- & Config.RTS & "/" & Config.BUILD;
+
+   -- add sources specific for pixhawk board
+   for Source_Dirs use ("pixhawk",
+                        "stm32_common"
+                        -- "stm32_common/sdram",
+                        -- "stm32_common/dma2d"
+			);
+
+   --package Compiler renames Config.Compiler;
+   --package Builder renames Config.Builder;
+
+end Pixhawk;

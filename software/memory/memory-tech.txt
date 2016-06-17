@@ -1,3 +1,0 @@
-EEPROM oder SD-Card?
-
-SD-Card writer with I2C/SPI?

@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                    Copyright (C) 2016, AdaCore                           --
+--                  Copyright (C) 2015-2016, AdaCore                        --
 --                                                                          --
 --  Redistribution and use in source and binary forms, with or without      --
 --  modification, are permitted provided that the following conditions are  --
@@ -11,9 +11,9 @@
 --        notice, this list of conditions and the following disclaimer in   --
 --        the documentation and/or other materials provided with the        --
 --        distribution.                                                     --
---     3. Neither the name of AdaCore nor the names of its contributors may --
---        be used to endorse or promote products derived from this software --
---        without specific prior written permission.
+--     3. Neither the name of STMicroelectronics nor the names of its       --
+--        contributors may be used to endorse or promote products derived   --
+--        from this software without specific prior written permission.     --
 --                                                                          --
 --   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS    --
 --   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT      --
@@ -29,48 +29,38 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Cortex_M.Cache is
+with HAL.Touch_Panel;
+with HAL.Framebuffer;
 
-   ------------------
-   -- Clean_DCache --
-   ------------------
+private with FT6x06;
+private with STM32.Device;
+private with STM32.I2C;
 
-   procedure Clean_DCache (Start, Stop : System.Address)
-   is
-      pragma Unreferenced (Start, Stop);
-   begin
-      null;
-   end Clean_DCache;
+package Touch_Panel_FT6x06 is
 
-   ------------------
-   -- Clean_DCache --
-   ------------------
+   type Touch_Panel is limited new HAL.Touch_Panel.Touch_Panel_Device
+   with private;
 
-   procedure Clean_DCache (Start : System.Address;
-                           Len   : Natural)
-   is
-      pragma Unreferenced (Start, Len);
-   begin
-      null;
-   end Clean_DCache;
+   function Initialize
+     (This : in out Touch_Panel;
+      Orientation : HAL.Framebuffer.Display_Orientation :=
+        HAL.Framebuffer.Default) return Boolean;
 
-   procedure Invalidate_DCache
-     (Start : System.Address;
-      Len   : Natural)
-   is
-      pragma Unreferenced (Start, Len);
-   begin
-      null;
-   end Invalidate_DCache;
+   procedure Initialize
+     (This : in out Touch_Panel;
+      Orientation : HAL.Framebuffer.Display_Orientation :=
+        HAL.Framebuffer.Default);
 
-   procedure Clean_Invalidate_DCache
-     (Start : System.Address;
-      Len   : Natural)
-   is
-      pragma Unreferenced (Start, Len);
-   begin
-      null;
-   end Clean_Invalidate_DCache;
+   procedure Set_Orientation
+     (This        : in out Touch_Panel;
+      Orientation : HAL.Framebuffer.Display_Orientation);
 
+private
 
-end Cortex_M.Cache;
+   TP_I2C   : STM32.I2C.I2C_Port renames STM32.Device.I2C_1;
+
+   type Touch_Panel is limited new FT6x06.FT6x06_Device
+     (Port     => TP_I2C'Access,
+      I2C_Addr => 16#54#) with null record;
+
+end Touch_Panel_FT6x06;

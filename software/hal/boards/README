@@ -1,0 +1,2 @@
+This directory contains code for devices off-chip, but on-board. E.g., a display,
+or mapping of LEDs.
