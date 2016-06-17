@@ -13,23 +13,29 @@
 with HIL; use HIL;
 with HIL.UART;
 with Units; use Units;
+with Config; use Config;
+with Interfaces; use Interfaces;
 
 package PX4IO.Driver 
 with SPARK_Mode 
 is
 
-   SERVO_ANGLE_MIN_LIMIT : constant := 0.0 * Degree;
-   SERVO_ANGLE_MAX_LIMIT : constant := 180.0 * Degree;
    
-   MOTOR_SPEED_LIMIT_MIN : constant := 0.0 * Degree / Second;
-   MOTOR_SPEED_LIMIT_MAX : constant := 10.0 * 360.0 * Degree / Second;  -- Degree per Second
+   MOTOR_SPEED_LIMIT_MIN : constant := CFG_MOTOR_SPEED_LIMIT_MIN;
+   MOTOR_SPEED_LIMIT_MAX : constant := CFG_MOTOR_SPEED_LIMIT_MAX;
 
+   SERVO_PULSE_LENGTH_LIMIT_MIN : constant := Unsigned_16 ( CFG_SERVO_PULSE_LENGTH_LIMIT_MIN / (1.0 * Micro * Second) ); -- Integer of Microseconds
+   SERVO_PULSE_LENGTH_LIMIT_MAX : constant := Unsigned_16 ( CFG_SERVO_PULSE_LENGTH_LIMIT_MAX / (1.0 * Micro * Second) );
+
+   G_Pulse : Unsigned_16 := SERVO_PULSE_LENGTH_LIMIT_MIN;
 
    type Servo_Type is (LEFT_ELEVON, RIGHT_ELEVON); 
-   subtype Servo_Angle_Type is Units.Angle_Type range SERVO_ANGLE_MIN_LIMIT .. SERVO_ANGLE_MAX_LIMIT;
+   
+   subtype Servo_Angle_Type is Units.Angle_Type range 
+      CFG_SERVO_ANGLE_LIMIT_MIN .. CFG_SERVO_ANGLE_LIMIT_MAX;
    
    subtype Motor_Speed_Type is Units.Angular_Velocity_Type range
-       MOTOR_SPEED_LIMIT_MIN .. MOTOR_SPEED_LIMIT_MAX;
+      MOTOR_SPEED_LIMIT_MIN .. MOTOR_SPEED_LIMIT_MAX;
    
 
    -- init

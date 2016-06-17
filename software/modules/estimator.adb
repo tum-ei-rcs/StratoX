@@ -42,7 +42,7 @@ package body Estimator is
 
 
 
-      Logger.log(Logger.DEBUG,
+      Logger.log(Logger.TRACE,
                  "Acc: " & Image( Acc(X) ) &
                  ", " & Image( Acc(Y) ) &
                  ", " & Image( Acc(Z) ) );
@@ -52,7 +52,7 @@ package body Estimator is
 --                   ", " & Integer_16'Image(Acc.data.Gyro_Z) );
 
       G_Object_Orientation := Orientation( Acc );
-      Logger.log(Logger.DEBUG,
+      Logger.log(Logger.TRACE,
                  "Rad: " & AImage( G_Object_Orientation.Roll ) &
                  ", " & AImage( G_Object_Orientation.Pitch ) &
                  ", " & AImage( G_Object_Orientation.Yaw ) );

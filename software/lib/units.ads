@@ -232,7 +232,15 @@ package Units with
    function To_Time
      (rtime : Ada.Real_Time.Time) return Time_Type is
      (Time_Type
-        (Float ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Nanoseconds (1)) / 1.0e-9));
+        (Float ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Nanoseconds (1)) * 1.0e-9));
+
+   function To_Time
+     (rtime : Ada.Real_Time.Time_Span) return Time_Type is
+     (Time_Type
+        (Float ((rtime) / Ada.Real_Time.Nanoseconds (1)) * 1.0e-9));
+
+
+  -- procedure Saturate(input : Unit_Type; output : in out Unit_Type);
 
 
    -- function Radian( degree : Float ) return Float

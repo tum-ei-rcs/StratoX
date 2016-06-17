@@ -261,9 +261,9 @@ is
    function servo_Duty_Cycle(angle : in Servo_Angle_Type) return Unsigned_16 
    with post => servo_Duty_Cycle'Result >= 1_000 and servo_Duty_Cycle'Result <= 2_000
    is
-      -- modulo : Angle_Type := Angle_Type'Remainder(angle, SERVO_ANGLE_MAX_LIMIT + 1.0);
+      pulse_range : constant Unit_Type := Unit_Type( SERVO_PULSE_LENGTH_LIMIT_MAX - SERVO_PULSE_LENGTH_LIMIT_MIN);
    begin
-      return 1_000 + Unsigned_16( angle / SERVO_ANGLE_MAX_LIMIT * 1000.0);
+      return SERVO_PULSE_LENGTH_LIMIT_MIN + Unsigned_16( (angle - Servo_Angle_Type'First) / (Servo_Angle_Type'Last - Servo_Angle_Type'First) * pulse_range );
    end servo_Duty_Cycle;
    
    
@@ -309,10 +309,7 @@ is
       -- check state
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
       if HIL.isSet( HIL.toUnsigned_16( Status ), PX4IO_P_STATUS_FLAGS_FAILSAFE ) then
-         Logger.log(Logger.WARN, "Failsafe");
-         null;
-      else
-         Logger.log(Logger.DEBUG, ".");
+         Logger.log(Logger.WARN, "PX4IO Failsafe");
          null;
       end if;
       

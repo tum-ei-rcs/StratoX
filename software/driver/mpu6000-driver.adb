@@ -76,7 +76,7 @@ is
 
    function Test_Connection return Boolean
    is
-      Who_Am_I : Byte;
+      Who_Am_I : Byte := Byte( 0 );
    begin
       Read_Byte_At_Register
         (Reg_Addr => MPU6000_RA_WHO_AM_I,
@@ -518,7 +518,7 @@ is
      (Reg_Addr  : Byte;
       Bit_Pos   : Byte_Bit_Position) return Boolean
    is
-      Register_Value : Byte;
+      Register_Value : Byte := Byte (0);
    begin
       Read_Byte_At_Register (Reg_Addr, Register_Value);
       return (if (Register_Value and Shift_Left (1, Bit_Pos)) /= 0 then
@@ -562,7 +562,7 @@ is
       Bit_Pos   : Byte_Bit_Position;
       Bit_Value : Boolean)
    is
-      Register_Value : Byte;
+      Register_Value : Byte := Byte( 0 );
    begin
       Read_Byte_At_Register (Reg_Addr, Register_Value);
 
@@ -584,7 +584,7 @@ is
       Data          : Byte;
       Length        : Byte_Bit_Position)
    is
-      Register_Value : Byte;
+      Register_Value : Byte := Byte (0);
       Mask           : Byte;
       Data_Aux       : Byte := Data;
    begin

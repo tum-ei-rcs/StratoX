@@ -153,6 +153,11 @@ package body Main is
             when 's' =>
                null;
                --PX4IO.Driver.read_Status;
+            when 'r' =>
+                 Logger.log(Logger.INFO,
+                 "RPY: " & AImage( body_info.orientation.Roll ) &
+                 ", " & AImage( body_info.orientation.Pitch ) &
+                 ", " & AImage( body_info.orientation.Yaw ) );
             when 'l' =>
                LED_Manager.LED_blink (LED_Manager.FAST);
             when 'd' =>
