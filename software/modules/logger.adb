@@ -3,8 +3,8 @@
 -- Author: Emanuel Regnath (emanuel.regnath@tum.de)
 -- 
 -- Description: 
---     allows logging of string messages at several logging levels. Easy porting 
---     to different hardware, only change the adapter methods. 
+--     allows logging of structured messages at several logging levels. 
+--     Simultaneously writes to UART, to SD card and to data link (TODO).
 --
 -- Usage: 
 --     Logger.init  -- initializes the Logger
@@ -25,7 +25,9 @@ is
        record
           valid : Boolean := False;
           level : Log_Level := TRACE;
-         -- msg   : ULog.Message'Class; -- error: class-wide subtype with unknown discriminants in component declaration
+          -- msg : ULog.Message'Class; -- error: class-wide subtype with unknown discriminants in component declaration
+          -- msg : ULog.Message; -- error: type of a component cannot be abstract
+          
        end record;
    
    -- the type for the queue buffer

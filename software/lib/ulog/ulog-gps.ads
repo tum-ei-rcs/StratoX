@@ -22,9 +22,14 @@ package ULog.GPS with SPARK_Mode is
       alt      : Interfaces.IEEE_Float_32 := 0.0;
    end record;
 
-   overriding function Size (msg : in Message_GPS) return Interfaces.Unsigned_16;
+   overriding
+   function  Size (msg : in Message_GPS) return Interfaces.Unsigned_16;
+
+   overriding
+   procedure Get_Format (msg : in Message_GPS; bytes : out HIL.Byte_Array);
 
 private
-   overriding procedure Flatten (msg : in Message_GPS; bytes : out HIL.Byte_Array);
+   overriding
+   procedure Flatten (msg : in Message_GPS; bytes : out HIL.Byte_Array);
 
 end ULog.GPS;
