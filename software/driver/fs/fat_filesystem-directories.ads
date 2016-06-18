@@ -1,4 +1,4 @@
-package FAT_Filesystem.Directories is
+package FAT_Filesystem.Directories with SPARK_Mode is
 
    type Directory_Handle is private;
 
@@ -31,7 +31,7 @@ package FAT_Filesystem.Directories is
    function Is_Archive (E : Directory_Entry) return Boolean;
 
 private
-
+   pragma SPARK_Mode (Off);
 
    type FAT_Directory_Entry_Attribute is record
       Read_Only : Boolean;

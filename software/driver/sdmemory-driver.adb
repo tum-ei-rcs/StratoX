@@ -28,7 +28,6 @@ package body SDMemory.Driver is
 
       Status         : FAT_Filesystem.Status_Code;
 
-      Y              : Natural := 0;
       Dir            : Directory_Handle;
       Ent            : Directory_Entry;
 
@@ -56,8 +55,6 @@ package body SDMemory.Driver is
             end loop;
 
          else
---              Display.Get_Hidden_Buffer (1).Fill (Black);
-            Y := 0;
             Error_State := False;
 
             SD_Card_Info := SD_Controller.Get_Card_Information;
@@ -75,8 +72,6 @@ package body SDMemory.Driver is
 --                       White,
 --                       Transparent);
 --                    Display.Update_Layer (1, True);
-                  Y := Y + 13;
-
                   exit;
                end if;
 
@@ -93,82 +88,34 @@ package body SDMemory.Driver is
                Error_State := True;
 
                if Status = No_MBR_Found then
---                    Draw_String
---                      (Display.Get_Hidden_Buffer (1),
---                       (0, Y),
---                       "Not an MBR partition system",
---                       BMP_Fonts.Font12x12,
---                       HAL.Bitmap.Red,
---                       Transparent);
---                    Display.Update_Layer (1, True);
-                  Y := Y + 13;
-
+                  null;
                elsif Status = No_Partition_Found then
---                    Draw_String
---                      (Display.Get_Hidden_Buffer (1),
---                       (0, Y),
---                       "No valid partition found",
---                       BMP_Fonts.Font12x12,
---                       HAL.Bitmap.Red,
---                       Transparent);
---                    Display.Update_Layer (1, True);
-                  Y := Y + 13;
-
+                  null;
                else
---                    Draw_String
---                      (Display.Get_Hidden_Buffer (1),
---                       (0, Y),
---                       "Error reading the card: " & Status'Img,
---                       BMP_Fonts.Font12x12,
---                       HAL.Bitmap.Red,
---                       Transparent);
---                    Display.Update_Layer (1, True);
-                  Y := Y + 13;
+                  --  Error reading the card: & Status'Img
+                  null;
                end if;
             end if;
 
             if not Error_State then
---                 Draw_String
---                   (Display.Get_Hidden_Buffer (1),
---                    (0, Y),
---                    Volume_Label (FS.all) & " (" & File_System_Type (FS.all) & "):",
---                    BMP_Fonts.Font12x12,
---                    White,
---                    Transparent);
-               Y := Y + 25;
+               -- Volume_Label (FS.all) & " (" & File_System_Type (FS.all) & "):",
 
                if Open_Root_Directory (FS, Dir) /= OK then
---                    Draw_String
---                      (Display.Get_Hidden_Buffer (1),
---                       (0, Y),
---                       "!!! Error reading the root directory",
---                       BMP_Fonts.Font12x12,
---                       HAL.Bitmap.Red,
---                       Transparent);
---                    Display.Update_Layer (1, True);
+                  --  !!! Error reading the root directory
                   Close (FS);
-                  Y := Y + 13;
                   Error_State := True;
                end if;
             end if;
 
             if not Error_State then
                while Read (Dir, Ent) = OK loop
---                    Draw_String
---                      (Display.Get_Hidden_Buffer (1),
---                       (0, Y),
---                       Name (Ent) & (if Is_Subdirectory (Ent) then "/" else ""),
---                       BMP_Fonts.Font12x12,
---                       (if Is_Hidden (Ent) then Gray else White),
---                       Transparent);
-                  Y := Y + 16;
+                  --  Name (Ent) & (if Is_Subdirectory (Ent) then "/" else ""),
+                  null;
                end loop;
 
                Close (Dir);
                Close (FS);
             end if;
-
---              Display.Update_Layer (1);
 
             loop
                if not Card_Present (SD_Controller) then

@@ -18,7 +18,8 @@ project StratoX is
       "modules",
       "modules/sensors",
       "modules/actuators",
-      "lib"
+      "lib",
+      "lib/ulog"
    );
 
    for Object_Dir use "../obj";

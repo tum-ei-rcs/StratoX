@@ -38,18 +38,12 @@ is
    -- adjust the minimum level that is kept. messages below that
    -- level are discarded silently.
    procedure set_Log_Level(level : Log_Level);
-         
---     -- sporadic logging task waiting for non-empty queue
---     task Logging_Task is
---        pragma Priority (System.Priority'First); -- lowest prio for logging
---     end Logging_Task;
-   
--- TODO: separate task for SDIO logging, reading from a buffer. Because SDIO is slow.
+           
 private
    -- FIXME: documentation required
    package Adapter is
       procedure init(status : out Init_Error_Code);
       procedure write(message : Message_Type);
    end Adapter;              
-
+   
 end Logger;

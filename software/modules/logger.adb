@@ -10,11 +10,14 @@
 --     Logger.init  -- initializes the Logger
 --     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
 
+with System;
 with HIL.UART;
 with SDMemory;
+with ULog;
+with ULog.GPS;
 
 package body Logger with SPARK_Mode,
-  Refined_State => (LogState => (queue, logger_level))
+  Refined_State => (LogState => (queue, Logging_Task, logger_level, msg_gps))
 is  
   
    -- one message object
@@ -22,7 +25,7 @@ is
        record
           valid : Boolean := False;
           level : Log_Level := TRACE;
-          -- TODO
+         -- msg   : ULog.Message'Class; -- error: class-wide subtype with unknown discriminants in component declaration
        end record;
    
    -- the type for the queue buffer
@@ -67,22 +70,43 @@ is
       -- non-simple barrier (=> Ravenscar violation).
    end Msg_Queue_T; 
       
---     -- the task which logs in the background
---     task body Logging_Task is 
---        msg : Log_Msg;
---     begin
---        loop
---           queue.Get_Msg (msg);
---           if (msg.valid) then
---              null; -- TODO: write to SD card and forward to radio link
---           end if;
---        end loop;
---     end Logging_Task;   
+   -- sporadic logging task waking up when message is enqueued
+   task Logging_Task is
+      pragma Priority (System.Priority'First); -- lowest prio for logging
+   end Logging_Task;
+   
+   ----------------------------
+   --  Instatiation / Body   --
+   ----------------------------
    
    -- internal states
-   queue : Msg_Queue_T;  
+   queue        : Msg_Queue_T;  
    logger_level : Log_Level := DEBUG;
    
+   -- test (remove...just for sake of "with"ing ULog.GPS and keeping SPARK happy
+   msg_gps : ULog.GPS.Message_GPS;
+
+   -- the task which logs to SD card in the background
+   task body Logging_Task is 
+      msg : Log_Msg;
+      BUFLEN : constant := 1024;
+      bytes : HIL.Byte_Array (1 .. BUFLEN);
+   begin     
+      ULog.Get_Header (bytes); -- possibly in chunks, because it's describing all messages
+      --  TODO: start new file, write header
+      --  sdmemory.write(bytes);
+      loop
+         queue.Get_Msg (msg);
+         if msg.valid then
+            -- TODO: write to SD card and forward to radio link
+            null; 
+            --ULog.Serialize (msg, bytes);
+            --sdmemory.write(bytes);                  
+         end if;
+         -- TODO: occasionally log queue state (overflows, num_queued).
+      end loop;
+   end Logging_Task;   
+      
    -- implementation of the message queue
    protected body Msg_Queue_T is       
       procedure New_Msg ( msg : in  Log_Msg ) is 

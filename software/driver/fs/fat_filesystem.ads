@@ -1,7 +1,7 @@
 with Interfaces;   use Interfaces;
 with Media_Reader; use Media_Reader;
 
-package FAT_Filesystem is
+package FAT_Filesystem with SPARK_Mode is
 
    MAX_VOLUMES           : constant := 1;
    --  Maximum number of mounted volumes
@@ -120,6 +120,7 @@ package FAT_Filesystem is
      with Pre => Version (FS) = FAT32;
 
 private
+   pragma SPARK_Mode (Off);
 
    type FAT_Disk_Parameter (Version : FAT_Version := FAT16) is record
       OEM_Name                : String (1 .. 8);
