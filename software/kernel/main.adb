@@ -14,6 +14,7 @@ with Units.Navigation;   use Units.Navigation;
 with MPU6000.Driver;
 with HIL.UART;
 with HIL.SPI;
+with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
 
@@ -53,9 +54,9 @@ package body Main is
    procedure initialize is
       result : Boolean := False;
 
---        Test             : Float       := Sin (100.0);
---        Foo              : Real_Vector := (10.0, 10.0, 10.0);
---        A, B, C, D, E, F : Integer_16  := 0;
+      --        Test             : Float       := Sin (100.0);
+      --        Foo              : Real_Vector := (10.0, 10.0, 10.0);
+      --        A, B, C, D, E, F : Integer_16  := 0;
    begin
 
 --        Test := abs (Foo);
@@ -68,6 +69,8 @@ package body Main is
       --MS5611.Driver.reset;
       MPU6000.Driver.Reset;
 
+      NVRAM.Init;
+
       -- wait to satisfy some timing
       delay until Clock + Milliseconds (50);
 
@@ -77,6 +80,21 @@ package body Main is
 
       Estimator.initialize;
       Controller.initialize;
+
+      -- Illustration how to use NVRAM
+      declare
+         num_boots : HIL.Byte;
+      begin
+         NVRAM.Load (NVRAM.VARIABLE_BOOTCOUNTER, num_boots);
+         if num_boots < HIL.Byte'Last then
+            num_boots := num_boots + 1;
+            NVRAM.Store (NVRAM.VARIABLE_BOOTCOUNTER, num_boots);
+         end if;
+         Logger.log (Logger.INFO, "Boot number: " & HIL.Byte'Image(num_boots));
+      end;
+
+      -- TODO: pick up last mission state from NVRAM and continue where
+      -- we left (that happens in case of loss of power)
 
    end initialize;
 
@@ -96,11 +114,11 @@ package body Main is
 
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
-      
-      
+
+
       body_info : Body_Type;
-      
-      
+
+
    begin
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
@@ -168,14 +186,14 @@ package body Main is
 
          -- Estimator
          Estimator.update;
-         
+
          body_info.orientation := Estimator.get_Orientation;
-         
+
          -- Controller
          Controller.set_Current_Orientation( body_info.orientation );
          Controller.runOneCycle;
-         
-         
+
+
 
          -- SPI Test
          --HIL.SPI.select_Chip(HIL.SPI.Extern);
@@ -186,6 +204,8 @@ package body Main is
          if loop_duration_max < (Clock - loop_time_start) then
             loop_duration_max := Clock - loop_time_start;
          end if;
+
+         -- TODO: write mission state to NVRAM, if it has changed.
 
          -- wait remaining loop time
          delay until loop_time_start + Milliseconds (MAIN_TICK_RATE_MS);

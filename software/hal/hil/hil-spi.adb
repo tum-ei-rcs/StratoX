@@ -60,9 +60,13 @@ is
          HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, SIGNAL_SELECT);
       when MPU6000 =>
          HIL.GPIO.write(HIL.GPIO.SPI_CS_MPU6000, SIGNAL_SELECT);
+      when FRAM =>
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_FRAM, SIGNAL_SELECT);
       when Extern =>
          HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, SIGNAL_SELECT);
-      when others => null;
+      when Magneto =>
+         null; -- TODO
+      -- dont use "others=>" here for guaranteed coverage
       end case;
    end select_Chip;
       
@@ -77,7 +81,11 @@ is
          HIL.GPIO.write(HIL.GPIO.SPI_CS_MPU6000, SIGNAL_DESELECT);
       when Extern =>
          HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, SIGNAL_DESELECT);
-      when others => null;
+      when FRAM =>
+         HIL.GPIO.write(HIL.GPIO.SPI_CS_FRAM, SIGNAL_DESELECT);
+      when Magneto =>
+         null; -- TODO                          
+      -- dont use "others=>" here for guaranteed coverage
       end case;
    end deselect_Chip;
 

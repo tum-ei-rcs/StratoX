@@ -1,9 +1,12 @@
+-- @summary
+-- connects HAL to actual pin definitions.
+-- FIXME: move to boards, actually?
 package HIL.SPI with
      Spark_Mode => On
      -- Abstract_State => Deselect 
 is
 
-   type Device_ID_Type is (Barometer, Magneto, MPU6000, Extern);
+   type Device_ID_Type is (Barometer, Magneto, MPU6000, FRAM, Extern);
 
    type Data_Type is array (Natural range <>) of Byte;
 

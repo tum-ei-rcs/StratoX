@@ -1,44 +1,47 @@
-
 with STM32.GPIO;  use STM32.GPIO;
 with STM32.Device;
 
+-- @summary
+-- Maps GPIO pins and setup alternative functions. For Pixhawk.
 package body HIL.GPIO with
    SPARK_Mode => Off
 is
+   subtype Dev_GPIO is  STM32.GPIO.GPIO_Point; -- abbreviate the long name
 
-   SPI1_SCK  : constant STM32.GPIO.GPIO_Point := STM32.Device.PA5;
-   SPI1_MISO : constant STM32.GPIO.GPIO_Point := STM32.Device.PA6;
-   SPI1_MOSI : constant STM32.GPIO.GPIO_Point := STM32.Device.PA7;
+   SPI1_SCK        : constant Dev_GPIO := STM32.Device.PA5;
+   SPI1_MISO       : constant Dev_GPIO := STM32.Device.PA6;
+   SPI1_MOSI       : constant Dev_GPIO := STM32.Device.PA7;
+   SPI1_CS_MS5611  : constant Dev_GPIO := STM32.Device.PD7;   -- Baro
+   SPI1_CS_MPU6000 : constant Dev_GPIO := STM32.Device.PC2;   -- Acc/Gyro
+   SPI1_CS_LSM303D : constant Dev_GPIO := STM32.Device.PC15;  -- Acc/Mag
+   SPI1_CS_L3GD20H : constant Dev_GPIO := STM32.Device.PC13;  -- Gyro
 
-   SPI1_CS_MS5611  : constant STM32.GPIO.GPIO_Point := STM32.Device.PD7;   -- Baro
-   SPI1_CS_MPU6000 : constant STM32.GPIO.GPIO_Point := STM32.Device.PC2;   -- Acc/Gyro
-   SPI1_CS_LSM303D : constant STM32.GPIO.GPIO_Point := STM32.Device.PC15;  -- Acc/Mag
-   SPI1_CS_L3GD20H : constant STM32.GPIO.GPIO_Point := STM32.Device.PC13;  -- Gyro
+   SPI2_SCK     : constant Dev_GPIO := STM32.Device.PB13;
+   SPI2_MISO    : constant Dev_GPIO := STM32.Device.PB14;
+   SPI2_MOSI    : constant Dev_GPIO := STM32.Device.PB15;
+   SPI2_CS_FRAM : constant Dev_GPIO := STM32.Device.PD10;  -- FRAM
 
+   SPI4_SCK  : constant Dev_GPIO := STM32.Device.PE2;
+   SPI4_MISO : constant Dev_GPIO := STM32.Device.PE5;
+   SPI4_MOSI : constant Dev_GPIO := STM32.Device.PE6;
+   SPI4_CS   : constant Dev_GPIO := STM32.Device.PE4;
 
-   SPI4_SCK        : constant STM32.GPIO.GPIO_Point := STM32.Device.PE2;
-   SPI4_MISO       : constant STM32.GPIO.GPIO_Point := STM32.Device.PE5;
-   SPI4_MOSI       : constant STM32.GPIO.GPIO_Point := STM32.Device.PE6;
-   SPI4_CS         : constant STM32.GPIO.GPIO_Point := STM32.Device.PE4;
+   I2C1_SCL : constant Dev_GPIO := STM32.Device.PB8;
+   I2C1_SDA : constant Dev_GPIO := STM32.Device.PB9;
 
-   I2C1_SCL : constant STM32.GPIO.GPIO_Point := STM32.Device.PB8;
-   I2C1_SDA : constant STM32.GPIO.GPIO_Point := STM32.Device.PB9;
+   UART2_RX : constant Dev_GPIO := STM32.Device.PD6;
+   UART2_TX : constant Dev_GPIO := STM32.Device.PD5;
 
+   UART3_RX : constant Dev_GPIO := STM32.Device.PD9;
+   UART3_TX : constant Dev_GPIO := STM32.Device.PD8;
 
+   UART4_RX : constant Dev_GPIO := STM32.Device.PA1;
+   UART4_TX : constant Dev_GPIO := STM32.Device.PA0;
 
-   UART2_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD6;
-   UART2_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD5;
+   UART6_RX : constant Dev_GPIO := STM32.Device.PC7;
+   UART6_TX : constant Dev_GPIO := STM32.Device.PC6;
 
-   UART3_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD9;
-   UART3_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PD8;
-
-   UART4_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PA1;
-   UART4_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PA0;
-
-   UART6_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PC7;
-   UART6_TX : constant STM32.GPIO.GPIO_Point := STM32.Device.PC6;
-
-   UART1_RX : constant STM32.GPIO.GPIO_Point := STM32.Device.PA10;
+   UART1_RX : constant Dev_GPIO := STM32.Device.PA10;
 
 
 
@@ -46,6 +49,12 @@ is
                                                       Mode => Mode_AF,
                                                       Output_Type => Push_Pull,
                                                       Speed => Speed_50MHz,
+                                                      Resistors => Floating );
+
+   Config_SPI2 : constant GPIO_Port_Configuration := (
+                                                      Mode => Mode_AF,
+                                                      Output_Type => Push_Pull,
+                                                      Speed => Speed_25MHz, -- FRAM max. 40
                                                       Resistors => Floating );
 
    Config_I2C1 : constant GPIO_Port_Configuration := (
@@ -75,12 +84,13 @@ is
 
    function map(Point : GPIO_Point_Type) return GPIO_Point is
    ( case Point is
-         when RED_LED     => STM32.Device.PE12,
-         when SPI_CS_BARO    => SPI1_CS_MS5611,
-         when SPI_CS_MPU6000 => SPI1_CS_MPU6000,
-         when SPI_CS_LSM303D => SPI1_CS_LSM303D,
-         when SPI_CS_L3GD20H => SPI1_CS_L3GD20H,
-         when SPI_CS_EXT  => SPI4_CS
+       when RED_LED        => STM32.Device.PE12,
+       when SPI_CS_BARO    => SPI1_CS_MS5611,
+       when SPI_CS_MPU6000 => SPI1_CS_MPU6000,
+       when SPI_CS_LSM303D => SPI1_CS_LSM303D,
+       when SPI_CS_L3GD20H => SPI1_CS_L3GD20H,
+       when SPI_CS_FRAM    => SPI2_CS_FRAM,
+       when SPI_CS_EXT     => SPI4_CS
      );
 
 
@@ -116,15 +126,17 @@ is
       -- configure LED
       Configure_IO( Points => (1 => map(RED_LED)), Config => Config_Out );
 
-
-
-      --configure SPI 1
+      -- configure SPI 1
       Configure_IO( Points => (SPI1_SCK, SPI1_MISO, SPI1_MOSI), Config => Config_SPI1 );
-
       Configure_Alternate_Function(
                                    Points => (1 => SPI1_SCK, 2 => SPI1_MOSI, 3 => SPI1_MISO),
                                    AF     => GPIO_AF_SPI1);
 
+      -- configure SPI 2
+      Configure_IO( Points => (SPI2_SCK, SPI2_MISO, SPI2_MOSI), Config => Config_SPI2 );
+      Configure_Alternate_Function(
+                                   Points => (1 => SPI2_SCK, 2 => SPI2_MOSI, 3 => SPI2_MISO),
+                                   AF     => GPIO_AF_SPI2);
 
       -- configure Baro ChipSelect
       Configure_IO( Point => map(SPI_CS_BARO), Config => Config_Out );
@@ -146,6 +158,10 @@ is
       Point := map(SPI_CS_L3GD20H);
       STM32.GPIO.Set( This => Point );
 
+      -- configure FRAM ChipSelect
+      Configure_IO( Point => map(SPI_CS_FRAM), Config => Config_Out );
+      Point := map(SPI_CS_FRAM);
+      STM32.GPIO.Set( This => Point );
 
       --configure SPI 4
       Configure_IO( Points => (SPI4_SCK, SPI4_MISO, SPI4_MOSI), Config => Config_SPI1 );

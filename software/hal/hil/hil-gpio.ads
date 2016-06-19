@@ -13,12 +13,13 @@ package HIL.GPIO with SPARK_Mode is
       HIGH, LOW);
 
    type GPIO_Point_Type is (
-      RED_LED,
-      SPI_CS_BARO,
-      SPI_CS_MPU6000,
-      SPI_CS_LSM303D,
-      SPI_CS_L3GD20H,
-      SPI_CS_EXT
+                            RED_LED,
+                            SPI_CS_BARO,
+                            SPI_CS_MPU6000,
+                            SPI_CS_LSM303D,
+                            SPI_CS_L3GD20H,
+                            SPI_CS_FRAM,
+                            SPI_CS_EXT
    );
 
    subtype Point_Out_Type is GPIO_Point_Type;
