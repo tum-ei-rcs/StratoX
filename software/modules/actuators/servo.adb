@@ -9,7 +9,7 @@ package body Servo is
       Driver.initialize;
    end initialize;
 
-   procedure set_Angle(servo : Servo_Type; angle : Angle_Type) is
+   procedure set_Angle(servo : Servo_Type; angle : Servo_Angle_Type) is
    begin
       case(servo) is
          when LEFT_ELEVON =>

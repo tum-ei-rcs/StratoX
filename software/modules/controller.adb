@@ -5,9 +5,19 @@ with Generic_PID_Controller;
 with Logger;
 with Config.Software;
 
+with Ada.Real_Time;
+use type Ada.Real_Time.Time;
+use type Ada.Real_Time.Time_Span;
+
 package body Controller is
 
-   package Pitch_PID_Controller is new Generic_PID_Controller(Angle_Type, Angle_Type, Unit_Type, -100.0*Degree, 100.0*Degree);
+   package Pitch_PID_Controller is new Generic_PID_Controller(Pitch_Type,
+                                                              Elevon_Angle_Type,
+                                                              Unit_Type,
+                                                              -100.0*Degree,
+                                                              100.0*Degree,
+                                                              Elevon_Angle_Type'First,
+                                                              Elevon_Angle_Type'Last);
 
    PID_Pitch : Pitch_PID_Controller.Pid_Object;
 
@@ -19,6 +29,8 @@ package body Controller is
 
 
    G_Target_Pitch : Pitch_Type := -3.0 * Degree;
+
+   G_Last_Call_Time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
 
 
    G_Plane_Control : Plane_Control_Type := (others => 0.0 * Degree);
@@ -91,8 +103,10 @@ package body Controller is
 
    procedure control_Pitch is
       error : Pitch_Type := ( G_Object_Orientation.Pitch - G_Target_Pitch );
-      dt : Time_Type := 100.0 * Milli * Second;
+      now   : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt : Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
+      G_Last_Call_Time := now;
       G_Plane_Control.Elevator := Pitch_PID_Controller.step(PID_Pitch, error, dt);
    end control_Pitch;
 

@@ -8,6 +8,7 @@
 -- Description:
 -- Hardware Configuration of the board.
 
+with Units; use Units;
 
 package Config is
 
@@ -17,5 +18,15 @@ package Config is
 
 
    OPTIMAL_PITCH : constant := -5.0;
+
+   CFG_SERVO_ANGLE_LIMIT_MIN : constant := -90.0 * Degree;
+   CFG_SERVO_ANGLE_LIMIT_MAX : constant :=  90.0 * Degree;
+
+   CFG_SERVO_PULSE_LENGTH_LIMIT_MIN : constant :=  1.100 * Milli*Second;
+   CFG_SERVO_PULSE_LENGTH_LIMIT_MAX : constant :=  1.900 * Milli*Second;
+
+
+   CFG_MOTOR_SPEED_LIMIT_MIN : constant := 0.0 * Degree / Second;
+   CFG_MOTOR_SPEED_LIMIT_MAX : constant := 10.0 * 360.0 * Degree / Second;  -- Degree per Second
 
 end Config;
