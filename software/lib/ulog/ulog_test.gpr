@@ -1,0 +1,13 @@
+project ULog_Test is
+
+   for Object_Dir use "obj/";
+   for Source_Dirs use (".", "test");
+
+   package Compiler is
+      for Switches ("Ada") use ("-g", "-O2", "-gnaty");
+   end Compiler;
+
+   for Main use ("main.adb");
+
+end ULog_Test;
+

@@ -7,7 +7,7 @@ with Fletcher16; use Fletcher16;
 with Config.Software;
 
 with Logger;
-
+with ULog.GPS;
 
 with ublox8.Protocol; use ublox8.Protocol;
 with Ada.Real_Time; use Ada.Real_Time;
@@ -181,9 +181,14 @@ is
    -- read measurements values. Should be called periodically.
    procedure update_val is
       data_rx : Data_Type(1 .. 92) := (others => 0);
+      gpsmsg : ULog.GPS.Message;
    begin
       readFromDevice(data_rx);
       G_position.Longitude := Unit_Type(Float( HIL.toUnsigned_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
+
+      -- logging
+      --gpsmsg.lon := G_position.Longitude;
+      Logger.log_ulog (level => Logger.SENSOR, msg => gpsmsg);
    end update_val;
 
 

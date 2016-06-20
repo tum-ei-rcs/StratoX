@@ -13,25 +13,14 @@
 with System;
 with HIL.UART;
 with SDMemory;
-with ULog;
 with ULog.GPS;
 
 package body Logger with SPARK_Mode,
   Refined_State => (LogState => (queue, Logging_Task, logger_level, msg_gps))
 is  
-  
-   -- one message object
-   type Log_Msg is
-       record
-          valid : Boolean := False;
-          level : Log_Level := TRACE;
-          -- msg : ULog.Message'Class; -- error: class-wide subtype with unknown discriminants in component declaration
-          -- msg : ULog.Message; -- error: type of a component cannot be abstract
-          
-       end record;
-   
+    
    -- the type for the queue buffer
-   type Buffer_T is array (Natural range <>) of Log_Msg;
+   type Buffer_T is array (Natural range <>) of ULog.Message;
    type bufpos is mod QUEUE_LENGTH;
    
    -- if GNATprove crashes with reference to that file,
@@ -40,13 +29,13 @@ is
    
    -- protected type to implement the buffer
    protected type Msg_Queue_T is  
-      procedure New_Msg (msg : in  Log_Msg);      
+      procedure New_Msg (msg : in ULog.Message);      
       -- enqueue new message. this is not blocking, except to ensure mutex.
       -- can silently fail if buffer is full
       -- FIXME: how can we specify a precondition on the private variable?
       -- for now we put an assertion in the body     
       
-      entry Get_Msg (msg : out Log_Msg);
+      entry Get_Msg (msg : out ULog.Message);
       -- try to get new message from buffer. if empty, this is blocking 
       -- until buffer has data, and then returns it.
       -- FIXME: how can we specify a precondition on the private variable?
@@ -86,11 +75,11 @@ is
    logger_level : Log_Level := DEBUG;
    
    -- test (remove...just for sake of "with"ing ULog.GPS and keeping SPARK happy
-   msg_gps : ULog.GPS.Message_GPS;
+   msg_gps : ULog.GPS.Message;
 
    -- the task which logs to SD card in the background
    task body Logging_Task is 
-      msg : Log_Msg;
+      msg : ULog.Message;
       BUFLEN : constant := 1024;
       bytes : HIL.Byte_Array (1 .. BUFLEN);
    begin     
@@ -99,30 +88,29 @@ is
       --  sdmemory.write(bytes);
       loop
          queue.Get_Msg (msg);
-         if msg.valid then
-            -- TODO: write to SD card and forward to radio link
-            null; 
-            --ULog.Serialize (msg, bytes);
-            --sdmemory.write(bytes);                  
-         end if;
+         
+         -- TODO: write to SD card and forward to radio link
+         null; 
+         ULog.Serialize (msg, bytes); -- FIXME: how to ensure enough buffer?
+         --sdmemory.write(bytes);                  
+
          -- TODO: occasionally log queue state (overflows, num_queued).
       end loop;
    end Logging_Task;   
       
    -- implementation of the message queue
    protected body Msg_Queue_T is       
-      procedure New_Msg ( msg : in  Log_Msg ) is 
+      procedure New_Msg (msg : in ULog.Message) is 
       begin
-         if msg.valid then         
-            Buffer ( Integer (Pos_Write)) := msg;
-            Pos_Write := Pos_Write + 1;
-            if Num_Queued < Buffer'Last then               
-               Num_Queued := Num_Queued + 1;    
-            else -- =Buffer'Last
-               Pos_Read := Pos_Read + 1; -- overwrite oldest
-               if Num_Overflows < Natural'Last then
-                  Num_Overflows := Num_Overflows + 1;
-               end if;
+
+         Buffer ( Integer (Pos_Write)) := msg;
+         Pos_Write := Pos_Write + 1;
+         if Num_Queued < Buffer'Last then               
+            Num_Queued := Num_Queued + 1;    
+         else -- =Buffer'Last
+            Pos_Read := Pos_Read + 1; -- overwrite oldest
+            if Num_Overflows < Natural'Last then
+               Num_Overflows := Num_Overflows + 1;
             end if;
          end if;
          
@@ -130,7 +118,7 @@ is
          pragma Assert ( (Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)) );
       end New_Msg;
       
-      entry Get_Msg ( msg : out Log_Msg ) when Not_Empty is      
+      entry Get_Msg (msg : out ULog.Message) when Not_Empty is      
       begin
          pragma Assume ( Num_Queued > 0); -- via barrier and assert in New_Msg
                   
@@ -172,6 +160,7 @@ is
    function Image (level : Log_Level) return String is 
    begin
       return (case level is
+                 when SENSOR => "S: ",
                  when ERROR => "E: ",		
                  when WARN  => "W: ",		
                  when INFO  => "I: ",	
@@ -180,14 +169,19 @@ is
              );
    end Image;
           
+   procedure log_ulog(level : Log_Level; msg : ULog.Message'Class) is
+   begin
+      if Log_Level'Pos(level) <= Log_Level'Pos(logger_level) then
+         queue.New_Msg (ULog.Message (msg)); -- view conversion
+      end if;
+   end log_ulog;
+   
    procedure log(level : Log_Level; message : Message_Type) 
-   is
-      msg : constant Log_Msg := (level => level, valid => True);
+   is      
    begin
       if Log_Level'Pos(level) <= Log_Level'Pos(logger_level) then
          Adapter.write(Log_Level'Image (level) & message);
-      end if;
-      queue.New_Msg(msg);
+      end if;      
    end log;
 
    procedure set_Log_Level(level : Log_Level) is
