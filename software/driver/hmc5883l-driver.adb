@@ -29,8 +29,8 @@
 --========================
 --
 
-with HM5883L.;
-with HIL.I2C;
+with HMC5883L.Register; use HMC5883L.Register;
+with HIL.I2C; use HIL.I2C;
 with HIL; use HIL;
 
 package body HMC5883L.Driver is
@@ -38,36 +38,61 @@ package body HMC5883L.Driver is
 
 
 
-
-
 procedure writeByteToDevice(register : Unsigned_8; data : Unsigned_8) is
-   data_tx : Byte_Array(1 .. 2) := (1 => Byte( register ), 2 => Byte( data ) );
+   data_tx : HIL.I2C.Data_Type(1 .. 2) := (1 => Byte( register ), 2 => Byte( data ) );
 begin
-   HIL.I2C.write(HIL.I2C.HMC5883L, data_tx);
+   HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx);
 end writeByteToDevice;
 
-procedure readBytesFromDevice(register : Unsigned_8; data : Unsigned_8) is
-   data_tx : Byte_Array(1 .. 2) := (1 => Byte( register ), 2 => Byte( data ) );
+procedure writeBytesToDevice(register : Unsigned_8; length : Natural; data : Buffer_Type) is
+   data_tx : HIL.I2C.Data_Type(1 .. data'length + 1) := Byte( register ) & HIL.I2C.Data_Type( data );
 begin
-   HIL.I2C.write(HIL.I2C.HMC5883L, data_tx);
+   HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx );
+end writeBytesToDevice;
+
+
+procedure readByteFromDevice(register : Unsigned_8; data : out Unsigned_8) is
+   data_tx : HIL.I2C.Data_Type(1 .. 1) := (1 => Byte( register ) );
+   data_rx : HIL.I2C.Data_Type(1 .. 1);
+begin
+   HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx);
+   HIL.I2C.read(HIL.I2C.MAGNETOMETER, data_rx);
+   data := Unsigned_8( data_rx(1) );
+end readByteFromDevice;
+
+
+procedure readBytesFromDevice(register : Unsigned_8; length : Natural; data : out HIL.I2C.Data_Type) is
+   data_tx : HIL.I2C.Data_Type(1 .. 1) := (1 => Byte( register ) );
+   data_rx : HIL.I2C.Data_Type(1 .. length);
+begin
+   HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx);
+   HIL.I2C.read(HIL.I2C.MAGNETOMETER, data_rx );
+   data := data_rx;
 end readBytesFromDevice;
+
+
 
 procedure writeBits(register : Unsigned_8; start_index : Unsigned_8_Bit_Index; length : Natural; value : Unsigned_8) is
    data : Unsigned_8;
 begin
-      readBytesFromDevice(register, data);
-      HIL.write_Bits(data, start_index, length, value);
+      readByteFromDevice(register, data);
+      HIL.write_Bits(data, start_index, length, Integer( value ) );
       writeByteToDevice(register, data);
 end writeBits;
 
-function readBits(register : Unsigned_8; start_index : Unsigned_8_Bit_Index; length : Natural) return Unsigned_8 is
+procedure readBits(register : Unsigned_8; start_index : Unsigned_8_Bit_Index; length : Natural; value : out Unsigned_8) is
    data : Unsigned_8;
 begin
-      readBytesFromDevice(register, data);
-      return HIL.read_Bits(data, start_index, length);
+      readByteFromDevice(register, data);
+      value := Unsigned_8( HIL.read_Bits(data, start_index, length) );
 end readBits;
 
-
+procedure readBit(register : Unsigned_8; bit_index : Unsigned_8_Bit_Index; result : out Boolean) is
+   data : Unsigned_8;
+begin
+   readByteFromDevice(register, data);
+   result := HIL.read_Bits(data, bit_index, 1) = 1;
+end readBit;
 
 
 --* Power on and prepare for general usage.
@@ -82,7 +107,10 @@ procedure initialize is
 begin
     -- write CONFIG_A register
     writeByteToDevice(HMC5883L_RA_CONFIG_A,
-        (HMC5883L_AVERAGING_8 << (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1)) or         (HMC5883L_RATE_15     << (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) or         (HMC5883L_BIAS_NORMAL << (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1)));
+        (Shift_Left( HMC5883L_AVERAGING_8, (HMC5883L_CRA_AVERAGE_BIT - HMC5883L_CRA_AVERAGE_LENGTH + 1) ) or
+         Shift_Left( HMC5883L_RATE_15, (HMC5883L_CRA_RATE_BIT - HMC5883L_CRA_RATE_LENGTH + 1)) or         
+         Shift_Left( HMC5883L_BIAS_NORMAL, (HMC5883L_CRA_BIAS_BIT - HMC5883L_CRA_BIAS_LENGTH + 1))
+         ));
 
     -- write CONFIG_B register
     setGain(HMC5883L_GAIN_1090);
@@ -96,11 +124,10 @@ end initialize;
 -- @return True if connection is valid, false otherwise
 --
 function testConnection return Boolean is
+    buf : HIL.I2C.Data_Type(1 .. 3);
 begin
-    if I2Cdev.readBytes(devAddr, HMC5883L_RA_IDA, 3, buffer) = 3 then 
-        return (buffer(0) = 'H' and then buffer(1) = '4' and then buffer(2) = '3');
-    end if;
-    return false;
+    readBytesFromDevice(HMC5883L_RA_IDA, 3, buf);
+    return (buf(1) = Character'Pos('H') and then buf(2) = Character'Pos('4') and then buf(3) = Character'Pos('3'));
 end testConnection;
 
 -- CONFIG_A register
@@ -113,10 +140,13 @@ end testConnection;
 -- @see HMC5883L_CRA_AVERAGE_LENGTH
 --
 function getSampleAveraging return Unsigned_8 is
+   result : Unsigned_8;
 begin
-    I2Cdev.readBits(devAddr, HMC5883L_RA_CONFIG_A, HMC5883L_CRA_AVERAGE_BIT, HMC5883L_CRA_AVERAGE_LENGTH, buffer);
-    return buffer(0);
+    readBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_AVERAGE_BIT, HMC5883L_CRA_AVERAGE_LENGTH, result);
+    return result;
 end getSampleAveraging;
+
+
 --* Set number of samples averaged per measurement.
 -- @param averaging New samples averaged per measurement setting(0-3 for 1/2/4/8 respectively)
 -- @see HMC5883L_RA_CONFIG_A
@@ -125,7 +155,7 @@ end getSampleAveraging;
 --
 procedure setSampleAveraging(averaging : Unsigned_8) is
 begin
-    I2Cdev.writeBits(devAddr, HMC5883L_RA_CONFIG_A, HMC5883L_CRA_AVERAGE_BIT, HMC5883L_CRA_AVERAGE_LENGTH, averaging);
+    writeBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_AVERAGE_BIT, HMC5883L_CRA_AVERAGE_LENGTH, averaging);
 end setSampleAveraging;
 --* Get data output rate value.
 -- The Table below shows all selectable output rates in continuous measurement
@@ -150,11 +180,13 @@ end setSampleAveraging;
 -- @see HMC5883L_CRA_RATE_BIT
 -- @see HMC5883L_CRA_RATE_LENGTH
 --
-function getDataRate return Unsigned_8 is
+procedure getDataRate(rate : out Unsigned_8) is
 begin
-    I2Cdev.readBits(devAddr, HMC5883L_RA_CONFIG_A, HMC5883L_CRA_RATE_BIT, HMC5883L_CRA_RATE_LENGTH, buffer);
-    return buffer(0);
+    readBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_RATE_BIT, HMC5883L_CRA_RATE_LENGTH, rate);
 end getDataRate;
+
+
+
 --* Set data output rate value.
 -- @param rate Rate of data output to registers
 -- @see getDataRate
@@ -165,8 +197,10 @@ end getDataRate;
 --
 procedure setDataRate(rate : Unsigned_8) is
 begin
-    I2Cdev.writeBits(devAddr, HMC5883L_RA_CONFIG_A, HMC5883L_CRA_RATE_BIT, HMC5883L_CRA_RATE_LENGTH, rate);
+    writeBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_RATE_BIT, HMC5883L_CRA_RATE_LENGTH, rate);
 end setDataRate;
+
+
 --* Get measurement bias value.
 -- @return Current bias value (0-2 for normal/positive/negative respectively)
 -- @see HMC5883L_BIAS_NORMAL
@@ -174,10 +208,9 @@ end setDataRate;
 -- @see HMC5883L_CRA_BIAS_BIT
 -- @see HMC5883L_CRA_BIAS_LENGTH
 --
-function getMeasurementBias return Unsigned_8 is
+procedure getMeasurementBias( bias : out Unsigned_8) is
 begin
-    I2Cdev.readBits(devAddr, HMC5883L_RA_CONFIG_A, HMC5883L_CRA_BIAS_BIT, HMC5883L_CRA_BIAS_LENGTH, buffer);
-    return buffer(0);
+    readBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_BIAS_BIT, HMC5883L_CRA_BIAS_LENGTH, bias);
 end getMeasurementBias;
 --* Set measurement bias value.
 -- @param bias New bias value (0-2 for normal/positive/negative respectively)
@@ -188,7 +221,7 @@ end getMeasurementBias;
 --
 procedure setMeasurementBias(bias : Unsigned_8) is
 begin
-    I2Cdev.writeBits(devAddr, HMC5883L_RA_CONFIG_A, HMC5883L_CRA_BIAS_BIT, HMC5883L_CRA_BIAS_LENGTH, bias);
+    writeBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_BIAS_BIT, HMC5883L_CRA_BIAS_LENGTH, bias);
 end setMeasurementBias;
 
 -- CONFIG_B register
@@ -216,11 +249,13 @@ end setMeasurementBias;
 -- @see HMC5883L_CRB_GAIN_BIT
 -- @see HMC5883L_CRB_GAIN_LENGTH
 --
-function getGain return Unsigned_8 is
+
+procedure getGain( gain : out Unsigned_8 ) is
 begin
-    I2Cdev.readBits(devAddr, HMC5883L_RA_CONFIG_B, HMC5883L_CRB_GAIN_BIT, HMC5883L_CRB_GAIN_LENGTH, buffer);
-    return buffer(0);
+    readBits(HMC5883L_RA_CONFIG_B, HMC5883L_CRB_GAIN_BIT, HMC5883L_CRB_GAIN_LENGTH, gain);
 end getGain;
+
+
 --* Set magnetic field gain value.
 -- @param gain New magnetic field gain value
 -- @see getGain
@@ -233,7 +268,8 @@ begin
     -- use this method to guarantee that bits 4-0 are set to zero, which is a
     -- requirement specified in the datasheet; it's actually more efficient than
     -- using the I2Cdev.writeBits method
-    writeByteToDevice(devAddr, HMC5883L_RA_CONFIG_B, gain << (HMC5883L_CRB_GAIN_BIT - HMC5883L_CRB_GAIN_LENGTH + 1));
+    writeByteToDevice(HMC5883L_RA_CONFIG_B, 
+                      Shift_Left( gain, (HMC5883L_CRB_GAIN_BIT - HMC5883L_CRB_GAIN_LENGTH + 1)));
 end setGain;
 
 -- MODE register
@@ -260,11 +296,12 @@ end setGain;
 -- @see HMC5883L_MODEREG_BIT
 -- @see HMC5883L_MODEREG_LENGTH
 --
-function getMode return Unsigned_8 is
+procedure getMode( mode : out Unsigned_8) is
 begin
-    I2Cdev.readBits(devAddr, HMC5883L_RA_MODE, HMC5883L_MODEREG_BIT, HMC5883L_MODEREG_LENGTH, buffer);
-    return buffer(0);
+    readBits(HMC5883L_RA_MODE, HMC5883L_MODEREG_BIT, HMC5883L_MODEREG_LENGTH, mode);
 end getMode;
+
+
 --* Set measurement mode.
 -- @param newMode New measurement mode
 -- @see getMode
@@ -280,9 +317,12 @@ begin
     -- use this method to guarantee that bits 7-2 are set to zero, which is a
     -- requirement specified in the datasheet; it's actually more efficient than
     -- using the I2Cdev.writeBits method
-    writeByteToDevice(devAddr, HMC5883L_RA_MODE, newMode << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
+    writeByteToDevice(HMC5883L_RA_MODE, 
+                      Shift_Left(newMode, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
     mode := newMode; -- track to tell if we have to clear bit 7 after a read
 end setMode;
+
+
 
 -- DATA* registers
 
@@ -297,49 +337,64 @@ end setMode;
 -- @param z 16-bit signed integer container for Z-axis heading
 -- @see HMC5883L_RA_DATAX_H
 --
-procedure getHeading(Integer_16 *x; Integer_16 *y; Integer_16 *z) is
+procedure getHeading(x : out Integer_16; y : out Integer_16; z : out Integer_16) is
+    buf : HIL.I2C.Data_Type(1 .. 6);
 begin
-    I2Cdev.readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
-    if (mode = HMC5883L_MODE_SINGLE) writeByteToDevice(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
-    *x := ((Integer_16buffer(0)) << 8) or buffer(1);
-    *y := ((Integer_16buffer(4)) << 8) or buffer(5);
-    *z := ((Integer_16buffer(2)) << 8) or buffer(3);
+    readBytesFromDevice(HMC5883L_RA_DATAX_H, 6, buf);
+    if (mode = HMC5883L_MODE_SINGLE) then
+       writeByteToDevice(HMC5883L_RA_MODE, Shift_Left( HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
+    end if;
+    x := Integer_16( buf(1)) *2**8 + Integer_16( buf(2) );
+    y := Integer_16( buf(5)) *2**8 + Integer_16( buf(6) );
+    z := Integer_16( buf(3)) *2**8 + Integer_16( buf(4) );
 end getHeading;
+
+
 --* Get X-axis heading measurement.
 -- @return 16-bit signed integer with X-axis heading
 -- @see HMC5883L_RA_DATAX_H
 --
-function getHeadingX return Integer_16 is
+procedure getHeadingX(x : out Integer_16) is
 begin
-    -- each axis read requires that ALL axis registers be read, even if only
-    -- one is used; this was not done ineffiently in the code by accident
-    I2Cdev.readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
-    if (mode = HMC5883L_MODE_SINGLE) writeByteToDevice(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
-    return ((Integer_16buffer(0)) << 8) or buffer(1);
+--      -- each axis read requires that ALL axis registers be read, even if only
+--      -- one is used; this was not done ineffiently in the code by accident
+--      readBytesFromDevice(HMC5883L_RA_DATAX_H, 6, buffer);
+--      if (mode = HMC5883L_MODE_SINGLE) then
+--         writeByteToDevice(HMC5883L_RA_MODE, 
+--         Shift_Left( HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
+--      end if;
+    x := Integer_16( buffer(1)) *2**8 + Integer_16( buffer(2) );
 end getHeadingX;
+
+
 --* Get Y-axis heading measurement.
 -- @return 16-bit signed integer with Y-axis heading
 -- @see HMC5883L_RA_DATAY_H
 --
-function getHeadingY return Integer_16 is
+procedure getHeadingY(y : out Integer_16) is
 begin
     -- each axis read requires that ALL axis registers be read, even if only
     -- one is used; this was not done ineffiently in the code by accident
-    I2Cdev.readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
-    if (mode = HMC5883L_MODE_SINGLE) writeByteToDevice(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
-    return ((Integer_16buffer(4)) << 8) or buffer(5);
+--      readBytesFromDevice(HMC5883L_RA_DATAX_H, 6, buffer);
+--      if (mode = HMC5883L_MODE_SINGLE) then
+--         writeByteToDevice(HMC5883L_RA_MODE, Shift_Left(HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
+--      end if;
+    y := Integer_16( buffer(5)) *2**8 + Integer_16( buffer(6) );
 end getHeadingY;
 --* Get Z-axis heading measurement.
 -- @return 16-bit signed integer with Z-axis heading
 -- @see HMC5883L_RA_DATAZ_H
 --
-function getHeadingZ return Integer_16 is
+procedure getHeadingZ(z : out Integer_16) is
 begin
     -- each axis read requires that ALL axis registers be read, even if only
     -- one is used; this was not done ineffiently in the code by accident
-    I2Cdev.readBytes(devAddr, HMC5883L_RA_DATAX_H, 6, buffer);
-    if (mode = HMC5883L_MODE_SINGLE) writeByteToDevice(devAddr, HMC5883L_RA_MODE, HMC5883L_MODE_SINGLE << (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1));
-    return ((Integer_16buffer(2)) << 8) or buffer(3);
+--      readBytesFromDevice(HMC5883L_RA_DATAX_H, 6, buffer);
+--      
+--      if (mode = HMC5883L_MODE_SINGLE) then
+--         writeByteToDevice(HMC5883L_RA_MODE, Shift_Left(HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
+--      end if;
+    z := Integer_16( buffer(3)) *2**8 + Integer_16( buffer(4) );
 end getHeadingZ;
 
 -- STATUS register
@@ -356,10 +411,13 @@ end getHeadingZ;
 -- @see HMC5883L_STATUS_LOCK_BIT
 --
 function getLockStatus return Boolean is
+   data : Boolean;
 begin
-    I2Cdev.readBit(devAddr, HMC5883L_RA_STATUS, HMC5883L_STATUS_LOCK_BIT, buffer);
-    return buffer(0);
+    readBit(HMC5883L_RA_STATUS, HMC5883L_STATUS_LOCK_BIT, data);
+    return data;
 end getLockStatus;
+
+
 --* Get data ready status.
 -- This bit is set when data is written to all six data registers, and cleared
 -- when the device initiates a write to the data output registers and after one
@@ -371,9 +429,10 @@ end getLockStatus;
 -- @see HMC5883L_STATUS_READY_BIT
 --
 function getReadyStatus return Boolean is
+   result : Boolean;
 begin
-    I2Cdev.readBit(devAddr, HMC5883L_RA_STATUS, HMC5883L_STATUS_READY_BIT, buffer);
-    return buffer(0);
+    readBit(HMC5883L_RA_STATUS, HMC5883L_STATUS_READY_BIT, result);
+    return result;
 end getReadyStatus;
 
 -- ID* registers
@@ -383,24 +442,26 @@ end getReadyStatus;
 --
 function getIDA return Unsigned_8 is
 begin
-    I2Cdev.readByte(devAddr, HMC5883L_RA_IDA, buffer);
-    return buffer(0);
+    readByteFromDevice(HMC5883L_RA_IDA, buffer(1));
+    return buffer(1);
 end getIDA;
 --* Get identification byte B
 -- @return IDA byte (should be00_110_100, ASCII value '4')
 --
 function getIDB return Unsigned_8 is
+   result : Unsigned_8;
 begin
-    I2Cdev.readByte(devAddr, HMC5883L_RA_IDB, buffer);
-    return buffer(0);
+    readByteFromDevice(HMC5883L_RA_IDB, result);
+    return result;
 end getIDB;
 --* Get identification byte C
 -- @return IDA byte (should be00_110_011, ASCII value '3')
 --
 function getIDC return Unsigned_8 is
+   result : Unsigned_8;
 begin
-    I2Cdev.readByte(devAddr, HMC5883L_RA_IDC, buffer);
-    return buffer(0);
+    readByteFromDevice(HMC5883L_RA_IDC, result);
+    return result;
 end getIDC;
 
 end HMC5883L.Driver;

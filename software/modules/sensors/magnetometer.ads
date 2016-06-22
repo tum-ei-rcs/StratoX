@@ -2,6 +2,8 @@ with Generic_Sensor;
 
 with Units; use Units;
 with HMC5883L.Driver;
+with Units.Navigation; use Units.Navigation;
+with Interfaces; use Interfaces;
 
 package Magnetometer with SPARK_Mode is
 
@@ -24,5 +26,8 @@ package Magnetometer with SPARK_Mode is
    function get_Heading(Self : Magnetometer_Tag) return Heading_Type;
 
    Sensor : Magnetometer_Tag;
+
+private
+   function Heading(x : Integer_16; y : Integer_16; z : Integer_16) return Heading_Type;
 
 end Magnetometer;

@@ -218,7 +218,7 @@ private
    --  Read one but at the specified MPU6000 register
    function Read_Bit_At_Register
      (Reg_Addr  : Byte;
-      Bit_Pos   : Byte_Bit_Position) return Boolean;
+      Bit_Pos   : Unsigned_8_Bit_Index) return Boolean;
 
    --  Write data to the specified MPU6000 register
    procedure Write_Register
@@ -233,16 +233,16 @@ private
    --  Write one bit at the specified MPU6000 register
    procedure Write_Bit_At_Register
      (Reg_Addr  : Byte;
-      Bit_Pos   : Byte_Bit_Position;
+      Bit_Pos   : Unsigned_8_Bit_Index;
       Bit_Value : Boolean);
 
    --  Write data in the specified register, starting from the
    --  bit specified in Start_Bit_Pos
    procedure Write_Bits_At_Register
      (Reg_Addr      : Byte;
-      Start_Bit_Pos : Byte_Bit_Position;
+      Start_Bit_Pos : Unsigned_8_Bit_Index;
       Data          : Byte;
-      Length        : Byte_Bit_Position);
+      Length        : Unsigned_8_Bit_Index);
 
    function Fuse_Low_And_High_Register_Parts
      (High : Byte;

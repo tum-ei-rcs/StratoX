@@ -14,7 +14,7 @@ is
 
    procedure initialize is
       Config : constant STM32.I2C.I2C_Configuration := (
-					       Clock_Speed => 44,
+					       Clock_Speed => 100_000,
                                                Mode => STM32.I2C.I2C_Mode,
                                                Duty_Cycle => STM32.I2C.DutyCycle_2,
 					       Addressing_Mode => STM32.I2C.Addressing_Mode_7bit,
@@ -31,24 +31,34 @@ is
    begin
       case (Device) is
       when UNKNOWN => null;
-      when HMC5883L => 
-         STM32.I2C.Master_Transmit(STM32.Device.I2C_1, ADDR_HMC5883L, Data, Status);
+      when MAGNETOMETER => 
+         STM32.I2C.Master_Transmit(STM32.Device.I2C_1, ADDR_HMC5883L, HAL.I2C.I2C_Data( Data ), Status);
       end case;
    end write;
    
    procedure read (Device : in Device_Type; Data : out Data_Type) is
-   begin
-      null;
-   end read;
-   
-
-   procedure transfer (Device : in Device_Type; Data_TX : in Data_Type; Data_RX : in Data_Type) is
+      Data_RX_I2C : HAL.I2C.I2C_Data(1 .. Data'Length);
+      Status : HAL.I2C.I2C_Status;
    begin
       case (Device) is
       when UNKNOWN => null;
-      when HMC5883L => 
-         STM32.I2C.Master_Transmit(STM32.Device.I2C_1, ADDR_HMC5883L, Data_TX, Status);
-         STM32.I2C.Master_Receive(STM32.Device.I2C_1, ADDR_HMC5883L, Data_RX, Status);         
+      when MAGNETOMETER => 
+         STM32.I2C.Master_Receive(STM32.Device.I2C_1, ADDR_HMC5883L, Data_RX_I2C, Status);
+         Data := Data_Type( Data_RX_I2C);
+      end case;
+   end read;
+   
+
+   procedure transfer (Device : in Device_Type; Data_TX : in Data_Type; Data_RX : out Data_Type) is
+      Data_RX_I2C : HAL.I2C.I2C_Data(1 .. Data_RX'Length);
+      Status : HAL.I2C.I2C_Status;
+   begin
+      case (Device) is
+      when UNKNOWN => null;
+      when MAGNETOMETER => 
+         STM32.I2C.Master_Transmit(STM32.Device.I2C_1, ADDR_HMC5883L, HAL.I2C.I2C_Data( Data_TX ), Status);
+         STM32.I2C.Master_Receive(STM32.Device.I2C_1, ADDR_HMC5883L, Data_RX_I2C, Status);
+         Data_RX := Data_Type( Data_RX_I2C);
       end case;
    end transfer;
 

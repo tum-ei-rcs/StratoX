@@ -59,8 +59,8 @@ is
 
    Config_I2C1 : constant GPIO_Port_Configuration := (
                                                       Mode => Mode_AF,
-                                                      Output_Type => Push_Pull,
-                                                      Speed => Speed_50MHz,
+                                                      Output_Type => Open_Drain,
+                                                      Speed => Speed_25MHz,
                                                       Resistors => Floating );
 
    Config_UART3 : constant GPIO_Port_Configuration := (
@@ -176,11 +176,12 @@ is
 
       -- I2C
       -- -----------------------------------------------------------------------
-      Configure_IO( Points => (I2C1_SDA, I2C1_SCL), Config => Config_I2C1 );
-
       Configure_Alternate_Function(
                                    Points => (I2C1_SDA, I2C1_SCL),
                                    AF     => GPIO_AF_I2C);
+      Configure_IO( Points => (I2C1_SDA, I2C1_SCL), Config => Config_I2C1 );
+
+
 
       -- UART
       -- -----------------------------------------------------------------------
