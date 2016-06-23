@@ -11,7 +11,7 @@ package ULog.GPS with SPARK_Mode is
 
    type fixtype is (NOFIX, DEADR, FIX2D, FIX3D, FIX3DDEADR, FIXTIME);
 
-   --  extends base record specific for GPS
+   --  extends base record, specific for GPS. Implicitely tagged (RM 3.9-2).
    type Message is new ULog.Message with record
       gps_week : Interfaces.Integer_16    := 0;
       gps_msec : Interfaces.Unsigned_64   := 0;

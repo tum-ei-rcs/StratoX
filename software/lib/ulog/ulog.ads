@@ -21,10 +21,10 @@ package ULog with SPARK_Mode is
       Length    : Interfaces.Unsigned_16 := 0;
    end record;
 
-   -------------------------------
-   --  Non-Primitive operations --
-   --  (not inherited)          --
-   -------------------------------
+   ---------------------------------------------------------------------
+   --                   Non-Primitive operations                      --
+   --  (not inherited; available for all members of class-wide type)  --
+   ---------------------------------------------------------------------
 
    procedure Serialize (msg : in Message'Class; bytes : out HIL.Byte_Array);
    --  turn object into ULOG byte array

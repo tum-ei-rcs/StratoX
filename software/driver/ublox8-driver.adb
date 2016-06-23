@@ -1,9 +1,10 @@
 
 with Units; use Units;
 
+with Fletcher16;
+with HIL; use HIL;
 with HIL.UART; use type HIL.UART.Data_Type;
 with Interfaces; use Interfaces;
-with Fletcher16; use Fletcher16;
 with Config.Software;
 
 with Logger;
@@ -14,8 +15,13 @@ with Ada.Real_Time; use Ada.Real_Time;
 
 package body ublox8.Driver with
 Refined_State => (State => (G_position, G_heading))
-is
-
+is  
+   package Fletcher16_Byte is new Fletcher16 (
+                                                Index_Type => Natural, 
+                                                Element_Type => Byte, 
+                                                Array_Type => Byte_Array);
+   
+   
    G_position : GPS_Loacation_Type := 
       ( Longitude => 0.0 * Degree,
         Latitude  => 0.0 * Degree,
@@ -66,8 +72,8 @@ is
       end if;
    end waitForAck;
 
-   procedure writeToDevice(header: UBX_Header_Array; data : Data_Type) is
-      cks : Checksum_Type := Fletcher16.Checksum( header(3 .. 6) & data );
+   procedure writeToDevice(header: UBX_Header_Array; data : Data_Type) is      
+      cks : Fletcher16_Byte.Checksum_Type := Fletcher16_Byte.Checksum( header(3 .. 6) & data );
       check : UBX_Checksum_Array := (1 => cks.ck_a, 2 => cks.ck_b);
       isReceived : Boolean := False;
       retries : Natural := 3;
@@ -88,7 +94,7 @@ is
       head : Byte_Array (3 .. 6) := (others => Byte( 0 ));
       data_rx : Byte_Array (1 .. 92) := (others => Byte( 0 ));
       check : Byte_Array (1 .. 2) := (others => Byte( 0 ));
-      cks : Checksum_Type := (others => Byte( 0 ));
+      cks : Fletcher16_Byte.Checksum_Type := (others => Byte( 0 ));
       isReceived : Boolean := False;
    begin
       data := (others => Byte( 0 ) );
@@ -100,7 +106,7 @@ is
             HIL.UART.read(UBLOX_M8N, data_rx);
             HIL.UART.read(UBLOX_M8N, check);
             
-            cks := Fletcher16.Checksum( head & data_rx );
+            cks := Fletcher16_Byte.Checksum( head & data_rx );
             if check(1) = cks.ck_a and check(2) = cks.ck_b then
                Logger.log(Logger.DEBUG, "UBX valid");
                data := data_rx;

@@ -54,8 +54,9 @@ package body ULog with SPARK_Mode is
       --  descendant : Message'Class := Self;
       descendant : Message'Class := Self (msg); -- factory function
    begin
-      Ada.Text_IO.Put_Line ("Size() called for type=" & Describe_Func (descendant));
+      --Ada.Text_IO.Put_Line ("Size() called for type=" & Describe_Func (descendant));
       return Get_Size (descendant); -- dispatch
+
    end Size;
 
    procedure Get_Header (bytes : out HIL.Byte_Array) is

@@ -85,10 +85,10 @@ package body Main is
       declare
          num_boots : HIL.Byte;
       begin
-         NVRAM.Load (NVRAM.VARIABLE_BOOTCOUNTER, num_boots);
+         NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots);
          if num_boots < HIL.Byte'Last then
             num_boots := num_boots + 1;
-            NVRAM.Store (NVRAM.VARIABLE_BOOTCOUNTER, num_boots);
+            NVRAM.Store (NVRAM.VAR_BOOTCOUNTER, num_boots);
          end if;
          Logger.log (Logger.INFO, "Boot number: " & HIL.Byte'Image(num_boots));
       end;
@@ -172,7 +172,7 @@ package body Main is
                null;
                --PX4IO.Driver.read_Status;
             when 'r' =>
-                 Logger.log(Logger.INFO,
+               Logger.log(Logger.INFO,
                  "RPY: " & AImage( body_info.orientation.Roll ) &
                  ", " & AImage( body_info.orientation.Pitch ) &
                  ", " & AImage( body_info.orientation.Yaw ) );

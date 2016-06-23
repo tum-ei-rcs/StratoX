@@ -25,13 +25,12 @@ is
    procedure Self_Check (Status : out Boolean) is
    begin
       Status := False;
-
       -- TODO: read device ID or something
    end Self_Check;
 
    procedure Read_Byte (addr : Address; byte : out HIL.Byte) is
    begin
-      null;
+      byte := 0; -- TODO
    end Read_Byte;
 
    procedure Write_Byte (addr : Address; byte : HIL.Byte) is
