@@ -29,7 +29,7 @@ package Units.Navigation with SPARK_Mode is
    -- Orientation
    subtype Roll_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree;
    subtype Pitch_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree; -- FIXME: -90 .. 90 ?
-   subtype Yaw_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree; -- FIXME: 0 .. 360 ?
+   subtype Yaw_Type is Units.Angle_Type range 0.0 * Degree .. 360.0 * Degree;
 
    type Orientation_Type is record
       Roll  : Roll_Type;

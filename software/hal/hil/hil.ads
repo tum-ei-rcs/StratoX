@@ -14,22 +14,24 @@ is
    -- Unsigned_8
    -- Integer_8
    
+   type Bit is mod 2**1 with Size => 1;
+   
    
    type Unsigned_8_Mask is new Unsigned_8;
-   type Unsigned_8_Bit_Index is new Natural range 0 .. 7;  
+   subtype Unsigned_8_Bit_Index is Natural range 0 .. 7;  
    
    type Unsigned_16_Mask is new Unsigned_16;
-   type Unsigned_16_Bit_ID is new Natural range 0 .. 15;
+   type Unsigned_16_Bit_Index is new Natural range 0 .. 15;
    
    type Unsigned_32_Mask is new Unsigned_32;
-   type Unsigned_32_Bit_ID is new Natural range 0 .. 31;   
-   
-   
-   subtype Byte_Bit_Position is Integer range 0 .. 7;
-   
+   type Unsigned_32_Bit_Index is new Natural range 0 .. 31;   
+      
    
    -- Arrays
    type Byte_Array is array(Natural range <>) of Byte;
+   type Short_Array is array(Natural range <>) of Unsigned_16;
+   type Word_Array is array(Natural range <>) of Unsigned_32;
+
 
    --subtype Byte_Array_2 is Byte_Array(1..2); -- not working (explicit raise in flow_utility.adb)
 
@@ -38,6 +40,7 @@ is
    type Unsigned_8_Array  is array(Natural range <>) of Unsigned_8;
    type Unsigned_16_Array is array(Natural range <>) of Unsigned_16;  
    type Unsigned_32_Array is array(Natural range <>) of Unsigned_32;   
+   
    
    type Integer_8_Array  is array(Natural range <>) of Integer_8;
    type Integer_16_Array is array(Natural range <>) of Integer_16;

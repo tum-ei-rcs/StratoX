@@ -20,24 +20,24 @@ package HMC5883L.Driver is
    -- CONFIG_A register
    function getSampleAveraging return Unsigned_8;
    procedure setSampleAveraging(averaging : Unsigned_8);
-   function getDataRate return Unsigned_8;
+   procedure getDataRate(rate : out Unsigned_8);
    procedure setDataRate(rate : Unsigned_8);
-   function getMeasurementBias return Unsigned_8;
+   procedure getMeasurementBias(bias : out Unsigned_8);
    procedure setMeasurementBias(bias : Unsigned_8);
 
    -- CONFIG_B register
-   function getGain return Unsigned_8;
+   procedure getGain(gain : out Unsigned_8);
    procedure setGain(gain : Unsigned_8);
 
    -- MODE register
-   function getMode return Unsigned_8;
-   procedure setMode(mode : Unsigned_8);
+   procedure getMode(mode : out Unsigned_8);
+   procedure setMode(newMode : Unsigned_8);
 
    -- DATA* registers
-   procedure getHeading(Integer_16 *x; Integer_16 *y; Integer_16 *z);
-   function getHeadingX return Integer_16;
-   function getHeadingY return Integer_16;
-   function getHeadingZ return Integer_16;
+   procedure getHeading(x : out Integer_16; y : out Integer_16; z : out Integer_16);
+   procedure getHeadingX(x : out Integer_16);
+   procedure getHeadingY(y : out Integer_16);
+   procedure getHeadingZ(z : out Integer_16);
 
    -- STATUS register
    function getLockStatus return Boolean;
@@ -50,8 +50,9 @@ package HMC5883L.Driver is
 
 private
 
+   type Buffer_Type is array( 1 .. 6 ) of Unsigned_8;
 
-   Unsigned_8 buffer(6);
+   buffer : Buffer_Type;
    mode : Unsigned_8;
 
 end HMC5883L.Driver;

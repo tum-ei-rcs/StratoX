@@ -3,6 +3,7 @@
 with IMU;
 with GPS;
 with Barometer;
+with Magnetometer;
 
 with Units.Numerics; use Units.Numerics;
 
@@ -26,6 +27,9 @@ package body Estimator is
       Barometer.Sensor.initialize;
 
       GPS.Sensor.initialize;
+
+      Magnetometer.Sensor.initialize;
+
 
       Logger.log(Logger.INFO, "Estimator initialized");
    end initialize;
@@ -59,6 +63,9 @@ package body Estimator is
 
 
       GPS.Sensor.read_Measurement;
+
+      Magnetometer.Sensor.read_Measurement;
+      G_Object_Orientation.Yaw := Magnetometer.Sensor.get_Heading;
 
    end update;
 

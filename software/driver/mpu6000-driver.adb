@@ -516,7 +516,7 @@ is
 
    function Read_Bit_At_Register
      (Reg_Addr  : Byte;
-      Bit_Pos   : Byte_Bit_Position) return Boolean
+      Bit_Pos   : Unsigned_8_Bit_Index) return Boolean
    is
       Register_Value : Byte := Byte (0);
    begin
@@ -559,7 +559,7 @@ is
 
    procedure Write_Bit_At_Register
      (Reg_Addr  : Byte;
-      Bit_Pos   : Byte_Bit_Position;
+      Bit_Pos   : Unsigned_8_Bit_Index;
       Bit_Value : Boolean)
    is
       Register_Value : Byte := Byte( 0 );
@@ -580,9 +580,9 @@ is
 
    procedure Write_Bits_At_Register
      (Reg_Addr      : Byte;
-      Start_Bit_Pos : Byte_Bit_Position;
+      Start_Bit_Pos : Unsigned_8_Bit_Index;
       Data          : Byte;
-      Length        : Byte_Bit_Position)
+      Length        : Unsigned_8_Bit_Index)
    is
       Register_Value : Byte := Byte (0);
       Mask           : Byte;

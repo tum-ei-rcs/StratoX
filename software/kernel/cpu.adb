@@ -8,6 +8,7 @@ with HIL.GPIO;
 with HIL.SPI;
 with HIL.Clock;
 with HIL.UART;
+with HIL.I2C;
 with Logger;
 
 
@@ -24,6 +25,7 @@ package body CPU is
 
       HIL.GPIO.configure;
       HIL.SPI.configure;
+      HIL.I2C.initialize;
 
 
       Logger.log(Logger.DEBUG, "Hardware initialized.");

@@ -9,8 +9,8 @@
 
 package HMC5883L.Register is
 
-   HMC5883L_ADDRESS : constant := 16#1E# ;-- this device only has one address
-   HMC5883L_DEFAULT_ADDRESS : constant := 16#1E#;
+   HMC5883L_ADDRESS : constant := 16#3C# ;-- this device only has one address
+   HMC5883L_DEFAULT_ADDRESS : constant := 16#1E#;  -- 2#0011_110X
 
    HMC5883L_RA_CONFIG_A : constant := 16#00#;
    HMC5883L_RA_CONFIG_B : constant := 16#01#;
