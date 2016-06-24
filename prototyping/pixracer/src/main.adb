@@ -40,24 +40,24 @@ package body Main is
          LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
          LED_Manager.LED_sync;
 
-         --  UART Test
-         --  HIL.UART.write(HIL.UART.Console, (70, 65) );
-         HIL.UART.read (HIL.UART.Console, data_rx);
-
-         case (Character'Val (data_rx (1))) is
-
-            when 'l' =>
-               LED_Manager.LED_blink (LED_Manager.FAST);
-            when 'd' =>
-               null;
-               --  PX4IO.Driver.disarm;
-            when 'p' =>
-               Logger.log
-                 (Logger.INFO,
-                  Integer'Image (loop_duration_max / Time_Span_Unit));
-            when others =>
-               null;
-         end case;
+--           --  UART Test
+--           --  HIL.UART.write(HIL.UART.Console, (70, 65) );
+--           HIL.UART.read (HIL.UART.Console, data_rx);
+--
+--           case (Character'Val (data_rx (1))) is
+--
+--              when 'l' =>
+--                 LED_Manager.LED_blink (LED_Manager.FAST);
+--              when 'd' =>
+--                 null;
+--                 --  PX4IO.Driver.disarm;
+--              when 'p' =>
+--                 Logger.log
+--                   (Logger.INFO,
+--                    Integer'Image (loop_duration_max / Time_Span_Unit));
+--              when others =>
+--                 null;
+--           end case;
 
 
          --  SPI Test

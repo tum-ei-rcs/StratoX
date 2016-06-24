@@ -15,16 +15,16 @@ is
       STM32.Device.Enable_Clock(STM32.Device.GPIO_E);   
       
       -- SPI
-      STM32.Device.Enable_Clock(STM32.Device.SPI_1);
+      --STM32.Device.Enable_Clock(STM32.Device.SPI_1);
       
       -- I2C
-      STM32.Device.Enable_Clock( STM32.Device.I2C_1 ); -- I2C
+      --STM32.Device.Enable_Clock( STM32.Device.I2C_1 ); -- I2C
       
       -- UART (UART3 is Ser2 is Telemtrie2)
-      STM32.Device.Enable_Clock( STM32.Device.USART_3 );
-      STM32.Device.Enable_Clock( STM32.Device.UART_4 );  --  GPS
-      STM32.Device.Enable_Clock( STM32.Device.USART_6 );   -- PX4IO 
-      STM32.Device.Enable_Clock( STM32.Device.USART_7 );   -- SER 5
+      --STM32.Device.Enable_Clock( STM32.Device.USART_3 );
+      --STM32.Device.Enable_Clock( STM32.Device.UART_4 );  --  GPS
+      --STM32.Device.Enable_Clock( STM32.Device.USART_6 );   -- PX4IO 
+      --STM32.Device.Enable_Clock( STM32.Device.USART_7 );   -- SER 5
  
  
    end configure;
