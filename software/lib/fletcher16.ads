@@ -10,20 +10,24 @@
 
 with HIL;
 
+generic
+   type Index_Type is (<>);
+   type Element_Type is private;
+   type Array_Type is array (Index_Type range <>) of Element_Type;
+   with function "+" (Left : HIL.Byte; Right : Element_Type) return HIL.Byte is <>;
 package Fletcher16 with
 SPARK_Mode is
 
    subtype Byte is HIL.Byte;
+   --type Array_Type is array (Integer range <>) of Element_Type;  
    
-   subtype Byte_Array is HIL.Byte_Array;
-
    type Checksum_Type is record
    	ck_a : Byte;
    	ck_b : Byte;
    end record;
 
    -- init
-   function Checksum(Data : Byte_Array) return Checksum_Type;
+   function Checksum(Data : Array_Type) return Checksum_Type;
 
 
 end Fletcher16;
