@@ -16,6 +16,8 @@ is
    
    type Bit is mod 2**1 with Size => 1;
    
+
+   -- Architecture Independent
    
    type Unsigned_8_Mask is new Unsigned_8;
    subtype Unsigned_8_Bit_Index is Natural range 0 .. 7;  
@@ -95,9 +97,11 @@ is
 --     procedure set_Bit( reg : in out Unsigned_16, bit : Unsigned_16_Bit_ID) is
 --        mask : Unsigned_16_Mask 
       
-   procedure set_Bits( register : in out Unsigned_16; bit_mask : Unsigned_16_Mask);
+   procedure set_Bits( register : in out Unsigned_16; bit_mask : Unsigned_16_Mask)
+   with pre => register'Size = bit_mask'Size;
 
-   procedure clear_Bits( register : in out Unsigned_16; bit_mask : Unsigned_16_Mask);
+   procedure clear_Bits( register : in out Unsigned_16; bit_mask : Unsigned_16_Mask)
+   with pre => register'Size = bit_mask'Size;
    
    function isSet( register : Unsigned_16; bit_mask : Unsigned_16_Mask) return Boolean is
       ( ( register and Unsigned_16( bit_mask ) ) > 0 );

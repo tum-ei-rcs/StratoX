@@ -149,29 +149,46 @@ is
                                               
       msg_cfg_msg : Data_Type(0 .. 2) := (0 => UBX_CLASS_NAV,
                                           1 => UBX_ID_NAV_PVT,
-                                          2 => Byte( 10 ) );  -- rate in Hz?                                 
+                                          2 => Byte( 10 ) );  -- rate in Hz?
+                                          
+      current_time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
+      
+      procedure delay_ms( ms : Natural) is
+         current_time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      begin
+         delay until current_time + Ada.Real_Time.Milliseconds( ms );
+      end delay_ms;
+         
    begin
       null;
       -- 1. Set binary protocol (CFG-PRT, own message)
       writeToDevice(msg_cfg_prt_head, msg_cfg_prt);  -- no ACK is expected here
+      
 
       -- 2. Set baudrate (CFG-PRT, again own message)
 
       -- 3. Set message rates (CFG-MSG)
+      delay_ms( 10 );
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
       
       -- set other to 0
       msg_cfg_msg(2) := Byte( 0 );
       msg_cfg_msg(1) := UBX_ID_NAV_POSLLH;
+      delay_ms( 10 );
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
-      
+            
       msg_cfg_msg(1) := UBX_ID_NAV_SOL;
+      delay_ms( 10 );
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
       
       msg_cfg_msg(1) := UBX_ID_NAV_VELNED;
+      delay_ms( 10 );
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  
 
+      
       msg_cfg_msg(1) := UBX_ID_NAV_STATUS;
+      delay_ms( 10 );
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg); 
       -- 4. set dynamic model
       

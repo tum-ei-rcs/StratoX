@@ -23,6 +23,18 @@ is
    end "**";
 
 
+   function Sin (X : Angle_Type) return Unit_Type is
+   begin
+      return Unit_Type( Elementary_Functions.Sin( Float( X ) ) );
+   end Sin;
+
+   function Cos (X : Angle_Type) return Unit_Type is
+   begin
+        return Unit_Type( Elementary_Functions.Cos( Float( X ) ) );
+   end Cos;
+
+
+
    function Arctan
      (Y     : Unit_Type;
       X     : Unit_Type := 1.0;

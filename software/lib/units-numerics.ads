@@ -12,12 +12,11 @@ package Units.Numerics with SPARK_Mode is
 --   function Log (X : Unit_Type) return Float;
 
 --  
---     function Sin (X : Angle_Type) return Unit_Type is
---        (Elementary_Functions.Sin( Float( X ) );
+    function Sin (X : Angle_Type) return Unit_Type;
 --     
---     function Sin (X, Cycle : Angle_Type) return Unit_Type;
+--    function Sin (X, Cycle : Angle_Type) return Unit_Type;
 --        
---     function Cos (X : Angle_Type) return Unit_Type;
+    function Cos (X : Angle_Type) return Unit_Type;
 --        
 --     function Cos (X, Cycle : Angle_Type) return Unit_Type;
 --        

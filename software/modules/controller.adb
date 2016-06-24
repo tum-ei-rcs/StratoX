@@ -125,5 +125,28 @@ package body Controller is
    end Elevon_Angles;
 
 
+   -- 	θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
+   -- φ is lat, λ is long
+
+   function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type is
+      result : Angle_Type := To - From;
+   begin
+      if result > 180.0 * Degree then
+         result := 180.0 * Degree - result;
+      elsif result < -180.0 * Degree then
+         result := result + 180.0 * Degree;
+      end if;
+      return result;
+   end delta_Angle;
+
+
+   function Heading(source_location : GPS_Loacation_Type;
+                           target_location  : GPS_Loacation_Type)
+                           return Heading_Type is
+   begin
+        null;
+        return 0.0 * Degree;
+   end Heading;
+
 
 end Controller;

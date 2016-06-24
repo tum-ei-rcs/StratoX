@@ -203,6 +203,16 @@ package Units with
 
    Volt : constant Voltage_Type := Voltage_Type (1.0);
 
+   Coulomb : constant Charge_Type := Charge_Type(1.0);
+
+   Farad : constant Capacity_Type := Capacity_Type(1.0);
+
+   Weber : constant Magnetic_Flux_Type := Magnetic_Flux_Type(1.0);
+
+   Tesla : constant Magnetic_Flux_Density_Type := Magnetic_Flux_Density_Type(1.0);
+
+   Henry : constant Inductivity_Type := Inductivity_Type(1.0);
+
    Hertz : constant Frequency_Type := Frequency_Type (1.0);
 
    -- Non SI but metric
@@ -214,6 +224,7 @@ package Units with
    Angstrom : constant Length_Type   := 1.0 * Nano * Meter;
    Litre    : constant Volume_Type   := 1.0 * (Deci * Meter)**3;
    Bar      : constant Pressure_Type := 1_000.0 * Hecto * Pascal;
+   Gauss    : constant Magnetic_Flux_Density_Type := 0.1 * Tesla;
 
    -- Constants
    GRAVITY : constant Linear_Acceleration_Type := 9.81 * Meter / (Second**2);

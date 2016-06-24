@@ -25,7 +25,7 @@ package Units.Vectors with SPARK_Mode is
 
 
    type Cartesian_Coordinates_Type is (X, Y, Z);
-   subtype Karthesian_Vector_Type is Unit_Arrays.Real_Vector(1 .. 3);
+   type Cartesian_Vector_Type is array(Cartesian_Coordinates_Type) of Unit_Type;
 
 
    subtype Translation_Vector_Array is Vector3D_Type; -- of Length_Type;
@@ -46,6 +46,9 @@ package Units.Vectors with SPARK_Mode is
 --     subtype Rotation_Vector is Orientation_Vector_Type of Angle_Type;
 
 
+   type Magnetic_Flux_Density_Vector is array(Cartesian_Coordinates_Type) of Magnetic_Flux_Density_Type;
+
+
    -- Rotation Systems
    type Tait_Bryan_Angle_Type is (ROLL, PITCH, YAW);
    type Euler_Angle_Type is (X1, Z2, X3);
@@ -60,6 +63,9 @@ package Units.Vectors with SPARK_Mode is
            Left(2) + Right(2),
            Left(3) + Right(3)
            ) );
+
+   procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);
+
 
 
 end Units.Vectors;
