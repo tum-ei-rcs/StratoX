@@ -110,6 +110,7 @@ is
    GPIO_K : aliased Internal_GPIO_Port
      with Import, Volatile, Address => GPIOK_Base;
 
+   PNONE : aliased GPIO_Point:= (null, 0); -- use this if you must map a function to nothing
    PA0  : aliased GPIO_Point := (GPIO_A'Access, 0);
    PA1  : aliased GPIO_Point := (GPIO_A'Access, 1);
    PA2  : aliased GPIO_Point := (GPIO_A'Access, 2);

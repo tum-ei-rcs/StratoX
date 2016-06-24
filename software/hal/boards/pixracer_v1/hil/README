@@ -1,0 +1,4 @@
+These files establish a mapping between HAL functions (e.g., SPI chip select)
+and actual pinout.
+
+FIXME: move to boards.

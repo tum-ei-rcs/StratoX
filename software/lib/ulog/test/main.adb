@@ -32,7 +32,7 @@ procedure main is
    --  this procedure makes dispatching calls
    procedure dispatcher (msg : ULog.Message'Class) is
       --  accepts any argument of tyme ULog.Message and its descendants
-      s : Interfaces.Unsigned_16 := ULog.Size (msg); -- dynamic dispatching happens here
+      s : Interfaces.Unsigned_16 := ULog.Size (msg); -- dynamic dispatching
    begin
       Put_Line ("Dispatched Tag =" & Ada.Tags.Expanded_Name (msg'Tag));
       Put_Line ("Dispatched type=" & msg.Describe_Func);
@@ -46,12 +46,25 @@ procedure main is
       --  why is this better then class-wide?
 
       classwide : ULog.Message'Class := msg;
-      --  that can dispatch, but every such type needs initialization with specific type
+      --  that can dispatch, but every such type needs initialization
+      --  with specific type
 
-      upcast : ULog.Message := ULog.Message (msg);
+      upcast : ULog.Message := ULog.Message (msg); -- not a view conv?
       --  looses dispatch functionality (is the tag the same?)
    begin
+      Put_Line ("Original Tag =" & Ada.Tags.Expanded_Name (msg'Tag));
       Put_Line ("Original type=" & msg.Describe_Func);
+      Put_Line ("-----------------");
+      if ULog.Message'Class (upcast) in ULog.GPS.Message then
+         Put_Line ("Upcast still is GPS");
+      else
+         Put_Line ("Upcast lost its tag");
+      end if;
+      declare
+         tmp : ULog.Message'Class := upcast;
+      begin
+         Put_Line ("upcasted Tag =" & Ada.Tags.Expanded_Name (tmp'Tag));
+      end;
       Put_Line ("-----------------");
       Put_Line ("viewconversion:");
       dispatcher (viewconversion); -- working
@@ -68,6 +81,6 @@ begin
 
    consume (msg_gps);
    --  consume (msg);
-   msg_gps.Describe;
+   --  msg_gps.Describe;
 
 end main;

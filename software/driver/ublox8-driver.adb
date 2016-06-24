@@ -3,6 +3,7 @@ with Units; use Units;
 
 with Fletcher16;
 with HIL; use HIL;
+with HIL.Config; use HIL.Config;
 with HIL.UART; use type HIL.UART.Data_Type;
 with Interfaces; use Interfaces;
 with Config.Software;
@@ -139,8 +140,8 @@ is
                                            2 => Byte(0),
                                            4 => Byte( 2#1100_0000# ), -- uart mode 8bit
                                            5 => Byte( 2#0000_1000# ), -- uart mode no parity, 1 stop bit
-                                           8 => HIL.toBytes( Config.Software.UBLOX_BAUD_RATE_HZ )(1),
-                                           9 => HIL.toBytes( Config.Software.UBLOX_BAUD_RATE_HZ )(2),
+                                           8 => HIL.toBytes( HIL.Config.UBLOX_BAUD_RATE_HZ )(1),
+                                           9 => HIL.toBytes( HIL.Config.UBLOX_BAUD_RATE_HZ )(2),
                                            12 => Byte( 1 ),  -- ubx protocol
                                            14 => Byte( 1 ),  -- ubx protocol
                                            16 => Byte( 0 ), -- flags

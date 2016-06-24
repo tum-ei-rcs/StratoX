@@ -1,3 +1,8 @@
+-- Institution: Technische Universität München
+-- Department:  Real-Time Computer Systems (RCS)
+-- Project:     StratoX
+-- Authors:     Martin Becker (becker@rcs.ei.tum.de)
+
 with Ada.Interrupts.Names;
 
 with STM32.GPIO;
@@ -7,10 +12,10 @@ with STM32.Device; use STM32.Device;
 with STM32_SVD.SDIO;
 
 -- @summary
--- setup the on-chip SD controller, clock and irq.
+--  Mapping of system resources for Pixracer V1
 --
 --  based on https://raw.githubusercontent.com/AdaCore/Ada_Drivers_Library/
---  master/examples/sdcard/src/stm32f7/device_sd_configuration.ads, checked for STM32F427.
+--  master/examples/sdcard/src/stm32f7/device_sd_configuration.ads.
 
 package Media_Reader.SDCard.Config is
 
@@ -19,8 +24,8 @@ package Media_Reader.SDCard.Config is
    --  manual: 8x data, 1xCK, 1x CMD
    --  PC8=D0, PC9=D1, PC10=D2, PC11=D3, PC12=CK, PD2=CMD
 
-   -- SD_Detect_Pin : constant STM32.GPIO.GPIO_Point :=
-   --  no card detect pin on pixhawk
+   --SD_Detect_Pin : constant STM32.GPIO.GPIO_Point := PC11;
+   --  no card detect pin on pixracer
 
    --  DMA: DMA2 (Stream 3 or Stream 6) with Channel4
    SD_DMA            : DMA_Controller renames DMA_2;

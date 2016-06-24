@@ -1,0 +1,25 @@
+with "../hpl/STM32/stm32f427.gpr"; -- this STM device is on the pixracer board
+
+library project Pixracer_V1 is
+
+   for Target use "arm-eabi";
+   for Runtime ("Ada") use STM32F427'Runtime ("Ada"); -- device defines run-time
+
+   for Library_Name use "pixracer_v1";
+   for Library_Kind use "static";
+   for Library_Dir use "lib/pixracer_v1/"; -- & Config.RTS & "/" & Config.BUILD;
+   for Object_Dir use "obj/pixracer_v1/"; -- & Config.RTS & "/" & Config.BUILD;
+
+   -- add sources specific for pixhawk board
+   for Source_Dirs use ("pixracer_v1",
+			"pixracer_v1/hil",
+                        "common",
+			"components/MS5611",
+                        "stm32_common",
+                        "stm32_common/sdcard"
+			);
+
+   --package Compiler renames Config.Compiler;
+   --package Builder renames Config.Builder;
+
+end Pixracer_V1;

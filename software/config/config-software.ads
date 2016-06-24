@@ -29,17 +29,7 @@ package Config.Software is
 
    -- PID configuration
 
-   -- MPU6000
-   MPU6000_SAMPLE_RATE_HZ : constant := 100;
-   
-   
-   -- PX4IO
-   PX4IO_BAUD_RATE_HZ : constant := 1_500_000;
-   
-   
-   -- UBLOX-
-   UBLOX_BAUD_RATE_HZ : constant := 38_400;
-   
+         
    
    -- PID Controller
    CFG_PID_PITCH_P : constant := 0.550;

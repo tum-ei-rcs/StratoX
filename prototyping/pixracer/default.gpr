@@ -1,7 +1,6 @@
-with "hal/boards/pixhawk.gpr";
-with "style.gpr";
+with "../../software/hal/boards/pixracer_v1.gpr";
 
-project StratoX is
+project Default is
 
    for Languages use ("Ada");
    for Main use ("boot.adb");
@@ -9,20 +8,14 @@ project StratoX is
    -- Specify Directories
    -----------------------------
    for Source_Dirs use (
-      "boot",
-      "config",
-      "driver",
-      "driver/fs",
-      "kernel",
-      "modules",
-      "modules/sensors",
-      "modules/actuators",
-      "lib",
-      "lib/ulog"
+                       "src",
+                       "src/config",
+                       "src/driver",
+                       "src/modules"
    );
 
-   for Object_Dir use "../obj";
-   for Exec_Dir use "../obj";
+   for Object_Dir use "obj";
+   for Exec_Dir use "obj";
    type Build_Modes is
       ("debug", "release", "analyze");
    Build_Mode : Build_Modes := external ("Build_Mode", "debug");
@@ -34,12 +27,10 @@ project StratoX is
       when others => null;
    end case;
 
-   for Runtime ("Ada") use Pixhawk'Runtime ("Ada");
+   for Runtime ("Ada") use Pixracer_V1'Runtime ("Ada");
    for Target use "arm-eabi";
 
    package Compiler is
-
-      --for Local_Configuration_Pragmas use "spark.adc";
 
       case Build_Mode is
 
@@ -52,10 +43,9 @@ project StratoX is
                "-gnatyak",
                "-gnat12",
                "-gnata",
-               Style.STYLE_SWITCHES,
-                                             "-gnatet=../target-gen.atp");
+               "-gnaty",
+               "-gnatet=../target-gen.atp");
 
-            --for Switches ("ada") use ("-gnatec=" & project'Project_Dir & "spark.adc");
 
          when "release" =>
             for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.Xh.k.o", "-gnatVaimrs", "-gnato", "-gnat12");
@@ -83,7 +73,7 @@ project StratoX is
             for Default_Switches ("ada") use ();
 
          when "analyze" =>
-            for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target.atp");
+            for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target-gen.atp");
       end case;
    end Builder;
 
@@ -112,8 +102,7 @@ project StratoX is
       -- switches for gnat2why et. al.
 
 
-      for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "-d"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
-      -- for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "--assumptions", "-d");
+      for Switches use ("--timeout=5", "--RTS=" & Pixracer_V1'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "-d"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
 
       case Build_Mode is
 
@@ -129,8 +118,5 @@ project StratoX is
       for Default_Switches ("ada") use ("-o", "check/gnatcheck.out", "-rules", "-from=coding_standard.rules");
    end Check;
 
-   -- pretty printer
-   package Pretty_Printer renames Style.Pretty_Printer;
-
-end StratoX;
+end Default;
 

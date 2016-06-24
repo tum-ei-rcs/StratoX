@@ -36,10 +36,11 @@ package body Magnetometer is
 
          -- Arctan: Only X = Y = 0 raises exception
          -- Output range: -Cycle/2.0 to Cycle/2.0, thus -180° to 180°
-         angle1  := Roll_Type ( Arctan( Float(-z), Float(x) ) );
+         --mag_angle1  := Roll_Type ( Arctan( Float(-z), Float(x) ) );
 
-         mag_length := Sqrt( Float(y)**2 + Float(z)**2 );
-         return Heading_Type ( Arctan( mag_length , Float(X) ) + 180.0 );
+         --mag_length := Sqrt( Float(y)**2 + Float(z)**2 );
+         --return Heading_Type ( Arctan( mag_length , Float(X) ) + 180.0 );
+         return Heading_Type'First;
    end Heading;
 
 
