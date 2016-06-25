@@ -2,7 +2,7 @@
 
 with STM32.USARTs;
 with STM32.Device;
-with HIL.Config;
+--with HIL.Config;
 
 package body HIL.UART with
    SPARK_Mode => Off

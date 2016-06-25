@@ -29,85 +29,58 @@ is
         Clock_Polarity => STM32.SPI.Low,
         Clock_Phase => STM32.SPI.P1Edge,
         Slave_Management => STM32.SPI.Software_Managed,
-        Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale); max 20 MHz for Baro
+        Baud_Rate_Prescaler => STM32.SPI.BRP_256,  -- BR = 168 / (2*PreScale); max 20 MHz for Baro; FRAM can do 40MHz
         First_Bit => STM32.SPI.MSB,
         CRC_Poly => 16#00#);
                                             
 						
 					       
    begin
---        -- SPI 1 (Baro, MPU6000?)
---        STM32.Device.Enable_Clock( STM32.Device.SPI_1 );  
---     
---        STM32.SPI.Configure(Port => STM32.Device.SPI_1, Conf => Config);
---        STM32.SPI.Enable( STM32.Device.SPI_1 );
---        
---        -- SPI 4 (Extern)
---        STM32.Device.Enable_Clock( STM32.Device.SPI_4 );  
---     
---        STM32.SPI.Configure(Port => STM32.Device.SPI_4, Conf => Config);
---        STM32.SPI.Enable( STM32.Device.SPI_4 );     
-      
-      null;
+      --  SPI 2 (Baro, FRAM)
+      STM32.Device.Enable_Clock( STM32.Device.SPI_2 );        
+      STM32.SPI.Configure(Port => STM32.Device.SPI_2, Conf => Config);
+      STM32.SPI.Enable( STM32.Device.SPI_2 );      
    end configure;
       
 
    -- postcondition: only drive pin low
    procedure select_Chip(Device : Device_ID_Type) is
    begin
---        case (Device) is
---        when Barometer => 
---           HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, SIGNAL_SELECT);
---  --        when MPU6000 =>
---  --           HIL.GPIO.write(HIL.GPIO.SPI_CS_MPU6000, SIGNAL_SELECT);
---        when FRAM =>
---           HIL.GPIO.write(HIL.GPIO.SPI_CS_FRAM, SIGNAL_SELECT);
---  --        when Extern =>
---  --           HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, SIGNAL_SELECT);
---  --        when Magneto =>
---  --           null; -- TODO
---        -- dont use "others=>" here for guaranteed coverage
---        end case;
-      null;
+      case (Device) is
+         when Barometer => 
+            HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, SIGNAL_SELECT);
+         when FRAM =>
+            HIL.GPIO.write(HIL.GPIO.SPI_CS_FRAM, SIGNAL_SELECT);
+      end case;
    end select_Chip;
       
 
    -- postcondition: only drive pin high
    procedure deselect_Chip(Device : Device_ID_Type) is
    begin
---        case (Device) is
---        when Barometer => 
---           HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, SIGNAL_DESELECT);
---  --        when MPU6000 =>
---  --           HIL.GPIO.write(HIL.GPIO.SPI_CS_MPU6000, SIGNAL_DESELECT);
---  --        when Extern =>
---  --         HIL.GPIO.write(HIL.GPIO.SPI_CS_EXT, SIGNAL_DESELECT);
---        when FRAM =>
---           HIL.GPIO.write(HIL.GPIO.SPI_CS_FRAM, SIGNAL_DESELECT);
---  --        when Magneto =>
---  --           null; -- TODO                          
---        -- dont use "others=>" here for guaranteed coverage
---        end case;
-      null;
+      case (Device) is
+         when Barometer => 
+            HIL.GPIO.write(HIL.GPIO.SPI_CS_BARO, SIGNAL_DESELECT);
+         when FRAM =>
+            HIL.GPIO.write(HIL.GPIO.SPI_CS_FRAM, SIGNAL_DESELECT);
+      end case;
    end deselect_Chip;
 
 
    procedure write (Device : Device_ID_Type; Data : Data_Type) is
    begin
---        select_Chip(Device);
---        case (Device) is
---        when Barometer => 
---           for i in Data'Range loop
---  	    STM32.SPI.Transmit(STM32.Device.SPI_1, HAL.Byte( Data(i) ) );
---           end loop;          
---  --        when Extern => 
---  --           for i in Data'Range loop
---  --  	    STM32.SPI.Transmit(STM32.Device.SPI_4, HAL.Byte( Data(i) ) );
---  --           end loop;  
---        when others => null;
---        end case;
---        deselect_Chip(Device);
-      null;
+      select_Chip(Device);
+      case (Device) is
+         when Barometer => 
+            for i in Data'Range loop
+               STM32.SPI.Transmit(STM32.Device.SPI_2, HAL.Byte( Data(i) ) );
+            end loop;          
+         when FRAM => 
+            for i in Data'Range loop
+               STM32.SPI.Transmit(STM32.Device.SPI_2, HAL.Byte( Data(i) ) );
+            end loop;                      
+      end case;
+      deselect_Chip(Device);      
    end write;
    
 

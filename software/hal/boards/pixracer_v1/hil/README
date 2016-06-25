@@ -1,4 +1,2 @@
-These files establish a mapping between HAL functions (e.g., SPI chip select)
-and actual pinout.
-
-FIXME: move to boards.
+These files implement the hardware mapping for functions in ../common/hil.
+Everything here is target-specific.

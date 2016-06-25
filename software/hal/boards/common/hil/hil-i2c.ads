@@ -1,11 +1,17 @@
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+with HIL.Devices;
 
-
-
+--  @summary
+--  Target-independent specification for HIL of I2C
 package HIL.I2C with SPARK_Mode => On is
 
    subtype Data_Type is Unsigned_8_Array;
-   
-   type Device_Type is (UNKNOWN, MAGNETOMETER);
+         
+   type Device_Type is new HIL.Devices.Device_Type_I2C;
 
    procedure initialize;
 

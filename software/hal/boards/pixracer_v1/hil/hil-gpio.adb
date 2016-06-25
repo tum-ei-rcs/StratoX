@@ -24,11 +24,6 @@ is
    SPI2_MOSI    : constant Dev_GPIO := STM32.Device.PB15; -- OK
    SPI2_CS_FRAM : constant Dev_GPIO := STM32.Device.PD10; -- OK
    SPI2_CS_BARO : constant Dev_GPIO := STM32.Device.PD7;  -- OK
---
---     SPI4_SCK  : constant Dev_GPIO := STM32.Device.PE2;
---     SPI4_MISO : constant Dev_GPIO := STM32.Device.PE5;
---     SPI4_MOSI : constant Dev_GPIO := STM32.Device.PE6;
---     SPI4_CS   : constant Dev_GPIO := STM32.Device.PE4;
 
    I2C1_SCL : constant Dev_GPIO := STM32.Device.PB8; -- OK
    I2C1_SDA : constant Dev_GPIO := STM32.Device.PB9; -- OK
@@ -120,9 +115,8 @@ is
                                                         Output_Type => Push_Pull,
                                                         Speed => Speed_2MHz,
                                                         Resistors => Floating );
-      Point      : GPIO_Point := STM32.Device.PE12;
    begin
-      -- configure LED
+      -- configure LEDs
       Configure_IO( Points => (1 => map(RED_LED)), Config => Config_Out );
       Configure_IO( Points => (1 => map(BLU_LED)), Config => Config_Out );
       Configure_IO( Points => (1 => map(GRN_LED)), Config => Config_Out );
@@ -132,17 +126,16 @@ is
 --        Configure_Alternate_Function(
 --                                     Points => (1 => SPI1_SCK, 2 => SPI1_MOSI, 3 => SPI1_MISO),
 --                                     AF     => GPIO_AF_SPI1);
---
---        -- configure SPI 2
---        Configure_IO( Points => (SPI2_SCK, SPI2_MISO, SPI2_MOSI), Config => Config_SPI2 );
---        Configure_Alternate_Function(
---                                     Points => (1 => SPI2_SCK, 2 => SPI2_MOSI, 3 => SPI2_MISO),
---                                     AF     => GPIO_AF_SPI2);
---
---        -- configure Baro ChipSelect
---        Configure_IO( Point => map(SPI_CS_BARO), Config => Config_Out );
---        Point := map(SPI_CS_BARO);
---        STM32.GPIO.Set( This => Point );
+
+      -- configure SPI 2
+      Configure_IO( Points => (SPI2_SCK, SPI2_MISO, SPI2_MOSI), Config => Config_SPI2 );
+      Configure_Alternate_Function(
+                                   Points => (1 => SPI2_SCK, 2 => SPI2_MOSI, 3 => SPI2_MISO),
+                                   AF     => GPIO_AF_SPI2);
+
+      -- configure Baro ChipSelect
+      Configure_IO( Point => map(SPI_CS_BARO), Config => Config_Out );
+      STM32.GPIO.Set( This => map(SPI_CS_BARO) );
 --
 --  --        -- configure MPU6000 ChipSelect
 --  --        Configure_IO( Point => map(SPI_CS_MPU6000), Config => Config_Out );
@@ -159,10 +152,9 @@ is
 --  --        Point := map(SPI_CS_L3GD20H);
 --  --        STM32.GPIO.Set( This => Point );
 --
---        -- configure FRAM ChipSelect
---        Configure_IO( Point => map(SPI_CS_FRAM), Config => Config_Out );
---        Point := map(SPI_CS_FRAM);
---        STM32.GPIO.Set( This => Point );
+      -- configure FRAM ChipSelect
+      Configure_IO( Point => map(SPI_CS_FRAM), Config => Config_Out );
+      STM32.GPIO.Set( This => map(SPI_CS_FRAM) );
 --
 --        --configure SPI 4
 --        Configure_IO( Points => (SPI4_SCK, SPI4_MISO, SPI4_MOSI), Config => Config_SPI1 );

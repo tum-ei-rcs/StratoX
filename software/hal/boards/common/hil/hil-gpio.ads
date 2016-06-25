@@ -3,24 +3,17 @@
 -- Project:     StratoX
 --
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
---
--- Description: Hardware Interface Layer for the GPIO
 
+with HIL.Devices;
 
+--  @summary
+--  Target-independent specification for HIL of GPIO
 package HIL.GPIO with SPARK_Mode is
 
    type GPIO_Signal_Type is(
       HIGH, LOW);
 
-   type GPIO_Point_Type is (
-                            RED_LED,
-                            SPI_CS_BARO,
-                            SPI_CS_MPU6000,
-                            SPI_CS_LSM303D,
-                            SPI_CS_L3GD20H,
-                            SPI_CS_FRAM,
-                            SPI_CS_EXT
-   );
+   type GPIO_Point_Type is new HIL.Devices.Device_Type_GPIO;
 
    subtype Point_Out_Type is GPIO_Point_Type;
 

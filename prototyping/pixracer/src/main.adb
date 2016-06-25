@@ -7,7 +7,7 @@ with Config;                            use Config;
 with CPU;
 with HIL.UART;
 with HIL.SPI;
---  with NVRAM;
+with NVRAM;
 with Logger;
 with LED_Manager;
 

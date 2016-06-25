@@ -1,12 +1,18 @@
--- @summary
--- connects HAL to actual pin definitions.
--- FIXME: move to boards, actually?
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+with HIL.Devices;
+
+--  @summary
+--  Target-independent specification for HIL of SPI
 package HIL.SPI with
      Spark_Mode => On
      -- Abstract_State => Deselect 
 is
 
-   type Device_ID_Type is (Barometer, Magneto, MPU6000, FRAM, Extern);
+   type Device_ID_Type is new HIL.Devices.Device_Type_SPI;
 
    type Data_Type is array (Natural range <>) of Byte;
 

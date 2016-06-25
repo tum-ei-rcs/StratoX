@@ -13,7 +13,8 @@ library project Pixhawk is
    -- add sources specific for pixhawk board
    for Source_Dirs use ("pixhawk",
 			"pixhawk/hil",
-			"common",
+			"common/hil",
+			"common/tools",
 			"components/FM25V01",
 			"components/HMC5883L",
 			"components/LSM303D",

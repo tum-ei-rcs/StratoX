@@ -13,7 +13,9 @@ library project Pixracer_V1 is
    -- add sources specific for pixhawk board
    for Source_Dirs use ("pixracer_v1",
 			"pixracer_v1/hil",
-                        "common",
+                        "common/hil",
+                        "common/tools",
+			"components/FM25V02",
 			"components/MS5611",
                         "stm32_common",
                         "stm32_common/sdcard"
