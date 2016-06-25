@@ -1,9 +1,6 @@
 
 --  todo: initialize in several functions: initGPIO, initI2C, use HAL
 
-
---  with Config; use Config;
-
 with HIL.GPIO;
 with HIL.Clock;
 
@@ -21,8 +18,8 @@ package body CPU is
       --  HIL.SPI.configure;
       --  HIL.I2C.initialize;
 
-
       --  Logger.log(Logger.DEBUG, "Hardware initialized.");
+
 
    end initialize;
 

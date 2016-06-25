@@ -14,10 +14,31 @@ with LED_Manager;
 package body Main is
 
    procedure Initialize is
-      result : Boolean := False;
+      success : Boolean := False;
+      t_next  : Ada.Real_Time.Time;
    begin
       CPU.initialize;
-      delay until Clock + Milliseconds (50);
+      NVRAM.Init;
+
+      --  self checks
+      NVRAM.Self_Check (Status => success);
+
+      --  hang here if self-checks failed
+      if not success then
+         LED_Manager.LED_blink (LED_Manager.FAST);
+         Logger.log (Logger.ERROR, "Self checks failed");
+         t_next := Clock;
+         loop
+            LED_Manager.LED_tick (Config.MAIN_TICK_RATE_MS);
+            LED_Manager.LED_sync;
+
+            delay until t_next;
+            t_next := t_next + Milliseconds (Config.MAIN_TICK_RATE_MS);
+         end loop;
+      else
+         Logger.log (Logger.ERROR, "Self checks passed");
+         delay until Clock + Milliseconds (50);
+      end if;
    end Initialize;
 
    procedure Run_Loop is

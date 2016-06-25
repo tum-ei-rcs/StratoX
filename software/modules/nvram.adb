@@ -1,17 +1,24 @@
--- Institution: Technische Universität München
--- Department:  Real-Time Computer Systems (RCS)
--- Project:     StratoX
--- Authors:     Martin Becker (becker@rcs.ei.tum.de)
--- FIXME: replace with HIL version
-with FM25v01.Driver; use FM25v01.Driver;
+--  Institution: Technische Universität München
+--  Department:  Real-Time Computer Systems (RCS)
+--  Project:     StratoX
+--  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 with Interfaces; use Interfaces;
+with HIL.NVRAM;  use HIL.NVRAM;
 with Fletcher16;
 
 package body NVRAM with SPARK_Mode,
-   Refined_State => ( Memory_State => null )
+   Refined_State => (Memory_State => null)
 is
 
-   -- provide add function for checksumming characters
+   use type HIL.NVRAM.Address;
+
+   ----------------------------------
+   --  instantiate generic Fletcher16
+   ----------------------------------
+
+   function "+" (Left : HIL.Byte; Right : Character) return HIL.Byte;
+      --  provide add function for checksumming characters
+
    function "+" (Left : HIL.Byte; Right : Character) return HIL.Byte is
       val : constant Integer := Character'Pos (Right);
       rbyte : constant HIL.Byte := HIL.Byte (val);
@@ -19,25 +26,17 @@ is
       return Left + rbyte;
    end "+";
 
-   -- instantiation of checksum
+   --  instantiation of checksum
    package Fletcher16_String is new Fletcher16 (Index_Type => Positive,
                                                 Element_Type => Character,
                                                 Array_Type => String);
 
    ----------------------------------
-   --  body specs
-   ----------------------------------
-
-   function Var_To_Address (var : in Variable_Name) return NVRAM.Address
-     with Post => Var_To_Address'Result <= FM25v01.Driver.Address'Last;
-   function Hdr_To_Address return NVRAM.Address is (0)
-   with Post => Hdr_To_Address'Result <= FM25v01.Driver.Address'Last;
-
-   ----------------------------------
    --  Types
    ----------------------------------
 
-   --  At the beginning of FRAM, we put a header.
+   --  the header in NVRAM is a checksum, which
+   --  depends on build date/time
    type NVRAM_Header is
        record
           ck_a : HIL.Byte;
@@ -46,8 +45,44 @@ is
    for NVRAM_Header'Size use 16;
 
    ----------------------------------
+   --  body specs
+   ----------------------------------
+
+   function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
+     with Post => Var_To_Address'Result <= HIL.NVRAM.Address'Last;
+   --  get address of variable in RAM
+
+   function Hdr_To_Address return HIL.NVRAM.Address
+     with Post => Hdr_To_Address'Result <= HIL.NVRAM.Address'Last;
+   --  get address of header in RAM
+
+   function Get_Default (var : in Variable_Name) return HIL.Byte;
+   --  read default value of variable
+
+   procedure Make_Header (newhdr : out NVRAM_Header);
+   --  generate a new header for this build
+
+   procedure Write_Header (hdr : in NVRAM_Header);
+   --  write a header to RAM
+
+   procedure Read_Header (framhdr : out NVRAM_Header);
+   --  read header from RAM.
+
+   procedure Clear_Contents;
+   --  set all variables in NVRAM to their default
+
+   procedure Validate_Contents;
+   --  check whether the entries in NVRAM are valid for the current
+   --  compilation version of this program. if not, set all of them
+   --  to their defaults (we cannot defer this, since the program could
+   --  reset at any point in time).
+
+   ----------------------------------
    --  Bodies
    ----------------------------------
+
+   function Hdr_To_Address return HIL.NVRAM.Address is (0);
+   --  header's address is fixed at beginning of NVRAM
 
    procedure Make_Header (newhdr : out NVRAM_Header) is
       function Compilation_Date return String -- implementation-defined (GNAT)
@@ -69,25 +104,26 @@ is
    end Make_Header;
 
    procedure Write_Header (hdr : in NVRAM_Header) is
-      package FRAM renames FM25v01.Driver;
    begin
-      -- FIXME: can this be done safer. Maybe with aggregates?
-      FRAM.Write_Byte (addr => Hdr_To_Address + hdr.ck_a'Position, byte => hdr.ck_a);
-      FRAM.Write_Byte (addr => Hdr_To_Address + hdr.ck_b'Position, byte => hdr.ck_b);
+      --  FIXME: can this be done safer. Maybe with aggregates?
+      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address +
+                         hdr.ck_a'Position, byte => hdr.ck_a);
+      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address +
+                         hdr.ck_b'Position, byte => hdr.ck_b);
    end Write_Header;
 
    procedure Read_Header (framhdr : out NVRAM_Header) is
-      package FRAM renames FM25v01.Driver;
    begin
-      -- FIXME: can this be done safer. Maybe with aggregates?
-      FRAM.Read_Byte (addr => Hdr_To_Address + framhdr.ck_a'Position, byte => framhdr.ck_a);
-      FRAM.Read_Byte (addr => Hdr_To_Address + framhdr.ck_b'Position, byte => framhdr.ck_b);
+      --  FIXME: can this be done safer. Maybe with aggregates?
+      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address +
+                        framhdr.ck_a'Position, byte => framhdr.ck_a);
+      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address +
+                        framhdr.ck_b'Position, byte => framhdr.ck_b);
    end Read_Header;
 
-   --  FIXME: provide a way to let user define default
-   function Get_Default (var : in Variable_Name) return HIL.Byte is (0); -- TODO
+   function Get_Default (var : in Variable_Name) return HIL.Byte
+   is (Variable_Defaults (var));
 
-   --  set all variables in NVRAM to their default
    procedure Clear_Contents is
    begin
       for V in Variable_Name'Range loop
@@ -99,10 +135,6 @@ is
       end loop;
    end Clear_Contents;
 
-   --  check whether the entries in NVRAM are valid for the current
-   --  compilation version of this program. if not, set all of them
-   --  to their defaults (we cannot defer this, since the program could
-   --  reset at any point in time).
    procedure Validate_Contents is
       hdr_fram : NVRAM_Header;
       hdr_this : NVRAM_Header;
@@ -117,36 +149,29 @@ is
       end if;
    end Validate_Contents;
 
-   ----------------------------------
-   --  implementation
-   ----------------------------------
 
-   function Var_To_Address (var : in Variable_Name) return NVRAM.Address
+   function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
    is (NVRAM_Header'Size + Variable_Name'Pos (var));
 
    procedure Init is
-      package FRAM renames FM25v01.Driver;
    begin
-      FRAM.Init;
+      HIL.NVRAM.Init;
       Validate_Contents;
    end Init;
 
    procedure Self_Check (Status : out Boolean) is
-      package FRAM renames FM25v01.Driver;
    begin
-      FRAM.Self_Check (Status);
+      HIL.NVRAM.Self_Check (Status);
    end Self_Check;
 
    procedure Load (variable : Variable_Name; data : out HIL.Byte) is
-      package FRAM renames FM25v01.Driver;
    begin
-      FRAM.Read_Byte (addr => Var_To_Address (variable), byte => data);
+      HIL.NVRAM.Read_Byte (addr => Var_To_Address (variable), byte => data);
    end Load;
 
    procedure Store (variable : Variable_Name; data : in HIL.Byte) is
-      package FRAM renames FM25v01.Driver;
    begin
-      FRAM.Write_Byte (addr => Var_To_Address (variable), byte => data);
+      HIL.NVRAM.Write_Byte (addr => Var_To_Address (variable), byte => data);
    end Store;
 
 end NVRAM;

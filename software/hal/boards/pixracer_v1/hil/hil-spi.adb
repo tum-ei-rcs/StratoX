@@ -28,6 +28,7 @@ is
    
    
    procedure configure is
+      --  SPI Mode 0 (Polarity=0, Phase=0/Edge=1)
       Config : constant STM32.SPI.SPI_Configuration := 
       ( Direction => STM32.SPI.D2Lines_FullDuplex,
         Mode => STM32.SPI.Master,
@@ -92,6 +93,7 @@ is
 
    procedure read (Device : in Device_ID_Type; Data : out Data_Type) is  
    begin
+      -- TODO: read implementation
       null;
    end read;
      

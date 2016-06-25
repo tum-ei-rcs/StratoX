@@ -3,8 +3,6 @@
 --  Project:     StratoX
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 
--- FIXME: replace with HIL version
-with FM25v01.Driver;
 with HIL;
 
 --  @summary
@@ -15,22 +13,25 @@ package NVRAM with SPARK_Mode,
 is
 
    procedure Init;
-   -- initialize this module and possibly underlying hardware
+   --  initialize this module and possibly underlying hardware
 
    procedure Self_Check (Status : out Boolean);
-   -- check whether initialization was successful
+   --  check whether initialization was successful
 
+   --  List of all variables stored in NVRAM. Add as needed.
    type Variable_Name is (VAR_MISSIONSTATE,
-                          VAR_BOOTCOUNTER
-                          --  add new variables here as needed
-                         );
+                          VAR_BOOTCOUNTER);
+
+   --  Default values for all variables
+   type Defaults_Table is array (Variable_Name'Range) of HIL.Byte;
+   Variable_Defaults : constant Defaults_Table :=
+     (VAR_MISSIONSTATE => 0,
+      VAR_BOOTCOUNTER  => 0);
 
    procedure Load (variable : in Variable_Name; data : out HIL.Byte);
-   -- read variable at given address and return value
+   --  read variable at given address and return value
 
    procedure Store (variable : in Variable_Name; data : in HIL.Byte);
-   -- write variable to given address and return value
+   --  write variable to given address and return value
 
-private
-   subtype Address is FM25v01.Driver.Address;
 end NVRAM;

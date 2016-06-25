@@ -3,14 +3,18 @@
 --  Project:     StratoX
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 with Interfaces; use Interfaces;
-with Fletcher16;
 with HIL.NVRAM;  use HIL.NVRAM;
+with Fletcher16;
 
 package body NVRAM with SPARK_Mode,
    Refined_State => (Memory_State => null)
 is
 
    use type HIL.NVRAM.Address;
+
+   ----------------------------------
+   --  instantiate generic Fletcher16
+   ----------------------------------
 
    function "+" (Left : HIL.Byte; Right : Character) return HIL.Byte;
       --  provide add function for checksumming characters
@@ -28,19 +32,11 @@ is
                                                 Array_Type => String);
 
    ----------------------------------
-   --  body specs
-   ----------------------------------
-
-   function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
-     with Post => Var_To_Address'Result <= HIL.NVRAM.Address'Last;
-   function Hdr_To_Address return HIL.NVRAM.Address is (0)
-   with Post => Hdr_To_Address'Result <= HIL.NVRAM.Address'Last;
-
-   ----------------------------------
    --  Types
    ----------------------------------
 
-   --  At the beginning of HIL.NVRAM, we put a header.
+   --  the header in NVRAM is a checksum, which
+   --  depends on build date/time
    type NVRAM_Header is
        record
           ck_a : HIL.Byte;
@@ -49,11 +45,44 @@ is
    for NVRAM_Header'Size use 16;
 
    ----------------------------------
-   --  Bodies
+   --  body specs
    ----------------------------------
+
+   function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
+     with Post => Var_To_Address'Result <= HIL.NVRAM.Address'Last;
+   --  get address of variable in RAM
+
+   function Hdr_To_Address return HIL.NVRAM.Address
+     with Post => Hdr_To_Address'Result <= HIL.NVRAM.Address'Last;
+   --  get address of header in RAM
+
+   function Get_Default (var : in Variable_Name) return HIL.Byte;
+   --  read default value of variable
 
    procedure Make_Header (newhdr : out NVRAM_Header);
    --  generate a new header for this build
+
+   procedure Write_Header (hdr : in NVRAM_Header);
+   --  write a header to RAM
+
+   procedure Read_Header (framhdr : out NVRAM_Header);
+   --  read header from RAM.
+
+   procedure Clear_Contents;
+   --  set all variables in NVRAM to their default
+
+   procedure Validate_Contents;
+   --  check whether the entries in NVRAM are valid for the current
+   --  compilation version of this program. if not, set all of them
+   --  to their defaults (we cannot defer this, since the program could
+   --  reset at any point in time).
+
+   ----------------------------------
+   --  Bodies
+   ----------------------------------
+
+   function Hdr_To_Address return HIL.NVRAM.Address is (0);
+   --  header's address is fixed at beginning of NVRAM
 
    procedure Make_Header (newhdr : out NVRAM_Header) is
       function Compilation_Date return String -- implementation-defined (GNAT)
@@ -74,9 +103,6 @@ is
       newhdr := (ck_a => crc_all.ck_a, ck_b => crc_all.ck_b);
    end Make_Header;
 
-   procedure Write_Header (hdr : in NVRAM_Header);
-   --  write a header to RAM
-
    procedure Write_Header (hdr : in NVRAM_Header) is
    begin
       --  FIXME: can this be done safer. Maybe with aggregates?
@@ -86,7 +112,6 @@ is
                          hdr.ck_b'Position, byte => hdr.ck_b);
    end Write_Header;
 
-   procedure Read_Header (framhdr : out NVRAM_Header);
    procedure Read_Header (framhdr : out NVRAM_Header) is
    begin
       --  FIXME: can this be done safer. Maybe with aggregates?
@@ -96,14 +121,8 @@ is
                         framhdr.ck_b'Position, byte => framhdr.ck_b);
    end Read_Header;
 
-   function Get_Default (var : in Variable_Name) return HIL.Byte;
-   --  read default value of variable
-
    function Get_Default (var : in Variable_Name) return HIL.Byte
    is (Variable_Defaults (var));
-
-   procedure Clear_Contents;
-   --  set all variables in NVRAM to their default
 
    procedure Clear_Contents is
    begin
@@ -115,12 +134,6 @@ is
          end;
       end loop;
    end Clear_Contents;
-
-   procedure Validate_Contents;
-   --  check whether the entries in NVRAM are valid for the current
-   --  compilation version of this program. if not, set all of them
-   --  to their defaults (we cannot defer this, since the program could
-   --  reset at any point in time).
 
    procedure Validate_Contents is
       hdr_fram : NVRAM_Header;
@@ -136,9 +149,6 @@ is
       end if;
    end Validate_Contents;
 
-   ----------------------------------
-   --  implementation
-   ----------------------------------
 
    function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
    is (NVRAM_Header'Size + Variable_Name'Pos (var));

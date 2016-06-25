@@ -4,7 +4,6 @@
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 
 with HIL;
-with HIL.NVRAM;
 
 --  @summary
 --  read/write from/to a non-volatile location. Every "variable"
