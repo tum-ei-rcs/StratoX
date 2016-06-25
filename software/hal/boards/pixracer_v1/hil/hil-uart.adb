@@ -1,9 +1,15 @@
-
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 
 with STM32.USARTs;
 with STM32.Device;
 --with HIL.Config;
 
+--  @summary
+--  Target-specific mapping for HIL of UART
 package body HIL.UART with
    SPARK_Mode => Off
 is

@@ -1,5 +1,11 @@
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 
-
+--  @summary
+--  target-independent functions of HIL.
 package body HIL with
    SPARK_Mode => Off
 is

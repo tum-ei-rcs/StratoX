@@ -1,4 +1,8 @@
-
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 pragma SPARK_Mode (Off);
 
 with STM32.Device;
@@ -6,6 +10,8 @@ with STM32.SPI;
 with HAL.SPI;
 with HIL.GPIO;
 
+--  @summary
+--  target-specific mapping for HIL of SPI
 package body HIL.SPI with
    SPARK_Mode => Off
    -- Refined_State => (Deselect => (SIGNAL_DESELECT) ) 

@@ -3,6 +3,7 @@
 --  Project:     StratoX
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 
+-- FIXME: replace with HIL version
 with FM25v01.Driver;
 with HIL;
 

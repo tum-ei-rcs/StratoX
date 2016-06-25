@@ -1,6 +1,13 @@
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 with HAL;
 with Interfaces; use Interfaces;
 
+--  @summary
+--  target-independent functions of HIL.
 package HIL with
    SPARK_Mode
 is

@@ -1,4 +1,8 @@
-
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 
 with STM32.I2C;
 with STM32.Device;
@@ -6,6 +10,8 @@ with HAL.I2C;
 
 --with HMC5883L.Register;
 
+--  @summary
+--  target-specific mapping for HIL of SPI
 package body HIL.I2C with
    SPARK_Mode => Off
 is

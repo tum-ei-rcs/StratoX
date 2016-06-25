@@ -4,6 +4,7 @@
 -- Module:      Software Configuration
 --
 -- Authors: Martin Becker (becker@rcs.ei.tum.de)
+with FM25v01.Driver;
 
 --  @summary
 --  Target-specific types for the devices that are exposed
@@ -20,4 +21,5 @@ package HIL.Devices with SPARK_Mode is
                             SPI_CS_FRAM,
                             SPI_CS_EXT
                             );
+   subtype NVRAM_Address is FM25v01.Driver.Address;
 end HIL.Devices;

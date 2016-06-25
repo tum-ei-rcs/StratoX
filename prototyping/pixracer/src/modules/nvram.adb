@@ -4,11 +4,13 @@
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 with Interfaces; use Interfaces;
 with Fletcher16;
-with FM25v02.Driver; use FM25v02.Driver;
+with HIL.NVRAM;  use HIL.NVRAM;
 
 package body NVRAM with SPARK_Mode,
    Refined_State => (Memory_State => null)
 is
+
+   use type HIL.NVRAM.Address;
 
    function "+" (Left : HIL.Byte; Right : Character) return HIL.Byte;
       --  provide add function for checksumming characters
@@ -29,16 +31,16 @@ is
    --  body specs
    ----------------------------------
 
-   function Var_To_Address (var : in Variable_Name) return NVRAM.Address
-     with Post => Var_To_Address'Result <= FRAM.Address'Last;
-   function Hdr_To_Address return NVRAM.Address is (0)
-   with Post => Hdr_To_Address'Result <= FRAM.Address'Last;
+   function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
+     with Post => Var_To_Address'Result <= HIL.NVRAM.Address'Last;
+   function Hdr_To_Address return HIL.NVRAM.Address is (0)
+   with Post => Hdr_To_Address'Result <= HIL.NVRAM.Address'Last;
 
    ----------------------------------
    --  Types
    ----------------------------------
 
-   --  At the beginning of FRAM, we put a header.
+   --  At the beginning of HIL.NVRAM, we put a header.
    type NVRAM_Header is
        record
           ck_a : HIL.Byte;
@@ -78,9 +80,9 @@ is
    procedure Write_Header (hdr : in NVRAM_Header) is
    begin
       --  FIXME: can this be done safer. Maybe with aggregates?
-      FRAM.Write_Byte (addr => Hdr_To_Address +
+      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address +
                          hdr.ck_a'Position, byte => hdr.ck_a);
-      FRAM.Write_Byte (addr => Hdr_To_Address +
+      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address +
                          hdr.ck_b'Position, byte => hdr.ck_b);
    end Write_Header;
 
@@ -88,9 +90,9 @@ is
    procedure Read_Header (framhdr : out NVRAM_Header) is
    begin
       --  FIXME: can this be done safer. Maybe with aggregates?
-      FRAM.Read_Byte (addr => Hdr_To_Address +
+      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address +
                         framhdr.ck_a'Position, byte => framhdr.ck_a);
-      FRAM.Read_Byte (addr => Hdr_To_Address +
+      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address +
                         framhdr.ck_b'Position, byte => framhdr.ck_b);
    end Read_Header;
 
@@ -138,28 +140,28 @@ is
    --  implementation
    ----------------------------------
 
-   function Var_To_Address (var : in Variable_Name) return NVRAM.Address
+   function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
    is (NVRAM_Header'Size + Variable_Name'Pos (var));
 
    procedure Init is
    begin
-      FRAM.Init;
+      HIL.NVRAM.Init;
       Validate_Contents;
    end Init;
 
    procedure Self_Check (Status : out Boolean) is
    begin
-      FRAM.Self_Check (Status);
+      HIL.NVRAM.Self_Check (Status);
    end Self_Check;
 
    procedure Load (variable : Variable_Name; data : out HIL.Byte) is
    begin
-      FRAM.Read_Byte (addr => Var_To_Address (variable), byte => data);
+      HIL.NVRAM.Read_Byte (addr => Var_To_Address (variable), byte => data);
    end Load;
 
    procedure Store (variable : Variable_Name; data : in HIL.Byte) is
    begin
-      FRAM.Write_Byte (addr => Var_To_Address (variable), byte => data);
+      HIL.NVRAM.Write_Byte (addr => Var_To_Address (variable), byte => data);
    end Store;
 
 end NVRAM;

@@ -2,6 +2,7 @@
 -- Department:  Real-Time Computer Systems (RCS)
 -- Project:     StratoX
 -- Authors:     Martin Becker (becker@rcs.ei.tum.de)
+-- FIXME: replace with HIL version
 with FM25v01.Driver; use FM25v01.Driver;
 with Interfaces; use Interfaces;
 with Fletcher16;

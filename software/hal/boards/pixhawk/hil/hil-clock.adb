@@ -1,6 +1,12 @@
-
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+-- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 with STM32.Device;
 
+--  @summary
+--  Target-specific mapping for HIL of Clock
 package body HIL.Clock with
    SPARK_Mode => Off 
 is

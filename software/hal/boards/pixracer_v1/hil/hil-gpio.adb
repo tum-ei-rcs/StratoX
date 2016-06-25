@@ -1,9 +1,14 @@
+--  Institution: Technische Universität München
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 with STM32.GPIO;  use STM32.GPIO;
 with STM32.Device;
 with STM32.Board;
 
--- @summary
--- Maps GPIO pins and setup alternative functions. For Pixhawk.
+--  @summary
+--  target-specific mapping of HIL for GPIO
 package body HIL.GPIO with
    SPARK_Mode => Off
 is

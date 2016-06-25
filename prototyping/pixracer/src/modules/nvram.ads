@@ -3,8 +3,8 @@
 --  Project:     StratoX
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 
-with FM25v02.Driver;
 with HIL;
+with HIL.NVRAM;
 
 --  @summary
 --  read/write from/to a non-volatile location. Every "variable"
@@ -12,7 +12,6 @@ with HIL;
 package NVRAM with SPARK_Mode,
    Abstract_State => Memory_State
 is
-   package FRAM renames FM25v02.Driver;
 
    procedure Init;
    --  initialize this module and possibly underlying hardware
@@ -35,9 +34,5 @@ is
 
    procedure Store (variable : in Variable_Name; data : in HIL.Byte);
    --  write variable to given address and return value
-
-private
-   subtype Address is FRAM.Address;
-
 
 end NVRAM;
