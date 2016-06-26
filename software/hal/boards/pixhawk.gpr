@@ -15,7 +15,7 @@ library project Pixhawk is
 			"pixhawk/hil",
 			"common/hil",
 			"common/tools",
-			"components/FM25V01",
+			"components/FM25V0x",
 			"components/HMC5883L",
 			"components/LSM303D",
 			"components/MPU6000",

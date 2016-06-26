@@ -3,7 +3,7 @@
 --  Project:     StratoX
 --
 --  Authors: Martin Becker (becker@rcs.ei.tum.de)
-with HIL.Devices;
+with HIL.Devices.NVRAM;
 
 --  @summary
 --  Target-independent specification for HIL of NVRAM
@@ -11,8 +11,8 @@ package HIL.NVRAM with
      Spark_Mode => On
 is
 
-   subtype Address is HIL.Devices.NVRAM_Address;
-   -- the target-specific package must specify the address type
+   subtype Address is HIL.Devices.NVRAM.NVRAM_Address; -- expose type
+   -- the target-specific packages must specify the address type
 
    procedure Init;
    -- initialize the communication to the FRAM

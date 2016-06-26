@@ -7,9 +7,9 @@ with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Ada.Numerics.Real_Arrays;          use Ada.Numerics.Real_Arrays;
 
 with CPU;
-with Units;           use Units;
-with Units.Vectors;   use Units.Vectors;
-with Units.Navigation;   use Units.Navigation;
+with Units;            use Units;
+with Units.Vectors;    use Units.Vectors;
+with Units.Navigation; use Units.Navigation;
 
 with MPU6000.Driver;
 with HIL.UART;
@@ -18,24 +18,16 @@ with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
 
-
 with Estimator;
 with Controller;
 with LED_Manager;
-
 
 with Interfaces; use Interfaces;
 with Crash;
 
 package body Main is
 
-
-
-   type Health_Status_Type is (
-                               UNKNOWN,
-                               OK,
-                               EMERGENCY
-                              );
+   type Health_Status_Type is (UNKNOWN, OK, EMERGENCY);
 --
 --      type Altitude_State_Type is (
 --              GROUND,
@@ -57,6 +49,7 @@ package body Main is
       --        Test             : Float       := Sin (100.0);
       --        Foo              : Real_Vector := (10.0, 10.0, 10.0);
       --        A, B, C, D, E, F : Integer_16  := 0;
+
    begin
 
 --        Test := abs (Foo);
@@ -74,23 +67,23 @@ package body Main is
       -- wait to satisfy some timing
       delay until Clock + Milliseconds (50);
 
-
       --PX4IO.Driver.initialize;
-
 
       Estimator.initialize;
       Controller.initialize;
 
-      -- Illustration how to use NVRAM
+         -- Illustration how to use NVRAM
+
       declare
          num_boots : HIL.Byte;
+
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots);
          if num_boots < HIL.Byte'Last then
             num_boots := num_boots + 1;
             NVRAM.Store (NVRAM.VAR_BOOTCOUNTER, num_boots);
          end if;
-         Logger.log (Logger.INFO, "Boot number: " & HIL.Byte'Image(num_boots));
+         Logger.log (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
       end;
 
       -- TODO: pick up last mission state from NVRAM and continue where
@@ -99,11 +92,20 @@ package body Main is
    end initialize;
 
    procedure perform_Self_Test is
+      success : Boolean;
+
    begin
       Logger.log (Logger.INFO, "Starting Self Test");
 
       Logger.log (Logger.DEBUG, "Logger: Debug Test Message");
       Logger.log (Logger.TRACE, "Logger: Trace Test Message");
+
+      NVRAM.Self_Check (success);
+      if not success then
+         Logger.log (Logger.ERROR, "NVRAM self-check failed");
+      else
+         Logger.log (Logger.INFO, "NVRAM self-check passed");
+      end if;
 
    end perform_Self_Test;
 
@@ -115,9 +117,7 @@ package body Main is
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
 
-
       body_info : Body_Type;
-
 
    begin
       LED_Manager.LED_blink (LED_Manager.SLOW);
@@ -126,7 +126,6 @@ package body Main is
 
       -- arm PX4IO
       Controller.activate;
-
 
       loop
          loop_time_start := Clock;
@@ -137,7 +136,7 @@ package body Main is
 
          -- UART Test
          --HIL.UART.write(HIL.UART.Console, (70, 65) );
-         HIL.UART.read (HIL.UART.Console, data_rx);
+         HIL.UART.read (HIL.UART.CONSOLE, data_rx);
 
          case (Character'Val (data_rx (1))) is
 --              when '1' =>
@@ -168,23 +167,31 @@ package body Main is
 
             when 't' =>
                perform_Self_Test;
+
             when 's' =>
                null;
                --PX4IO.Driver.read_Status;
+
             when 'r' =>
-               Logger.log(Logger.INFO,
-                 "RPY: " & AImage( body_info.orientation.Roll ) &
-                 ", " & AImage( body_info.orientation.Pitch ) &
-                 ", " & AImage( body_info.orientation.Yaw ) );
+               Logger.log
+                 (Logger.INFO,
+                  "RPY: " &
+                  AImage (body_info.orientation.Roll) &
+                  ", " &
+                  AImage (body_info.orientation.Pitch) &
+                  ", " &
+                  AImage (body_info.orientation.Yaw));
+
             when 'l' =>
                LED_Manager.LED_blink (LED_Manager.FAST);
+
             when 'd' =>
                null;
                --PX4IO.Driver.disarm;
+
             when 'p' =>
-               Logger.log
-                 (Logger.INFO,
-                  Integer'Image (loop_duration_max / Time_Span_Unit));
+               Logger.log (Logger.INFO, Integer'Image (loop_duration_max / Time_Span_Unit));
+
             when others =>
                null;
          end case;
@@ -195,10 +202,8 @@ package body Main is
          body_info.orientation := Estimator.get_Orientation;
 
          -- Controller
-         Controller.set_Current_Orientation( body_info.orientation );
+         Controller.set_Current_Orientation (body_info.orientation);
          Controller.runOneCycle;
-
-
 
          -- SPI Test
          --HIL.SPI.select_Chip(HIL.SPI.Extern);

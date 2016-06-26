@@ -3,7 +3,7 @@
 --  Project:     StratoX
 --
 --  Authors: Martin Becker (becker@rcs.ei.tum.de)
-with FM25V01.Driver; -- FIXME: make generic
+with HIL.Devices.NVRAM;
 
 --  @summary
 --  Target-specific mapping for HIL of NVRAM
@@ -11,12 +11,12 @@ package body HIL.NVRAM with
      Spark_Mode => On
 is
 
-   procedure Init renames FM25V01.Driver.Init;
+   procedure Init renames HIL.Devices.NVRAM.FM25v01.Init;
 
-   procedure Self_Check (Status : out Boolean) renames FM25V01.Driver.Self_Check;
+   procedure Self_Check (Status : out Boolean) renames HIL.Devices.NVRAM.FM25v01.Self_Check;
 
-   procedure Read_Byte (addr : Address; byte : out HIL.Byte) renames FM25V01.Driver.Read_Byte;
+   procedure Read_Byte (addr : Address; byte : out HIL.Byte) renames HIL.Devices.NVRAM.FM25v01.Read_Byte;
 
-   procedure Write_Byte (addr : Address; byte : HIL.Byte) renames FM25V01.Driver.Write_Byte;
+   procedure Write_Byte (addr : Address; byte : HIL.Byte) renames HIL.Devices.NVRAM.FM25v01.Write_Byte;
 
 end HIL.NVRAM;

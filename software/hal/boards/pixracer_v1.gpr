@@ -15,7 +15,7 @@ library project Pixracer_V1 is
 			"pixracer_v1/hil",
                         "common/hil",
                         "common/tools",
-			"components/FM25V02",
+			"components/FM25V0x",
 			"components/MS5611",
                         --"stm32_common", -- this is for button, but we have no button.
                         "stm32_common/sdcard"
