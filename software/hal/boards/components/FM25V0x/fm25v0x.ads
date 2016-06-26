@@ -1,18 +1,18 @@
--- Institution: Technische Universität München
--- Department:  Real-Time Computer Systems (RCS)
--- Project:     StratoX
--- Authors:     Martin Becker (becker@rcs.ei.tum.de)
+--  Institution: Technische Universität München
+--  Department:  Real-Time Computer Systems (RCS)
+--  Project:     StratoX
+--  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 
 with Ada.Real_Time; use Ada.Real_Time;
 with HIL;           use HIL;
 
--- @summary
--- SPI protocol to CYPRESS FM25v0x series (ferroelectric RAM, non-volatile)
+--  @summary
+--  SPI protocol to CYPRESS FM25v0x series (ferroelectric RAM, non-volatile)
 generic
-   MEMSIZE_BYTES : Positive;
+   MEMSIZE_BYTES : Positive; -- FIXME: introduce datatype to constrain to 65kByte, beause we have 16bit addresses.
 package FM25v0x with
-  SPARK_Mode
-  --Abstract_State => State
+   SPARK_Mode
+   --  Abstract_State => State
 is
    --MEMSIZE_BYTES : constant := Memory_Size;
    type Address is new Integer range 0 .. MEMSIZE_BYTES - 1;

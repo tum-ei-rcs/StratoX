@@ -8,8 +8,8 @@ with Interfaces;
 with HAL; use HAL;
 with HIL.SPI; use HIL.SPI;
 
-package body FM25v0x
-   --with Refined_State => (State => Is_Init)
+package body FM25v0x with SPARK_Mode
+   --  with Refined_State => (State => Is_Init)
 is
 
    ----------------------------------------
@@ -57,13 +57,13 @@ is
    is record
       case As_Bytearray is
          when False =>
-            Reserved_0_0   : HAL.Bit;
+            Reserved_0_0   : HAL.Bit := 0;
             Write_Enabled  : Boolean := False; -- write enable <=> soft lock disable
             Soft_Lock      : Soft_Lock_Field := BP_LOCK_NONE;
-            Reserved_4_6   : HAL.UInt3;
+            Reserved_4_6   : HAL.UInt3 := 0;
             Enable_HW_Lock : Boolean := True; -- by default, activate hardware write protect pin
          when True =>
-            Data_Array     : HAL.Byte_Array (1 .. 1);
+            Data_Array     : HAL.Byte_Array (1 .. 1) := (others => 0);
       end case;
    end record
      with Unchecked_Union, Size => 8,
@@ -83,14 +83,14 @@ is
    is record
       case As_Bytearray is
          when False =>
-            Manufacturer_ID : HAL.Byte_Array (1 .. 7);
-            Family          : HAL.UInt3;
-            Density         : HAL.UInt5;
-            Sub             : HAL.UInt2;
-            Rev             : HAL.UInt3;
-            Reserved_0_2    : HAL.UInt3;
+            Manufacturer_ID : HAL.Byte_Array (1 .. 7) := (others => 0);
+            Family          : HAL.UInt3 := 0;
+            Density         : HAL.UInt5 := 0;
+            Sub             : HAL.UInt2 := 0;
+            Rev             : HAL.UInt3 := 0;
+            Reserved_0_2    : HAL.UInt3 := 0;
          when True =>
-            Data_Array : HAL.Byte_Array (1 .. 9);
+            Data_Array : HAL.Byte_Array (1 .. 9) := (others => 0);
       end case;
    end record
      with Unchecked_Union, Size => 72,
@@ -128,10 +128,12 @@ is
    end Write_Enable;
 
    procedure Init is
+      t_now : Ada.Real_Time.Time;
    begin
       if not Is_Init then
-         while Clock < FM25v0x_STARTUP_TIME_MS loop
-            null;
+         t_now := Clock;
+         while t_now < FM25v0x_STARTUP_TIME_MS loop
+            t_now := Clock;
          end loop;
          Is_Init := True;
          --  nothing to do here

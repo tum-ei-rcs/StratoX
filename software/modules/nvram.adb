@@ -48,13 +48,13 @@ is
    --  body specs
    ----------------------------------
 
-   function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
-     with Post => Var_To_Address'Result <= HIL.NVRAM.Address'Last;
+   function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address;
    --  get address of variable in RAM
+   --  no need for postcondition.
 
-   function Hdr_To_Address return HIL.NVRAM.Address
-     with Post => Hdr_To_Address'Result <= HIL.NVRAM.Address'Last;
+   function Hdr_To_Address return HIL.NVRAM.Address;
    --  get address of header in RAM
+   --  no need for postcondition.
 
    function Get_Default (var : in Variable_Name) return HIL.Byte;
    --  read default value of variable
@@ -167,5 +167,13 @@ is
    begin
       HIL.NVRAM.Write_Byte (addr => Var_To_Address (variable), byte => data);
    end Store;
+
+   procedure Reset is
+      hdr_this : NVRAM_Header;
+   begin
+      Make_Header (hdr_this);
+      Clear_Contents;
+      Write_Header (hdr_this);
+   end Reset;
 
 end NVRAM;
