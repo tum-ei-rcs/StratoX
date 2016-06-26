@@ -19,7 +19,19 @@ is
    HIL_DEVICE   : constant HIL.SPI.Device_ID_Type := HIL.SPI.FRAM;
    MANUFACTURER : constant HAL.Byte_Array (1 .. 7) := (7 => 16#C2#, others => 16#7F#);
    FAMILY       : constant HAL.UInt3 := 1;
-   DENSITY      : constant HAL.UInt5 := 2; -- TODO: must be function of MEMSIZE_BYTES
+
+   --  @summary compare density with expected
+   --  expected density depends on the generic parameter.
+   --  so far we only know two versions. if your's is
+   --  not included, you might try to add it here.
+   function Check_Density (density : HAL.UInt5) return Boolean is
+   begin
+      case MEMSIZE_BYTES is
+         when 2**14 => return density = 1;
+         when 2**15 => return density = 2;
+         when others => return False;
+      end case;
+   end Check_Density;
 
    ----------------------------------------
    --  PROTOCOL (FIXME: move to separate package, but cannot make child because of genericity.
@@ -160,7 +172,7 @@ is
       --  check expected identifiers
       Status := Status and (MANUFACTURER = deviceid.Manufacturer_ID);
       Status := Status and (FAMILY = deviceid.Family);
-      Status := Status and (DENSITY = deviceid.Density);
+      Status := Status and Check_Density (deviceid.Density);
       --  after boot the decice is supposed to be locked
       --  Read_Status_Register (Status => sreg);
       --  Status := Status and not sreg.Write_Enabled;

@@ -60,7 +60,7 @@ is
    Config_SPI2 : constant GPIO_Port_Configuration := (
                                                       Mode => Mode_AF,
                                                       Output_Type => Push_Pull,
-                                                      Speed => Speed_50MHz, -- FRAM max. 40
+                                                      Speed => Speed_50MHz,
                                                       Resistors => Floating );
 
    Config_I2C1 : constant GPIO_Port_Configuration := (

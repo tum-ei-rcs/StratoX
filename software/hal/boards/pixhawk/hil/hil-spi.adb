@@ -102,13 +102,18 @@ is
       case (Device) is
       when Barometer | MPU6000 => 
          for i in Data'Range loop
-	    STM32.SPI.Transmit(STM32.Device.SPI_1, HAL.Byte( Data(i) ) );
+            STM32.SPI.Transmit(STM32.Device.SPI_1, HAL.Byte( Data(i) ) );
          end loop;          
+      when FRAM =>
+         for i in Data'Range loop
+            STM32.SPI.Transmit(STM32.Device.SPI_2, HAL.Byte( Data(i) ) );
+         end loop;           
       when Extern => 
          for i in Data'Range loop
-	    STM32.SPI.Transmit(STM32.Device.SPI_4, HAL.Byte( Data(i) ) );
+            STM32.SPI.Transmit(STM32.Device.SPI_4, HAL.Byte( Data(i) ) );
          end loop;  
-      when others => null;
+      when Magneto =>
+         null; -- TODO
       end case;
       deselect_Chip(Device);
    end write;
@@ -116,7 +121,24 @@ is
 
    procedure read (Device : in Device_ID_Type; Data : out Data_Type) is  
    begin
-      null;
+      select_Chip(Device);
+      case (Device) is
+      when Barometer | MPU6000 => 
+         for i in Data'Range loop
+	    STM32.SPI.Receive (STM32.Device.SPI_1, HAL.Byte( Data(i) ) );
+         end loop;  
+      when FRAM =>
+         for i in Data'Range loop
+            STM32.SPI.Receive (STM32.Device.SPI_2, HAL.Byte( Data(i) ) );
+         end loop;  
+      when Extern => 
+         for i in Data'Range loop
+	    STM32.SPI.Receive (STM32.Device.SPI_4, HAL.Byte( Data(i) ) );
+         end loop;  
+      when Magneto =>
+         null; -- TODO
+      end case;
+      deselect_Chip(Device);
    end read;
      
      
@@ -130,7 +152,14 @@ is
             end loop;                             
             for i in Data_RX'Range loop
                STM32.SPI.Receive (STM32.Device.SPI_1, HAL.Byte (Data_RX (i)));
-            end loop;  
+            end loop; 
+         when FRAM =>
+            for i in Data_TX'Range loop
+               STM32.SPI.Transmit (STM32.Device.SPI_2, HAL.Byte (Data_TX (i)));
+            end loop;                             
+            for i in Data_RX'Range loop
+               STM32.SPI.Receive (STM32.Device.SPI_2, HAL.Byte (Data_RX (i)));
+            end loop;                         
          when Extern => 
             for i in Data_TX'Range loop
                STM32.SPI.Transmit (STM32.Device.SPI_4, HAL.Byte (Data_TX (i)));
@@ -138,8 +167,8 @@ is
             for i in Data_RX'Range loop
                STM32.SPI.Receive (STM32.Device.SPI_4, HAL.Byte (Data_RX (i)));
             end loop; 
-         when others =>
-            null;
+         when Magneto =>
+            null; -- TODO
       end case;            
       -- these functions can only be used if Data_TX'Length = Data_RX'Length     
       --        STM32.SPI.Transmit_Receive(
