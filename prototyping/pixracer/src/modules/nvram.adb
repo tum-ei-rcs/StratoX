@@ -90,17 +90,11 @@ is
       function Compilation_Time return String -- implementation-defined (GNAT)
         with Import, Convention => Intrinsic;
 
-      build_date : constant String := Compilation_Date;
-      build_time : constant String := Compilation_Time;
-      crc_date : constant Fletcher16_String.Checksum_Type :=
+      build_date : constant String := Compilation_Date & Compilation_Time;
+      crc        : constant Fletcher16_String.Checksum_Type :=
         Fletcher16_String.Checksum (build_date);
-      crc_time : constant Fletcher16_String.Checksum_Type :=
-        Fletcher16_String.Checksum (build_time);
-      crc_all  : constant Fletcher16_String.Checksum_Type :=
-        (ck_a => crc_date.ck_a + crc_time.ck_a,
-         ck_b => crc_date.ck_b + crc_time.ck_b);
    begin
-      newhdr := (ck_a => crc_all.ck_a, ck_b => crc_all.ck_b);
+      newhdr := (ck_a => crc.ck_a, ck_b => crc.ck_b);
    end Make_Header;
 
    procedure Write_Header (hdr : in NVRAM_Header) is
@@ -149,9 +143,9 @@ is
       end if;
    end Validate_Contents;
 
-
    function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
-   is (NVRAM_Header'Size + Variable_Name'Pos (var));
+   is (HIL.NVRAM.Address ((NVRAM_Header'Size + 7) / 8) -- ceiling bit -> bytes
+       + Variable_Name'Pos (var));
 
    procedure Init is
    begin

@@ -79,7 +79,8 @@ private package FM25v02.Protocol is
    end record
      with Unchecked_Union, Size => 72,
      Bit_Order => System.Low_Order_First;
-   -- we get correct endianness, but bytes switched (bytes are big endian, bits little)
+   --  we get correct endianness, but bytes are switched
+   --  (bytes are big endian, bits little)
    for Msg_Device_ID use record
       Reserved_0_2    at 8 range 0 .. 2; -- LSB
       Rev             at 8 range 3 .. 5;

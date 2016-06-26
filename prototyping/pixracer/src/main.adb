@@ -2,15 +2,15 @@
 --  Main System File
 --  todo: better unit name
 
-with Ada.Real_Time;                     use Ada.Real_Time;
-with Config;                            use Config;
+with Ada.Real_Time; use Ada.Real_Time;
+with Config;        use Config;
+with Interfaces;    use Interfaces;
 with CPU;
-with HIL.UART;
-with HIL.SPI;
 with HIL.Devices;
 with NVRAM;
 with Logger;
 with LED_Manager;
+
 
 package body Main is
 
@@ -20,7 +20,7 @@ package body Main is
    begin
       CPU.initialize;
 
-      LED_Manager.Set_Color ( (1 => HIL.Devices.RED_LED));
+      LED_Manager.Set_Color ((1 => HIL.Devices.RED_LED));
       LED_Manager.LED_switchOn;
 
       NVRAM.Init;
@@ -30,7 +30,7 @@ package body Main is
 
       --  hang here if self-checks failed
       if not success then
-         LED_Manager.Set_Color ( (1 => HIL.Devices.RED_LED));
+         LED_Manager.Set_Color ((1 => HIL.Devices.RED_LED));
          LED_Manager.LED_blink (LED_Manager.FAST);
          Logger.log (Logger.ERROR, "Self checks failed");
          t_next := Clock;
@@ -48,17 +48,19 @@ package body Main is
    end Initialize;
 
    procedure Run_Loop is
-      data    : HIL.SPI.Data_Type (1 .. 3)  := (others => 0);
-      data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);
+      --  data    : HIL.SPI.Data_Type (1 .. 3)  := (others => 0);
+      --  data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);
       msg     : constant String                      := "Main";
-
       loop_time_start   : Time      := Clock;
-      loop_duration_max : Time_Span := Milliseconds (0);
+      bootcounter : HIL.Byte;
    begin
-      LED_Manager.Set_Color ( (1 => HIL.Devices.GRN_LED));
+      LED_Manager.Set_Color ((1 => HIL.Devices.GRN_LED));
       LED_Manager.LED_blink (LED_Manager.SLOW);
       Logger.log (Logger.INFO, msg);
 
+      NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
+      bootcounter := bootcounter + 1;
+      NVRAM.Store (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
       loop
          loop_time_start := Clock;
 
@@ -90,11 +92,6 @@ package body Main is
          --  HIL.SPI.select_Chip(HIL.SPI.Extern);
          --  HIL.SPI.transfer(HIL.SPI.Extern, (166, 0, 0), data );
          --  HIL.SPI.deselect_Chip(HIL.SPI.Extern);
-
-         --  profile
-         if loop_duration_max < (Clock - loop_time_start) then
-            loop_duration_max := Clock - loop_time_start;
-         end if;
 
          --  wait remaining loop time
          delay until loop_time_start + Milliseconds (MAIN_TICK_RATE_MS);
