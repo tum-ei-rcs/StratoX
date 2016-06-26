@@ -124,20 +124,29 @@ is
    begin
       select_Chip(Device);
       case (Device) is
-      when Barometer | MPU6000 => 
-	 STM32.SPI.Transmit_Receive(
-                             STM32.Device.SPI_1, 
-                             STM32.SPI.Byte_Buffer( Data_TX ),
-                             STM32.SPI.Byte_Buffer( Data_RX ),
-                             Positive( Data_TX'Length ) );
-      when Extern => 
-	 STM32.SPI.Transmit_Receive(
-                             STM32.Device.SPI_4, 
-                             STM32.SPI.Byte_Buffer( Data_TX ),
-                             STM32.SPI.Byte_Buffer( Data_RX ),
-                             Positive( Data_TX'Length ) );                      
-      when others => null;
-      end case;
+         when Barometer | MPU6000 => 
+            for i in Data_TX'Range loop
+               STM32.SPI.Transmit (STM32.Device.SPI_1, HAL.Byte (Data_TX (i)));
+            end loop;                             
+            for i in Data_RX'Range loop
+               STM32.SPI.Receive (STM32.Device.SPI_1, HAL.Byte (Data_RX (i)));
+            end loop;  
+         when Extern => 
+            for i in Data_TX'Range loop
+               STM32.SPI.Transmit (STM32.Device.SPI_4, HAL.Byte (Data_TX (i)));
+            end loop;                             
+            for i in Data_RX'Range loop
+               STM32.SPI.Receive (STM32.Device.SPI_4, HAL.Byte (Data_RX (i)));
+            end loop; 
+         when others =>
+            null;
+      end case;            
+      -- these functions can only be used if Data_TX'Length = Data_RX'Length     
+      --        STM32.SPI.Transmit_Receive(
+      --                                   STM32.Device.SPI_1, 
+      --                                   STM32.SPI.Byte_Buffer( Data_TX ),
+      --                                   STM32.SPI.Byte_Buffer( Data_RX ),
+      --                                   Positive( Data_TX'Length ) );        
       deselect_Chip(Device);
    end transfer;
 

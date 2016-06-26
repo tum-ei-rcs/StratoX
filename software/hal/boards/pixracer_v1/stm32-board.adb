@@ -50,7 +50,7 @@ package body STM32.Board is
 
    procedure All_LEDs_Off is
    begin
-      Clear (All_LEDs);
+      Set (All_LEDs); -- leds are invertedly driven
    end All_LEDs_Off;
 
    -----------------
@@ -59,7 +59,7 @@ package body STM32.Board is
 
    procedure All_LEDs_On is
    begin
-      Set (All_LEDs);
+      Clear (All_LEDs); -- leds are invertedly driven
    end All_LEDs_On;
 
    ---------------------
@@ -79,19 +79,5 @@ package body STM32.Board is
       Configure_IO (All_LEDs, Conf);
    end Initialize_LEDs;
 
-   --------------------------------
-   -- Configure_User_Button_GPIO --
-   --------------------------------
-
-   procedure Configure_User_Button_GPIO is
-      Config : GPIO_Port_Configuration;
-   begin
-      Enable_Clock (User_Button_Point);
-
-      Config.Mode := Mode_In;
-      Config.Resistors := Floating;
-
-      User_Button_Point.Configure_IO (Config);
-   end Configure_User_Button_GPIO;
 
 end STM32.Board;

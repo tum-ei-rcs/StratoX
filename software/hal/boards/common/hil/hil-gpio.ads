@@ -30,4 +30,8 @@ package HIL.GPIO with SPARK_Mode is
 
    procedure read (Point : in GPIO_Point_Type; Signal : out GPIO_Signal_Type);
 
+   procedure All_LEDs_Off;
+
+   procedure All_LEDs_On;
+
 end HIL.GPIO;

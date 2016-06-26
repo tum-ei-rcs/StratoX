@@ -3,6 +3,7 @@
 
 with HIL.GPIO;
 with HIL.Clock;
+with HIL.SPI;
 
 package body CPU is
 
@@ -15,7 +16,7 @@ package body CPU is
       --  Logger.log(Logger.DEBUG, "Startup...");
 
       HIL.GPIO.configure;
-      --  HIL.SPI.configure;
+      HIL.SPI.configure;
       --  HIL.I2C.initialize;
 
       --  Logger.log(Logger.DEBUG, "Hardware initialized.");

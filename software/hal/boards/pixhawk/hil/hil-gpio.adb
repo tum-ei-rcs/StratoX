@@ -240,6 +240,7 @@ is
    --        when HIGH => HAL.GPIO.HIGH,
    --        when LOW => HAL.GPIO.LOW );
 
+   procedure All_LEDs_Off renames STM32.Board.All_LEDs_Off;
 
-
+   procedure All_LEDs_On renames STM32.Board.All_LEDs_Off;
 end HIL.GPIO;

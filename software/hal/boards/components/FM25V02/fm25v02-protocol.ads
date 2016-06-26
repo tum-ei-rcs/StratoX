@@ -41,7 +41,7 @@ private package FM25v02.Protocol is
    is record
       case As_Bytearray is
          when False =>
-            Reserved_1_1   : HAL.Bit;
+            Reserved_0_0   : HAL.Bit;
             Write_Enabled  : Boolean := False; -- write enable <=> soft lock disable
             Soft_Lock      : Soft_Lock_Field := BP_LOCK_NONE;
             Reserved_4_6   : HAL.UInt3;
@@ -51,9 +51,9 @@ private package FM25v02.Protocol is
       end case;
    end record
      with Unchecked_Union, Size => 8,
-     Bit_Order => System.Low_Order_First; -- TODO: check
+     Bit_Order => System.Low_Order_First;
    for Status_Register use record
-      Reserved_1_1   at 0 range 0 .. 0;
+      Reserved_0_0   at 0 range 0 .. 0;
       Write_Enabled  at 0 range 1 .. 1;
       Soft_Lock      at 0 range 2 .. 3;
       Reserved_4_6   at 0 range 4 .. 6;
@@ -79,13 +79,14 @@ private package FM25v02.Protocol is
    end record
      with Unchecked_Union, Size => 72,
      Bit_Order => System.Low_Order_First;
+   -- we get correct endianness, but bytes switched (bytes are big endian, bits little)
    for Msg_Device_ID use record
-      Reserved_0_2    at 0 range 0 .. 2;
-      Rev             at 0 range 3 .. 5;
-      Sub             at 0 range 6 .. 7;
-      Density         at 0 range 8 .. 12;
-      Family          at 0 range 13 .. 15;
-      Manufacturer_ID at 0 range 16 .. 71;
+      Reserved_0_2    at 8 range 0 .. 2; -- LSB
+      Rev             at 8 range 3 .. 5;
+      Sub             at 8 range 6 .. 7;
+      Density         at 7 range 0 .. 4;
+      Family          at 7 range 5 .. 7;
+      Manufacturer_ID at 0 range 0 .. 55;
       Data_Array      at 0 range 0 .. 71;
    end record;
 

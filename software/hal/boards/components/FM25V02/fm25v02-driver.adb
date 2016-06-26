@@ -29,6 +29,12 @@ is
       HIL.SPI.read (Device => DEVICE, data => data);
    end Device_Receive;
 
+   procedure Write_Enable is
+      cmd : constant HIL.SPI.Data_Type (1 .. 1) := (1 => Interfaces.Unsigned_8 (FM25v02.Protocol.OP_WREN));
+   begin
+      Device_Send (cmd);
+   end Write_Enable;
+
    procedure Init is
    begin
       if Is_Init then
@@ -39,19 +45,16 @@ is
          null;
       end loop;
 
-      -- TODO: set write-enable (WREN)
+      Write_Enable;
 
       Is_Init := True;
    end Init;
 
    procedure Read_Status_Register (Status : out FM25v02.Protocol.Status_Register) is
       cmd      : constant HIL.SPI.Data_Type (1 .. 1) := (1 => Interfaces.Unsigned_8 (FM25v02.Protocol.OP_RDSR));
-      response : HIL.SPI.Data_Type ( 1 .. FM25v02.Protocol.Status_Register'Size );
+      response : HIL.SPI.Data_Type (1 .. Status.Data_Array'Length);
    begin
-      Device_Send (cmd);
-
-      -- FIXME: this is ugly ... there is a type mismatch (HAL.Byte vs HIL.Byte)
-      Device_Receive (response);
+      HIL.SPI.transfer (Device => DEVICE, Data_TX => cmd, Data_RX => response);
       for k in response'Range loop
          Status.Data_Array (k) := response (k);
       end loop;
@@ -59,10 +62,13 @@ is
 
    procedure Read_Device_ID (Dev_ID : out FM25v02.Protocol.Msg_Device_ID) is
       cmd      : constant HIL.SPI.Data_Type (1 .. 1) := (1 => Interfaces.Unsigned_8 (FM25v02.Protocol.OP_RDID));
-      response : HIL.SPI.Data_Type ( 1 .. FM25v02.Protocol.Msg_Device_ID'Size );
+      response : HIL.SPI.Data_Type ( 1 .. Dev_ID.Data_Array'Length  );
    begin
-      Device_Send (cmd);
-      Device_Receive (response);
+
+      HIL.SPI.transfer (Device => DEVICE, Data_TX => cmd, Data_RX => response);
+--        Device_Send (cmd);
+--        Device_Receive (response);
+
       for k in response'Range loop
          Dev_ID.Data_Array (k) := response (k);
       end loop;

@@ -12,6 +12,7 @@
 --  2. call LED_switch or LED_blink or LED_morse to select the operation mode
 --  3. frequently call LED_tick and LED_sync to manage LED timings.
 --
+with HIL.Devices;
 
 package LED_Manager is
 
@@ -21,18 +22,14 @@ package LED_Manager is
    type Time_Type is new Natural;          -- max. value: 7 * BLINK_TIME
    BLINK_TIME : constant Time_Type := 250; -- arbitrary time basis (dot time in morse mode)
 
-   type LED_Id_Type is new Integer;        -- any led identifier e.g. struct with port and pin
-
-   -- ----------------------------------------------------------------------------
-
    type LED_State_Type is (ON, OFF);
-
    type LED_Blink_Type is (FLASH, FAST, SLOW);
-
    type LED_Blink_Speed_Type is array (LED_Blink_Type) of Time_Type;
 
-   --  configures which LED to use
-   procedure LED_init (id : LED_Id_Type);
+   type Color_Type is Array (Positive range <> ) of HIL.Devices.Device_Type_GPIO;
+
+   procedure Set_Color (col : Color_Type);
+   --  for all of the subsequent methods, select color to use
 
    --  increases the internal timing counter
    --  elapsed_time should be a divider of BLINK_TIME.
@@ -48,8 +45,5 @@ package LED_Manager is
    --  select blink mode
    procedure LED_blink (speed : LED_Blink_Type);
    procedure LED_blinkPulse (on_time : Time_Type; off_time : Time_Type);
-
-   --  select morse mode
-   --  procedure LED_morse(msg_string : String);   -- ensure 0-terminated string!
 
 end LED_Manager;

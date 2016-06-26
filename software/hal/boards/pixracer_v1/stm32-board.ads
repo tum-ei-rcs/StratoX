@@ -94,18 +94,4 @@ package STM32.Board is
 --     MEMS_INT2    : GPIO_Point renames PA2;
 --
    
-   -----------------
-   -- User button --
-   -----------------
-   
-   --  Pixracer has no button
-   User_Button_Point     : GPIO_Point renames PNONE;      
-   User_Button_Interrupt : constant Interrupt_ID := Names.RTC_WKUP_Interrupt; -- workaround
-
-
-   procedure Configure_User_Button_GPIO;
-   --  Configures the GPIO port/pin for the blue user button. Sufficient
-   --  for polling the button, and necessary for having the button generate
-   --  interrupts.
-
 end STM32.Board;

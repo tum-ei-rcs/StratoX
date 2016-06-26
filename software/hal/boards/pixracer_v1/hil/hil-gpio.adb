@@ -122,9 +122,7 @@ is
                                                         Resistors => Floating );
    begin
       -- configure LEDs
-      Configure_IO( Points => (1 => map(RED_LED)), Config => Config_Out );
-      Configure_IO( Points => (1 => map(BLU_LED)), Config => Config_Out );
-      Configure_IO( Points => (1 => map(GRN_LED)), Config => Config_Out );
+      Configure_IO( Points => (1 => map(RED_LED), 2 => map (BLU_LED), 3 => map (GRN_LED)), Config => Config_Out );
 
 --        -- configure SPI 1
 --        Configure_IO( Points => (SPI1_SCK, SPI1_MISO, SPI1_MOSI), Config => Config_SPI1 );
@@ -217,5 +215,9 @@ is
 
 
    end configure;
+
+   procedure All_LEDs_Off renames STM32.Board.All_LEDs_Off;
+
+   procedure All_LEDs_On renames STM32.Board.All_LEDs_Off;
 
 end HIL.GPIO;

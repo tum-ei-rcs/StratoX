@@ -7,6 +7,7 @@ with Config;                            use Config;
 with CPU;
 with HIL.UART;
 with HIL.SPI;
+with HIL.Devices;
 with NVRAM;
 with Logger;
 with LED_Manager;
@@ -18,6 +19,10 @@ package body Main is
       t_next  : Ada.Real_Time.Time;
    begin
       CPU.initialize;
+
+      LED_Manager.Set_Color ( (1 => HIL.Devices.RED_LED));
+      LED_Manager.LED_switchOn;
+
       NVRAM.Init;
 
       --  self checks
@@ -25,6 +30,7 @@ package body Main is
 
       --  hang here if self-checks failed
       if not success then
+         LED_Manager.Set_Color ( (1 => HIL.Devices.RED_LED));
          LED_Manager.LED_blink (LED_Manager.FAST);
          Logger.log (Logger.ERROR, "Self checks failed");
          t_next := Clock;
@@ -49,10 +55,9 @@ package body Main is
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
    begin
+      LED_Manager.Set_Color ( (1 => HIL.Devices.GRN_LED));
       LED_Manager.LED_blink (LED_Manager.SLOW);
-
       Logger.log (Logger.INFO, msg);
-
 
       loop
          loop_time_start := Clock;
