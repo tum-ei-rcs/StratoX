@@ -1,3 +1,10 @@
+--  Based on AdaCore's Ada Drivers Library,
+--  see https://github.com/AdaCore/Ada_Drivers_Library,
+--  checkout 93b5f269341f970698af18f9182fac82a0be66c3.
+--  Copyright (C) Adacore
+--
+--  Tailored to StratoX project.
+--  Author: Martin Becker (becker@rcs.ei.tum.de)
 with Ada.Real_Time;           use Ada.Real_Time;
 
 with STM32.Device;            use STM32.Device;
@@ -13,8 +20,15 @@ package body Media_Reader.SDCard is
 --     Tx_IRQ            : constant Interrupt_ID :=
 --                           Ada.Interrupts.Names.DMA2_Stream6_Interrupt;
 
+   Use_DMA : Boolean := False;
+
    procedure Ensure_Card_Informations
      (Controller : in out SDCard_Controller) with Inline_Always;
+
+   procedure Set_DMA  (on : Boolean) is
+   begin
+      Use_DMA := on;
+   end Set_DMA;
 
    ------------
    -- DMA_Rx --
@@ -201,7 +215,7 @@ package body Media_Reader.SDCard is
       end if;
 
       if not Controller.Has_Info then
-         raise Device_Error;
+         raise Device_Error; --  TODO: remove
       end if;
 
       return Controller.Info;
@@ -390,41 +404,53 @@ package body Media_Reader.SDCard is
    begin
       Ensure_Card_Informations (Controller);
 
-      DMA_Interrupt_Handler.Set_Transfer_State;
-      SDMMC_Interrupt_Handler.Set_Transfer_State (Controller);
+      if Use_DMA then
 
-      Ret := Read_Blocks_DMA
-        (Controller.Device,
-         Unsigned_64 (Block_Number) *
-             Unsigned_64 (Controller.Info.Card_Block_Size),
-         SD_DMA,
-         SD_DMA_Rx_Stream,
-         SD_Data (Data));
+         DMA_Interrupt_Handler.Set_Transfer_State;
+         SDMMC_Interrupt_Handler.Set_Transfer_State (Controller);
 
-      if Ret /= OK then
-         DMA_Interrupt_Handler.Clear_Transfer_State;
-         SDMMC_Interrupt_Handler.Clear_Transfer_State;
-         Abort_Transfer (SD_DMA, SD_DMA_Rx_Stream, DMA_Err);
+         Ret := Read_Blocks_DMA
+           (Controller.Device,
+            Unsigned_64 (Block_Number) *
+                Unsigned_64 (Controller.Info.Card_Block_Size),
+            SD_DMA,
+            SD_DMA_Rx_Stream,
+            SD_Data (Data));
 
-         return False;
+         if Ret /= OK then
+            DMA_Interrupt_Handler.Clear_Transfer_State;
+            SDMMC_Interrupt_Handler.Clear_Transfer_State;
+            Abort_Transfer (SD_DMA, SD_DMA_Rx_Stream, DMA_Err);
+
+            return False;
+         end if;
+
+         SDMMC_Interrupt_Handler.Wait_Transfer (Ret);
+         DMA_Interrupt_Handler.Wait_Transfer (DMA_Err);
+
+         loop
+            exit when not Get_Flag (Controller.Device, RX_Active);
+            -- FIXME: this hangs forever.
+         end loop;
+
+         Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);
+         Disable (SD_DMA, SD_DMA_Rx_Stream);
+
+         Cortex_M.Cache.Invalidate_DCache
+           (Start => Data (Data'First)'Address,
+            Len   => Data'Length);
+
+         return Ret = OK
+           and then DMA_Err = DMA_No_Error;
+
+      else
+         -- polling => rx overrun possible
+         Ret := Read_Blocks (Controller.Device,
+                             Unsigned_64 (Block_Number) *
+                               Unsigned_64 (Controller.Info.Card_Block_Size),
+                             SD_Data (Data));
+         return Ret = OK;
       end if;
-
-      SDMMC_Interrupt_Handler.Wait_Transfer (Ret);
-      DMA_Interrupt_Handler.Wait_Transfer (DMA_Err);
-
-      loop
-         exit when not Get_Flag (Controller.Device, RX_Active);
-      end loop;
-
-      Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);
-      Disable (SD_DMA, SD_DMA_Rx_Stream);
-
-      Cortex_M.Cache.Invalidate_DCache
-        (Start => Data (Data'First)'Address,
-         Len   => Data'Length);
-
-      return Ret = OK
-        and then DMA_Err = DMA_No_Error;
    end Read_Block;
 
 end Media_Reader.SDCard;

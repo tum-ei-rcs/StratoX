@@ -11,6 +11,7 @@ project Default is
                        "src",
                        "src/config",
                        "src/driver",
+                       "src/driver/fs",
                        "src/modules"
    );
 

@@ -24,14 +24,6 @@ package body LED_Manager is
        end record;
    current_pulse : Pulse_Type := (others => 0);
 
-   --  official morse timings
-   MORSE_DIT_TIME : constant Time_Type := BLINK_TIME;
-   pragma Unreferenced (MORSE_DIT_TIME);
-   MORSE_DAH_TIME : constant Time_Type := BLINK_TIME * 3;
-   pragma Unreferenced (MORSE_DAH_TIME);
-   MORSE_PAUSE_TIME : constant Time_Type := BLINK_TIME * 7;
-   pragma Unreferenced (MORSE_PAUSE_TIME);
-
    Blink_Speed : constant LED_Blink_Speed_Type := (FLASH => BLINK_TIME / 2,
                                                    FAST => BLINK_TIME,
                                                    SLOW => BLINK_TIME * 3

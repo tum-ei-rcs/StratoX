@@ -1,7 +1,12 @@
--- Institution: Technische Universität München
--- Department:  Real-Time Computer Systems (RCS)
--- Project:     StratoX
--- Authors:     Martin Becker (becker@rcs.ei.tum.de)
+--  Based on AdaCore's Ada Drivers Library,
+--  see https://github.com/AdaCore/Ada_Drivers_Library,
+--  checkout 93b5f269341f970698af18f9182fac82a0be66c3.
+--  Copyright (C) Adacore
+--
+--  Institution: Technische Universität München
+--  Department:  Real-Time Computer Systems (RCS)
+--  Project:     StratoX
+--  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 
 with Ada.Interrupts.Names;
 

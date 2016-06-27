@@ -10,6 +10,8 @@ with HIL.Devices;
 with NVRAM;
 with Logger;
 with LED_Manager;
+with SDMemory;
+with SDMemory.Driver;
 
 package body Main is
 
@@ -19,12 +21,17 @@ package body Main is
       logret  : Logger.Init_Error_Code;
    begin
       CPU.initialize;
+
       Logger.init (logret);
       Logger.log (Logger.INFO, "---------------");
       Logger.log (Logger.INFO, "CPU initialized");
 
+      LED_Manager.LED_switchOff;
       LED_Manager.Set_Color ((1 => HIL.Devices.RED_LED));
       LED_Manager.LED_switchOn;
+
+      Logger.log (Logger.INFO, "Initializing SD Memory...");
+      SDMemory.Init;
 
       Logger.log (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;
@@ -50,6 +57,10 @@ package body Main is
          Logger.log (Logger.INFO, "Self checks passed");
          delay until Clock + Milliseconds (50);
       end if;
+
+      Logger.log (Logger.INFO, "SD Card check...");
+      SDMemory.Driver.List_Rootdir;
+
    end Initialize;
 
    procedure Run_Loop is
@@ -68,8 +79,8 @@ package body Main is
 
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
       bootcounter := bootcounter + 1;
-      Logger.Log (Logger.INFO, "Build Date: " & Compilation_Date & " " & Compilation_Time);
-      Logger.Log (Logger.INFO, "Bootcount:  " & HIL.Byte'Image (bootcounter));
+      Logger.log (Logger.INFO, "Build Date: " & Compilation_Date & " " & Compilation_Time);
+      Logger.log (Logger.INFO, "Bootcount:  " & HIL.Byte'Image (bootcounter));
       NVRAM.Store (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
       loop
          loop_time_start := Clock;

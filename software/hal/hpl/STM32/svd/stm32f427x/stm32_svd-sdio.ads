@@ -30,7 +30,7 @@ package STM32_SVD.SDIO is
      (Power_Off => 0,
       Power_On => 3);
 
-   --  power control register
+   --  power control register => OK STM32F427
    type POWER_Register is record
       --  PWRCTRL
       PWRCTRL       : PWRCTRL_Field := Power_Off;
@@ -659,24 +659,24 @@ package STM32_SVD.SDIO is
      with Volatile;
 
    for SDIO_Peripheral use record
-      POWER   at 0 range 0 .. 31;
-      CLKCR   at 4 range 0 .. 31;
-      ARG     at 8 range 0 .. 31;
-      CMD     at 12 range 0 .. 31;
-      RESPCMD at 16 range 0 .. 31;
-      RESP1   at 20 range 0 .. 31;
-      RESP2   at 24 range 0 .. 31;
-      RESP3   at 28 range 0 .. 31;
-      RESP4   at 32 range 0 .. 31;
-      DTIMER  at 36 range 0 .. 31;
-      DLEN    at 40 range 0 .. 31;
-      DCTRL   at 44 range 0 .. 31;
-      DCOUNT  at 48 range 0 .. 31;
-      STA     at 52 range 0 .. 31;
-      ICR     at 56 range 0 .. 31;
-      MASK    at 60 range 0 .. 31;
-      FIFOCNT at 72 range 0 .. 31;
-      FIFO    at 128 range 0 .. 31;
+      POWER   at 0 range 0 .. 31; -- OK STM32F427
+      CLKCR   at 4 range 0 .. 31; -- OK STM32F427
+      ARG     at 8 range 0 .. 31; -- OK STM32F427
+      CMD     at 12 range 0 .. 31; -- OK STM32F427
+      RESPCMD at 16 range 0 .. 31; -- OK STM32F427
+      RESP1   at 20 range 0 .. 31; -- OK STM32F427
+      RESP2   at 24 range 0 .. 31; -- OK STM32F427
+      RESP3   at 28 range 0 .. 31; -- OK STM32F427
+      RESP4   at 32 range 0 .. 31; -- OK STM32F427
+      DTIMER  at 36 range 0 .. 31; -- OK STM32F427
+      DLEN    at 40 range 0 .. 31; -- OK STM32F427
+      DCTRL   at 44 range 0 .. 31; -- OK STM32F427
+      DCOUNT  at 48 range 0 .. 31; -- OK STM32F427
+      STA     at 52 range 0 .. 31; -- OK STM32F427
+      ICR     at 56 range 0 .. 31; -- OK STM32F427
+      MASK    at 60 range 0 .. 31; -- OK STM32F427
+      FIFOCNT at 72 range 0 .. 31; -- OK STM32F427
+      FIFO    at 128 range 0 .. 31; -- OK STM32F427
    end record;
 
    --  Secure digital input/output interface

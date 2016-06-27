@@ -1,8 +1,17 @@
+--  Based on AdaCore's Ada Drivers Library,
+--  see https://github.com/AdaCore/Ada_Drivers_Library,
+--  checkout 93b5f269341f970698af18f9182fac82a0be66c3.
+--  Copyright (C) Adacore
+--
+--  Tailored to StratoX project.
+--  Author: Martin Becker (becker@rcs.ei.tum.de)
 with Ada.Unchecked_Conversion;
 with Ada.Real_Time;   use Ada.Real_Time;
 with STM32_SVD.SDIO;  use STM32_SVD.SDIO;
 
 package body STM32.SDMMC is
+
+   BLOCKLEN : constant := 32;
 
    --  Mask for errors Card Status R1 (OCR Register)
    SD_OCR_ADDR_OUT_OF_RANGE     : constant := 16#8000_0000#;
@@ -1347,6 +1356,18 @@ package body STM32.SDMMC is
    -- Read_Blocks --
    -----------------
 
+   function Blocksize2DBLOCKSIZE (siz : Natural) return DBLOCKSIZE_Field is
+   begin
+      case (siz) is
+         when 1 => return Block_1B;
+         when 16 => return Block_16B;
+         when 32 => return Block_32B;
+         when 128 => return Block_128B;
+         when others => return Block_512B;
+      end case;
+   end Blocksize2DBLOCKSIZE;
+
+
    function Read_Blocks
      (Controller : in out SDMMC_Controller;
       Addr       : Unsigned_64;
@@ -1365,15 +1386,15 @@ package body STM32.SDMMC is
       Controller.Periph.DCTRL := (others => <>);
 
       if Controller.Card_Type = High_Capacity_SD_Card then
-         R_Addr := Addr / 512;
+         R_Addr := Addr / BLOCKLEN;
       end if;
 
-      N_Blocks := Data'Length / 512;
+      N_Blocks := Data'Length / BLOCKLEN;
 
       Send_Command
         (Controller,
          Command_Index      => Set_Blocklen,
-         Argument           => 512,
+         Argument           => BLOCKLEN,
          Response           => Short_Response,
          CPSM               => True,
          Wait_For_Interrupt => False);
@@ -1386,7 +1407,7 @@ package body STM32.SDMMC is
       Configure_Data
         (Controller,
          Data_Length        => Data'Length,
-         Data_Block_Size    => Block_512B,
+         Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
          Transfer_Direction => Read,
          Transfer_Mode      => Block,
          DPSM               => True,
