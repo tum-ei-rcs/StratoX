@@ -3,9 +3,8 @@
 --  Author: Emanuel Regnath (emanuel.regnath@tum.de)
 --
 --  Description:
---     allows logging of string messages at several logging levels. Easy porting
---     to different hardware, only change the adapter methods.
---
+--     allows logging of string messages at several logging levels.
+
 --  Usage:
 --     Logger.init  -- initializes the Logger
 --     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
@@ -19,13 +18,7 @@ is
    procedure init (status : out Init_Error_Code);
 
    --  create a new log message
-   procedure log (level : Log_Level; message : Message_Type);
+   procedure log (msg_level : Log_Level; message : Message_Type);
 
-private
-   --  FIXME: documentation required
-   package Adapter is
-      procedure init (status : out Init_Error_Code);
-      procedure write (message : Message_Type);
-   end Adapter;
-
+   procedure set_Log_Level (level : Log_Level);
 end Logger;

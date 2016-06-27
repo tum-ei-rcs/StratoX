@@ -1,4 +1,4 @@
--- Institution: Technische Universität München
+-- Institution: Technische Universitaet Muenchen
 -- Department:  Realtime Computer Systems (RCS)
 -- Project:     StratoX
 -- Module:      Software Configuration
@@ -13,7 +13,7 @@ package HIL.Devices with SPARK_Mode is
    type Device_Type_I2C is (UNKNOWN);
    type Device_Type_SPI is (Barometer,
                             FRAM);
-   type Device_Type_UART is (Console);
+   type Device_Type_UART is (TELE1, TELE2, GPS, CONSOLE, WIFI);
    type Device_Type_GPIO is (RED_LED,
                              GRN_LED,
                              BLU_LED,

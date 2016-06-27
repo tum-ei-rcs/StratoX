@@ -10,10 +10,16 @@
 --     Logger.init  -- initializes the Logger
 --     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
 
+with HIL.Devices;
 with HIL.UART;
 
-package body Logger with SPARK_Mode
-is
+package body Logger with SPARK_Mode is
+
+   ----------------------------
+   --  PROTOTYPES
+   ----------------------------
+
+   function Image (level : Log_Level) return String;
 
    logger_level : Log_Level := DEBUG;
 
@@ -21,45 +27,32 @@ is
    --  Instatiation / Body   --
    ----------------------------
 
-   --  HAL, only change Adapter to port Code
-   package body Adapter is
-      procedure init (status : out Init_Error_Code) is
-      begin
-         HIL.UART.configure;
-         status := SUCCESS;
-      end init;
-
-      procedure write (message : Message_Type) is
-         --  LF : Character := Character'Val(10);
-         CR : constant Character := Character'Val (13);  -- ASCII
-      begin
-         HIL.UART.write (HIL.UART.Console, HIL.UART.toData_Type (message & CR ) );
-      end write;        
-   end Adapter;
-
    procedure init (status : out Init_Error_Code) is
    begin
-      Adapter.init (status);
+      --  nothing to do
+      null;
    end init;
 
    function Image (level : Log_Level) return String is
    begin
       return (case level is
                  when SENSOR => "S: ",
-                 when ERROR => "E: ",           
+                 when ERROR => "E: ",
                  when WARN  => "W: ",
                  when INFO  => "I: ",
                  when DEBUG => "D: ",
                  when TRACE => "  > "
              );
    end Image;
-   pragma Unreferenced (Image);
 
-   procedure log (level : Log_Level; message : Message_Type)
-   is
+   procedure log (msg_level : Log_Level; message : Message_Type) is
+      CR : constant Character := Character'Val (13);
+      LF : constant Character := Character'Val (10);
    begin
-      if Log_Level'Pos (level) <= Log_Level'Pos (logger_level) then
-         Adapter.write (Log_Level'Image (level) & message);
+      if Log_Level'Pos (msg_level) <= Log_Level'Pos (logger_level) then
+            HIL.UART.write (HIL.Devices.TELE2,
+                            HIL.UART.toData_Type (Image (msg_level) &
+                                message & CR & LF));
       end if;
    end log;
 
