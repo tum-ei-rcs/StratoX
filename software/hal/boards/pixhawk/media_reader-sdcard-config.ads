@@ -19,8 +19,8 @@ package Media_Reader.SDCard.Config is
    --  manual: 8x data, 1xCK, 1x CMD
    --  PC8=D0, PC9=D1, PC10=D2, PC11=D3, PC12=CK, PD2=CMD
 
-   SD_Detect_Pin : constant STM32.GPIO.GPIO_Point := PC13;
-   --  manual: not sure
+   -- SD_Detect_Pin : constant STM32.GPIO.GPIO_Point :=
+   --  no card detect pin on pixhawk
 
    --  DMA: DMA2 (Stream 3 or Stream 6) with Channel4
    SD_DMA            : DMA_Controller renames DMA_2;

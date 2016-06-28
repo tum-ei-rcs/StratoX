@@ -1,6 +1,13 @@
+--  Based on AdaCore's Ada Drivers Library,
+--  see https://github.com/AdaCore/Ada_Drivers_Library,
+--  checkout 93b5f269341f970698af18f9182fac82a0be66c3.
+--  Copyright (C) Adacore
 --  Initially based on stm32f7xx_hal_sd.h
 --  V1.0.4
 --  09-December-2015
+--
+--  Tailored to StratoX project.
+--  Author: Martin Becker (becker@rcs.ei.tum.de)
 --
 -- @summary
 -- low-level SDCard driver. Controls the SD peripheral, SDIO version.

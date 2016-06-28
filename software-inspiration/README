@@ -1,4 +1,0 @@
-This folder contains code that may serve as inspiration for our project.
-
-mmcsd: Code from NuttX to access SD card via SDIO interface.
-STM32 SDIO w/fatfs: http://stm32f4-discovery.net/2014/07/library-21-read-sd-card-fatfs-stm32f4xx-devices/

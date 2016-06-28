@@ -12,7 +12,16 @@ library project Pixhawk is
 
    -- add sources specific for pixhawk board
    for Source_Dirs use ("pixhawk",
-                        "stm32_common"
+			"pixhawk/hil",
+			"common/hil",
+			"common/tools",
+			"components/FM25V0x",
+			"components/HMC5883L",
+			"components/LSM303D",
+			"components/MPU6000",
+			"components/MS5611",
+                        "stm32_common",
+                        "stm32_common/sdcard"
                         -- "stm32_common/sdram",
                         -- "stm32_common/dma2d"
 			);

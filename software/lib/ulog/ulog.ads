@@ -44,25 +44,27 @@ package ULog with SPARK_Mode is
    function Describe_Func (msg : in Message'Class) return String;
    --  same as above, but as function. REquired because of string.
 
-   ------------------------------------
-   --      Primitive operations      --
-   --  (inherited in Message'Class)  --
-   ------------------------------------
-   -- those are NOT dispatched
-
-   function Size (msg : in Message'Class) return Interfaces.Unsigned_16; -- is abstract;
+   function Size (msg : in Message'Class)
+                  return Interfaces.Unsigned_16; -- is abstract;
    --  return length of serialized object in bytes
    --  Note that this has nothing to do with the size of the struct, since
    --  the representation in ULOG format may be different.
 
-private
-
    ------------------------------------
    --      Primitive operations      --
    --  (inherited in Message'Class)  --
    ------------------------------------
+   --  those are NOT dispatched
+
+private
+
    function Self (msg : in Message) return ULog.Message'Class;
    --  factory function to convert to specific child view
+
+   --------------------------------------------
+   --          Primitive operations          --
+   --  (inherited by types in Message'Class) --
+   --------------------------------------------
 
    procedure Get_Serialization (msg : in Message; bytes : out HIL.Byte_Array);
    --  the actual serialization
@@ -74,8 +76,9 @@ private
       bytes : out HIL.Byte_Array); -- is abstract
    --  for a specific message type, generate the FMT header.
    --
-   --  FIXME: we actually don't need an instance of the message. Actually we want
-   --  the equivalent to a static member function in C++. Maybe a type attribute?
+   --  FIXME: we actually don't need an instance of the message.
+   --  Actually we want the equivalent to a static member function
+   --  in C++. Maybe a type attribute?
    --
    --  FIXME: we want it private, but abstract does not support this.
 

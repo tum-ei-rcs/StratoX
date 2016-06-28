@@ -3,7 +3,9 @@ with Units; use Units;
 
 with Fletcher16;
 with HIL; use HIL;
+with HIL.Config; use HIL.Config;
 with HIL.UART; use type HIL.UART.Data_Type;
+with HIL.Devices;
 with Interfaces; use Interfaces;
 with Config.Software;
 
@@ -30,7 +32,7 @@ is
    G_heading : Heading_Type := NORTH;
 
 
-   UBLOX_M8N : constant HIL.UART.Device_ID_Type := HIL.UART.GPS;
+   UBLOX_M8N : constant HIL.UART.Device_ID_Type := HIL.Devices.GPS;
 
 
    procedure reset is
@@ -139,8 +141,8 @@ is
                                            2 => Byte(0),
                                            4 => Byte( 2#1100_0000# ), -- uart mode 8bit
                                            5 => Byte( 2#0000_1000# ), -- uart mode no parity, 1 stop bit
-                                           8 => HIL.toBytes( Config.Software.UBLOX_BAUD_RATE_HZ )(1),
-                                           9 => HIL.toBytes( Config.Software.UBLOX_BAUD_RATE_HZ )(2),
+                                           8 => HIL.toBytes( HIL.Config.UBLOX_BAUD_RATE_HZ )(1),
+                                           9 => HIL.toBytes( HIL.Config.UBLOX_BAUD_RATE_HZ )(2),
                                            12 => Byte( 1 ),  -- ubx protocol
                                            14 => Byte( 1 ),  -- ubx protocol
                                            16 => Byte( 0 ), -- flags

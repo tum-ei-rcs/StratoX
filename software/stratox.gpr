@@ -13,7 +13,6 @@ project StratoX is
       "config",
       "driver",
       "driver/fs",
-      "hal/hil",
       "kernel",
       "modules",
       "modules/sensors",
@@ -35,7 +34,6 @@ project StratoX is
       when others => null;
    end case;
 
-   --for Runtime ("ada") use "ravenscar-sfp-stm32f427";
    for Runtime ("Ada") use Pixhawk'Runtime ("Ada");
    for Target use "arm-eabi";
 
@@ -114,8 +112,8 @@ project StratoX is
       -- switches for gnat2why et. al.
 
 
-      for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427", "--verbose", "--level=2", "-j2", "-d"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
-      -- for Switches use ("--timeout=5", "--RTS=ravenscar-sfp-stm32f427", "--verbose", "--level=2", "-j2", "--assumptions", "-d");
+      for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "-d"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
+      -- for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "--assumptions", "-d");
 
       case Build_Mode is
 

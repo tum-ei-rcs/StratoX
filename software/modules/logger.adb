@@ -14,6 +14,7 @@ with System;
 with HIL.UART;
 with SDMemory;
 with ULog.GPS;
+with HIL.Devices;
 
 package body Logger with SPARK_Mode,
   Refined_State => (LogState => (queue, Logging_Task, logger_level, msg_gps))
@@ -147,7 +148,7 @@ is
          --LF : Character := Character'Val(10);
          CR : constant Character := Character'Val(13);  -- ASCII
       begin
-         HIL.UART.write(HIL.UART.Console, HIL.UART.toData_Type ( message & CR ) );
+         HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message & CR ) );
       end write;	
    end Adapter;
 

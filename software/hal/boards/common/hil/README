@@ -1,0 +1,3 @@
+These files specific the target-independent HIL interface,
+which every target/board has to implement (*.adb) to provide
+access to its specific resources.

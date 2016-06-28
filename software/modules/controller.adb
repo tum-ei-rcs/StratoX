@@ -180,10 +180,10 @@ package body Controller is
         return Arctan( Sin( delta_Angle( source_location.Longitude,
                                            target_location.Longitude ) ) *
                          Cos( target_location.Latitude ),
-                         delta_Angle( Cos( source_location.Latitude ) * Sin( target_location.Latitude ),
+                         Cos( source_location.Latitude ) * Sin( target_location.Latitude ) -
                          Sin( source_location.Latitude ) * Sin( target_location.Latitude ) *
                          Cos( target_location.Latitude ) *
-                         delta_Angle( source_location.Longitude,
+                         Cos( delta_Angle( source_location.Longitude,
                                       target_location.Longitude ) ),
                      DEGREE_360
                         );

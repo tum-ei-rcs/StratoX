@@ -5,6 +5,7 @@ with Interfaces; use Interfaces;
 with Ada.Real_Time; use Ada.Real_Time;
 with CRC8;
 with Logger;
+with HIL.Devices;
 
 package body PX4IO.Driver 
 with SPARK_Mode
@@ -32,8 +33,8 @@ is
       Transmit_Loop : loop
          Data_TX(2) := 0;
          Data_TX(2) := CRC8.calculateCRC8( Data_TX );         
-         HIL.UART.write(HIL.UART.PX4IO, Data_TX);
-         HIL.UART.read(HIL.UART.PX4IO, Data_RX);  -- read response
+         HIL.UART.write(HIL.Devices.PX4IO, Data_TX);
+         HIL.UART.read(HIL.Devices.PX4IO, Data_RX);  -- read response
       
          valid := valid_Package( Data_RX ) and Data_RX(1) = PKT_CODE_SUCCESS;
          
@@ -65,8 +66,8 @@ is
    
       Transmit_Loop : loop
          Data_TX(2) := CRC8.calculateCRC8( Data_TX );
-         HIL.UART.write(HIL.UART.PX4IO, Data_TX);
-         HIL.UART.read(HIL.UART.PX4IO, Data_RX);
+         HIL.UART.write(HIL.Devices.PX4IO, Data_TX);
+         HIL.UART.read(HIL.Devices.PX4IO, Data_RX);
          
          valid := valid_Package( Data_RX );
          
