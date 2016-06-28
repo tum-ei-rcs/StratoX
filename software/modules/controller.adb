@@ -4,6 +4,8 @@ with Servo;
 with Generic_PID_Controller;
 with Logger;
 with Config.Software;
+with Units.Numerics; use Units.Numerics;
+
 
 with Ada.Real_Time;
 use type Ada.Real_Time.Time;
@@ -18,8 +20,21 @@ package body Controller is
                                                               100.0*Degree,
                                                               Elevon_Angle_Type'First,
                                                               Elevon_Angle_Type'Last);
-
    PID_Pitch : Pitch_PID_Controller.Pid_Object;
+
+
+   package Roll_PID_Controller is new Generic_PID_Controller(Roll_Type,
+                                                             Elevon_Angle_Type,
+                                                             Unit_Type,
+                                                             -100.0*Degree,
+                                                             100.0*Degree,
+                                                             Elevon_Angle_Type'First,
+                                                             Elevon_Angle_Type'Last);
+   PID_Roll : Roll_PID_Controller.Pid_Object;
+
+
+
+
 
 
    G_Object_Orientation : Orientation_Type   := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
@@ -27,8 +42,12 @@ package body Controller is
 
    G_Target_Position    : GPS_Loacation_Type := (0.0 * Degree, 0.0 * Degree, 0.0 * Meter);
 
+   G_Target_Orientation : Orientation_Type := (0.0 * Degree, -3.0 * Degree, 0.0 * Degree);
 
    G_Target_Pitch : Pitch_Type := -3.0 * Degree;
+   G_Target_Roll  : Roll_Type := 0.0 * Degree;
+
+
 
    G_Last_Call_Time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
 
@@ -44,6 +63,12 @@ package body Controller is
                                       Unit_Type( Config.Software.CFG_PID_PITCH_P ),
                                       Unit_Type( Config.Software.CFG_PID_PITCH_I ),
                                       Unit_Type( Config.Software.CFG_PID_PITCH_D ));
+
+      Roll_PID_Controller.initialize(PID_Roll,
+                                      Unit_Type( Config.Software.CFG_PID_ROLL_P ),
+                                      Unit_Type( Config.Software.CFG_PID_ROLL_I ),
+                                      Unit_Type( Config.Software.CFG_PID_ROLL_D ));
+
    end initialize;
 
 
@@ -112,9 +137,17 @@ package body Controller is
 
    procedure control_Heading is
    begin
-      null;
+      G_Target_Orientation.Yaw := Yaw_Type( Heading( G_Object_Position,
+                                                     G_Target_Position ) );
+
       -- G_Plane_Control.Aileron := Pitch_PID_Controller.step(PID_Pitch, error, dt);
    end control_Heading;
+
+   procedure control_Roll is
+   begin
+      G_Target_Orientation.Roll := 0.0 * Degree;
+   end control_Roll;
+
 
 
    function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type ) return Elevon_Angle_Array is
@@ -125,8 +158,6 @@ package body Controller is
    end Elevon_Angles;
 
 
-   -- 	θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
-   -- φ is lat, λ is long
 
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type is
       result : Angle_Type := To - From;
@@ -139,13 +170,23 @@ package body Controller is
       return result;
    end delta_Angle;
 
-
+   -- 	θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
+   -- φ is lat, λ is long
    function Heading(source_location : GPS_Loacation_Type;
-                           target_location  : GPS_Loacation_Type)
-                           return Heading_Type is
+                    target_location  : GPS_Loacation_Type)
+                    return Heading_Type is
+      result : Heading_Type := NORTH;
    begin
-        null;
-        return 0.0 * Degree;
+        return Arctan( Sin( delta_Angle( source_location.Longitude,
+                                           target_location.Longitude ) ) *
+                         Cos( target_location.Latitude ),
+                         delta_Angle( Cos( source_location.Latitude ) * Sin( target_location.Latitude ),
+                         Sin( source_location.Latitude ) * Sin( target_location.Latitude ) *
+                         Cos( target_location.Latitude ) *
+                         delta_Angle( source_location.Longitude,
+                                      target_location.Longitude ) ),
+                     DEGREE_360
+                        );
    end Heading;
 
 

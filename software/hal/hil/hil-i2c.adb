@@ -23,7 +23,8 @@ is
                                                Clock_Stretching_Enabled => True
 					       );				       
    begin
-   	STM32.I2C.Configure(STM32.Device.I2C_1, Config);
+      STM32.Device.Reset(STM32.Device.I2C_1);
+      STM32.I2C.Configure(STM32.Device.I2C_1, Config);
    end initialize;
 
    procedure write (Device : in Device_Type; Data : in Data_Type) is

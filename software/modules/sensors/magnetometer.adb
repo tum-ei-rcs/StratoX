@@ -3,6 +3,7 @@ with HMC5883L.Driver; use HMC5883L;
 
 with Units.Numerics; use Units.Numerics;
 with Interfaces; use Interfaces;
+with Logger;
 
 package body Magnetometer is
 
@@ -20,6 +21,11 @@ package body Magnetometer is
       null;
       --Driver.update_val;
       Driver.getHeading(mag_x, mag_y, mag_z);   -- are These Micro*Tesla?
+
+      Logger.log(Logger.DEBUG, "Mag: " & Integer'Image(Integer(mag_x)) & ", "
+                 & Integer'Image(Integer(mag_y)) & ", "
+                 & Integer'Image(Integer(mag_z)) );
+
       Self.sample.data.magnetic_vector(X) := Unit_Type(mag_x) * Micro * Tesla;
       Self.sample.data.magnetic_vector(Y) := Unit_Type(mag_y) * Micro * Tesla;
       Self.sample.data.magnetic_vector(Z) := Unit_Type(mag_z) * Micro * Tesla;

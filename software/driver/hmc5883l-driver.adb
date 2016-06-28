@@ -340,9 +340,10 @@ end setMode;
 procedure getHeading(x : out Integer_16; y : out Integer_16; z : out Integer_16) is
     buf : HIL.I2C.Data_Type(1 .. 6);
 begin
-    readBytesFromDevice(HMC5883L_RA_DATAX_H, 6, buf);
+    readBytesFromDevice(HMC5883L_RA_DATAX_H, 6, buf); -- SDA fails to go high again
     if (mode = HMC5883L_MODE_SINGLE) then
-       writeByteToDevice(HMC5883L_RA_MODE, Shift_Left( HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
+       -- writeByteToDevice(HMC5883L_RA_MODE, Shift_Left( HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
+       null;
     end if;
     x := Integer_16( buf(1)) *2**8 + Integer_16( buf(2) );
     y := Integer_16( buf(5)) *2**8 + Integer_16( buf(6) );

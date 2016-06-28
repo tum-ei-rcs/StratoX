@@ -54,8 +54,15 @@ private
 
    procedure control_Pitch;
    
+   procedure control_Roll;
+   
    procedure control_Heading;
 
    function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type ) return Elevon_Angle_Array;
+
+   function Heading(source_location : GPS_Loacation_Type;
+                    target_location  : GPS_Loacation_Type)
+                    return Heading_Type;
+
 
 end Controller;
