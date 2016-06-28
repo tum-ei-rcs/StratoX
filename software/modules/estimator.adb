@@ -56,16 +56,19 @@ package body Estimator is
 --                   ", " & Integer_16'Image(Acc.data.Gyro_Z) );
 
       G_Object_Orientation := Orientation( Acc );
-      Logger.log(Logger.TRACE,
-                 "Rad: " & AImage( G_Object_Orientation.Roll ) &
-                 ", " & AImage( G_Object_Orientation.Pitch ) &
-                 ", " & AImage( G_Object_Orientation.Yaw ) );
+
 
 
       GPS.Sensor.read_Measurement;
 
       Magnetometer.Sensor.read_Measurement;
-      G_Object_Orientation.Yaw := Magnetometer.Sensor.get_Heading;
+
+      G_Object_Orientation.Yaw := Heading(Magnetometer.Sensor.get_Sample.data, G_Object_Orientation);
+
+      Logger.log(Logger.DEBUG,
+                 "Rad: " & AImage( G_Object_Orientation.Roll ) &
+                 ", " & AImage( G_Object_Orientation.Pitch ) &
+                 ", " & AImage( G_Object_Orientation.Yaw ) );
 
    end update;
 

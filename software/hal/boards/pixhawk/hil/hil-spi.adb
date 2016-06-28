@@ -48,6 +48,13 @@ is
       STM32.SPI.Configure(Port => STM32.Device.SPI_1, Conf => Config);
       STM32.SPI.Enable( STM32.Device.SPI_1 );
       
+      
+      -- SPI 2 (NVRAM)
+      STM32.Device.Enable_Clock( STM32.Device.SPI_2 );  
+   
+      STM32.SPI.Configure(Port => STM32.Device.SPI_2, Conf => Config);
+      STM32.SPI.Enable( STM32.Device.SPI_2 ); 
+      
       -- SPI 4 (Extern)
       STM32.Device.Enable_Clock( STM32.Device.SPI_4 );  
    

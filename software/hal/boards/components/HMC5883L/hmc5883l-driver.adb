@@ -32,6 +32,7 @@
 with HMC5883L.Register; use HMC5883L.Register;
 with HIL.I2C; use HIL.I2C;
 with HIL; use HIL;
+with Ada.Unchecked_Conversion;
 
 package body HMC5883L.Driver is
 
@@ -207,18 +208,18 @@ end setDataRate;
 -- @see HMC5883L_RA_CONFIG_A
 -- @see HMC5883L_CRA_BIAS_BIT
 -- @see HMC5883L_CRA_BIAS_LENGTH
---
 procedure getMeasurementBias( bias : out Unsigned_8) is
 begin
     readBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_BIAS_BIT, HMC5883L_CRA_BIAS_LENGTH, bias);
 end getMeasurementBias;
+
+
 --* Set measurement bias value.
 -- @param bias New bias value (0-2 for normal/positive/negative respectively)
 -- @see HMC5883L_BIAS_NORMAL
 -- @see HMC5883L_RA_CONFIG_A
 -- @see HMC5883L_CRA_BIAS_BIT
 -- @see HMC5883L_CRA_BIAS_LENGTH
---
 procedure setMeasurementBias(bias : Unsigned_8) is
 begin
     writeBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_BIAS_BIT, HMC5883L_CRA_BIAS_LENGTH, bias);
@@ -339,15 +340,22 @@ end setMode;
 --
 procedure getHeading(x : out Integer_16; y : out Integer_16; z : out Integer_16) is
     buf : HIL.I2C.Data_Type(1 .. 6);
+    subtype Byte_2 is HIL.I2C.Data_Type(1 .. 2);
+    
+    function Convert is new Ada.Unchecked_Conversion (Source => Byte_2,
+                                                      Target => Integer_16);
 begin
     readBytesFromDevice(HMC5883L_RA_DATAX_H, 6, buf); -- SDA fails to go high again
     if (mode = HMC5883L_MODE_SINGLE) then
        -- writeByteToDevice(HMC5883L_RA_MODE, Shift_Left( HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
        null;
     end if;
-    x := Integer_16( buf(1)) *2**8 + Integer_16( buf(2) );
-    y := Integer_16( buf(5)) *2**8 + Integer_16( buf(6) );
-    z := Integer_16( buf(3)) *2**8 + Integer_16( buf(4) );
+--      x := Integer_16( buf(1)) *2**8 + Integer_16( buf(2) );
+--      y := Integer_16( buf(5)) *2**8 + Integer_16( buf(6) );
+--      z := Integer_16( buf(3)) *2**8 + Integer_16( buf(4) );
+    x := Convert( buf(1 .. 2) );
+    y := Convert( buf(5 .. 6) );
+    z := Convert( buf(3 .. 4) );
 end getHeading;
 
 

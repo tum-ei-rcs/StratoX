@@ -9,6 +9,7 @@
 --
 
 with Units.Vectors; use Units.Vectors;
+with Units.Numerics; use Units.Numerics;
 
 package Units.Navigation with SPARK_Mode is
 
@@ -41,7 +42,7 @@ package Units.Navigation with SPARK_Mode is
    -- Compass Heading
    -- Route: goal, track: real, course: direction of route, heading: pointing direction of the nose
 
-   subtype Heading_Type is Angle_Type range 0.0 .. DEGREE_360;
+   subtype Heading_Type is Angle_Type range 0.0 * Degree .. DEGREE_360;
 
    NORTH : constant Heading_Type :=   0.0 * Degree;
    EAST  : constant Heading_Type :=  90.0 * Degree;
@@ -56,6 +57,10 @@ package Units.Navigation with SPARK_Mode is
       linear_velocity  : Linear_Velocity_Vector;
       angular_velocity : Angular_Velocity_Vector;
    end record;
+
+
+   function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type;
+
 
 
 

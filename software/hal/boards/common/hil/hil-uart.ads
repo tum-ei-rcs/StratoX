@@ -10,6 +10,7 @@ with HIL.Devices;
 package HIL.UART with
    Spark_Mode
 is
+   BUFFER_MAX : constant := 200;
 
    subtype Device_ID_Type is HIL.Devices.Device_Type_UART;
 

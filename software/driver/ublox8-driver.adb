@@ -91,40 +91,54 @@ is
    end writeToDevice;
    
    
-   procedure readFromDevice(data : out Data_Type) is
+   procedure readFromDevice(data : out Data_Type; isValid : out Boolean) is
       
       head : Byte_Array (3 .. 6) := (others => Byte( 0 ));
-      data_rx : Byte_Array (1 .. 92) := (others => Byte( 0 ));
+      data_rx : Byte_Array (0 .. HIL.UART.BUFFER_MAX - 1) := (others => Byte( 0 ));
+      message : Byte_Array (1 .. 92) := (others => Byte( 0 )); 
       check : Byte_Array (1 .. 2) := (others => Byte( 0 ));
       cks : Fletcher16_Byte.Checksum_Type := (others => Byte( 0 ));
       isReceived : Boolean := False;
+      type buffer_pointer_Type is mod HIL.UART.BUFFER_MAX;
+      pointer : buffer_pointer_Type := 0;
    begin
+      isValid := False;
       data := (others => Byte( 0 ) );
-      waitForSync(isReceived);
-      if isReceived then
-         
-         HIL.UART.read(UBLOX_M8N, head);
-         if head(3) = UBX_CLASS_NAV and head(4) = UBX_ID_NAV_PVT and head(5) = UBX_LENGTH_NAV_PVT then
-            HIL.UART.read(UBLOX_M8N, data_rx);
-            HIL.UART.read(UBLOX_M8N, check);
+      
+      HIL.UART.read(UBLOX_M8N, data_rx);
+      for i in 1 .. data_rx'Length - 1 loop
+         if data_rx(i) = UBX_SYNC1 and data_rx(i + 1) = UBX_SYNC2 then
+            pointer := buffer_pointer_Type( i - 1 );
             
-            cks := Fletcher16_Byte.Checksum( head & data_rx );
-            if check(1) = cks.ck_a and check(2) = cks.ck_b then
-               Logger.log(Logger.DEBUG, "UBX valid");
-               data := data_rx;
-            else
-               data := (others => Byte( 0 ));
-               Logger.log(Logger.DEBUG, "UBX invalid");
-            end if;
+            head := data_rx(Integer(pointer + 3) .. Integer(pointer + 6));
             
-         elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
-            Logger.log(Logger.DEBUG, "UBX Ack");
-         end if;  
+            if head(3) = UBX_CLASS_NAV and head(4) = UBX_ID_NAV_PVT and head(5) = UBX_LENGTH_NAV_PVT then 
+               
+               message := data_rx(Integer(pointer + 7) .. Integer(pointer + 98));
+               check := data_rx(Integer(pointer + 99) .. Integer(pointer + 100));         
+            
+               cks := Fletcher16_Byte.Checksum( head & message );
+               if check(1) = cks.ck_a and check(2) = cks.ck_b then
+                  Logger.log(Logger.DEBUG, "UBX valid");
+                  data := message;
+                  isValid := True;
+               else
+                  data := (others => Byte( 0 ));
+                  Logger.log(Logger.DEBUG, "UBX invalid");
+               end if;
+            
+            elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
+               Logger.log(Logger.DEBUG, "UBX Ack");
+            end if;             
+            
+
+            exit;
+         end if;
+      end loop;
          
          -- got class 1, id 3, length 16 -> NAV_STATUS
          Logger.log(Logger.DEBUG, "UBX msg class " & Integer'Image(Integer(head(3))) & ", id "
                     & Integer'Image(Integer(head(4))));
-      end if;
    end readFromDevice;   
 
 
@@ -169,6 +183,9 @@ is
       end delay_ms;
          
    begin
+   
+    
+   
       null;
       -- 1. Set binary protocol (CFG-PRT, own message)
       writeToDevice(msg_cfg_prt_head, msg_cfg_prt);  -- no ACK is expected here
@@ -207,9 +224,13 @@ is
    procedure update_val is
       data_rx : Data_Type(1 .. 92) := (others => 0);
       gpsmsg : ULog.GPS.Message;
+      isValid : Boolean;
    begin
-      readFromDevice(data_rx);
-      G_position.Longitude := Unit_Type(Float( HIL.toUnsigned_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
+      readFromDevice(data_rx, isValid);
+      if isValid then
+         G_position.Longitude := Unit_Type(Float( HIL.toUnsigned_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
+         Logger.log(Logger.DEBUG, "Long: " & AImage( G_position.Longitude ) );
+      end if;
 
       -- logging
       --gpsmsg.lon := G_position.Longitude;
@@ -231,5 +252,9 @@ is
    begin
       null;
    end perform_Self_Check;
+
+
+
+
 
 end ublox8.Driver;

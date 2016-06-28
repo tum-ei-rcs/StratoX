@@ -5,22 +5,18 @@ package body Units.Vectors is
 
 procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type) is
    result : Cartesian_Vector_Type := vector;
-   Axis_A : Cartesian_Coordinates_Type;
-   Axis_B : Cartesian_Coordinates_Type;
 begin
    case (axis) is
       when X =>
-         Axis_A := Y;
-         Axis_B := Z;
+         result(Y) := Cos(angle) * vector(Y) - Sin(angle) * vector(Z);
+         result(Z) := Sin(angle) * vector(Y) + Cos(angle) * vector(Z);
       when Y =>
-         Axis_A := X;
-         Axis_B := Z;
+         result(X) :=  Cos(angle) * vector(X) + Sin(angle) * vector(Z);
+         result(Z) := -Sin(angle) * vector(X) + Cos(angle) * vector(Z);
       when Z =>
-         Axis_A := X;
-         Axis_B := Y;
+         result(X) := Cos(angle) * vector(X) - Sin(angle) * vector(Y);
+         result(Y) := Sin(angle) * vector(X) + Cos(angle) * vector(Y);
    end case;
-   result(Axis_A) := Cos(angle) * vector(Axis_A) - Sin(angle) * vector(Axis_B);
-   result(Axis_B) := Sin(angle) * vector(Axis_A) + Sin(angle) * vector(Axis_B);
    vector := result;
 end rotate;
 

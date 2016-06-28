@@ -177,7 +177,8 @@ package body Controller is
                     return Heading_Type is
       result : Heading_Type := NORTH;
    begin
-        return Arctan( Sin( delta_Angle( source_location.Longitude,
+      if source_location.Longitude /= target_location.Longitude or source_location.Latitude /= target_location.Latitude then
+        result := Arctan( Sin( delta_Angle( source_location.Longitude,
                                            target_location.Longitude ) ) *
                          Cos( target_location.Latitude ),
                          Cos( source_location.Latitude ) * Sin( target_location.Latitude ) -
@@ -187,6 +188,8 @@ package body Controller is
                                       target_location.Longitude ) ),
                      DEGREE_360
                         );
+      end if;
+      return result;
    end Heading;
 
 

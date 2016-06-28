@@ -8,13 +8,17 @@ with Interfaces; use Interfaces;
 
 package Magnetometer with SPARK_Mode is
 
-   type Magnetometer_Data_Type is record
-      heading : Heading_Type;
-      magnetic_vector : Magnetic_Flux_Density_Vector;
-      orientation : Orientation_Type;
-   end record;
+   subtype Magnetometer_Data_Type is Magnetic_Flux_Density_Vector;
+
+--     is record
+--        heading : Heading_Type;
+--        magnetic_vector : Magnetic_Flux_Density_Vector;
+--        orientation : Orientation_Type;
+--     end record;
 
    package Magnetometer_Sensor is new Generic_Sensor(Magnetometer_Data_Type); use Magnetometer_Sensor;
+
+   subtype Sample_Type is Magnetometer_Sensor.Sample_Type;
 
    type Magnetometer_Tag is new Magnetometer_Sensor.Sensor_Tag with record
       null;
@@ -27,12 +31,9 @@ package Magnetometer with SPARK_Mode is
    -- with Global => (In_Out => (HMC5883L.Driver.State, HMC5883L.Driver.Coefficients));
 
 
-   procedure compensateOrientation(Self : Magnetometer_Tag; orientation : Orientation_Type);
-   function get_Heading(Self : Magnetometer_Tag) return Heading_Type;
+   --procedure compensateOrientation(Self : Magnetometer_Tag; orientation : Orientation_Type);
+   --function get_Heading(Self : Magnetometer_Tag) return Heading_Type;
 
    Sensor : Magnetometer_Tag;
-
-private
-   function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type;
 
 end Magnetometer;

@@ -8,6 +8,10 @@ with STM32.USARTs;
 with STM32.Device;
 with HIL.Config;
 
+with Ada.Interrupts;       use Ada.Interrupts;
+with Ada.Interrupts.Names; use Ada.Interrupts.Names;
+
+
 --  @summary
 --  Target-specific mapping for HIL of UART
 package body HIL.UART with
@@ -67,8 +71,35 @@ is
       STM32.USARTs.Set_Mode( STM32.Device.USART_7, STM32.USARTs.Tx_Rx_Mode );
       STM32.USARTs.Set_Flow_Control( STM32.Device.USART_7, STM32.USARTs.No_Flow_Control );
 
+
+      -- Interrupts
+      -- Enable GPS Interrupt
+      STM32.USARTs.Enable_Interrupts( STM32.Device.UART_4, STM32.USARTs.Received_Data_Not_Empty );
+  
+     
+
    end configure;
       
+
+   
+   type buffer_pointer_Type is mod BUFFER_MAX;
+      
+   protected UART_Interrupt_Handler is
+      pragma Interrupt_Priority (250);
+      
+      procedure get_Buffer(data : out Data_Type);
+   private
+      buffer_pointer : buffer_pointer_Type := 0;
+      Buffer : Data_Type(0 .. BUFFER_MAX - 1);
+   
+      procedure Handle_Interrupt
+        with Attach_Handler => Ada.Interrupts.Names.UART4_Interrupt,
+             Unreferenced;
+
+   end UART_Interrupt_Handler;
+
+
+
 
    procedure write (Device : in Device_ID_Type; Data : in Data_Type) is
    begin
@@ -93,9 +124,7 @@ is
    begin
       case (Device) is
       when HIL.Devices.GPS =>
-         for i in Data'Range loop
-            STM32.USARTs.Receive( STM32.Device.UART_4, HAL.UInt9( Data(i) ) );
-         end loop;
+            UART_Interrupt_Handler.get_Buffer(Data);
       when HIL.Devices.Console =>
          for i in Data'Range loop
             STM32.USARTs.Receive( STM32.Device.USART_3, HAL.UInt9( Data(i) ) );
@@ -129,5 +158,35 @@ is
       return Bytes;
    end toData_Type;
 
-			     
+
+
+   
+   
+   protected body UART_Interrupt_Handler is
+
+      procedure get_Buffer(data : out Data_Type) is
+      begin
+         data := Buffer(0 .. data'Length - 1);
+      end get_Buffer;
+
+      procedure Handle_Interrupt is
+         data : HAL.UInt9;
+      begin
+          --  check for data arrival
+         if STM32.USARTs.Status (STM32.Device.UART_4, STM32.USARTs.Read_Data_Register_Not_Empty) and
+           STM32.USARTs.Interrupt_Enabled (STM32.Device.UART_4, STM32.USARTs.Received_Data_Not_Empty)
+         then
+            STM32.USARTs.Receive( STM32.Device.UART_4, data);
+            Buffer( Integer(buffer_pointer) ) := Byte( data );
+            buffer_pointer := buffer_pointer + 1;
+            STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9( 65 ) );
+            STM32.USARTs.Clear_Status (STM32.Device.UART_4, STM32.USARTs.Read_Data_Register_Not_Empty);
+         end if;
+         
+      end Handle_Interrupt;
+    
+   end UART_Interrupt_Handler;
+   
+     
+        
 end HIL.UART;
