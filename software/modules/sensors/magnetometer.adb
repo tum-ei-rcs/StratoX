@@ -30,8 +30,6 @@ package body Magnetometer is
       Self.sample.data(Z) := Unit_Type(mag_z) * Micro * Tesla;
       -- page 13/19: LSB/Gauss  230 .. 1370, 1090 default
 
-      -- New Measurement
-      Driver.setMode( Register.HMC5883L_MODE_SINGLE );
       -- Self.sample.data.heading := Heading(Self.sample.data.magnetic_vector, );
    end read_Measurement;
 

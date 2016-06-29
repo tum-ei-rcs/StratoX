@@ -21,5 +21,9 @@ begin
 end rotate;
 
 
+function "abs" (vector : Cartesian_Vector_Type) return Unit_Type is
+begin
+      return Unit_Type( Sqrt( vector(X)**2 + vector(Y)**2 + vector(Z)**2 ) );
+end "abs";
 
 end Units.Vectors;

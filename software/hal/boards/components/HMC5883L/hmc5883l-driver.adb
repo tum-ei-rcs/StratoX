@@ -56,8 +56,9 @@ procedure readByteFromDevice(register : Unsigned_8; data : out Unsigned_8) is
    data_tx : HIL.I2C.Data_Type(1 .. 1) := (1 => Byte( register ) );
    data_rx : HIL.I2C.Data_Type(1 .. 1);
 begin
-   HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx);
-   HIL.I2C.read(HIL.I2C.MAGNETOMETER, data_rx);
+--     HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx);
+--     HIL.I2C.read(HIL.I2C.MAGNETOMETER, data_rx);
+   HIL.I2C.transfer(HIL.I2C.MAGNETOMETER, data_tx, data_rx);
    data := Unsigned_8( data_rx(1) );
 end readByteFromDevice;
 
@@ -66,8 +67,9 @@ procedure readBytesFromDevice(register : Unsigned_8; length : Natural; data : ou
    data_tx : HIL.I2C.Data_Type(1 .. 1) := (1 => Byte( register ) );
    data_rx : HIL.I2C.Data_Type(1 .. length);
 begin
-   HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx);
-   HIL.I2C.read(HIL.I2C.MAGNETOMETER, data_rx );
+   --  HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx);
+   --  HIL.I2C.read(HIL.I2C.MAGNETOMETER, data_rx );
+   HIL.I2C.transfer(HIL.I2C.MAGNETOMETER, data_tx, data_rx);
    data := data_rx;
 end readBytesFromDevice;
 
@@ -340,6 +342,7 @@ end setMode;
 --
 procedure getHeading(x : out Integer_16; y : out Integer_16; z : out Integer_16) is
     buf : HIL.I2C.Data_Type(1 .. 6);
+    byte2 : HIL.I2C.Data_Type(1 .. 2);
     subtype Byte_2 is HIL.I2C.Data_Type(1 .. 2);
     
     function Convert is new Ada.Unchecked_Conversion (Source => Byte_2,
@@ -347,15 +350,15 @@ procedure getHeading(x : out Integer_16; y : out Integer_16; z : out Integer_16)
 begin
     readBytesFromDevice(HMC5883L_RA_DATAX_H, 6, buf); -- SDA fails to go high again
     if (mode = HMC5883L_MODE_SINGLE) then
-       -- writeByteToDevice(HMC5883L_RA_MODE, Shift_Left( HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
+       writeByteToDevice(HMC5883L_RA_MODE, Shift_Left( HMC5883L_MODE_SINGLE, (HMC5883L_MODEREG_BIT - HMC5883L_MODEREG_LENGTH + 1)));
        null;
     end if;
---      x := Integer_16( buf(1)) *2**8 + Integer_16( buf(2) );
---      y := Integer_16( buf(5)) *2**8 + Integer_16( buf(6) );
---      z := Integer_16( buf(3)) *2**8 + Integer_16( buf(4) );
-    x := Convert( buf(1 .. 2) );
-    y := Convert( buf(5 .. 6) );
-    z := Convert( buf(3 .. 4) );
+    byte2 := (1 => buf(2), 2 => buf(1));
+    x := Convert( byte2 );
+    byte2 := (1 => buf(4), 2 => buf(3));
+    z := Convert( byte2 );
+    byte2 := (1 => buf(6), 2 => buf(5));
+    y := Convert( byte2 );
 end getHeading;
 
 

@@ -66,6 +66,7 @@ package Units.Vectors with SPARK_Mode is
 
    procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);
 
+   function "abs" (vector : Cartesian_Vector_Type) return Unit_Type;
 
 
 end Units.Vectors;

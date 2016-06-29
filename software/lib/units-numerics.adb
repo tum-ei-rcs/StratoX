@@ -41,7 +41,7 @@ is
       Cycle : Angle_Type)
       return Angle_Type is
    begin
-      return Angle_Type (Elementary_Functions.Arctan (Float (X), Float (Y), Float (Cycle)));
+      return Angle_Type (Elementary_Functions.Arctan (Float (Y), Float (X), Float (Cycle)));
    end Arctan;
 
    function Arctan
@@ -49,7 +49,7 @@ is
       X : Unit_Type := 1.0)
       return Angle_Type is
    begin
-      return Angle_Type (Elementary_Functions.Arctan (Float (X), Float (Y)));
+      return Angle_Type (Elementary_Functions.Arctan (Float (Y), Float (X)));
    end Arctan;
 
 end Units.Numerics;
