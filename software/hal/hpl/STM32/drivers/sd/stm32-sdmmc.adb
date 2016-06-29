@@ -155,7 +155,7 @@ package body STM32.SDMMC is
    end Clear_Static_Flags;
 
    ----------------
-   -- Clear_Flag --
+   -- Clear_Flag (interrupts) --
    ----------------
 
    procedure Clear_Flag
@@ -240,7 +240,7 @@ package body STM32.SDMMC is
       Command_Index      : SDMMC_Command;
       Argument           : Word;
       Response           : WAITRESP_Field;
-      CPSM               : Boolean;
+      CPSM               : Boolean; -- command path state machine enable
       Wait_For_Interrupt : Boolean)
    is
       CMD : CMD_Register  := Controller.Periph.CMD;
@@ -1097,7 +1097,7 @@ package body STM32.SDMMC is
          return Timeout_Error;
 
       elsif Controller.Periph.STA.DCRCFAIL then
-         Controller.Periph.ICR.DCRCFAILC := True;
+         Controller.Periph.ICR.DCRCFAILC := True; -- clear
 
          return CRC_Check_Fail;
 
@@ -1274,9 +1274,9 @@ package body STM32.SDMMC is
          --  Wide bus mode enable bit
          WIDBUS         => Bus_Wide_1B,
          --  SDIO_CK dephasing selection bit
-         NEGEDGE        => Edge_Rising,
+         NEGEDGE        => Edge_Falling, -- Errata sheet STM: NEGEDGE=1 (falling) should be used
          --  HW Flow Control enable
-         HWFC_EN        => False,
+         HWFC_EN        => False, -- Errata sheet STM: glitchts => DCRCFAIL asserted. Workaround: Do not use HW flow ctrl. *gasp*
          others         => <>);
       delay until Clock + Milliseconds (1);
 
@@ -1385,11 +1385,18 @@ package body STM32.SDMMC is
    begin
       Controller.Periph.DCTRL := (others => <>);
 
+      --  Wait 1ms: After a data write, data cannot be written to this register
+      --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
+      --  periods.
+      delay until Clock + Milliseconds (1);
+
       if Controller.Card_Type = High_Capacity_SD_Card then
-         R_Addr := Addr / BLOCKLEN;
+         R_Addr := Addr / BLOCKLEN; -- TODO: compute Addr from card block size, not BLOCKLEN ?
       end if;
 
-      N_Blocks := Data'Length / BLOCKLEN;
+      --N_Blocks := Data'Length / BLOCKLEN;
+      N_Blocks := 1;
+      pragma assert (Data'Length >= BLOCKLEN);
 
       Send_Command
         (Controller,
@@ -1406,7 +1413,7 @@ package body STM32.SDMMC is
 
       Configure_Data
         (Controller,
-         Data_Length        => Data'Length,
+         Data_Length        => BLOCKLEN, -- N_Blocks * BLOCKLEN, --Data'Length,
          Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
          Transfer_Direction => Read,
          Transfer_Mode      => Block,
@@ -1444,10 +1451,10 @@ package body STM32.SDMMC is
          while not Controller.Periph.STA.RXOVERR
            and then not Controller.Periph.STA.DCRCFAIL
            and then not Controller.Periph.STA.DTIMEOUT
-           and then not Controller.Periph.STA.DATAEND
+           and then not Controller.Periph.STA.DATAEND -- end of data (=all blocks)
          loop
-            if Controller.Periph.STA.RXFIFOHF then
-               for J in 1 .. 8 loop
+            if Controller.Periph.STA.RXFIFOHF then -- if FIFO at least half full (>=8 words, each 4byte)
+               for J in 1 .. 8 loop -- get the 8 words
                   Data (Idx .. Idx + 3) :=
                     To_Data (Read_FIFO (Controller));
                   Idx := Idx + 4;
@@ -1458,14 +1465,14 @@ package body STM32.SDMMC is
       else
          --  Poll on SDMMC flags
          while not Controller.Periph.STA.RXOVERR
-           and then not Controller.Periph.STA.DCRCFAIL
+           and then not Controller.Periph.STA.DCRCFAIL -- FIXME: is this valid before DBCKEND?
            and then not Controller.Periph.STA.DTIMEOUT
-           and then not Controller.Periph.STA.DBCKEND
+           and then not Controller.Periph.STA.DBCKEND -- end of block
          loop
             if Controller.Periph.STA.RXFIFOHF then
                for J in 1 .. 8 loop
                   Data (Idx .. Idx + 3) :=
-                    To_Data (Read_FIFO (Controller));
+                    To_Data (Read_FIFO (Controller)); -- 4 bytes per FIFO
                   Idx := Idx + 4;
                end loop;
             end if;
@@ -1476,12 +1483,24 @@ package body STM32.SDMMC is
          Err := Stop_Transfer (Controller);
       end if;
 
+      declare
+         num_rx : STM32_SVD.SDIO.DLEN_DATALENGTH_Field;
+         num_rem : STM32_SVD.SDIO.DCOUNT_DATACOUNT_Field;
+         num_fifo : STM32_SVD.SDIO.FIFOCNT_FIFOCOUNT_Field;
+      begin
+         -- DEbug: check how much data is pending/transferred
+         num_rem := Controller.Periph.DCOUNT.DATACOUNT; -- 496
+         num_fifo := Controller.Periph.FIFOCNT.FIFOCOUNT;
+         num_rx := Controller.Periph.DLEN.DATALENGTH; -- 512
+      end;
+
+      --  check whether there were errors
       if Controller.Periph.STA.DTIMEOUT then
          Controller.Periph.ICR.DTIMEOUTC := True;
          return Timeout_Error;
 
       elsif Controller.Periph.STA.DCRCFAIL then
-         Controller.Periph.ICR.DCRCFAILC := True;
+         Controller.Periph.ICR.DCRCFAILC := True; -- clear
          return CRC_Check_Fail;
 
       elsif Controller.Periph.STA.RXOVERR then
@@ -1512,9 +1531,9 @@ package body STM32.SDMMC is
    is
       Read_Address : constant Unsigned_64 :=
                        (if Controller.Card_Type = High_Capacity_SD_Card
-                        then Addr / 512 else Addr);
+                        then Addr / 512 else Addr); -- FIXME: why 512?
       Err          : SD_Error;
-      N_Blocks     : constant Positive := Data'Length / 512;
+      N_Blocks     : constant Positive := Data'Length / BLOCKLEN;
       Command      : SDMMC_Command;
       use STM32.DMA;
 
@@ -1545,7 +1564,7 @@ package body STM32.SDMMC is
       Send_Command
         (Controller,
          Command_Index      => Set_Blocklen,
-         Argument           => 512,
+         Argument           => BLOCKLEN,
          Response           => Short_Response,
          CPSM               => True,
          Wait_For_Interrupt => False);
@@ -1557,8 +1576,8 @@ package body STM32.SDMMC is
 
       Configure_Data
         (Controller,
-         Data_Length        => UInt25 (N_Blocks) * 512,
-         Data_Block_Size    => Block_512B,
+         Data_Length        => UInt25 (N_Blocks) * BLOCKLEN,
+         Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
          Transfer_Direction => Read,
          Transfer_Mode      => Block,
          DPSM               => True,
@@ -1597,7 +1616,7 @@ package body STM32.SDMMC is
          return Timeout_Error;
 
       elsif Controller.Periph.STA.DCRCFAIL then
-         Controller.Periph.ICR.DCRCFAILC := True;
+         Controller.Periph.ICR.DCRCFAILC := True; -- clear
          return CRC_Check_Fail;
 
       elsif Controller.Periph.STA.RXOVERR then
