@@ -676,7 +676,7 @@ package STM32_SVD.SDIO is
       ICR     at 56 range 0 .. 31; -- OK STM32F427
       MASK    at 60 range 0 .. 31; -- OK STM32F427
       FIFOCNT at 72 range 0 .. 31; -- OK STM32F427
-      FIFO    at 128 range 0 .. 31; -- OK STM32F427
+      FIFO    at 128 range 0 .. 31; -- FIFO for read and write 32 entries, each 32bit word. At 0x80..0xFC. Just write lowest address
    end record;
 
    --  Secure digital input/output interface
