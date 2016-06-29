@@ -95,7 +95,7 @@ is
       
       head : Byte_Array (3 .. 6) := (others => Byte( 0 ));
       data_rx : Byte_Array (0 .. HIL.UART.BUFFER_MAX - 1) := (others => Byte( 0 ));
-      message : Byte_Array (1 .. 92) := (others => Byte( 0 )); 
+      message : Byte_Array (0 .. 91) := (others => Byte( 0 )); 
       check : Byte_Array (1 .. 2) := (others => Byte( 0 ));
       cks : Fletcher16_Byte.Checksum_Type := (others => Byte( 0 ));
       isReceived : Boolean := False;
@@ -121,7 +121,9 @@ is
                if check(1) = cks.ck_a and check(2) = cks.ck_b then
                   Logger.log(Logger.DEBUG, "UBX valid");
                   data := message;
-                  isValid := True;
+                  if message(20) = 3 or message(20) = 4 then
+                     isValid := True;
+                  end if;
                else
                   data := (others => Byte( 0 ));
                   Logger.log(Logger.DEBUG, "UBX invalid");
@@ -222,13 +224,15 @@ is
 
    -- read measurements values. Should be called periodically.
    procedure update_val is
-      data_rx : Data_Type(1 .. 92) := (others => 0);
+      data_rx : Data_Type(0 .. 91) := (others => 0);
       gpsmsg : ULog.GPS.Message;
       isValid : Boolean;
    begin
       readFromDevice(data_rx, isValid);
       if isValid then
-         G_position.Longitude := Unit_Type(Float( HIL.toUnsigned_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
+         G_position.Longitude := Unit_Type(Float( HIL.toInteger_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
+         G_position.Latitude  := Unit_Type(Float( HIL.toInteger_32( data_rx(28 .. 31) ) ) * 1.0e-7) * Degree;
+         G_position.Altitude  := Unit_Type(Float( HIL.toInteger_32( data_rx(36 .. 39) ) )) * Milli * Meter;
          Logger.log(Logger.DEBUG, "Long: " & AImage( G_position.Longitude ) );
       end if;
 

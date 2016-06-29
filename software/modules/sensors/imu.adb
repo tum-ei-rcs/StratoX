@@ -6,6 +6,7 @@ with Units; use Units;
 
 package body IMU is
 
+   G_Freefall_Counter : Natural := 0;
 
    function MPU_To_PX4Frame(vector : Linear_Acceleration_Vector) return Linear_Acceleration_Vector is
       ( ( X => vector(Y), Y => -vector(X), Z => vector(Z) ) );
@@ -45,5 +46,20 @@ package body IMU is
       result := MPU_To_PX4Frame( result );
       return result;
    end get_Linear_Acceleration;
+
+
+   procedure check_Freefall(Self : in out IMU_Tag; isFreefall : out Boolean) is
+   begin
+      if abs ( Units.Vectors.Cartesian_Vector_Type( get_Linear_Acceleration(Self) ) ) < Unit_Type( 0.5 ) then
+         Self.Freefall_Counter := Self.Freefall_Counter + 1;
+      else 
+         Self.Freefall_Counter := 0;
+      end if;
+      isFreefall := (Self.Freefall_Counter >= 5);
+   end check_Freefall;
+
+
+
+
 
 end IMU;

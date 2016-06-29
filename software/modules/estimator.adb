@@ -22,14 +22,13 @@ package body Estimator is
    begin
       Test := Test + Foo;
 
+      -- Orientation Sensors
       IMU.Sensor.initialize;
-
-      Barometer.Sensor.initialize;
-
-      GPS.Sensor.initialize;
-
       Magnetometer.Sensor.initialize;
 
+      -- Position Sensors
+      Barometer.Sensor.initialize;
+      GPS.Sensor.initialize;
 
       Logger.log(Logger.INFO, "Estimator initialized");
    end initialize;
@@ -39,36 +38,33 @@ package body Estimator is
       Sample : IMU.IMU_Sensor.Sample_Type;
       Acc : Linear_Acceleration_Vector;
    begin
+      -- Estimate Object Orientation
       IMU.Sensor.read_Measurement;
       Sample := IMU.Sensor.get_Sample;
       Acc := IMU.Sensor.get_Linear_Acceleration;
-
-
-
 
       Logger.log(Logger.TRACE,
                  "Acc: " & Image( Acc(X) ) &
                  ", " & Image( Acc(Y) ) &
                  ", " & Image( Acc(Z) ) );
 
---                   " Gyr: " & Integer_16'Image( Acc.data.Gyro_X) &
---                   ", " & Integer_16'Image(Acc.data.Gyro_Y) &
---                   ", " & Integer_16'Image(Acc.data.Gyro_Z) );
-
       G_Object_Orientation := Orientation( Acc );
 
-
-
-      GPS.Sensor.read_Measurement;
-
       Magnetometer.Sensor.read_Measurement;
-
       G_Object_Orientation.Yaw := Heading(Magnetometer.Sensor.get_Sample.data, G_Object_Orientation);
 
       Logger.log(Logger.DEBUG,
                  "Rad: " & AImage( G_Object_Orientation.Roll ) &
                  ", " & AImage( G_Object_Orientation.Pitch ) &
                  ", " & AImage( G_Object_Orientation.Yaw ) );
+
+
+
+      -- Estimate Object Position
+      Barometer.Sensor.read_Measurement; -- >= 4 calls for new data
+      G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
+
+      GPS.Sensor.read_Measurement;
 
    end update;
 
@@ -91,7 +87,6 @@ package body Estimator is
    begin
       -- normalize vector
 
-
       -- check valid
       if gravity_vector(Y) = 0.0 * Meter / Second**2 and gravity_vector(Z) = 0.0 * Meter / Second**2 then
          angles.Roll := 0.0 * Degree;
@@ -102,11 +97,12 @@ package body Estimator is
          -- Arctan: Only X = Y = 0 raises exception
          -- Output range: -Cycle/2.0 to Cycle/2.0, thus -180° to 180°
          angles.Roll  := Roll_Type ( Arctan(
-                                     -gravity_vector(Z),
-                                     gravity_vector(Y) ) );
+                                     gravity_vector(Y),
+                                     -gravity_vector(Z)
+                                      ) );
 
          g_length := Sqrt( Float(gravity_vector(Y))**2 + Float(gravity_vector(Z))**2 );
-         angles.Pitch := Pitch_Type ( Arctan( Linear_Acceleration_Type( g_length ) , gravity_vector(X) ) );
+         angles.Pitch := Pitch_Type ( Arctan( gravity_vector(X), Linear_Acceleration_Type( g_length ) ) );
          angles.Yaw := 0.0 * Degree;
 
       end if;
