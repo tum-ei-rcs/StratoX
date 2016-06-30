@@ -52,7 +52,7 @@ package body SDMemory.Driver is
          --  Dump general info about the SD-card
          Capacity := SD_Card_Info.Card_Capacity;
 
-         -- human-readable units
+         --  human-readable units
          for Unit of Units loop
             if Capacity < 1000 or else Unit = 'T' then
                Logger.log (Logger.INFO, "SD card size:" & Capacity'Img & " " & Unit & "B");
@@ -99,35 +99,12 @@ package body SDMemory.Driver is
          if not Error_State then
             Logger.log (Logger.INFO, "SD Card listing:");
             while Read (Dir, Ent) = OK loop
-               Logger.log (Logger.INFO, Name (Ent) & (if Is_Subdirectory (Ent) then "/" else ""));
+               Logger.log (Logger.INFO, " +- " & Name (Ent) & (if Is_Subdirectory (Ent) then "/" else ""));
             end loop;
             Close (Dir);
             Close (FS);
          end if;
       end if;
-
-      --     exception
-      --        when E : others =>
-      --           Display.Get_Hidden_Buffer (1).Fill (White);
-      --           Draw_String
-      --             (Display.Get_Hidden_Buffer (1),
-      --              (0, 0),
-      --              Ada.Exceptions.Exception_Information (E),
-      --              BMP_Fonts.Font12x12,
-      --              Black,
-      --              White);
-      --           Draw_String
-      --             (Display.Get_Hidden_Buffer (1),
-      --              (0, 14),
-      --              Ada.Exceptions.Exception_Message (E),
-      --              BMP_Fonts.Font12x12,
-      --              Black,
-      --              White);
-      --           Display.Update_Layer (1);
-      --
-      --           loop
-      --              null;
-      --           end loop;
 
    end List_Rootdir;
 end SDMemory.Driver;

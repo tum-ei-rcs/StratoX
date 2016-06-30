@@ -79,6 +79,9 @@ package body STM32.SDMMC is
    function Read_FIFO
      (Controller : in out SDMMC_Controller) return Word;
 
+   procedure Write_FIFO
+     (Controller : in out SDMMC_Controller; data : Word);
+
    function Command_Error
      (Controller : in out SDMMC_Controller) return SD_Error;
 
@@ -281,6 +284,16 @@ package body STM32.SDMMC is
       Tmp.DMAEN      := DMA_Enabled;
       Controller.Periph.DCTRL := Tmp;
    end Configure_Data;
+
+   ---------------
+   --Write_FIFO --
+   ---------------
+
+   procedure Write_FIFO
+     (Controller : in out SDMMC_Controller; data : Word) is
+   begin
+      Controller.Periph.FIFO := data;
+   end Write_FIFO;
 
    ---------------
    -- Read_FIFO --
@@ -1371,6 +1384,183 @@ package body STM32.SDMMC is
       end case;
    end Blocksize2DBLOCKSIZE;
 
+   -- TODO: read and write are very similar. Reduce code duplication.
+
+   -- new and untested writing function
+   function Write_Blocks
+     (Controller : in out SDMMC_Controller;
+      Addr       : Unsigned_64;
+      Data       : SD_Data) return SD_Error
+   is
+      subtype Word_Data is SD_Data (1 .. 4);
+      function From_Data is new Ada.Unchecked_Conversion
+        (Word_Data, Word);
+      R_Addr   : Unsigned_64 := Addr;
+      N_Blocks : Positive;
+      Err      : SD_Error;
+      Idx      : Unsigned_32 := Data'First;
+      cardstatus : HAL.Word;
+      start    : Time := Clock;
+      Timeout  : Boolean := False;
+   begin
+       Controller.Periph.DCTRL := (others => <>);
+
+      -- So here we are. SD High Capacity does not allow partial
+      -- (that is, blocks of size < card's blocklen) reads.
+      -- this means, we get an rxoverflow here, unless we read
+      -- very slowly
+      Controller.Periph.CLKCR.CLKDIV := 16#76#; --  400 kHz max
+      Clear_Static_Flags (Controller);
+      --  Wait 1ms: After a data write, data cannot be written to this register
+      --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
+      --  periods.
+      delay until Clock + Milliseconds (1);
+
+      if Controller.Card_Type = High_Capacity_SD_Card then
+         R_Addr := Addr / BLOCKLEN; -- FIXME: does that hold for non-high-capacity cards?
+      end if;
+
+      N_Blocks := Data'Length / BLOCKLEN;
+
+      Send_Command
+        (Controller,
+         Command_Index      => Set_Blocklen, -- for High-Capacity SD cards this does not affect data read/write. Is is always 512.
+         Argument           => BLOCKLEN,
+         Response           => Short_Response,
+         CPSM               => True,
+         Wait_For_Interrupt => False);
+      Err := Response_R1_Error (Controller, Set_Blocklen);
+
+      if Err /= OK then
+         return Err;
+      end if;
+
+      Wait_Ready_loop :
+      loop
+         declare
+            now : Time := Clock;
+         begin
+            if now - start > Milliseconds (10) then
+               Timeout := True;
+               exit Wait_Ready_Loop;
+            end if;
+         end;
+
+         Send_Command
+           (Controller,
+            Command_Index      => Send_Status,
+            Argument           => Controller.RCA,
+            Response           => Short_Response,
+            CPSM               => True,
+            Wait_For_Interrupt => False);
+         Err := Response_R1_Error (Controller, Send_Status);
+
+         if Err /= OK then
+            return Err;
+         end if;
+
+         cardstatus := Controller.Periph.RESP1;
+         exit Wait_Ready_Loop when (cardstatus and 16#100#) = 0;
+      end loop Wait_Ready_Loop;
+
+      if Timeout then
+         return Timeout_Error;
+      end if;
+
+      Configure_Data
+        (Controller,
+         Data_Length        => Data'Length,
+         Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
+         Transfer_Direction => Write,
+         Transfer_Mode      => Block,
+         DPSM               => True,
+         DMA_Enabled        => False);
+
+      if N_Blocks > 1 then
+         Controller.Operation := Write_Multiple_Blocks_Operation;
+         Send_Command
+           (Controller,
+            Command_Index      => Write_Multi_Block,
+            Argument           => Word (R_Addr),
+            Response           => Short_Response,
+            CPSM               => True,
+            Wait_For_Interrupt => False);
+         Err := Response_R1_Error (Controller, Write_Multi_Block);
+      else
+         Controller.Operation := Write_Single_Block_Operation;
+         Send_Command
+           (Controller,
+            Command_Index      => Write_Single_Block,
+            Argument           => Word (R_Addr),
+            Response           => Short_Response,
+            CPSM               => True,
+            Wait_For_Interrupt => False);
+         Err := Response_R1_Error (Controller, Write_Single_Block);
+      end if;
+
+      if Err /= OK then
+         return Err;
+      end if;
+
+
+      if N_Blocks > 1 then
+         --  Poll on SDMMC flags
+         while not Controller.Periph.STA.TXUNDERR
+           and then not Controller.Periph.STA.DCRCFAIL
+           and then not Controller.Periph.STA.DTIMEOUT
+           and then not Controller.Periph.STA.STBITERR
+           and then not Controller.Periph.STA.DATAEND -- end of data (=all blocks)
+         loop
+            if Controller.Periph.STA.TXFIFOHE then -- TX FIFO half empty
+               for J in 1 .. 8 loop
+                  Write_FIFO (Controller, From_Data (Data (Idx .. Idx + 3)));
+                  Idx := Idx + 4;
+               end loop;
+            end if;
+         end loop;
+      else
+         --  Poll on SDMMC flags
+         while not Controller.Periph.STA.TXUNDERR
+           and then not Controller.Periph.STA.DCRCFAIL
+           and then not Controller.Periph.STA.DTIMEOUT
+           and then not Controller.Periph.STA.STBITERR
+           and then not Controller.Periph.STA.DBCKEND -- end of block
+         loop
+            if Controller.Periph.STA.TXFIFOHE then -- TX FIFO half empty
+               for J in 1 .. 8 loop
+                  Write_FIFO (Controller, From_Data (Data (Idx .. Idx + 3)));
+                  Idx := Idx + 4;
+               end loop;
+            end if;
+         end loop;
+      end if;
+
+      if N_Blocks > 1 and then Controller.Periph.STA.DATAEND then
+         Err := Stop_Transfer (Controller);
+      end if;
+
+      --  check whether there were errors
+      if Controller.Periph.STA.DTIMEOUT then
+         Controller.Periph.ICR.DTIMEOUTC := True;
+         return Timeout_Error;
+
+      elsif Controller.Periph.STA.DCRCFAIL then
+         Controller.Periph.ICR.DCRCFAILC := True;
+         return CRC_Check_Fail;
+
+      elsif Controller.Periph.STA.TXUNDERR then
+         Controller.Periph.ICR.TXUNDERRC := True;
+         return TX_Underrun;
+
+      elsif Controller.Periph.STA.STBITERR then
+         Controller.Periph.ICR.STBITERRC := True;
+         return Startbit_Not_Detected;
+      end if;
+
+      Clear_Static_Flags (Controller);
+
+      return Err;
+   end Write_Blocks;
 
    function Read_Blocks
      (Controller : in out SDMMC_Controller;

@@ -32,6 +32,7 @@ package STM32.SDMMC is
       Unsupported_Card,
       Rx_Overrun,
       Tx_Underrun,
+      Startbit_Not_Detected,
       Request_Not_Applicable,
       CRC_Check_Fail,
       Illegal_Cmd,
@@ -187,6 +188,12 @@ package STM32.SDMMC is
      (Controller : in out SDMMC_Controller;
       Addr       : Unsigned_64;
       Data       : out SD_Data) return SD_Error
+     with Pre => Data'Length mod 512 = 0;
+
+   function Write_Blocks
+     (Controller : in out SDMMC_Controller;
+      Addr       : Unsigned_64;
+      Data       : SD_Data) return SD_Error
      with Pre => Data'Length mod 512 = 0;
 
    function Read_Blocks_DMA
