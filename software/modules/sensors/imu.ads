@@ -24,7 +24,9 @@ package IMU with SPARK_Mode is
 
    package IMU_Sensor is new Generic_Sensor(IMU_Data_Type); use IMU_Sensor;
 
-   type IMU_Tag is new IMU_Sensor.Sensor_Tag with null record;
+   type IMU_Tag is new IMU_Sensor.Sensor_Tag with record
+      Freefall_Counter : Natural;
+   end record;
 
    overriding procedure initialize (Self : in out IMU_Tag) with
    Global => (MPU6000.Driver.State);
@@ -33,6 +35,8 @@ package IMU with SPARK_Mode is
    Global => (MPU6000.Driver.State);
 
    function get_Linear_Acceleration(Self : IMU_Tag) return Linear_Acceleration_Vector;
+
+   procedure check_Freefall(Self : in out IMU_Tag; isFreefall : out Boolean);
 
    -- function get_Angular_Velocity (Self : IMU_Tag)
 

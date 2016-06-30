@@ -4,7 +4,7 @@ package body Units.Navigation is
       temp_vector : Cartesian_Vector_Type := Cartesian_Vector_Type(mag_vector);
       result : Angle_Type := 0.0 * Degree;
    begin
-      rotate(temp_vector, Z, 45.0 * Degree);
+      -- rotate(temp_vector, Z, 45.0 * Degree);
       rotate(temp_vector, X, -orientation.Roll);
       rotate(temp_vector, Y, -orientation.Pitch);
 

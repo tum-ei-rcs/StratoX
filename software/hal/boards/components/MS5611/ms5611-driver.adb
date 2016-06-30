@@ -107,8 +107,8 @@ is
    TEMP : TEMP_Type := 0.0;
 
    -- final measurement values
-   pressure : Pressure_Type := 1000.0 * Units.Pascal;  -- invalid initial value
-   temperature : Temperature_Type := 233.15 * Units.Kelvin;
+   pressure : Pressure_Type := 101300.0 * Units.Pascal;  -- invalid initial value
+   temperature : Temperature_Type := 293.15 * Units.Kelvin;
 
    G_CELSIUS_0 : constant := 273.15;
 
@@ -264,14 +264,19 @@ is
             begin
                if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
                   read_adc (Baro, temperature_raw);
-                  dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
-                  TEMP := 2000.0 + TEMP_Type (dT * G_tempsens);
-                  OFF  := G_off_t1 + G_tco * dT;
-                  SENS := G_sens_t1 + G_tcs * dT;
-                  compensateTemperature;
-                  temperature := convertToKelvin (TEMP);
-                  startConversion (D1, OSR_4096);
-                  G_Baro_State.FSM_State := PRESSURE_CONVERSION;
+                  if temperature_raw /= 0 then            
+                     dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
+                     TEMP := 2000.0 + TEMP_Type (dT * G_tempsens);
+                     OFF  := G_off_t1 + G_tco * dT;
+                     SENS := G_sens_t1 + G_tcs * dT;
+                     compensateTemperature;
+                     temperature := convertToKelvin (TEMP);
+                     startConversion (D1, OSR_4096);
+                     G_Baro_State.FSM_State := PRESSURE_CONVERSION;
+                  else -- Read error, restart
+                     startConversion (D2, OSR_4096);
+                     G_Baro_State.FSM_State := TEMPERATURE_CONVERSION;
+                  end if;
                end if;
             end;
 
@@ -281,8 +286,13 @@ is
                begin
                   if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
                      read_adc (Baro, pressure_raw);
-                     pressure := calculatePressure (pressure_raw, SENS, OFF);
-                     G_Baro_State.FSM_State := READY;
+                     if pressure_raw /= 0 then
+                        pressure := calculatePressure (pressure_raw, SENS, OFF);
+                        G_Baro_State.FSM_State := READY;
+                     else
+                        startConversion (D1, OSR_4096);
+                        G_Baro_State.FSM_State := PRESSURE_CONVERSION;
+                     end if;
                   end if;
                end;
 

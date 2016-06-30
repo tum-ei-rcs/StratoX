@@ -9,6 +9,7 @@ with STM32.Device;
 with HAL.I2C;
 
 with HMC5883L.Register;
+with Interfaces.Bit_Types; use Interfaces.Bit_Types;
 
 --  @summary
 --  Target-specific mapping for HIL of I2C
@@ -26,7 +27,7 @@ is
 					       Addressing_Mode => STM32.I2C.Addressing_Mode_7bit,
 					       Own_Address => 16#00#,
                                                General_Call_Enabled => False,
-                                               Clock_Stretching_Enabled => True
+                                               Clock_Stretching_Enabled => False
 					       );				       
    begin
       STM32.Device.Reset(STM32.Device.I2C_1);
@@ -50,7 +51,7 @@ is
       case (Device) is
       when UNKNOWN => null;
       when MAGNETOMETER => 
-         STM32.I2C.Master_Receive(STM32.Device.I2C_1, ADDR_HMC5883L, Data_RX_I2C, Status);
+         STM32.I2C.Master_Receive(STM32.Device.I2C_1, ADDR_HMC5883L, Data_RX_I2C, Status);      
          Data := Data_Type( Data_RX_I2C);
       end case;
    end read;
@@ -63,8 +64,9 @@ is
       case (Device) is
       when UNKNOWN => null;
       when MAGNETOMETER => 
-         STM32.I2C.Master_Transmit(STM32.Device.I2C_1, ADDR_HMC5883L, HAL.I2C.I2C_Data( Data_TX ), Status);
-         STM32.I2C.Master_Receive(STM32.Device.I2C_1, ADDR_HMC5883L, Data_RX_I2C, Status);
+         STM32.I2C.Mem_Read(STM32.Device.I2C_1, ADDR_HMC5883L, Short( Data_TX(1) ), HAL.I2C.Memory_Size_8b, Data_RX_I2C, Status);
+--           STM32.I2C.Master_Transmit(STM32.Device.I2C_1, ADDR_HMC5883L, HAL.I2C.I2C_Data( Data_TX ), Status);
+--           STM32.I2C.Master_Receive(STM32.Device.I2C_1, ADDR_HMC5883L, Data_RX_I2C, Status);
          Data_RX := Data_Type( Data_RX_I2C);
       end case;
    end transfer;

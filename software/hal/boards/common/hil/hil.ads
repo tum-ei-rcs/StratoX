@@ -5,6 +5,7 @@
 --  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 with HAL;
 with Interfaces; use Interfaces;
+with Ada.Unchecked_Conversion;
 
 --  @summary
 --  target-independent functions of HIL.
@@ -45,7 +46,10 @@ is
    --subtype Byte_Array_2 is Byte_Array(1..2); -- not working (explicit raise in flow_utility.adb)
 
    type Byte_Array_2 is array(1..2) of Byte;
-   
+   type Byte_Array_4 is array(1..4) of Byte;
+
+
+
    type Unsigned_8_Array  is array(Natural range <>) of Unsigned_8;
    type Unsigned_16_Array is array(Natural range <>) of Unsigned_16;  
    type Unsigned_32_Array is array(Natural range <>) of Unsigned_32;   
@@ -79,6 +83,19 @@ is
    is
       (Unsigned_32( bytes( bytes'First ) ) + Unsigned_32( bytes'First + 1 ) * 2**8 + Unsigned_32( bytes'First + 2 ) * 2**16 + Unsigned_32( bytes'First + 3 ) * 2**24 )
    with pre => bytes'Length = 4;
+
+
+   function From_Byte_Array_To_Integer_32 is new Ada.Unchecked_Conversion (Source => Byte_Array_4,
+                                                                           Target => Integer_32);
+
+
+
+   function toInteger_32( bytes : Byte_Array) return Integer_32
+   is
+      (From_Byte_Array_To_Integer_32( Byte_Array_4( bytes ) ) )
+   with pre => bytes'Length = 4;
+
+
 
 
 
