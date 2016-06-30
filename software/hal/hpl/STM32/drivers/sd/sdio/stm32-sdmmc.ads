@@ -72,7 +72,7 @@ package STM32.SDMMC is
       Data_Read_Access_Time_2          : Byte; --  In CLK Cycles
       Max_Bus_Clock_Frequency          : Byte;
       Card_Command_Class               : Short;
-      Max_Read_Data_Block_Length       : Byte;
+      Max_Read_Data_Block_Length       : Byte; -- ld (blocksize in bytes)
       Partial_Block_For_Read_Allowed   : Boolean;
       Write_Block_Missalignment        : Boolean;
       Read_Block_Missalignment         : Boolean;
@@ -90,7 +90,7 @@ package STM32.SDMMC is
       Write_Protect_Group_Enable       : Boolean;
       Manufacturer_Default_ECC         : Byte;
       Write_Speed_Factor               : Byte;
-      Max_Write_Data_Block_Length      : Byte;
+      Max_Write_Data_Block_Length      : Byte; -- =Max_Read_Data_Block_Length
       Partial_Blocks_For_Write_Allowed : Boolean;
       Reserved_3                       : Byte;
       Content_Protection_Application   : Boolean;

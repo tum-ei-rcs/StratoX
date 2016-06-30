@@ -11,7 +11,7 @@ with STM32_SVD.SDIO;  use STM32_SVD.SDIO;
 
 package body STM32.SDMMC is
 
-   BLOCKLEN : constant := 32;
+   BLOCKLEN : constant := 512; -- SD Version 2.0 (High capacity) does only allow blocks of this size
 
    --  Mask for errors Card Status R1 (OCR Register)
    SD_OCR_ADDR_OUT_OF_RANGE     : constant := 16#8000_0000#;
@@ -69,7 +69,7 @@ package body STM32.SDMMC is
 
    procedure Configure_Data
      (Controller         : in out SDMMC_Controller;
-      Data_Length        : UInt25;
+      Data_Length        : UInt25; -- TODO: Pre => multiple of data_block_size
       Data_Block_Size    : DBLOCKSIZE_Field;
       Transfer_Direction : Data_Direction;
       Transfer_Mode      : DTMODE_Field;
@@ -1014,6 +1014,7 @@ package body STM32.SDMMC is
    --------------
    -- Find_SCR --
    --------------
+   --  Find (?) SC card's Card Configuration Regiser
 
    function Find_SCR
      (Controller : in out SDMMC_Controller;
@@ -1301,7 +1302,7 @@ package body STM32.SDMMC is
       end if;
 
       --  Now use the card to nominal speed : 25MHz
-      Controller.Periph.CLKCR.CLKDIV := 0;
+      Controller.Periph.CLKCR.CLKDIV := 0; -- we keep slow, because we are polling.
       Clear_Static_Flags (Controller);
       delay until Clock + Milliseconds (1);
 
@@ -1360,9 +1361,12 @@ package body STM32.SDMMC is
    begin
       case (siz) is
          when 1 => return Block_1B;
+         when 8 => return Block_8B;
          when 16 => return Block_16B;
          when 32 => return Block_32B;
+         when 64 => return Block_64B;
          when 128 => return Block_128B;
+         when 256 => return Block_256B;
          when others => return Block_512B;
       end case;
    end Blocksize2DBLOCKSIZE;
@@ -1383,24 +1387,29 @@ package body STM32.SDMMC is
       Dead     : Word with Unreferenced;
 
    begin
+
       Controller.Periph.DCTRL := (others => <>);
 
+      -- So here we are. SD High Capacity does not allow partial
+      -- (that is, blocks of size < card's blocklen) reads.
+      -- this means, we get an rxoverflow here, unless we read
+      -- very slowly
+      Controller.Periph.CLKCR.CLKDIV := 16#76#; --  400 kHz max
+      Clear_Static_Flags (Controller);
       --  Wait 1ms: After a data write, data cannot be written to this register
       --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
       --  periods.
       delay until Clock + Milliseconds (1);
 
       if Controller.Card_Type = High_Capacity_SD_Card then
-         R_Addr := Addr / BLOCKLEN; -- TODO: compute Addr from card block size, not BLOCKLEN ?
+         R_Addr := Addr / BLOCKLEN; -- FIXME: does that hold for non-high-capacity cards?
       end if;
 
-      --N_Blocks := Data'Length / BLOCKLEN;
-      N_Blocks := 1;
-      pragma assert (Data'Length >= BLOCKLEN);
+      N_Blocks := Data'Length / BLOCKLEN;
 
       Send_Command
         (Controller,
-         Command_Index      => Set_Blocklen,
+         Command_Index      => Set_Blocklen, -- for High-Capacity SD cards this does not affect data read/write. Is is always 512.
          Argument           => BLOCKLEN,
          Response           => Short_Response,
          CPSM               => True,
@@ -1413,7 +1422,7 @@ package body STM32.SDMMC is
 
       Configure_Data
         (Controller,
-         Data_Length        => BLOCKLEN, -- N_Blocks * BLOCKLEN, --Data'Length,
+         Data_Length        => Data'Length,
          Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
          Transfer_Direction => Read,
          Transfer_Mode      => Block,
@@ -1531,7 +1540,7 @@ package body STM32.SDMMC is
    is
       Read_Address : constant Unsigned_64 :=
                        (if Controller.Card_Type = High_Capacity_SD_Card
-                        then Addr / 512 else Addr); -- FIXME: why 512?
+                        then Addr / 512 else Addr); -- FIXME: why 512? Cluster size of SD card?
       Err          : SD_Error;
       N_Blocks     : constant Positive := Data'Length / BLOCKLEN;
       Command      : SDMMC_Command;
