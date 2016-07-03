@@ -40,11 +40,6 @@ MENUITEMS = """
 </action>
 """
 
-def get_last_body_statement(node):
-    if hasattr(node, "body"):
-        return get_last_body_statement(node.body[-1])
-    else:
-        return node
 
 class Reqtrace(object):
 
@@ -113,7 +108,7 @@ documentation for the standard python library. It is accessed through the
     def extract_comments(self, sourcecode, linestart):
         """
         returns only the comments of ada source code.
-        list of dict ("text", "line")
+        list of dict ("text", "line", "col")
         """
 
         comment = []
@@ -145,17 +140,16 @@ documentation for the standard python library. It is accessed through the
 
     def list_subp_requirements(self):
         print ""
-        #print "List Subprogram Requirements"
         (name, locstart, locend) = self.compute_subp_range(GPS.current_context())
         if locstart is None or locend is None:
             print "Error getting subprogram range"
             return
 
-        #print "subprogram=" + name + " in range " + str(locstart) + ".." + str(locend)
         # now extract all comments from range
         editor = GPS.EditorBuffer.get()
         sourcecode = self.get_buffertext(editor,locstart,locend)
         comments = self.extract_comments(sourcecode,locstart.line())
+        # TODO: also look in spec
         reqs = self.extract_requirements(comments)
         if reqs:
             print "Requirements in '" + name + "':"
@@ -218,7 +212,7 @@ documentation for the standard python library. It is accessed through the
         except:
             pass
 
-    def subprogram_bounds(self,cursor):
+    def subprogram_bounds(self,cursor,withcomments=False):
         """
         Return the first and last line of the current subprogram, and (0,0) if
         the current subprogram could not be determined.
@@ -231,11 +225,38 @@ documentation for the standard python library. It is accessed through the
             return None, None
 
         min = cursor.buffer().beginning_of_buffer()
+        max = cursor.buffer().end_of_buffer()
         while not (cursor.block_type() in blocks) and cursor > min:
             cursor = cursor.block_start() - 1
 
         if cursor > min:
-            return cursor.block_start(), cursor.block_end()
+            codestart = cursor.block_start() # gives a cursor
+            codeend = cursor.block_end()
+            if withcomments:
+                # look for comments lines directly before and after block and widen cursors accordingly
+                for dir in [-1, 1]:
+                    if dir == -1:
+                        doccursor = codestart
+                        boundary = min
+                    else:
+                        doccursor = codeend
+                        boundary = max
+                    lastvalid = doccursor
+                    while True:
+                        if doccursor == boundary:
+                            break
+                        doccursor = doccursor.forward_line(dir)
+                        line = doccursor.buffer().get_chars(doccursor.beginning_of_line(), doccursor.end_of_line())
+                        iscomment = line.strip().startswith("--")
+                        if not iscomment:
+                            break
+                        else:
+                            lastvalid = doccursor
+                    if dir == -1:
+                        codestart = lastvalid
+                    else:
+                        codeend = lastvalid
+                return codestart, codeend
         else:
             return None, None
 
@@ -256,8 +277,9 @@ documentation for the standard python library. It is accessed through the
         return txt
 
     def compute_subp_range(self, ctx):
-        """Return the location of the declaration of the subprogram that we are
-        currently in
+        """Return the source code range of subprogram that we are
+        currently in, and also include directly preceeding and
+        directly following comments
         """
 
         try:
@@ -265,7 +287,7 @@ documentation for the standard python library. It is accessed through the
             buf = GPS.EditorBuffer.get(curloc.file(), open=False)
             if buf is not None:
                 edloc = buf.at(curloc.line(), curloc.column())
-                (start_loc, end_loc) = self.subprogram_bounds(edloc)
+                (start_loc, end_loc) = self.subprogram_bounds(edloc, withcomments=True)
             else:
                 return None
         except:
@@ -280,7 +302,7 @@ documentation for the standard python library. It is accessed through the
         # closer to the actual subprogram name. We get closer by skipping the
         # keyword that introduces the subprogram (procedure/function/entry etc.)
 
-        start_loc = start_loc.forward_word(1)
+#        start_loc = start_loc.forward_word(1)
 #        try:
 #            entity = GPS.Entity(name, start_loc.buffer().file(),
 #                                start_loc.line(), start_loc.column())

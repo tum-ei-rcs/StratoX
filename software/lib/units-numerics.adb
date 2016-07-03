@@ -28,12 +28,15 @@ is
       return Unit_Type( Elementary_Functions.Sin( Float( X ) ) );
    end Sin;
 
+   -- header comment for Cos
+   -- @req mine+2
    function Cos (X : Angle_Type) return Unit_Type is
    begin
       --  @req foobar/2 @req nothing
       -- @req foobar/2
         return Unit_Type( Elementary_Functions.Cos( Float( X ) ) );
    end Cos;
+   -- footer comment for cos
 
 
 
@@ -55,3 +58,4 @@ is
    end Arctan;
 
 end Units.Numerics;
+-- trailing package comment
