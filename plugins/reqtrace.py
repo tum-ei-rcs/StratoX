@@ -1,5 +1,22 @@
 """This file provides support for tracing of low-level requirements
-to source code and vice vesa.
+to source code and vice versa.
+
+To use it, annotate subprograms in comments like follows:
+
+    -- @req bar
+    procedure foo;
+
+    -- @req foo-fun/1
+    procedure foo is
+    begin
+       null; -- @req blabla
+    end foo;
+
+This will link the requirements "foo-fun/1", "bar", and "blabla" from the
+database with the procedure foo. For evaluation of coverage and tracing,
+use the menu item "requirements".
+
+TODO: read SPARK annotations and export them as verification means.
 
 (C) 2016 by Martin Becker <becker@rcs.ei.tum.de>
 
@@ -24,11 +41,15 @@ MENUITEMS = """
         <menu action="List Subprogram Requirements">
           <Title>List requirements implemented by subprogram</Title>
         </menu>
+        <menu><title/></menu>
         <menu action="List Open Requirements">
           <Title>Show open requirements</Title>
         </menu>
         <menu action="Mark Unjustified Code">
           <Title>Mark unjustified code</Title>
+        </menu>
+        <menu action="Check Density">
+        <title>Check Density of Requirements</title>
         </menu>
         <menu><title/></menu>
         <menu action="List All Requirements">
@@ -88,6 +109,10 @@ documentation for the standard python library. It is accessed through the
             callback=self.mark_unjustified_code,
             name='Mark Unjustified Code')
 
+        gps_utils.make_interactive(
+            callback=self.check_density,
+            name='Check Density')
+
         # declare local function as action (menu, shortcut, etc.)
         gps_utils.make_interactive(
             callback=self.list_subp_requirements,
@@ -102,8 +127,58 @@ documentation for the standard python library. It is accessed through the
         GPS.Hook("project_view_changed").add(self._project_recomputed)
         GPS.Hook("before_exit_action_hook").add(self._before_exit)
 
+    def check_density(self):
+        """
+        Count the number of SLOC per requirements and warn if density is
+        too low. We are targeting at most 20SLOC/requirement
+        """
+        print "not implemented, yet"
+
     def mark_unjustified_code(self):
-        print "Mark Unjustified Code"
+        """
+        iterate over all files and subprograms and warn if a subprogram has no requirements
+        """
+        print ""
+
+        # FIXME: we must make sure that gnatinspect.db is up-to-date. How? Rebuilding helps.
+
+        # get current cursor
+        ctx = GPS.current_context()
+        curloc = ctx.location()
+        file = curloc.file()
+        editor = GPS.EditorBuffer.get(file)
+
+        #try:
+        #    GPS.Editor.unhighlight(str(file), "Unjustified_Code");
+        #except:
+        #    pass
+        GPS.Locations.remove_category("Unjustified_Code");
+        GPS.Editor.register_highlighting("Unjustified_Code", "#F9E79F")
+
+        # iterate over all subprograms (requires cross-referencing to work)
+        for ent,loc in file.references(kind='body'):
+            if ent.is_subprogram():
+                print "entity: " + ent.name() + " at " + str(loc)
+                # extract requirements for the entity
+                if editor is not None:
+                    edloc = editor.at(loc.line(), loc.column())
+                    #(startloc, endloc) = self._get_enclosing_block(edloc)
+                    (name,reqs) = self._get_subp_requirements (editor, loc)
+                    # name should equal ent.name
+                    if (name.strip() != ent.name().strip()):
+                        print "Warning: GPS Entity name '" + ent.name() + "' differs from found entity '" + name + "'"
+                    if not reqs:
+                        print "Entity '" + name + "' has ZERO requirements"
+                        GPS.Locations.add(category="Unjustified_Code",
+                                  file=file,
+                                  line=loc.line(),
+                                  column=loc.column(),
+                                  message="no requirements for '" + name + "'",
+                                  highlight="Unjustified_Code")
+                    else:
+                        rnames = [k for k,v in reqs.iteritems()]
+                        print "Entity '" + name + "' has " + str(len(reqs)) + " requirements: " + str(rnames)
+
 
     def _extract_comments(self, sourcecode, linestart, filename):
         """
@@ -136,38 +211,26 @@ documentation for the standard python library. It is accessed through the
                     reqs[match.group(1)] = [];
                 reqs[match.group(1)].append({"file" : c["file"], "line" : c["line"], "col" : colstart});
 
+        # TODO: postprocessing. ACtually check whether requirements exist in database, otherwise mark them as invalid
+
         return reqs
 
-    def _get_subp_requirements(self, editor, locstart0, locend0):
-        (locstart, locend) = self._widen_withcomments(locstart0, locend0)
-        if locstart is None or locend is None:
-            print "Error getting subprogram range"
-            return None
-
-        # now extract all comments from range
-        sourcecode = self._get_buffertext(editor,locstart,locend)
-        # print "src=" + str(sourcecode)
-        comments = self._extract_comments(sourcecode,locstart.line(), locstart.buffer().file())
-        return self._extract_requirements(comments)
-
-    def list_subp_requirements(self):
-        print ""
-
-        # get current cursor
-        ctx = GPS.current_context()
-        curloc = ctx.location()
-
+    def _get_subp_requirements(self, editor, fileloc):
+        """
+        from given location find subprogram entity, and then check both its body and spec for requirements
+        return: name of subp, dict of requirements
+        """
         # 1. get entity belonging to cursor
-        (entity, loccodestart, loccodeend) = self._get_enclosing_entity(curloc)
+        (entity, loccodestart, loccodeend) = self._get_enclosing_entity(fileloc)
         if not entity:
             print "No enclosing entity found"
-            return
+            return None, None
 
         name = entity.name()
 
         # extract requirements from the range
-        editor = GPS.EditorBuffer.get(curloc.file())
-        reqs = self._get_subp_requirements (editor, loccodestart, loccodeend)
+        editor = GPS.EditorBuffer.get(fileloc.file())
+        reqs = self._get_requirements_in_range (editor, loccodestart, loccodeend)
 
         # 2. find the counterpart (spec <=> body) and also look there
         try:
@@ -180,15 +243,15 @@ documentation for the standard python library. It is accessed through the
             locspec = None
         is_body = locbody and locbody.line() == loccodestart.line()
 
-        reqs2 = None
+        reqs_other = None
         if is_body and locspec:
             editor = GPS.EditorBuffer.get(locspec.file())
             (entity, loccodestart, loccodeend) = self._get_enclosing_entity(locspec)
-            reqs_other = self._get_subp_requirements (editor, loccodestart, loccodeend)
+            reqs_other = self._get_requirements_in_range (editor, loccodestart, loccodeend)
         if not is_body and locbody:
             editor = GPS.EditorBuffer.get(locbody.file())
             (entity, loccodestart, loccodeend) = self._get_enclosing_entity(locbody)
-            reqs_other = self.foomatic (editor, loccodestart, loccodeend)
+            reqs_other = self._get_requirements_in_range (editor, loccodestart, loccodeend)
 
         # merge dicts
         if reqs_other:
@@ -198,7 +261,51 @@ documentation for the standard python library. It is accessed through the
                 else:
                     reqs[k].append(v)
 
+        # all done
+        return name, reqs
+
+    def _get_requirements_in_range(self, editor, locstart0, locend0):
+        (locstart, locend) = self._widen_withcomments(locstart0, locend0)
+        if locstart is None or locend is None:
+            print "Error getting subprogram range"
+            return None
+
+        # now extract all comments from range
+        sourcecode = self._get_buffertext(editor,locstart,locend)
+        # print "src=" + str(sourcecode)
+        comments = self._extract_comments(sourcecode,locstart.line(), str(locstart.buffer().file()))
+        return self._extract_requirements(comments)
+
+    def _show_locations(self,reqs):
+        """
+        show requirements in location window
+        """
+        if not reqs:
+            return
+
+        GPS.Editor.register_highlighting("My_Category", "#D5F5E3")
+        for req,refs in reqs.iteritems():
+            for ref in refs: # each requirement can have multiple references
+                print "file=" + ref["file"]
+                GPS.Locations.add(category="Requirements",
+                                  file=GPS.File(ref["file"]),
+                                  line=ref["line"],
+                                  column=ref["col"],
+                                  message=req,
+                                  highlight="My_Category")
+
+
+    def list_subp_requirements(self):
+        print ""
+
+        # get current cursor
+        ctx = GPS.current_context()
+        curloc = ctx.location()
+        editor = GPS.EditorBuffer.get(curloc.file())
+
+        (name, reqs) = self._get_subp_requirements (editor, curloc)
         if reqs:
+            self._show_locations(reqs)
             print "Requirements in '" + name + "':"
             for k,v in reqs.iteritems():
                 print " - " + k + ": " + str(v)
