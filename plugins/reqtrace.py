@@ -94,10 +94,10 @@ documentation for the standard python library. It is accessed through the
             name='List Subprogram Requirements')
 
         # context menu in editor
-        gps_utils.make_interactive(
-            callback=self.reload_file,
-            name='MBe reload requirements',
-            contextual='Requirements/Reload')
+        #gps_utils.make_interactive(
+        #    callback=self.reload_file,
+        #    name='MBe reload requirements',
+        #    contextual='Requirements/Reload')
 
         GPS.Hook("project_view_changed").add(self._project_recomputed)
         GPS.Hook("before_exit_action_hook").add(self._before_exit)
@@ -105,10 +105,10 @@ documentation for the standard python library. It is accessed through the
     def mark_unjustified_code(self):
         print "Mark Unjustified Code"
 
-    def extract_comments(self, sourcecode, linestart):
+    def _extract_comments(self, sourcecode, linestart, filename):
         """
         returns only the comments of ada source code.
-        list of dict ("text", "line", "col")
+        list of dict ("text" : <comment text>, "file": <path>, "line" : <int>, "col", <int>)
         """
 
         comment = []
@@ -116,11 +116,11 @@ documentation for the standard python library. It is accessed through the
         for line in sourcecode.splitlines():
             pos = line.find("--")
             if pos >=0:
-                comment.append({"text" : line[pos+2:], "line" : l, "col" : pos + 2})
+                comment.append({"text" : line[pos+2:], "file": filename, "line" : l, "col" : pos + 2})
             l = l + 1
         return comment
 
-    def extract_requirements(self, comment):
+    def _extract_requirements(self, comment):
         """
         parse comments and return the referenced requirements
         """
@@ -134,67 +134,76 @@ documentation for the standard python library. It is accessed through the
                 reqname = match.group(1)
                 if not reqname in reqs:
                     reqs[match.group(1)] = [];
-                reqs[match.group(1)].append({"line" : c["line"], "col" : colstart});
+                reqs[match.group(1)].append({"file" : c["file"], "line" : c["line"], "col" : colstart});
 
         return reqs
 
-    def list_subp_requirements(self):
-        print ""
-        (name, locstart, locend) = self.compute_subp_range(GPS.current_context())
+    def _get_subp_requirements(self, editor, locstart0, locend0):
+        (locstart, locend) = self._widen_withcomments(locstart0, locend0)
         if locstart is None or locend is None:
             print "Error getting subprogram range"
-            return
+            return None
 
         # now extract all comments from range
-        editor = GPS.EditorBuffer.get()
-        sourcecode = self.get_buffertext(editor,locstart,locend)
-        comments = self.extract_comments(sourcecode,locstart.line())
-        # TODO: also look in spec
-        reqs = self.extract_requirements(comments)
+        sourcecode = self._get_buffertext(editor,locstart,locend)
+        # print "src=" + str(sourcecode)
+        comments = self._extract_comments(sourcecode,locstart.line(), locstart.buffer().file())
+        return self._extract_requirements(comments)
+
+    def list_subp_requirements(self):
+        print ""
+
+        # get current cursor
+        ctx = GPS.current_context()
+        curloc = ctx.location()
+
+        # 1. get entity belonging to cursor
+        (entity, loccodestart, loccodeend) = self._get_enclosing_entity(curloc)
+        if not entity:
+            print "No enclosing entity found"
+            return
+
+        name = entity.name()
+
+        # extract requirements from the range
+        editor = GPS.EditorBuffer.get(curloc.file())
+        reqs = self._get_subp_requirements (editor, loccodestart, loccodeend)
+
+        # 2. find the counterpart (spec <=> body) and also look there
+        try:
+            locbody = entity.body()
+        except:
+            locbody = None
+        try:
+            locspec = entity.declaration()
+        except:
+            locspec = None
+        is_body = locbody and locbody.line() == loccodestart.line()
+
+        reqs2 = None
+        if is_body and locspec:
+            editor = GPS.EditorBuffer.get(locspec.file())
+            (entity, loccodestart, loccodeend) = self._get_enclosing_entity(locspec)
+            reqs_other = self._get_subp_requirements (editor, loccodestart, loccodeend)
+        if not is_body and locbody:
+            editor = GPS.EditorBuffer.get(locbody.file())
+            (entity, loccodestart, loccodeend) = self._get_enclosing_entity(locbody)
+            reqs_other = self.foomatic (editor, loccodestart, loccodeend)
+
+        # merge dicts
+        if reqs_other:
+            for k,v in reqs_other.iteritems():
+                if not k in reqs:
+                    reqs[k] = v
+                else:
+                    reqs[k].append(v)
+
         if reqs:
             print "Requirements in '" + name + "':"
             for k,v in reqs.iteritems():
                 print " - " + k + ": " + str(v)
         else:
             print "No requirements referenced in '" + name + "'"
-
-    def reload_file(self):
-        """
-        Reload the currently edited file in python.
-        If the file has not been imported yet, import it initially.
-        Otherwise, reload the current version of the file.
-        """
-
-        try:
-            f = GPS.current_context().file()
-            module = os.path.splitext(os.path.basename(f.name()))[0]
-
-            # The actual import and reload must be done in the context of the
-            # GPS console so that they are visible there. The current function
-            # executes in a different context, and would not impact the GPS
-            # console as a result otherwise.
-
-            # We cannot use  execfile(...), since that would be the equivalent
-            # of "from ... import *", not of "import ..."
-
-            if module in sys.modules:
-                GPS.exec_in_console("reload(sys.modules[\"" + module + "\"])")
-
-            else:
-                try:
-                    sys.path.index(os.path.dirname(f.name()))
-                except:
-                    sys.path = [os.path.dirname(f.name())] + sys.path
-                mod = __import__(module)
-
-                # This would import in the current context, not what we want
-                # exec (compile ("import " + module, "<cmdline>", "exec"))
-
-                # The proper solution is to execute in the context of the GPS
-                # console
-                GPS.exec_in_console("import " + module)
-        except:
-            pass   # Current context is not a file
 
     def _project_recomputed(self, hook_name):
         """
@@ -212,12 +221,7 @@ documentation for the standard python library. It is accessed through the
         except:
             pass
 
-    def subprogram_bounds(self,cursor,withcomments=False):
-        """
-        Return the first and last line of the current subprogram, and (0,0) if
-        the current subprogram could not be determined.
-        """
-
+    def _get_enclosing_block(self, cursor):
         blocks = {"CAT_PROCEDURE": 1, "CAT_FUNCTION": 1, "CAT_ENTRY": 1,
                     "CAT_PROTECTED": 1, "CAT_TASK": 1, "CAT_PACKAGE": 1}
 
@@ -229,38 +233,49 @@ documentation for the standard python library. It is accessed through the
         while not (cursor.block_type() in blocks) and cursor > min:
             cursor = cursor.block_start() - 1
 
-        if cursor > min:
-            codestart = cursor.block_start() # gives a cursor
-            codeend = cursor.block_end()
-            if withcomments:
-                # look for comments lines directly before and after block and widen cursors accordingly
-                for dir in [-1, 1]:
-                    if dir == -1:
-                        doccursor = codestart
-                        boundary = min
-                    else:
-                        doccursor = codeend
-                        boundary = max
-                    lastvalid = doccursor
-                    while True:
-                        if doccursor == boundary:
-                            break
-                        doccursor = doccursor.forward_line(dir)
-                        line = doccursor.buffer().get_chars(doccursor.beginning_of_line(), doccursor.end_of_line())
-                        iscomment = line.strip().startswith("--")
-                        if not iscomment:
-                            break
-                        else:
-                            lastvalid = doccursor
-                    if dir == -1:
-                        codestart = lastvalid
-                    else:
-                        codeend = lastvalid
-                return codestart, codeend
-        else:
+        if cursor <= min:
             return None, None
 
-    def get_buffertext(self, e, beginning, end):
+        codestart = cursor.block_start() # gives a cursor
+        codeend = cursor.block_end()
+        return codestart, codeend
+
+    def _widen_withcomments(self, codestart, codeend):
+        """
+        Widens the given bounds to include directly
+        preceeding and succeeding comments
+        """
+
+        min = codestart.buffer().beginning_of_buffer()
+        max = codestart.buffer().end_of_buffer()
+
+        # look for comments lines directly before and after block and widen cursors accordingly
+        for dir in [-1, 1]:
+            if dir == -1:
+                doccursor = codestart
+                boundary = min
+            else:
+                doccursor = codeend
+                boundary = max
+            lastvalid = doccursor
+            while True:
+                if doccursor == boundary:
+                    break
+                doccursor = doccursor.forward_line(dir)
+                line = codestart.buffer().get_chars(doccursor.beginning_of_line(), doccursor.end_of_line())
+                iscomment = line.strip().startswith("--")
+                if not iscomment:
+                    break
+                else:
+                    lastvalid = doccursor
+            # apply the widened bound
+            if dir == -1:
+                codestart = lastvalid
+            else:
+                codeend = lastvalid
+        return codestart, codeend
+
+    def _get_buffertext(self, e, beginning, end):
         """
         Return the contents of a buffer between two locations
         """
@@ -276,43 +291,33 @@ documentation for the standard python library. It is accessed through the
             txt = e.get_chars(end.beginning_of_line(), end.end_of_line())
         return txt
 
-    def compute_subp_range(self, ctx):
-        """Return the source code range of subprogram that we are
-        currently in, and also include directly preceeding and
-        directly following comments
+    def _get_enclosing_entity(self, curloc):
+        """
+        Return the entity that encloses the current cursor
         """
 
-        try:
-            curloc = ctx.location()
-            buf = GPS.EditorBuffer.get(curloc.file(), open=False)
-            if buf is not None:
-                edloc = buf.at(curloc.line(), curloc.column())
-                (start_loc, end_loc) = self.subprogram_bounds(edloc, withcomments=True)
-            else:
-                return None
-        except:
-            return None
+        buf = GPS.EditorBuffer.get(curloc.file(), open=False)
+        if buf is not None:
+            edloc = buf.at(curloc.line(), curloc.column())
+            (start_loc, end_loc) = self._get_enclosing_block(edloc)
+        else:
+            return None, None, None
 
         if not start_loc:
-            return None
-        name = edloc.subprogram_name()
+            return None, None, None
+        name = edloc.subprogram_name() # FIXME: not right.
 
-        # [subprogram_start] returns the beginning of the line of the
+        # [entity_bounds] returns the beginning of the col/line of the
         # definition/declaration. To be able to call GPS.Entity, we need to be
         # closer to the actual subprogram name. We get closer by skipping the
         # keyword that introduces the subprogram (procedure/function/entry etc.)
 
-#        start_loc = start_loc.forward_word(1)
-#        try:
-#            entity = GPS.Entity(name, start_loc.buffer().file(),
-#                                start_loc.line(), start_loc.column())
-#        except:
-#            return None
-
-#        if entity is not None:
-        return (name, start_loc, end_loc) #entity.declaration()
-#        else:
-#            return None
+        id_loc = start_loc
+        id_loc = id_loc.forward_word(1)
+        try:
+            return GPS.Entity(name, id_loc.buffer().file(),id_loc.line(), id_loc.column()), start_loc, end_loc
+        except:
+            return None, None, None
 
     def show_python_library(self):
         """Open a navigator to show the help on the python library"""
