@@ -10,13 +10,10 @@ to source code and vice vesa.
 # No user customization below this line
 ############################################################################
 
-# To be added (from idle environment)
-#   - "indent region", "dedent region", "check module", "run module"
-#   - "class browser" -> project view in GPS
-
 import GPS
 import sys
 import os.path
+import re
 import gps_utils
 from constructs import *
 import text_utils
@@ -38,7 +35,7 @@ MENUITEMS = """
           <Title>Show all requirements</Title>
         </menu>
 </submenu>
-<action name="List Subprogram Requirements">
+<action name="Some Other Action">
     <shell lang="python">print 'a'</shell>
 </action>
 """
@@ -96,39 +93,76 @@ documentation for the standard python library. It is accessed through the
             callback=self.mark_unjustified_code,
             name='Mark Unjustified Code')
 
+        # declare local function as action (menu, shortcut, etc.)
+        gps_utils.make_interactive(
+            callback=self.list_subp_requirements,
+            name='List Subprogram Requirements')
+
         # context menu in editor
         gps_utils.make_interactive(
             callback=self.reload_file,
             name='MBe reload requirements',
             contextual='Requirements/Reload')
 
-        # by this we allow the user to use a keybinding
-        gps_utils.make_interactive(
-            callback=self.indent_on_new_line,
-            name="Requirements Auto Indentation")
-
         GPS.Hook("project_view_changed").add(self._project_recomputed)
         GPS.Hook("before_exit_action_hook").add(self._before_exit)
 
     def mark_unjustified_code(self):
-        print "mark_unjustified_code"
+        print "Mark Unjustified Code"
 
-    def indent_on_new_line(self):
+    def extract_comments(self, sourcecode, linestart):
         """
-        This action parse the code (if it's python) and move cursor to
-        the desired indentation level.
+        returns only the comments of ada source code.
+        list of dict ("text", "line")
         """
+
+        comment = []
+        l = linestart
+        for line in sourcecode.splitlines():
+            pos = line.find("--")
+            if pos >=0:
+                comment.append({"text" : line[pos+2:], "line" : l, "col" : pos + 2})
+            l = l + 1
+        return comment
+
+    def extract_requirements(self, comment):
+        """
+        parse comments and return the referenced requirements
+        """
+        reqs = {}
+
+        pattern = re.compile("@req (\S+)")
+        for c in comment:
+            results = re.finditer(pattern, c["text"])
+            for match in results:
+                colstart = match.start(0) + c["col"] + 1
+                reqname = match.group(1)
+                if not reqname in reqs:
+                    reqs[match.group(1)] = [];
+                reqs[match.group(1)].append({"line" : c["line"], "col" : colstart});
+
+        return reqs
+
+    def list_subp_requirements(self):
+        print ""
+        #print "List Subprogram Requirements"
+        (name, locstart, locend) = self.compute_subp_range(GPS.current_context())
+        if locstart is None or locend is None:
+            print "Error getting subprogram range"
+            return
+
+        #print "subprogram=" + name + " in range " + str(locstart) + ".." + str(locend)
+        # now extract all comments from range
         editor = GPS.EditorBuffer.get()
-        start = editor.selection_start()
-        end = editor.selection_end()
-
-        # if a block is selected, delete the block
-        if start.line() != end.line() or start.column() != end.column():
-            editor.delete(start, end)
-
-        # place the cursor at the head of a new line
-        editor.insert(start, "\n")
-
+        sourcecode = self.get_buffertext(editor,locstart,locend)
+        comments = self.extract_comments(sourcecode,locstart.line())
+        reqs = self.extract_requirements(comments)
+        if reqs:
+            print "Requirements in '" + name + "':"
+            for k,v in reqs.iteritems():
+                print " - " + k + ": " + str(v)
+        else:
+            print "No requirements referenced in '" + name + "'"
 
     def reload_file(self):
         """
@@ -183,6 +217,80 @@ documentation for the standard python library. It is accessed through the
             GPS.Project.add_predefined_paths(sources=os.pathsep.join(sys.path))
         except:
             pass
+
+    def subprogram_bounds(self,cursor):
+        """
+        Return the first and last line of the current subprogram, and (0,0) if
+        the current subprogram could not be determined.
+        """
+
+        blocks = {"CAT_PROCEDURE": 1, "CAT_FUNCTION": 1, "CAT_ENTRY": 1,
+                    "CAT_PROTECTED": 1, "CAT_TASK": 1, "CAT_PACKAGE": 1}
+
+        if cursor.block_type() == "CAT_UNKNOWN":
+            return None, None
+
+        min = cursor.buffer().beginning_of_buffer()
+        while not (cursor.block_type() in blocks) and cursor > min:
+            cursor = cursor.block_start() - 1
+
+        if cursor > min:
+            return cursor.block_start(), cursor.block_end()
+        else:
+            return None, None
+
+    def get_buffertext(self, e, beginning, end):
+        """
+        Return the contents of a buffer between two locations
+        """
+        txt=""
+        if beginning.line() != end.line():
+            for i in range(beginning.line(), end.line()+1):
+                if i == beginning.line:
+                    col0 = beginning.col()
+                else:
+                    col0 = 1
+                txt = txt + e.get_chars(e.at(i, col0), e.at(i, 1).end_of_line())
+        else:
+            txt = e.get_chars(end.beginning_of_line(), end.end_of_line())
+        return txt
+
+    def compute_subp_range(self, ctx):
+        """Return the location of the declaration of the subprogram that we are
+        currently in
+        """
+
+        try:
+            curloc = ctx.location()
+            buf = GPS.EditorBuffer.get(curloc.file(), open=False)
+            if buf is not None:
+                edloc = buf.at(curloc.line(), curloc.column())
+                (start_loc, end_loc) = self.subprogram_bounds(edloc)
+            else:
+                return None
+        except:
+            return None
+
+        if not start_loc:
+            return None
+        name = edloc.subprogram_name()
+
+        # [subprogram_start] returns the beginning of the line of the
+        # definition/declaration. To be able to call GPS.Entity, we need to be
+        # closer to the actual subprogram name. We get closer by skipping the
+        # keyword that introduces the subprogram (procedure/function/entry etc.)
+
+        start_loc = start_loc.forward_word(1)
+#        try:
+#            entity = GPS.Entity(name, start_loc.buffer().file(),
+#                                start_loc.line(), start_loc.column())
+#        except:
+#            return None
+
+#        if entity is not None:
+        return (name, start_loc, end_loc) #entity.declaration()
+#        else:
+#            return None
 
     def show_python_library(self):
         """Open a navigator to show the help on the python library"""
