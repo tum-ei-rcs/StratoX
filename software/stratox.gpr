@@ -129,6 +129,11 @@ project StratoX is
       for Default_Switches ("ada") use ("-o", "check/gnatcheck.out", "-rules", "-from=coding_standard.rules");
    end Check;
 
+   package Requirements is
+      for ReqFile use "requirements.db";
+   end Requirements;
+
+
    -- pretty printer
    package Pretty_Printer renames Style.Pretty_Printer;
 

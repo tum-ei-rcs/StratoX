@@ -27,6 +27,7 @@ is
 
    procedure Read_Byte (addr : Address; byte : out HIL.Byte);
    -- read a single byte
+   -- @req Subsystem/InvalidRequirement
 
    procedure Write_Byte (addr : Address; byte : HIL.Byte);
 --     with Pre => Is_Init;
