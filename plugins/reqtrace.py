@@ -46,6 +46,10 @@ if tools_folder not in sys.path:
     sys.path.insert(0, tools_folder)
 import reqtools
 
+LIGHTGREEN="#D5F5E3"
+LIGHTRED="#F9E79F"
+LIGHTORANGE="#FFBF00"
+
 MENUITEMS = """
 <submenu before="Window">
       <Title>Requirements</Title>
@@ -184,7 +188,7 @@ documentation for the standard python library. It is accessed through the
         #except:
         #    pass
         GPS.Locations.remove_category("Unjustified_Code");
-        GPS.Editor.register_highlighting("Unjustified_Code", "#F9E79F")
+        GPS.Editor.register_highlighting("Unjustified_Code", LIGHTRED)
 
         # iterate over all subprograms (requires cross-referencing to work)
         for ent,loc in file.references(kind='body'):
@@ -239,13 +243,32 @@ documentation for the standard python library. It is accessed through the
                 colstart = match.start(0) + c["col"] + 1
                 reqname = match.group(1)
                 if not reqname in reqs:
-                    reqs[match.group(1)] = [];
-                reqs[match.group(1)].append({"file" : c["file"], "line" : c["line"], "col" : colstart});
+                    reqs[match.group(1)] = {"locations" : []};
+                reqs[match.group(1)]["locations"].append({"file" : c["file"], "line" : c["line"], "col" : colstart});
 
         # TODO: postprocessing. ACtually check whether requirements exist in database, otherwise mark them as invalid
 
         return reqs
 
+    def _check_requirements(self, codereqs):
+        """
+        Check every entry in reqs for presence in the database. Add an extra dict entry "in_database" with the result
+        """
+        with reqtools.Database() as db:
+            db.connect(self.reqfile);
+            result = db.get_requirements();
+            if not result:
+                for k,v in codereqs.iteritems():
+                    codereqs[k]["in_database"] = False
+            else:
+                dbreqs = set(k.lower() for k in result)
+                for k,v in codereqs.iteritems():
+                    if k.lower() in dbreqs:
+                        codereqs[k]["in_database"] = True
+                    else:
+                        codereqs[k]["in_database"] = False
+        return codereqs
+    
     def _get_subp_requirements(self, editor, fileloc):
         """
         from given location find subprogram entity, and then check both its body and spec for requirements
@@ -276,24 +299,26 @@ documentation for the standard python library. It is accessed through the
 
         reqs_other = None
         if is_body and locspec:
+            #print "is body => spec in " + str(locspec.file())
             editor = GPS.EditorBuffer.get(locspec.file())
             (entity, loccodestart, loccodeend) = self._get_enclosing_entity(locspec)
             reqs_other = self._get_requirements_in_range (editor, loccodestart, loccodeend)
         if not is_body and locbody:
+            #print "is spec => body in " + str(locbody.file())
             editor = GPS.EditorBuffer.get(locbody.file())
             (entity, loccodestart, loccodeend) = self._get_enclosing_entity(locbody)
             reqs_other = self._get_requirements_in_range (editor, loccodestart, loccodeend)
 
-        # merge dicts
+        # merge dicts (FIXME: double entries)        
         if reqs_other:
             for k,v in reqs_other.iteritems():
                 if not k in reqs:
                     reqs[k] = v
                 else:
-                    reqs[k].append(v)
+                    reqs[k]["locations"].extend(v["locations"])
 
         # all done
-        return name, reqs
+        return name, self._check_requirements(reqs)
 
     def _get_requirements_in_range(self, editor, locstart0, locend0):
         (locstart, locend) = self._widen_withcomments(locstart0, locend0)
@@ -314,26 +339,36 @@ documentation for the standard python library. It is accessed through the
         if not reqs:
             return
 
-        GPS.Editor.register_highlighting("My_Category", "#D5F5E3")
-        for req,refs in reqs.iteritems():
-            for ref in refs: # each requirement can have multiple references
-                print "file=" + ref["file"]
-                GPS.Locations.add(category="Requirements",
+        GPS.Editor.register_highlighting("Valid Requirements", LIGHTGREEN)
+        GPS.Editor.register_highlighting("Invalid Requirements", LIGHTORANGE)
+        for req,values in reqs.iteritems():
+            for ref in values["locations"]: # each requirement can have multiple references
+                if values["in_database"]:
+                    category = "Valid Requirements"
+                    txt="References " + req;
+                else:
+                    category = "Invalid Requirements"
+                    txt="Nonexisting requirement " + req;
+                GPS.Locations.add(category=category,
                                   file=GPS.File(ref["file"]),
                                   line=ref["line"],
                                   column=ref["col"],
-                                  message=req,
-                                  highlight="My_Category")
+                                  message=txt,
+                                  highlight=category)
 
 
     def list_all_requirements(self):
         print ""
         print "List all requirements:"
         with reqtools.Database() as db:
-            if not db.exists(self.reqfile):
-                db.create(self.reqfile)
             db.connect(self.reqfile);
-            db.get_requirements();
+            reqs = db.get_requirements();
+            if not reqs:
+                print " No requirements found"
+            else:
+                for k,v in reqs.iteritems():
+                    print " - " + k + ": " + str(v)
+
 
     def list_subp_requirements(self):
         print ""

@@ -30,10 +30,10 @@ class Database:
     def __init__(self):
         pass
 
-    def exists(self, filename):
+    def _exists(self, filename):
         return os.path.isfile(filename)
     
-    def create(self, filename="requirements.db"):
+    def _create(self, filename="requirements.db"):
         # 1. create file only if not existing
         flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
         try:
@@ -46,6 +46,7 @@ class Database:
         # No exception, so the file must have been created successfully.
         
         # 2. now create table
+        self._conn = sqlite3.connect(filename)
         cmd = """
         CREATE TABLE requirements (
                id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,27 +55,62 @@ class Database:
                verification TEXT,
                date_added DATETIME);
         """
-        c = conn.cursor()
+        c = self._conn.cursor()
         try:
             c.execute(cmd)
         except:
             print "ERROR creating database"
         else:
-            conn.commit()
+            print "Created new DB"
+            self.disconnect()
     
     def connect(self,filename):
-        print "DB connect (" + filename + ")"
+        if not self._exists(filename):
+            self._create(filename)
+        
         self._conn = sqlite3.connect(filename)
         if not self._conn:
             print "ERROR opening DB " + filename
 
     def disconnect(self):
-        print "DB close"
-        self._conn.close()
+        try:
+            self._conn.commit()
+            self._conn.close()
+        except:
+            pass
     
-    def get_requirements(filter=None):
-        print "get req..."
-        # TODO: dump all
+    def get_requirements(self,filter=None):
+        """
+        return a dictionary with all requirements matching the filter.
+
+        @param filter dict of regular expressions for the database fields TODO
+
+        @return dict { reqname1 => { database_field1 : database_value1, databasefield2 : ...}, ...}
+        """        
+        if not self._conn:
+            print "ERROR: not connected to DB"
+            return {}
+
+        c = self._conn.cursor()
+        query = "SELECT * FROM requirements"
+        if filter:
+            fstring = [k + "=:" + k for k,v in filter.iteritems()]
+            query = query + " WHERE " + fstring.join(" and ")
+        query = query + ";"
+            
+        print "(Req DB query=" + query + ")"
+        if filter:
+            c.execute(query,fstring)
+        else:
+            c.execute(query)            
+        headers = [t[0] for t in c.description]        
+        results = c.fetchall()
+        namepos = headers.index("name")
+        if not namepos:
+            print "DB error: field 'name' is missing"
+            return {}
+        retdict = { row[namepos] : { headers[idx] : value for idx,value in enumerate(row)} for row in results }
+        return retdict
 
     def __enter__(self):
         """CTOR"""
