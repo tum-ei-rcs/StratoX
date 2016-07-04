@@ -33,7 +33,13 @@ is
      (Device  : in     Device_ID_Type;
       Data_TX : in     Data_Type;
       Data_RX :    out Data_Type);
-   --  combining write and read, for those devices where CS must stay
+   --  combining sequential write and read, for those devices where CS must stay
    --  asserted between command and response.
+   
+   
+   procedure transceive (Device : in Device_ID_Type; 
+                         Data_TX : in Data_Type; 
+                         Data_RX : out Data_Type);
+   -- simultanously read and write
 
 end HIL.SPI;

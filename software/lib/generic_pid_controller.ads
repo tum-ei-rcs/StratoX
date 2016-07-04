@@ -25,14 +25,14 @@ package Generic_PID_Controller
    with SPARK_Mode
 is
 
-    type Pid_Object is private;
-    subtype PID_Integral_Type is PID_Data_Type range PID_INTEGRAL_LIMIT_LOW.. PID_INTEGRAL_LIMIT_HIGH;
+   type Pid_Object is private;
+   subtype PID_Integral_Type is PID_Data_Type range PID_INTEGRAL_LIMIT_LOW.. PID_INTEGRAL_LIMIT_HIGH;
        
 
    procedure test(a : PID_Data_Type; b : in out PID_Data_Type);
 
    -- init
-   procedure initialize(pid : out Pid_Object; 
+   procedure initialize(Pid : out Pid_Object; 
                         Kp  : PID_Coefficient_Type; 
                         Ki : PID_Coefficient_Type; 
                         Kd : PID_Coefficient_Type;
@@ -43,7 +43,7 @@ is
 
    procedure reset (pid : out Pid_Object);
 
-   function step(pid : in out Pid_Object; error : PID_Data_Type; dt : Time_Type) return PID_Output_Type;
+   function step(Pid : in out Pid_Object; error : PID_Data_Type; dt : Time_Type) return PID_Output_Type;
 
 private
 

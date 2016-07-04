@@ -143,7 +143,7 @@ is
    is
    begin
       selectDevice (Device);
-      HIL.SPI.transfer
+      HIL.SPI.transceive
         (HIL.SPI.Barometer,
          HIL.SPI.Data_Type (data_tx),
          HIL.SPI.Data_Type (data_rx));
@@ -339,6 +339,7 @@ is
                   data (1) := HIL.Byte (CMD_D1_CONV_4096);
             end case;
             G_Baro_State.Conv_Info_Pres.OSR := OSR;
+            G_Baro_State.Conv_Info_Pres.Start := Units.To_Time( Ada.Real_Time.Clock );
          when D2 =>
             case (OSR) is
                when OSR_256 =>
@@ -353,6 +354,7 @@ is
                   data (1) := HIL.Byte (CMD_D2_CONV_4096);
             end case;
             G_Baro_State.Conv_Info_Temp.OSR := OSR;
+            G_Baro_State.Conv_Info_Temp.Start := Units.To_Time( Ada.Real_Time.Clock );
       end case;
       writeToDevice (Baro, data);
 
@@ -368,9 +370,9 @@ is
    begin
       case(state.FSM_State) is
          when TEMPERATURE_CONVERSION =>
-            result := (state.Conv_Info_Temp.Start + conv_time(state.Conv_Info_Temp.OSR) > Units.To_Time( now) );
+            result := (state.Conv_Info_Temp.Start + conv_time(state.Conv_Info_Temp.OSR) < Units.To_Time( now) );
          when PRESSURE_CONVERSION =>
-            result := (state.Conv_Info_Pres.Start + conv_time(state.Conv_Info_Pres.OSR) > Units.To_Time( now) );
+            result := (state.Conv_Info_Pres.Start + conv_time(state.Conv_Info_Pres.OSR) < Units.To_Time( now) );
          when others =>
             result := False;
       end case;

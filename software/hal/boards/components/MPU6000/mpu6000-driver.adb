@@ -490,7 +490,7 @@ is
       Data_TX : constant Data_Type := (Reg_Addr + READ_FLAG) & Data;
       Data_RX : Data_Type(1 .. Data'Length + 1) := (others => Byte(0)); 
    begin
-      HIL.SPI.transfer(HIL.SPI.MPU6000, Data_TX, Data_RX );  -- send the amount of bytes that should be read
+      HIL.SPI.transceive(HIL.SPI.MPU6000, Data_TX, Data_RX );  -- send the amount of bytes that should be read
       Data := Data_RX(2 .. Data_RX'Length);
    end Read_Register;
 
@@ -505,7 +505,7 @@ is
       Data_RX : Data_Type := (1 .. 2 => Byte( 0 ) );
    begin
       --HIL.SPI.write(HIL.SPI.MPU6000, (1 => Reg_Addr) );
-      HIL.SPI.transfer(HIL.SPI.MPU6000, (1 => (Reg_Addr + READ_FLAG), 2 => Data), Data_RX );
+      HIL.SPI.transceive(HIL.SPI.MPU6000, (1 => (Reg_Addr + READ_FLAG), 2 => Data), Data_RX );
       Data := Data_RX(2);
    end Read_Byte_At_Register;
 

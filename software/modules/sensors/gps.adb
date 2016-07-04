@@ -1,9 +1,4 @@
-
-
-
-with Generic_Sensor;
 with ublox8.Driver; use ublox8;
-
 
 package body GPS
 is

@@ -2,7 +2,7 @@
 package body Generic_PID_Controller is
 
 
-   procedure initialize( pid : out Pid_Object; 
+   procedure initialize( Pid : out Pid_Object; 
                          Kp  : PID_Coefficient_Type; 
                          Ki  : PID_Coefficient_Type; 
                          Kd  : PID_Coefficient_Type;
@@ -32,7 +32,7 @@ package body Generic_PID_Controller is
 
 
 
-   procedure reset (pid : out Pid_Object) is
+   procedure reset (Pid : out Pid_Object) is
    begin
       Pid.Previous_Error := PID_Data_Type( 0.0 );
       Pid.Integral := PID_Data_Type( 0.0 );
@@ -40,13 +40,12 @@ package body Generic_PID_Controller is
 
 
    -- step
-   function step ( pid   : in out Pid_Object; 
+   function step ( Pid   : in out Pid_Object; 
                    error : PID_Data_Type; 
                    dt    : Time_Type )
                   return PID_Output_Type 
    is
       derivate     : Unit_Type := 0.0;
-      proportional : PID_Data_Type := PID_Data_Type( 0.0 );
       output       : PID_Output_Type := PID_Output_Type( 0.0 );
       tmp_integral : Unit_Type := 0.0;
    begin

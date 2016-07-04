@@ -30,7 +30,7 @@ is
 
    function Cos (X : Angle_Type) return Unit_Type is
    begin
-        return Unit_Type( Elementary_Functions.Cos( Float( X ) ) );
+      return Unit_Type( Elementary_Functions.Cos( Float( X ) ) );
    end Cos;
 
 

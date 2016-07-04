@@ -17,7 +17,7 @@ package body CPU is
 
    -- configures hardware registers
    procedure initialize is
-      startup_time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      startup_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
 
       --  Configure GPIO

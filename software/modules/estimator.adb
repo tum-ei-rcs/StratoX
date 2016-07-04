@@ -35,12 +35,10 @@ package body Estimator is
 
    -- fetch fresh measurement data
    procedure update is
-      Sample : IMU.IMU_Sensor.Sample_Type;
       Acc : Linear_Acceleration_Vector;
    begin
       -- Estimate Object Orientation
       IMU.Sensor.read_Measurement;
-      Sample := IMU.Sensor.get_Sample;
       Acc := IMU.Sensor.get_Linear_Acceleration;
 
       Logger.log(Logger.TRACE,
