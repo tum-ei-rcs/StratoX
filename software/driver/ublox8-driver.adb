@@ -43,9 +43,9 @@ is
 
    procedure waitForSync(isReceived : out Boolean) is
       sync : Byte_Array (1 .. 2) := (others => Byte( 0 ));
-      start : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      start : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      timeout : Ada.Real_Time.Time_Span := Ada.Real_Time.Microseconds( 100 );
+      timeout : constant Ada.Real_Time.Time_Span := Ada.Real_Time.Microseconds( 100 );
    begin
       while sync(1) /= UBX_SYNC1 and now < start + timeout loop
          HIL.UART.read(UBLOX_M8N, sync(1 .. 1));
@@ -75,8 +75,8 @@ is
    end waitForAck;
 
    procedure writeToDevice(header: UBX_Header_Array; data : Data_Type) is      
-      cks : Fletcher16_Byte.Checksum_Type := Fletcher16_Byte.Checksum( header(3 .. 6) & data );
-      check : UBX_Checksum_Array := (1 => cks.ck_a, 2 => cks.ck_b);
+      cks : constant Fletcher16_Byte.Checksum_Type := Fletcher16_Byte.Checksum( header(3 .. 6) & data );
+      check : constant UBX_Checksum_Array := (1 => cks.ck_a, 2 => cks.ck_b);
       isReceived : Boolean := False;
       retries : Natural := 3;
    begin
@@ -98,7 +98,6 @@ is
       message : Byte_Array (0 .. 91) := (others => Byte( 0 )); 
       check : Byte_Array (1 .. 2) := (others => Byte( 0 ));
       cks : Fletcher16_Byte.Checksum_Type := (others => Byte( 0 ));
-      isReceived : Boolean := False;
       type buffer_pointer_Type is mod HIL.UART.BUFFER_MAX;
       pointer : buffer_pointer_Type := 0;
    begin
@@ -146,7 +145,7 @@ is
 
    procedure init is
       
-      msg_cfg_prt_head : UBX_Header_Array := (1 => UBX_SYNC1,
+      msg_cfg_prt_head : constant UBX_Header_Array := (1 => UBX_SYNC1,
                                               2 => UBX_SYNC2,
                                               3 => UBX_CLASS_CFG,
                                               4 => UBX_ID_CFG_PRT,
@@ -175,11 +174,11 @@ is
                                           1 => UBX_ID_NAV_PVT,
                                           2 => Byte( 10 ) );  -- rate in Hz?
                                           
-      current_time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
       
       procedure delay_ms( ms : Natural) is
-         current_time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+         current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       begin
          delay until current_time + Ada.Real_Time.Milliseconds( ms );
       end delay_ms;

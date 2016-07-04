@@ -187,4 +187,29 @@ is
    end transfer;
 
 
+   procedure transceive (Device : in Device_ID_Type; Data_TX : in Data_Type; Data_RX : out Data_Type) is
+   begin
+      select_Chip(Device);
+      case (Device) is
+         when Barometer | MPU6000 => 
+            STM32.SPI.Transmit_Receive(STM32.Device.SPI_1, 
+                                       STM32.SPI.Byte_Buffer( Data_TX ),
+                                       STM32.SPI.Byte_Buffer( Data_RX ),
+                                       Positive( Data_TX'Length ) );    
+         when FRAM =>
+            STM32.SPI.Transmit_Receive(STM32.Device.SPI_2, 
+                                       STM32.SPI.Byte_Buffer( Data_TX ),
+                                       STM32.SPI.Byte_Buffer( Data_RX ),
+                                       Positive( Data_TX'Length ) );                        
+         when Extern => 
+            STM32.SPI.Transmit_Receive(STM32.Device.SPI_4, 
+                                       STM32.SPI.Byte_Buffer( Data_TX ),
+                                       STM32.SPI.Byte_Buffer( Data_RX ),
+                                       Positive( Data_TX'Length ) ); 
+         when Magneto =>
+            null; -- TODO
+      end case;
+      deselect_Chip(Device);
+   end transceive;
+
 end HIL.SPI;

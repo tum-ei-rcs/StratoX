@@ -12,7 +12,6 @@
 
 with Units.Navigation; use Units.Navigation;
 with HIL.UART;
-with STM32.USARTs;
 
 package ublox8.Driver with
 SPARK_Mode,

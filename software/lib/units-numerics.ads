@@ -12,7 +12,7 @@ package Units.Numerics with SPARK_Mode is
 --   function Log (X : Unit_Type) return Float;
 
 --  
-    function Sin (X : Angle_Type) return Unit_Type;
+   function Sin (X : Angle_Type) return Unit_Type;
 --     
 --    function Sin (X, Cycle : Angle_Type) return Unit_Type;
 --        
@@ -20,8 +20,7 @@ package Units.Numerics with SPARK_Mode is
    -- @req cosine-x
    function Cos (X : Angle_Type) return Unit_Type;
    -- @req cosine-x2
-   
-   
+
 --        
 --     function Cos (X, Cycle : Angle_Type) return Unit_Type;
 --        

@@ -3,12 +3,9 @@
 -- todo: better unit name
 
 with Ada.Real_Time;                     use Ada.Real_Time;
-with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
-with Ada.Numerics.Real_Arrays;          use Ada.Numerics.Real_Arrays;
 
 with CPU;
 with Units;            use Units;
-with Units.Vectors;    use Units.Vectors;
 with Units.Navigation; use Units.Navigation;
 
 with MPU6000.Driver;
@@ -25,7 +22,6 @@ with Controller;
 with LED_Manager;
 
 with Interfaces; use Interfaces;
-with Crash;
 
 package body Main is
 
@@ -46,7 +42,6 @@ package body Main is
 --      end record;
 
    procedure initialize is
-      result : Boolean := False;
 
       --        Test             : Float       := Sin (100.0);
       --        Foo              : Real_Vector := (10.0, 10.0, 10.0);
@@ -112,9 +107,8 @@ package body Main is
    end perform_Self_Test;
 
    procedure run_Loop is
-      data    : HIL.SPI.Data_Type (1 .. 3)  := (others => 0);
       data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);
-      msg     : String                      := "Main";
+      msg     : constant String                      := "Main";
 
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
@@ -207,10 +201,6 @@ package body Main is
          Controller.set_Current_Orientation (body_info.orientation);
          Controller.runOneCycle;
 
-         -- SPI Test
-         --HIL.SPI.select_Chip(HIL.SPI.Extern);
-         --HIL.SPI.transfer(HIL.SPI.Extern, (166, 0, 0), data );
-         --HIL.SPI.deselect_Chip(HIL.SPI.Extern);
 
          -- profile
          if loop_duration_max < (Clock - loop_time_start) then

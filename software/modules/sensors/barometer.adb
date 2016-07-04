@@ -1,4 +1,3 @@
-with Generic_Sensor;
 with MS5611.Driver; use MS5611;
 
 with Units.Numerics; use Units.Numerics;

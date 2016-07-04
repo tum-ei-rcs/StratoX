@@ -127,9 +127,9 @@ package body Controller is
 
 
    procedure control_Pitch is
-      error : Pitch_Type := ( G_Object_Orientation.Pitch - G_Target_Pitch );
-      now   : Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt : Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
+      error : constant Pitch_Type := ( G_Object_Orientation.Pitch - G_Target_Pitch );
+      now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
       G_Last_Call_Time := now;
       G_Plane_Control.Elevator := Pitch_PID_Controller.step(PID_Pitch, error, dt);
@@ -146,12 +146,14 @@ package body Controller is
    procedure control_Roll is
    begin
       G_Target_Orientation.Roll := 0.0 * Degree;
+
+
    end control_Roll;
 
 
 
    function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type ) return Elevon_Angle_Array is
-      scale : Unit_Type := (Elevator_Angle_Type'Last + Aileron_Angle_Type'Last) / Elevon_Angle_Type'Last;
+      scale : constant Unit_Type := (Elevator_Angle_Type'Last + Aileron_Angle_Type'Last) / Elevon_Angle_Type'Last;
    begin
       return (LEFT => (elevator + aileron) / scale,
               RIGHT => (elevator - aileron) / scale);
@@ -178,7 +180,7 @@ package body Controller is
       result : Heading_Type := NORTH;
    begin
       if source_location.Longitude /= target_location.Longitude or source_location.Latitude /= target_location.Latitude then
-        result := Arctan( Sin( delta_Angle( source_location.Longitude,
+         result := Arctan( Sin( delta_Angle( source_location.Longitude,
                                            target_location.Longitude ) ) *
                          Cos( target_location.Latitude ),
                          Cos( source_location.Latitude ) * Sin( target_location.Latitude ) -

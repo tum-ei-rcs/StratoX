@@ -1,3 +1,5 @@
+with Units.Numerics; use Units.Numerics;
+
 package body Units.Navigation is
 
    function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type is
