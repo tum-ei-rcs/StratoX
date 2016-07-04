@@ -49,6 +49,7 @@ import reqtools
 LIGHTGREEN="#D5F5E3"
 LIGHTRED="#F9E79F"
 LIGHTORANGE="#FFBF00"
+TARGET_SLOCPERLLR=20
 
 MENUITEMS = """
 <submenu before="Window">
@@ -165,13 +166,61 @@ documentation for the standard python library. It is accessed through the
     def check_density(self):
         """
         Count the number of SLOC per requirements and warn if density is
-        too low. We are targeting at most 20SLOC/requirement
+        too low. We are targeting at most 20SLOC/requirement. Note that this
+        function only counts the number of annotations, not checking whether
+        they actually exist in the database.
         """
-        print "not implemented, yet"
+        print ""
+        # FIXME: we must make sure that gnatinspect.db is up-to-date. How? Rebuilding helps.
 
+        # get current cursor
+        ctx = GPS.current_context()
+        curloc = ctx.location()
+        file = curloc.file()
+        editor = GPS.EditorBuffer.get(file)
+
+        GPS.Locations.remove_category("Low LLR density");
+        GPS.Editor.register_highlighting("Low LLR density", LIGHTORANGE)
+        GPS.Locations.remove_category("Good LLR density");
+        GPS.Editor.register_highlighting("Good LLR density", LIGHTGREEN)
+
+        
+        # iterate over all subprograms (requires cross-referencing to work)
+        for ent,loc in file.references(kind='body'):
+            if ent.is_subprogram():
+                #print "entity: " + ent.name() + " at " + str(loc)
+                # extract requirements for the entity
+                if editor is not None:
+                    edloc = editor.at(loc.line(), loc.column())
+                    (startloc, endloc) = self._get_enclosing_block(edloc)
+                    (name,reqs) = self._get_subp_requirements (editor, loc, unchecked=True) #<-- different to mark_unjustified_code
+                    # name should equal ent.name
+                    if (name.strip() != ent.name().strip()):
+                        print "Warning: GPS Entity name '" + ent.name() + "' differs from found entity '" + name + "'"
+                    rcount = len(reqs)
+                    sloc = endloc.line() - startloc.line() + 1
+                    if rcount > 0:                        
+                        slocperllr = sloc/rcount
+                    else:
+                        slocperllr = float("inf")
+                    if slocperllr > TARGET_SLOCPERLLR:
+                        category = "Low LLR density"
+                    else:
+                        category = "Good LLR density"
+                    print "Entity '" + name + "' has not enough requirements per SLOC (" + str(slocperllr) + ")"
+                    GPS.Locations.add(category=category,
+                                  file=file,
+                                  line=loc.line(),
+                                  column=loc.column(),
+                                  message="SLOC per LLR is " + str(slocperllr) + " (" + str(rcount) + " requirements for " + str(sloc) + " SLOC)",
+                                  highlight=category)
+
+        
     def mark_unjustified_code(self):
         """
-        iterate over all files and subprograms and warn if a subprogram has no requirements
+        Iterate over all files and subprograms and warn if a subprogram has no requirements.
+        Note that requirements are checked for their exsistence against a database. Only
+        existing requirements are considered.
         """
         print ""
 
@@ -193,12 +242,14 @@ documentation for the standard python library. It is accessed through the
         # iterate over all subprograms (requires cross-referencing to work)
         for ent,loc in file.references(kind='body'):
             if ent.is_subprogram():
-                print "entity: " + ent.name() + " at " + str(loc)
+                #print "entity: " + ent.name() + " at " + str(loc)
                 # extract requirements for the entity
                 if editor is not None:
                     edloc = editor.at(loc.line(), loc.column())
                     #(startloc, endloc) = self._get_enclosing_block(edloc)
-                    (name,reqs) = self._get_subp_requirements (editor, loc)
+                    (name,codereqs) = self._get_subp_requirements (editor, loc)
+                    # filter out those not in the database
+                    reqs={ k : v for k,v in codereqs.iteritems() if v["in_database"] }                    
                     # name should equal ent.name
                     if (name.strip() != ent.name().strip()):
                         print "Warning: GPS Entity name '" + ent.name() + "' differs from found entity '" + name + "'"
@@ -212,7 +263,7 @@ documentation for the standard python library. It is accessed through the
                                   highlight="Unjustified_Code")
                     else:
                         rnames = [k for k,v in reqs.iteritems()]
-                        print "Entity '" + name + "' has " + str(len(reqs)) + " requirements: " + str(rnames)
+                        print "Entity '" + name + "' has " + str(len(reqs)) + " valid requirements: " + str(rnames)
 
 
     def _extract_comments(self, sourcecode, linestart, filename):
@@ -269,9 +320,10 @@ documentation for the standard python library. It is accessed through the
                         codereqs[k]["in_database"] = False
         return codereqs
     
-    def _get_subp_requirements(self, editor, fileloc):
+    def _get_subp_requirements(self, editor, fileloc, unchecked=False):
         """
         from given location find subprogram entity, and then check both its body and spec for requirements
+        @param unchecked: if True, then the database is not queried for existence/validity of code refs. Faster w/o check.
         return: name of subp, dict of requirements
         """
         # 1. get entity belonging to cursor
@@ -318,7 +370,9 @@ documentation for the standard python library. It is accessed through the
                     reqs[k]["locations"].extend(v["locations"])
 
         # all done
-        return name, self._check_requirements(reqs)
+        if not unchecked:
+            reqs = self._check_requirements(reqs)
+        return name, reqs
 
     def _get_requirements_in_range(self, editor, locstart0, locend0):
         (locstart, locend) = self._widen_withcomments(locstart0, locend0)
@@ -358,6 +412,9 @@ documentation for the standard python library. It is accessed through the
 
 
     def list_all_requirements(self):
+        """
+        Dump all requirements from database in Messages Window.
+        """
         print ""
         print "List all requirements:"
         with reqtools.Database() as db:
@@ -371,6 +428,11 @@ documentation for the standard python library. It is accessed through the
 
 
     def list_subp_requirements(self):
+        """
+        List all requirements references by the subprogram at cursor position.
+        Note that the database is checked for existence of requirements.
+        Annotations referring to non-existing requirements are marked as invalid.
+        """
         print ""
 
         # get current cursor

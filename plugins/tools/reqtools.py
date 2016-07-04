@@ -98,7 +98,7 @@ class Database:
             query = query + " WHERE " + fstring.join(" and ")
         query = query + ";"
             
-        print "(Req DB query=" + query + ")"
+        #print "(Req DB query=" + query + ")"
         if filter:
             c.execute(query,fstring)
         else:
