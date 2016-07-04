@@ -18,7 +18,9 @@ This will link the requirements "foo-fun/1", "bar", and "blabla" from the
 database with the procedure foo. For evaluation of coverage and tracing,
 use the menu item "requirements".
 
-TODO: read SPARK annotations and export them as verification means.
+TODO: 
+ - somehow allow completion in comment lines
+ - read SPARK annotations and export them as verification means.
 
 (C) 2016 by Martin Becker <becker@rcs.ei.tum.de>
 
@@ -27,17 +29,19 @@ TODO: read SPARK annotations and export them as verification means.
 __author__ = "Martin Becker"
 __copyright__ = "Copyright 2016, Martin Becker"
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __email__ = "becker@rcs.ei.tum.de"
 __status__ = "Testing"
 
 
-import GPS
 import os.path
 import re
+import GPS
 import gps_utils
-#from constructs import *
 import text_utils
+from modules import Module
+from completion import CompletionResolver, CompletionProposal
+import completion
 
 # find path of this script and add its subfolder "tools" to the search path for python packages
 import inspect, os, sys
@@ -49,7 +53,7 @@ import reqtools
 LIGHTGREEN="#D5F5E3"
 LIGHTRED="#F9E79F"
 LIGHTORANGE="#FFBF00"
-TARGET_SLOCPERLLR=20
+DEFAULT_SLOCPERLLR=20
 
 MENUITEMS = """
 <submenu before="Window">
@@ -86,25 +90,71 @@ PROPERTIES="""
       description="The path for the sqlite3 file storing the requirements." >
       <string type="file" default="./requirements.db" />
   </project_attribute>
+ <project_attribute
+      name="SlocPerLLR"
+      package="Requirements"
+      editor_page="Requirements"
+      editor_section="Single"
+      description="The maximum number of lines (source code) per low-level requirement." >
+      <string mininum="1" default="20" />
+  </project_attribute>
 """
+
+COMPLETION_PREFIX="Req."
+
+class Req_Resolver(CompletionResolver):
+    """
+       The Requirements Resolver class that inherits completion.CompletionResolver.
+    """
+
+    reqfile = None
+    
+    def __init__(self):
+        self.__prefix = None
+        pass
+
+    def set_reqfile(self,filename):
+        self.reqfile=filename
+        print "completion: db=" + self.reqfile
+    
+    def get_completions(self, loc):
+        """
+        Overriding method. Only called outside of comments
+        """
+        
+        # FIXME: cache this
+        if not self.reqfile:
+            print "Completion: no database"
+            return
+        with reqtools.Database() as db:
+            db.connect(self.reqfile);
+            reqs = db.get_requirements();
+            if not reqs:
+                return []
+            
+        completionset = [CompletionProposal(
+            name= "req " + k + " (" + props["description"] +")",
+            label= COMPLETION_PREFIX + " " + k,
+            documentation=props["description"])
+            for k,props in reqs.iteritems()]
+        
+        return completionset
+            
+    def get_completion_prefix(self, loc):
+        return [COMPLETION_PREFIX]
 
 class Reqtrace(object):
 
     reqfile = None
+    target_slocperllr = None
+    _resolver = Req_Resolver()
     
     def __init__(self):
         """
         Various initializations done before the gps_started hook
         """
         
-        self.port_pref = GPS.Preference("Plugins/reqtrace/port")
-        self.port_pref.create(
-            "Pydoc port", "integer",
-            """Port that should be used when spawning the pydoc daemon.
-This is a small local server to which your web browser connects to display the
-documentation for the standard python library. It is accessed through the
-/Python menu when editing a python file""",
-            9432)
+        #self.port_pref = GPS.Preference("Plugins/reqtrace/port")
 
         XML = """
         <documentation_file>
@@ -162,10 +212,11 @@ documentation for the standard python library. It is accessed through the
         GPS.Hook("before_exit_action_hook").add(self._before_exit)
         GPS.Hook("project_changed").add(self._project_loaded)
         GPS.Hook("project_saved").add(self._project_loaded)
+        GPS.Completion.register(self._resolver, "ada")        
 
     def check_density(self):
         """
-        Count the number of SLOC per requirements and warn if density is
+        Count the number of SLOC per requirements in current file and warn if density is
         too low. We are targeting at most 20SLOC/requirement. Note that this
         function only counts the number of annotations, not checking whether
         they actually exist in the database.
@@ -174,10 +225,13 @@ documentation for the standard python library. It is accessed through the
         # FIXME: we must make sure that gnatinspect.db is up-to-date. How? Rebuilding helps.
 
         # get current cursor
-        ctx = GPS.current_context()
-        curloc = ctx.location()
-        file = curloc.file()
-        editor = GPS.EditorBuffer.get(file)
+        try:
+            ctx = GPS.current_context()
+            curloc = ctx.location()
+            file = curloc.file()
+            editor = GPS.EditorBuffer.get(file)
+        except:
+            return
 
         GPS.Locations.remove_category("Low LLR density");
         GPS.Editor.register_highlighting("Low LLR density", LIGHTORANGE)
@@ -203,7 +257,7 @@ documentation for the standard python library. It is accessed through the
                         slocperllr = sloc/rcount
                     else:
                         slocperllr = float("inf")
-                    if slocperllr > TARGET_SLOCPERLLR:
+                    if slocperllr > self.target_slocperllr:
                         category = "Low LLR density"
                     else:
                         category = "Good LLR density"
@@ -227,15 +281,14 @@ documentation for the standard python library. It is accessed through the
         # FIXME: we must make sure that gnatinspect.db is up-to-date. How? Rebuilding helps.
 
         # get current cursor
-        ctx = GPS.current_context()
-        curloc = ctx.location()
-        file = curloc.file()
-        editor = GPS.EditorBuffer.get(file)
+        try:
+            ctx = GPS.current_context()
+            curloc = ctx.location()
+            file = curloc.file()
+            editor = GPS.EditorBuffer.get(file)
+        except:
+            return
 
-        #try:
-        #    GPS.Editor.unhighlight(str(file), "Unjustified_Code");
-        #except:
-        #    pass
         GPS.Locations.remove_category("Unjustified_Code");
         GPS.Editor.register_highlighting("Unjustified_Code", LIGHTRED)
 
@@ -448,8 +501,9 @@ documentation for the standard python library. It is accessed through the
                 print " - " + k + ": " + str(v)
         else:
             print "No requirements referenced in '" + name + "'"
-
+          
     def _project_loaded (self, hook_name):
+        # path to database
         self.reqfile = GPS.Project.root().get_attribute_as_string ("ReqFile", "Requirements")
         prjdir = GPS.Project.root().file().directory()
         if not self.reqfile:
@@ -458,6 +512,20 @@ documentation for the standard python library. It is accessed through the
             if not os.path.isabs(self.reqfile):
                 self.reqfile = prjdir + os.path.sep + self.reqfile        
         print "Requirements Database=" + self.reqfile
+
+        # sloc per LLR ratio
+        tmp = GPS.Project.root().get_attribute_as_string ("SlocPerLLR", "Requirements")
+        if not tmp:
+            self.target_slocperllr = DEFAULT_SLOCPERLLR
+        else:
+            try:
+                self.target_slocperllr = int(tmp)
+            except:
+                self.target_slocperllr = DEFAULT_SLOCPERLLR
+
+        # register completion resolver
+        self._resolver.set_reqfile(self.reqfile)
+                
             
     def _project_recomputed(self, hook_name):
         """
@@ -572,23 +640,6 @@ documentation for the standard python library. It is accessed through the
             return GPS.Entity(name, id_loc.buffer().file(),id_loc.line(), id_loc.column()), start_loc, end_loc
         except:
             return None, None, None
-
-    def show_python_library(self):
-        """Open a navigator to show the help on the python library"""
-        base = port = self.port_pref.get()
-        if not self.pydoc_proc:
-            while port - base < 10:
-                self.pydoc_proc = GPS.Process("pydoc -p %s" % port)
-                out = self.pydoc_proc.expect(
-                    "pydoc server ready|Address already in use", 10000)
-                try:
-                    out.rindex(   # raise exception if not found
-                        "Address already in use")
-                    port += 1
-                except Exception:
-                    break
-
-        GPS.HTML.browse("http://localhost:%s/" % port)
 
     def _before_exit(self, hook_name):
         """Called before GPS exits"""
