@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """This file provides support for tracing of low-level requirements
 to source code and vice versa.
 
@@ -22,18 +24,27 @@ TODO: read SPARK annotations and export them as verification means.
 
 """
 
+__author__ = "Martin Becker"
+__copyright__ = "Copyright 2016, Martin Becker"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__email__ = "becker@rcs.ei.tum.de"
+__status__ = "Testing"
 
-############################################################################
-# No user customization below this line
-############################################################################
 
 import GPS
-import sys
 import os.path
 import re
 import gps_utils
-from constructs import *
+#from constructs import *
 import text_utils
+
+# find path of this script and add its subfolder "tools" to the search path for python packages
+import inspect, os, sys
+tools_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0])+ os.sep + "tools")
+if tools_folder not in sys.path:
+    sys.path.insert(0, tools_folder)
+import reqtools
 
 MENUITEMS = """
 <submenu before="Window">
@@ -61,14 +72,26 @@ MENUITEMS = """
 </action>
 """
 
+PROPERTIES="""
+ <project_attribute
+      name="ReqFile"
+      package="Requirements"
+      editor_page="Requirements"
+      editor_section="Single"
+      description="The path for the sqlite3 file storing the requirements." >
+      <string type="file" default="./requirements.db" />
+  </project_attribute>
+"""
 
 class Reqtrace(object):
 
+    reqfile = None
+    
     def __init__(self):
         """
         Various initializations done before the gps_started hook
         """
-
+        
         self.port_pref = GPS.Preference("Plugins/reqtrace/port")
         self.port_pref.create(
             "Pydoc port", "integer",
@@ -95,6 +118,8 @@ documentation for the standard python library. It is accessed through the
         </documentation_file>
         """
 
+        XML += PROPERTIES;
+        
         XML += MENUITEMS;
 
         GPS.parse_xml(XML)
@@ -118,6 +143,10 @@ documentation for the standard python library. It is accessed through the
             callback=self.list_subp_requirements,
             name='List Subprogram Requirements')
 
+        gps_utils.make_interactive(
+            callback=self.list_all_requirements,
+            name='List All Requirements')
+
         # context menu in editor
         #gps_utils.make_interactive(
         #    callback=self.reload_file,
@@ -126,6 +155,8 @@ documentation for the standard python library. It is accessed through the
 
         GPS.Hook("project_view_changed").add(self._project_recomputed)
         GPS.Hook("before_exit_action_hook").add(self._before_exit)
+        GPS.Hook("project_changed").add(self._project_loaded)
+        GPS.Hook("project_saved").add(self._project_loaded)
 
     def check_density(self):
         """
@@ -295,6 +326,15 @@ documentation for the standard python library. It is accessed through the
                                   highlight="My_Category")
 
 
+    def list_all_requirements(self):
+        print ""
+        print "List all requirements:"
+        with reqtools.Database() as db:
+            if not db.exists(self.reqfile):
+                db.create(self.reqfile)
+            db.connect(self.reqfile);
+            db.get_requirements();
+
     def list_subp_requirements(self):
         print ""
 
@@ -312,6 +352,16 @@ documentation for the standard python library. It is accessed through the
         else:
             print "No requirements referenced in '" + name + "'"
 
+    def _project_loaded (self, hook_name):
+        self.reqfile = GPS.Project.root().get_attribute_as_string ("ReqFile", "Requirements")
+        prjdir = GPS.Project.root().file().directory()
+        if not self.reqfile:
+            self.reqfile = prjdir + os.path.sep + "requirements.db"
+        else:
+            if not os.path.isabs(self.reqfile):
+                self.reqfile = prjdir + os.path.sep + self.reqfile        
+        print "Requirements Database=" + self.reqfile
+            
     def _project_recomputed(self, hook_name):
         """
         if python is one of the supported language for the project, add various
