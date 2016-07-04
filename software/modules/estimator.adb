@@ -10,7 +10,7 @@ with Units.Numerics; use Units.Numerics;
 with Logger;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
-package body Estimator is
+package body Estimator with SPARK_Mode is
 
 
    Test : Translation_Vector := (0.0 * Meter, 0.0 * Meter, 0.0 * Meter);

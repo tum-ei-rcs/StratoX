@@ -13,7 +13,7 @@ use type Ada.Real_Time.Time_Span;
 
 with Helper;
 
-package body Controller is
+package body Controller with SPARK_Mode is
 
    package Pitch_PID_Controller is new Generic_PID_Controller(Pitch_Type,
                                                               Elevon_Angle_Type,

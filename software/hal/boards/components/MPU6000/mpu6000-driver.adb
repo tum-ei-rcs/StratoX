@@ -6,7 +6,7 @@ with Ada.Unchecked_Conversion;
 
 
 package body MPU6000.Driver with
-Refined_State => (State => Is_Init)
+Refined_State => (State => (Is_Init, Device_Address))
 is
 
 

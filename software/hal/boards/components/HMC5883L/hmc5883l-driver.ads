@@ -11,6 +11,7 @@ with Interfaces; use Interfaces;
 
 
 package HMC5883L.Driver with
+SPARK_Mode,
 Abstract_State => State
 is
 

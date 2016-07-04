@@ -17,6 +17,7 @@ with HIL.SPI; use HIL;
 use type HIL.SPI.Data_Type;
 
 package MPU6000.Driver with
+SPARK_Mode,
 Abstract_State => State
 is
 
@@ -183,7 +184,7 @@ private
    --  Global variables and constants
 
    Is_Init : Boolean := False with Part_Of => State;
-   Device_Address : HIL.Byte;
+   Device_Address : HIL.Byte with Part_Of => State;
 
    --  MPU6000 Device ID.
    MPU6000_DEVICE_ID        : constant := 16#68#;
