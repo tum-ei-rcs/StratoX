@@ -30,6 +30,15 @@ package body FAT_Filesystem.Directories is
       return OK;
    end Open_Root_Directory;
 
+   function Make_Directory
+     (Parent : Directory_Handle;
+      newname : String;
+      Dir : out Directory_Handle) return Status_Code
+   is
+   begin
+      return Internal_Error; -- not yet implemented
+   end Make_Directory;
+
    ----------
    -- Open --
    ----------

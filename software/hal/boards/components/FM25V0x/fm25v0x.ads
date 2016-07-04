@@ -23,6 +23,7 @@ is
    procedure Self_Check (Status : out Boolean);
    -- run a self-check.
    -- @return true on success
+   -- @req Subsystem/Init/Selfcheck
 
    procedure Read_Byte (addr : Address; byte : out HIL.Byte);
    -- read a single byte

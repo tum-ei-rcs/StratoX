@@ -1,0 +1,63 @@
+(gdb) print Info
+$1 = (
+    sd_csd => (
+      csd_structure => 1, 
+      system_specification_version => 0, 
+      reserved => 0, 
+      data_read_access_time_1 => 14, 
+      data_read_access_time_2 => 0, 
+      max_bus_clock_frequency => 50, 
+      card_command_class => 1461, 
+      max_read_data_block_length => 9, 
+      partial_block_for_read_allowed => false, 
+      write_block_missalignment => false, 
+      read_block_missalignment => false, 
+      dsr_implemented => false, 
+      reserved_2 => 0, 
+      device_size => 7447, 
+      max_read_current_at_vdd_min => 0, 
+      max_read_current_at_vdd_max => 0, 
+      max_write_current_at_vdd_min => 0, 
+      max_write_current_at_vdd_max => 0, 
+      device_size_multiplier => 0, 
+      erase_group_size => 1, 
+      erase_group_size_multiplier => 127, 
+      write_protect_group_size => 0, 
+      write_protect_group_enable => false, 
+      manufacturer_default_ecc => 0, 
+      write_speed_factor => 2, 
+      max_write_data_block_length => 9, 
+      partial_blocks_for_write_allowed => false, 
+      reserved_3 => 0, 
+      content_protection_application => false, 
+      file_format_group => false, 
+      copy_flag => false, 
+      permanent_write_protection => false, 
+      temporary_write_protection => false, 
+      file_format => 0, 
+      ecc_code => 0, 
+      csd_crc => 70, 
+      reserved_4 => 0
+    ), 
+    sd_cid => (
+      manufacturer_id => 2, 
+      oem_application_id => "TM", 
+      product_name => "SA04G", 
+      product_revision => (
+        major => 1, 
+        minor => 1
+      ), 
+      product_serial_number => 539234658, 
+      reserved_1 => 0, 
+      manufacturing_date => (
+        year => 2013, 
+        month => july
+      ), 
+      cid_crc => 120, 
+      reserved_2 => 0
+    ), 
+    card_capacity => 3904897024, 
+    card_block_size => 512, 
+    rca => 4660, 
+    card_type => high_capacity_sd_card
+  )

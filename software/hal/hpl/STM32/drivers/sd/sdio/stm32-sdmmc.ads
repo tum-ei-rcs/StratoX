@@ -32,6 +32,7 @@ package STM32.SDMMC is
       Unsupported_Card,
       Rx_Overrun,
       Tx_Underrun,
+      Startbit_Not_Detected,
       Request_Not_Applicable,
       CRC_Check_Fail,
       Illegal_Cmd,
@@ -72,7 +73,7 @@ package STM32.SDMMC is
       Data_Read_Access_Time_2          : Byte; --  In CLK Cycles
       Max_Bus_Clock_Frequency          : Byte;
       Card_Command_Class               : Short;
-      Max_Read_Data_Block_Length       : Byte;
+      Max_Read_Data_Block_Length       : Byte; -- ld (blocksize in bytes)
       Partial_Block_For_Read_Allowed   : Boolean;
       Write_Block_Missalignment        : Boolean;
       Read_Block_Missalignment         : Boolean;
@@ -90,7 +91,7 @@ package STM32.SDMMC is
       Write_Protect_Group_Enable       : Boolean;
       Manufacturer_Default_ECC         : Byte;
       Write_Speed_Factor               : Byte;
-      Max_Write_Data_Block_Length      : Byte;
+      Max_Write_Data_Block_Length      : Byte; -- =Max_Read_Data_Block_Length
       Partial_Blocks_For_Write_Allowed : Boolean;
       Reserved_3                       : Byte;
       Content_Protection_Application   : Boolean;
@@ -187,6 +188,12 @@ package STM32.SDMMC is
      (Controller : in out SDMMC_Controller;
       Addr       : Unsigned_64;
       Data       : out SD_Data) return SD_Error
+     with Pre => Data'Length mod 512 = 0;
+
+   function Write_Blocks
+     (Controller : in out SDMMC_Controller;
+      Addr       : Unsigned_64;
+      Data       : SD_Data) return SD_Error
      with Pre => Data'Length mod 512 = 0;
 
    function Read_Blocks_DMA

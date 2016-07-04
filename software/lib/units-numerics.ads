@@ -16,7 +16,11 @@ package Units.Numerics with SPARK_Mode is
 --     
 --    function Sin (X, Cycle : Angle_Type) return Unit_Type;
 --        
+
+   -- @req cosine-x
    function Cos (X : Angle_Type) return Unit_Type;
+   -- @req cosine-x2
+
 --        
 --     function Cos (X, Cycle : Angle_Type) return Unit_Type;
 --        

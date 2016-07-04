@@ -11,7 +11,12 @@ package FAT_Filesystem.Directories with SPARK_Mode is
    function Open
      (E   : Directory_Entry;
       Dir : out Directory_Handle) return Status_Code
-   with Pre => Is_Subdirectory (E);
+     with Pre => Is_Subdirectory (E);
+
+   function Make_Directory
+     (Parent  : Directory_Handle;
+      newname : String;
+      Dir     : out Directory_Handle) return Status_Code;
 
    procedure Close (Dir : in out Directory_Handle);
 
