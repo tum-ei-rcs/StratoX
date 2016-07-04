@@ -32,6 +32,8 @@ package Controller with SPARK_Mode is
    procedure set_Current_Orientation (orientation : Orientation_Type);
 
    procedure runOneCycle;
+   
+   procedure detach;
 
 private
 

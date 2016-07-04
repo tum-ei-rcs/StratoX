@@ -75,7 +75,7 @@ is
    function toUnsigned_16( bytes : Byte_Array) return Unsigned_16
    is
       (Unsigned_16( bytes( bytes'First ) ) 
-      + Unsigned_16( bytes'First + 1 ) * 2**8 )
+      + Unsigned_16( bytes( bytes'First + 1 ) ) * 2**8 )
    with pre => bytes'Length = 2;
       
 
@@ -96,7 +96,8 @@ is
    with pre => bytes'Length = 4;
 
 
-
+   function toCharacter( source : Byte ) return Character
+   is ( Character'Val ( source ) );
 
 
    procedure write_Bits( register : in out Unsigned_8; 
@@ -104,7 +105,7 @@ is
                          length : Natural; 
                          value : Integer) with 
                          pre => length > 0 and 
-                         Natural( start_index ) + length <= Natural( Unsigned_8_Bit_Index'Last ) + 1 and
+                         length <= Natural( Unsigned_8_Bit_Index'Last ) + 1 - Natural( start_index ) and
                          value < 2**length;
                          
    
@@ -112,7 +113,7 @@ is
                         start_index : Unsigned_8_Bit_Index; 
                         length      : Natural) return Unsigned_8
    with pre => length > 0 and 
-   Natural( start_index ) + length <= Natural(Unsigned_8_Bit_Index'Last) + 1,
+   length <= Natural(Unsigned_8_Bit_Index'Last) + 1 - Natural( start_index ),
    post => read_Bits'Result < 2**length;
 
 

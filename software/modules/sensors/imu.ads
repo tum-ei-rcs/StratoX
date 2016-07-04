@@ -4,7 +4,7 @@ with Generic_Sensor;
 with Interfaces; use Interfaces;
 
 with Units.Vectors; use Units.Vectors;
-with MPU6000.Driver;
+with MPU6000.Driver; use MPU6000;
 
 
 package IMU with SPARK_Mode is

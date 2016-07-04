@@ -13,6 +13,7 @@ with Generic_Signal;
 with MS5611.Driver;
 with ublox8.Driver;
 with MPU6000.Driver;
+with HMC5883L.Driver;
 
 generic
    type Data_Type is private; 
@@ -37,14 +38,14 @@ package Generic_Sensor with SPARK_Mode is
    end record;
 
    procedure initialize(Self : in out Sensor_Tag) 
-   is null with Global => (In_Out => (MS5611.Driver.State, ublox8.Driver.State));
+   is null with Global => (In_Out => (MS5611.Driver.State, ublox8.Driver.State, MPU6000.Driver.State, HMC5883L.Driver.State));
         
    -- start the measurement
    procedure start_Measurement(Self : in out Sensor_Tag) is null;
         
    -- read the result from the sensor, possible post processing
    procedure read_Measurement(Self : in out Sensor_Tag) is null
-   with Global => (In_Out => (MS5611.Driver.State, MS5611.Driver.Coefficients, MPU6000.Driver.State, ublox8.Driver.State));
+   with Global => (In_Out => (MS5611.Driver.State, MS5611.Driver.Coefficients, MPU6000.Driver.State, ublox8.Driver.State, HMC5883L.Driver.State));
         
    --  update state, wait for finished conversion
    procedure tick(Self : in out Sensor_Tag) is null;

@@ -13,7 +13,7 @@ with ULog.Identifiers;
 --  The serialized byte array is returned.
 --  this package tries to dispatch to the specific decendants,
 --  e.g., ULog.GPS.
-package body ULog with SPARK_Mode is
+package body ULog with SPARK_Mode => Off is
 
    procedure Get_Serialization (msg : in Message; bytes : out HIL.Byte_Array) is
    begin

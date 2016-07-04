@@ -11,6 +11,8 @@ with Ada.Real_Time;
 use type Ada.Real_Time.Time;
 use type Ada.Real_Time.Time_Span;
 
+with Helper;
+
 package body Controller is
 
    package Pitch_PID_Controller is new Generic_PID_Controller(Pitch_Type,
@@ -24,12 +26,12 @@ package body Controller is
 
 
    package Roll_PID_Controller is new Generic_PID_Controller(Roll_Type,
-                                                             Elevon_Angle_Type,
+                                                             Aileron_Angle_Type,
                                                              Unit_Type,
                                                              -100.0*Degree,
                                                              100.0*Degree,
-                                                             Elevon_Angle_Type'First,
-                                                             Elevon_Angle_Type'Last);
+                                                             Aileron_Angle_Type'First,
+                                                             Aileron_Angle_Type'Last);
    PID_Roll : Roll_PID_Controller.Pid_Object;
 
 
@@ -44,8 +46,6 @@ package body Controller is
 
    G_Target_Orientation : Orientation_Type := (0.0 * Degree, -3.0 * Degree, 0.0 * Degree);
 
-   G_Target_Pitch : Pitch_Type := -3.0 * Degree;
-   G_Target_Roll  : Roll_Type := 0.0 * Degree;
 
 
 
@@ -98,7 +98,7 @@ package body Controller is
 
    procedure set_Target_Pitch (pitch : Pitch_Type) is
    begin
-      G_Target_Pitch := pitch;
+      G_Target_Orientation.Pitch := pitch;
    end set_Target_Pitch;
 
    procedure set_Current_Orientation (orientation : Orientation_Type) is
@@ -108,26 +108,37 @@ package body Controller is
 
 
    procedure runOneCycle is
-      elevons : Elevon_Angle_Array;
    begin
       control_Pitch;
       control_Heading;
+      control_Roll;
 
-      elevons := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron);
+      G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron);
 
-      Logger.log(Logger.DEBUG, "Elevons: " & AImage( elevons(LEFT) ) & ", " & AImage( elevons(RIGHT) ) );
+      Logger.log(Logger.DEBUG, "Elevons: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) ) );
 
-      Servo.set_Angle(Servo.LEFT_ELEVON, elevons(LEFT) );
-      Servo.set_Angle(Servo.RIGHT_ELEVON, elevons(RIGHT) );
+      Servo.set_Angle(Servo.LEFT_ELEVON, G_Elevon_Angles(LEFT) );
+      Servo.set_Angle(Servo.RIGHT_ELEVON, G_Elevon_Angles(RIGHT) );
 
       PX4IO.Driver.sync_Outputs;
    end runOneCycle;
 
 
-
+   procedure detach is
+   begin
+      for i in Integer range 1 .. 3 loop
+         Servo.set_Angle(Servo.LEFT_ELEVON, Elevon_Angle_Type'Last );
+         Servo.set_Angle(Servo.RIGHT_ELEVON, Elevon_Angle_Type'Last );
+         PX4IO.Driver.sync_Outputs;
+         Helper.delay_ms( 2000 );
+         Servo.set_Angle(Servo.LEFT_ELEVON, 0.0 * Degree);
+         Servo.set_Angle(Servo.RIGHT_ELEVON, 0.0 * Degree);
+         Helper.delay_ms( 2000 );
+      end loop;
+   end detach;
 
    procedure control_Pitch is
-      error : constant Pitch_Type := ( G_Object_Orientation.Pitch - G_Target_Pitch );
+      error : constant Pitch_Type := ( G_Object_Orientation.Pitch - G_Target_Orientation.Pitch );
       now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
@@ -144,10 +155,11 @@ package body Controller is
    end control_Heading;
 
    procedure control_Roll is
+      error : constant Roll_Type := ( G_Object_Orientation.Roll - G_Target_Orientation.Roll );
+      now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
-      G_Target_Orientation.Roll := 0.0 * Degree;
-
-
+      G_Plane_Control.Aileron := Roll_PID_Controller.step(PID_Roll, error, dt);
    end control_Roll;
 
 

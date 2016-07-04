@@ -1,9 +1,8 @@
-with Generic_Sensor;
+
 with HMC5883L.Driver; use HMC5883L;
 with HMC5883L.Register;
 
 with Units.Numerics; use Units.Numerics;
-with Interfaces; use Interfaces;
 with Logger;
 
 package body Magnetometer is

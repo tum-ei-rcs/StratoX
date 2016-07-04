@@ -1,6 +1,4 @@
 
-with Estimator;
-with Controller;
 
 package Mission is
 
@@ -17,7 +15,7 @@ package Mission is
       WAITING_ON_GROUND,
       --WAITING_FOR_EVALUATION,
       --EVALUATING,
-      --WAITING_FOR_RESET
+      WAITING_FOR_RESET
    );
 
    type Mission_Event_Type is (

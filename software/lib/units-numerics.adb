@@ -34,7 +34,7 @@ is
    begin
       --  @req foobar/2 @req nothing
       -- @req foobar/2
-        return Unit_Type( Elementary_Functions.Cos( Float( X ) ) );
+      return Unit_Type( Elementary_Functions.Cos( Float( X ) ) );
    end Cos;
    -- footer comment for cos
 

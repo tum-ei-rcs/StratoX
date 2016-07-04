@@ -1,12 +1,7 @@
 
-
-with MPU6000.Driver; use MPU6000;
-
 with Units; use Units;
 
 package body IMU is
-
-   G_Freefall_Counter : Natural := 0;
 
    function MPU_To_PX4Frame(vector : Linear_Acceleration_Vector) return Linear_Acceleration_Vector is
       ( ( X => vector(Y), Y => -vector(X), Z => vector(Z) ) );

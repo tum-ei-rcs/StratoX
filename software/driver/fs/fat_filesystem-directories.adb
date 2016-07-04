@@ -1,6 +1,8 @@
 with Ada.Unchecked_Conversion;
 
-package body FAT_Filesystem.Directories is
+package body FAT_Filesystem.Directories with
+SPARK_Mode => Off
+is
 
    -------------------------
    -- Open_Root_Directory --
@@ -215,6 +217,7 @@ package body FAT_Filesystem.Directories is
                Current_CRC := 0;
                Last_Seq := 0;
 
+               -- FIXME: SPARK Error: expect object name in renaming
                for Ch of String'(D_Entry.Filename & D_Entry.Extension) loop
                   C := Character'Enum_Rep (Ch);
                   Current_CRC := Shift_Right (Current_CRC and 16#FE#, 1)

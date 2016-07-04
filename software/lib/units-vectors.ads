@@ -10,11 +10,11 @@
 
 
 
-with Ada.Numerics.Generic_Real_Arrays;
+-- with Ada.Numerics.Generic_Real_Arrays;
 
 package Units.Vectors with SPARK_Mode is
 
-   package Unit_Arrays is new Ada.Numerics.Generic_Real_Arrays(Unit_Type);
+   -- package Unit_Arrays is new Ada.Numerics.Generic_Real_Arrays(Unit_Type);
 
    subtype Scalar is Unit_Type;
    type Vector3D_Type is array(1 .. 3) of Unit_Type;

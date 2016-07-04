@@ -10,7 +10,9 @@
 with Interfaces; use Interfaces;
 
 
-package HMC5883L.Driver is
+package HMC5883L.Driver with
+Abstract_State => State
+is
 
    procedure initialize;
 
@@ -52,7 +54,7 @@ private
 
    type Buffer_Type is array( 1 .. 6 ) of Unsigned_8;
 
-   buffer : Buffer_Type;
-   mode : Unsigned_8;
+   buffer : Buffer_Type with Part_Of => State;
+   mode : Unsigned_8 with Part_Of => State;
 
 end HMC5883L.Driver;

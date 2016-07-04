@@ -133,7 +133,7 @@ package ublox8.Protocol is
 
    -- TX CFG-NAV5 message contents 
    UBX_TX_CFG_NAV5_MASK : constant := 00_005		;--*< Only update dynamic model and fix mode 
-   UBX_TX_CFG_NAV5_DYNMODEL : constant := 7		;--*< 0 Portable, 2 Stationary, 3 Pedestrian, 4 Automotive, 5 Sea, 6 Airborne <1g, 7 Airborne <2g, 8 Airborne <4g 
+   UBX_TX_CFG_NAV5_DYNMODEL : constant := 7;  --*< 0 Portable, 2 Stationary, 3 Pedestrian, 4 Automotive, 5 Sea, 6 Airborne <1g, 7 Airborne <2g, 8 Airborne <4g 
    UBX_TX_CFG_NAV5_DYNMODEL_RTCM : constant := 2;
    UBX_TX_CFG_NAV5_FIXMODE : constant := 2		;--*< 1 2D only, 2 3D only, 3 Auto 2D/3D 
 

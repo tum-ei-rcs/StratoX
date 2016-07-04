@@ -24,11 +24,11 @@ package Magnetometer with SPARK_Mode is
       null;
    end record;
 
-   overriding procedure initialize (Self : in out Magnetometer_Tag);
-   -- with Global => (In_Out => (HMC5883L.Driver.State));
+   overriding procedure initialize (Self : in out Magnetometer_Tag)
+   with Global => (In_Out => (HMC5883L.Driver.State));
 
-   overriding procedure read_Measurement(Self : in out Magnetometer_Tag);
-   -- with Global => (In_Out => (HMC5883L.Driver.State, HMC5883L.Driver.Coefficients));
+   overriding procedure read_Measurement(Self : in out Magnetometer_Tag)
+   with Global => (In_Out => (HMC5883L.Driver.State));
 
 
    --procedure compensateOrientation(Self : Magnetometer_Tag; orientation : Orientation_Type);

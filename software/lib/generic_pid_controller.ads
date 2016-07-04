@@ -41,7 +41,7 @@ is
                         Output_Limit_Low  : PID_Output_Type := PID_OUTPUT_LIMIT_LOW;
                         Output_Limit_High : PID_Output_Type := PID_OUTPUT_LIMIT_HIGH);
 
-   procedure reset (pid : out Pid_Object);
+   procedure reset (Pid : out Pid_Object);
 
    function step(Pid : in out Pid_Object; error : PID_Data_Type; dt : Time_Type) return PID_Output_Type;
 

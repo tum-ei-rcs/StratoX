@@ -39,8 +39,8 @@ is
    procedure reset;
    -- send a soft-reset to the device.
 
-   procedure init with
-   Global => (IN_Out => State);
+   procedure init;
+   -- with Global => (IN_Out => (State, Coefficients));
    -- initialize the device, get chip-specific compensation values
 
    procedure update_val;

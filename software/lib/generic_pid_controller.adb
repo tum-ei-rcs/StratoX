@@ -70,7 +70,7 @@ package body Generic_PID_Controller is
       -- Calculate Output with Gains
       output := PID_Output_Type( Unit_Type( Pid.Kp ) * Unit_Type( error ) +
                                  Unit_Type( Pid.Ki ) * Unit_Type( Pid.Integral ) +
-                                 Unit_Type( Pid.Kd ) * Unit_Type( derivate ) );
+                                 Unit_Type( Pid.Kd ) * derivate );
       
       -- Saturate Output
       if output < Pid.Output_Limit_Low then

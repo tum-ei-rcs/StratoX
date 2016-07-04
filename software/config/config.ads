@@ -17,6 +17,10 @@ package Config is
    BARO_I2C_ADDRESS : constant := 0;
 
 
+   DEFAULT_LONGITUDE : constant := 11.60555;     -- Englischer Garten
+   DEFAULT_LATITUDE  : constant := 48.16423;
+
+
    OPTIMAL_PITCH : constant := -5.0;
 
    CFG_SERVO_ANGLE_LIMIT_MIN : constant := -90.0 * Degree;

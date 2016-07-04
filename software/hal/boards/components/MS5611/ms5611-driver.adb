@@ -41,7 +41,7 @@ is
         Size => 16;
 
    type Conversion_ID_Type is (D1, D2);
-   type Conversion_Data_Type is mod 2**24;
+   type Conversion_Data_Type is mod 2**24 with Size => 24;
 
    subtype DT_Type is Float range -16776960.9 .. 16777216.9;
    subtype Sense_Type is Float range -4294836225.9 .. 6442352640.9;
@@ -167,7 +167,7 @@ is
       coeff_data : out Coefficient_Data_Type)
    is
       Data_TX : Data_Array (1 .. 3) := (others => 0);
-      Data_RX : Data_Array (1 .. 3) := (others => 0);
+      Data_RX : Data_Array (1 .. 3);
    begin
       case coeff_id is
          when COEFF_SENS_T1 =>
@@ -198,7 +198,7 @@ is
       Post => adc_value'Size = 24 is
       Data_TX : constant Data_Array (1 .. 4) :=
         (1 => HIL.Byte (CMD_ADC_READ), others => 0);
-      Data_RX : Data_Array (1 .. 4) := (others => 0);
+      Data_RX : Data_Array (1 .. 4);
    begin
       transferWithDevice (Device, Data_TX, Data_RX);
       adc_value :=
@@ -215,12 +215,12 @@ is
    -- This function sequentially initializes the barometer.
    -- Therefore, the barometer is reset, the PROM-Coefficients are read and the starting-height (altitude_offset) is calculated.
    procedure init is
-      c1 : Coefficient_Data_Type := 0;
-      c2 : Coefficient_Data_Type := 0;
-      c3 : Coefficient_Data_Type := 0;
-      c4 : Coefficient_Data_Type := 0;
-      c5 : Coefficient_Data_Type := 0;
-      c6 : Coefficient_Data_Type := 0;
+      c1 : Coefficient_Data_Type;
+      c2 : Coefficient_Data_Type;
+      c3 : Coefficient_Data_Type;
+      c4 : Coefficient_Data_Type;
+      c5 : Coefficient_Data_Type;
+      c6 : Coefficient_Data_Type;
    begin
       read_coefficient (Baro, COEFF_SENS_T1, c1);
       G_sens_t1 := Float (c1) * Float (2**15);
@@ -301,7 +301,7 @@ is
    end update_val;
 
    procedure self_check (Status : out Error_Type) is
-      c3 : Coefficient_Data_Type := 0;
+      c3 : Coefficient_Data_Type;
    begin
       -- check if initialized
       if G_Baro_State.FSM_State /= READY then
@@ -323,6 +323,7 @@ is
 
    procedure startConversion (ID : Conversion_ID_Type; OSR : OSR_Type) is
       data : Data_Array (1 .. 1) := (others => 0);
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       case (ID) is
          when D1 =>
@@ -339,7 +340,7 @@ is
                   data (1) := HIL.Byte (CMD_D1_CONV_4096);
             end case;
             G_Baro_State.Conv_Info_Pres.OSR := OSR;
-            G_Baro_State.Conv_Info_Pres.Start := Units.To_Time( Ada.Real_Time.Clock );
+            G_Baro_State.Conv_Info_Pres.Start := Units.To_Time( now );
          when D2 =>
             case (OSR) is
                when OSR_256 =>
@@ -354,7 +355,7 @@ is
                   data (1) := HIL.Byte (CMD_D2_CONV_4096);
             end case;
             G_Baro_State.Conv_Info_Temp.OSR := OSR;
-            G_Baro_State.Conv_Info_Temp.Start := Units.To_Time( Ada.Real_Time.Clock );
+            G_Baro_State.Conv_Info_Temp.Start := Units.To_Time( now );
       end case;
       writeToDevice (Baro, data);
 
@@ -386,7 +387,7 @@ is
       T_Ref    : Float) return DT_Type
    is
    begin
-      return DT_Type (Float (Temp_Raw) - T_Ref);
+      return DT_Type (Float (Temp_Raw) - T_Ref);   -- SPARK: Overflow/Range Check fails if Temp_Raw = 16777215
    end calculateTemperatureDifference;
 
 --     function calculateTEMP (thisDT : DT_Type; tempsens : Float) return TEMP_Type is
@@ -396,7 +397,7 @@ is
 
    function convertToKelvin (thisTemp : in TEMP_Type) return Temperature_Type is
    begin
-      return Temperature_Type (G_CELSIUS_0 + thisTemp / 100.0);
+      return Temperature_Type (G_CELSIUS_0 + thisTemp / 100.0);  -- SPARK Range Check might fail
    end convertToKelvin;
 
    -- compensates values according to datasheet

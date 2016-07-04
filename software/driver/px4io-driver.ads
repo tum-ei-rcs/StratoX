@@ -49,6 +49,8 @@ is
 
    procedure set_Servo_Angle(servo : Servo_Type; angle : Servo_Angle_Type);
 
+   procedure set_Motor_Speed( speed : Motor_Speed_Type );
+   
    procedure sync_Outputs;
 
 private

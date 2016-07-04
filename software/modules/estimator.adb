@@ -14,7 +14,7 @@ package body Estimator is
 
 
    Test : Translation_Vector := (0.0 * Meter, 0.0 * Meter, 0.0 * Meter);
-   Foo  : Translation_Vector := (0.0 * Meter, 3.0 * Meter, 0.0 * Meter);
+   Foo  : constant Translation_Vector := (0.0 * Meter, 3.0 * Meter, 0.0 * Meter);
 
 
    -- init

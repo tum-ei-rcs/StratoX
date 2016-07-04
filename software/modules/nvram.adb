@@ -6,7 +6,7 @@ with Interfaces; use Interfaces;
 with HIL.NVRAM;  use HIL.NVRAM;
 with Fletcher16;
 
-package body NVRAM with SPARK_Mode,
+package body NVRAM with SPARK_Mode => Off,   -- Test
    Refined_State => (Memory_State => null)
 is
 
@@ -108,6 +108,7 @@ is
 
    procedure Read_Header (framhdr : out NVRAM_Header) is
    begin
+      framhdr := (Fletcher16_String.Byte(0), Fletcher16_String.Byte(0));
       --  FIXME: can this be done safer. Maybe with aggregates?
       HIL.NVRAM.Read_Byte (addr => Hdr_To_Address +
                         framhdr.ck_a'Position, byte => framhdr.ck_a);

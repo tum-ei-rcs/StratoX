@@ -1,7 +1,7 @@
 with Generic_Sensor;
 
 with Units; use Units;
-with MS5611.Driver;
+with MS5611.Driver; use MS5611;
 
 package Barometer with SPARK_Mode is
 

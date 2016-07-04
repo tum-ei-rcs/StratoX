@@ -1,7 +1,6 @@
 
 
 with PX4IO.Protocol; use PX4IO.Protocol;
-with Interfaces; use Interfaces;
 with Ada.Real_Time; use Ada.Real_Time;
 with CRC8;
 with Logger;
@@ -119,17 +118,16 @@ is
 
    -- init
    procedure initialize is
-      protocol : Data_Type(1 .. 2) := (others => 0);
-      Data : Data_Type(1 .. 2) := (others => 0);       
+      protocol_version : Data_Type(1 .. 2) := (others => 0);     
    begin
       Logger.log(Logger.DEBUG, "Probe PX4IO");
       for i in Integer range 1 .. 3 loop
-         read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_PROTOCOL_VERSION, protocol);
-         if protocol(1) = 4 then
+         read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_PROTOCOL_VERSION, protocol_version);
+         if protocol_version(1) = 4 then
             Logger.log(Logger.DEBUG, "PX4IO alive");
             exit;
          elsif i = 3 then
-            handle_Error("PX4IO: Wrong Protocol: " & HIL.Byte'Image( protocol(1) ) );
+            handle_Error("PX4IO: Wrong Protocol: " & HIL.Byte'Image( protocol_version(1) ) );
          end if;
       end loop;
     
@@ -144,7 +142,7 @@ is
          -- be used in a "non-interfering context". That means, we have
          -- to make it a proper R-value here and cannot directly
          -- increment it with Milliseconds:
-         t_abs : ada.Real_Time.Time := Clock;
+         t_abs : Ada.Real_Time.Time := Clock;
       begin
          t_abs := t_abs + Milliseconds( 2 );
          delay until t_abs;
@@ -264,7 +262,8 @@ is
    is
       pulse_range : constant Unit_Type := Unit_Type( SERVO_PULSE_LENGTH_LIMIT_MAX - SERVO_PULSE_LENGTH_LIMIT_MIN);
    begin
-      return SERVO_PULSE_LENGTH_LIMIT_MIN + Unsigned_16( (angle - Servo_Angle_Type'First) / (Servo_Angle_Type'Last - Servo_Angle_Type'First) * pulse_range );
+      return SERVO_PULSE_LENGTH_LIMIT_MIN + Unsigned_16( (angle - Servo_Angle_Type'First) / 
+                                                         (Servo_Angle_Type'Last - Servo_Angle_Type'First) * pulse_range );
    end servo_Duty_Cycle;
    
    

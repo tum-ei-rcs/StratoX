@@ -14,12 +14,12 @@
 package Helper is
 
 
-  generic
+   generic
       type Numeric_Type is range <>;
-  function addWrap( 
-    x   : Numeric_Type; 
-    inc : Numeric_Type)
-  return Numeric_Type;
+   function addWrap( 
+                     x   : Numeric_Type; 
+                     inc : Numeric_Type)
+                    return Numeric_Type;
 
 
 
@@ -34,7 +34,8 @@ package Helper is
 
    -- to polar
 
-
+   procedure delay_ms( ms : Natural);
+   
 
    --  Saturate a Float value within a given range.
    function Saturate
