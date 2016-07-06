@@ -179,7 +179,6 @@ is
             STM32.USARTs.Receive( STM32.Device.UART_4, data);
             Buffer( Integer(buffer_pointer) ) := Byte( data );
             buffer_pointer := buffer_pointer + 1;
-            STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9( 65 ) );
             STM32.USARTs.Clear_Status (STM32.Device.UART_4, STM32.USARTs.Read_Data_Register_Not_Empty);
          end if;
          

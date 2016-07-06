@@ -11,6 +11,7 @@
 
 
 with Units.Navigation; use Units.Navigation;
+with Units;
 with HIL.UART;
 
 package ublox8.Driver with
@@ -23,6 +24,23 @@ is
    subtype Time_Type is Units.Time_Type;
 
 
+   type GPS_Fix_Type is (NO_FIX, FIX_2D, FIX_3D);
+
+   type GPS_Message_Type is record
+      year : Year_Type;              --*< Year (UTC)
+      month : Month_Type;            --*< Month, range 1..12 (UTC)
+      day : Day_Of_Month_Type;       --*< Day of month, range 1..31 (UTC)
+      hour : Hour_Type;              --*< Hour of day, range 0..23 (UTC)
+      minute : Minute_Type;          --*< Minute of hour, range 0..59 (UTC)
+      second : Second_Type;          --*< Seconds of minute, range 0..60 (UTC)
+      fix : GPS_Fix_Type;
+      sats : Natural;                --*< Number of SVs used in Nav Solution
+      lon : Longitude_Type;
+      lat : Latitude_Type;
+      alt : Altitude_Type;
+      speed : Units.Linear_Velocity_Type;
+   end record;
+
    procedure reset;
 
    procedure init;
@@ -31,6 +49,8 @@ is
    -- read measurements values. Should be called periodically.
 
    function get_Position return GPS_Loacation_Type;
+
+   function get_GPS_Message return GPS_Message_Type;
 
    -- function get_Direction return Direction_Type;
 

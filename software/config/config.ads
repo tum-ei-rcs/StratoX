@@ -23,8 +23,8 @@ package Config is
 
    OPTIMAL_PITCH : constant := -5.0;
 
-   CFG_SERVO_ANGLE_LIMIT_MIN : constant := -90.0 * Degree;
-   CFG_SERVO_ANGLE_LIMIT_MAX : constant :=  90.0 * Degree;
+   CFG_SERVO_ANGLE_LIMIT_MIN : constant := -45.0 * Degree;
+   CFG_SERVO_ANGLE_LIMIT_MAX : constant :=  45.0 * Degree;
 
    CFG_SERVO_PULSE_LENGTH_LIMIT_MIN : constant :=  1.100 * Milli*Second;
    CFG_SERVO_PULSE_LENGTH_LIMIT_MAX : constant :=  1.900 * Milli*Second;

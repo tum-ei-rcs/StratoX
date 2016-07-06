@@ -15,7 +15,7 @@ with Logger;
 with Config.Software; use Config.Software;
 
 
-
+with Crash;
 with Mission;
 with Console;
 with Estimator;
@@ -44,7 +44,7 @@ package body Main is
       --perform_Self_Test;
 
       --MS5611.Driver.reset;
-      MPU6000.Driver.Reset;
+      -- MPU6000.Driver.Reset;
 
       NVRAM.Init;
 

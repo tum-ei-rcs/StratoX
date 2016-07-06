@@ -43,6 +43,15 @@ is
    type Conversion_ID_Type is (D1, D2);
    type Conversion_Data_Type is mod 2**24 with Size => 24;
 
+   
+   subtype Sens_T1_Type is Float range 0.0 .. Float((2**16 - 1) * 2**15);
+   subtype Off_T1_Type is Float range 0.0 .. Float((2**16 - 1) * 2**16);
+   subtype TCS_Type is Float range 0.0 .. Float((2**16 - 1) / 2**8);
+   subtype TCO_Type is Float range 0.0 .. Float((2**16 - 1) / 2**7);
+   subtype T_Ref_Type is Float range 0.0 .. Float((2**16 - 1) * 2**8);
+   subtype Tempsens_Type is Float range 0.0 .. Float((2**16 - 1) / 2**23);
+
+
    subtype DT_Type is Float range -16776960.9 .. 16777216.9;
    subtype Sense_Type is Float range -4294836225.9 .. 6442352640.9;
    subtype OFF_Type is Float range -8589672450.9 .. 12884705280.9;
@@ -88,12 +97,12 @@ is
       Conv_Info_Pres => (OSR_256, Time_Type (0.0)));
 
    -- calibration variables (read values)
-   G_sens_t1  : Float := 0.0;  -- Pressure sensitivity (54487)
-   G_off_t1   : Float := 0.0;  -- Pressure offset (51552)
-   G_tcs      : Float := 0.0;  -- Temperature coefficient of pressure sensitivity (33258)
-   G_tco      : Float := 0.0;  -- Temperature coefficient of pressure offset (27255)
-   G_t_ref    : Float := 0.0;  -- barometer reference temperature (29426)
-   G_tempsens : Float := 0.0;  -- Temperature coefficient of the temperature (27777)
+   G_sens_t1  : Sens_T1_Type := 0.0;  -- Pressure sensitivity (54487)
+   G_off_t1   : Off_T1_Type := 0.0;  -- Pressure offset (51552)
+   G_tcs      : TCS_Type := 0.0;  -- Temperature coefficient of pressure sensitivity (33258)
+   G_tco      : TCO_Type := 0.0;  -- Temperature coefficient of pressure offset (27255)
+   G_t_ref    : T_Ref_Type := 0.0;  -- barometer reference temperature (29426)
+   G_tempsens : Tempsens_Type := 0.0;  -- Temperature coefficient of the temperature (27777)
 
    -- ADC values
    temperature_raw : Conversion_Data_Type := 0;  -- raw temperture read from baro

@@ -15,26 +15,34 @@ with Helper;
 
 package body Controller with SPARK_Mode is
 
-   package Pitch_PID_Controller is new Generic_PID_Controller(Pitch_Type,
-                                                              Elevon_Angle_Type,
+   package Pitch_PID_Controller is new Generic_PID_Controller(Angle_Type,
+                                                              Elevator_Angle_Type,
                                                               Unit_Type,
-                                                              -100.0*Degree,
-                                                              100.0*Degree,
-                                                              Elevon_Angle_Type'First,
-                                                              Elevon_Angle_Type'Last);
+                                                              -50.0*Degree,
+                                                              50.0*Degree,
+                                                              Elevator_Angle_Type'First,
+                                                              Elevator_Angle_Type'Last);
    PID_Pitch : Pitch_PID_Controller.Pid_Object;
 
 
-   package Roll_PID_Controller is new Generic_PID_Controller(Roll_Type,
+   package Roll_PID_Controller is new Generic_PID_Controller(Angle_Type,
                                                              Aileron_Angle_Type,
                                                              Unit_Type,
-                                                             -100.0*Degree,
-                                                             100.0*Degree,
+                                                             -50.0*Degree,
+                                                             50.0*Degree,
                                                              Aileron_Angle_Type'First,
                                                              Aileron_Angle_Type'Last);
    PID_Roll : Roll_PID_Controller.Pid_Object;
 
 
+   package Yaw_PID_Controller is new Generic_PID_Controller( Angle_Type,
+                                                             Roll_Type,
+                                                             Unit_Type,
+                                                             -50.0*Degree,
+                                                             50.0*Degree,
+                                                             -15.0*Degree,
+                                                             15.0*Degree);
+   PID_Yaw : Yaw_PID_Controller.Pid_Object;
 
 
 
@@ -50,6 +58,8 @@ package body Controller with SPARK_Mode is
 
 
    G_Last_Call_Time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+   G_Last_Roll_Control : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+   G_Last_Yaw_Control : Ada.Real_Time.Time := Ada.Real_Time.Clock;
 
 
    G_Plane_Control : Plane_Control_Type := (others => 0.0 * Degree);
@@ -69,6 +79,10 @@ package body Controller with SPARK_Mode is
                                       Unit_Type( Config.Software.CFG_PID_ROLL_I ),
                                       Unit_Type( Config.Software.CFG_PID_ROLL_D ));
 
+      Yaw_PID_Controller.initialize(PID_Yaw,
+                                      Unit_Type( Config.Software.CFG_PID_YAW_P ),
+                                      Unit_Type( Config.Software.CFG_PID_YAW_I ),
+                                      Unit_Type( Config.Software.CFG_PID_YAW_D ));
    end initialize;
 
 
@@ -110,15 +124,22 @@ package body Controller with SPARK_Mode is
    procedure runOneCycle is
    begin
       control_Pitch;
-      control_Heading;
+      control_Yaw;
       control_Roll;
 
       G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron);
 
-      Logger.log(Logger.DEBUG, "Elevons: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) ) );
+      Logger.log(Logger.DEBUG, "Elevons: " & AImage( G_Elevon_Angles(LEFT) ) & ", "
+                 & AImage( G_Elevon_Angles(RIGHT) ) & ", Head: " & AImage( G_Target_Orientation.Yaw ) & ", Roll: " & AImage( G_Target_Orientation.Roll ) );
 
       Servo.set_Angle(Servo.LEFT_ELEVON, G_Elevon_Angles(LEFT) );
       Servo.set_Angle(Servo.RIGHT_ELEVON, G_Elevon_Angles(RIGHT) );
+
+      -- DEBUG Detach Test
+      if G_Object_Orientation.Yaw > 250.0*Degree and G_Object_Orientation.Yaw < 252.0*Degree then
+         detach;
+      end if;
+
 
       PX4IO.Driver.sync_Outputs;
    end runOneCycle;
@@ -126,19 +147,35 @@ package body Controller with SPARK_Mode is
 
    procedure detach is
    begin
-      for i in Integer range 1 .. 3 loop
-         Servo.set_Angle(Servo.LEFT_ELEVON, Elevon_Angle_Type'Last );
-         Servo.set_Angle(Servo.RIGHT_ELEVON, Elevon_Angle_Type'Last );
-         PX4IO.Driver.sync_Outputs;
-         Helper.delay_ms( 2000 );
+      for i in Integer range 1 .. 2 loop
+         Servo.set_Angle(Servo.LEFT_ELEVON, -30.0 *Degree );
+         Servo.set_Angle(Servo.RIGHT_ELEVON, -30.0 *Degree );
+         for k in Integer range 1 .. 100 loop
+            PX4IO.Driver.sync_Outputs;
+            Helper.delay_ms( 10 );
+         end loop;
          Servo.set_Angle(Servo.LEFT_ELEVON, 0.0 * Degree);
          Servo.set_Angle(Servo.RIGHT_ELEVON, 0.0 * Degree);
-         Helper.delay_ms( 2000 );
+         for k in Integer range 1 .. 60 loop
+            PX4IO.Driver.sync_Outputs;
+            Helper.delay_ms( 10 );
+         end loop;
       end loop;
    end detach;
 
+
+   procedure control_Roll is
+      error : constant Angle_Type := ( G_Target_Orientation.Roll - G_Object_Orientation.Roll );
+      now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Roll_Control) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
+   begin
+      G_Last_Roll_Control := now;
+      G_Plane_Control.Aileron := Roll_PID_Controller.step(PID_Roll, error, dt);
+   end control_Roll;
+
+
    procedure control_Pitch is
-      error : constant Pitch_Type := ( G_Object_Orientation.Pitch - G_Target_Orientation.Pitch );
+      error : constant Angle_Type := ( G_Target_Orientation.Pitch - G_Object_Orientation.Pitch );
       now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
@@ -146,22 +183,19 @@ package body Controller with SPARK_Mode is
       G_Plane_Control.Elevator := Pitch_PID_Controller.step(PID_Pitch, error, dt);
    end control_Pitch;
 
-   procedure control_Heading is
+   procedure control_Yaw is
+      error : Angle_Type := 0.0 *Degree;
+      now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Yaw_Control) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
+      G_Last_Yaw_Control := now;
       G_Target_Orientation.Yaw := Yaw_Type( Heading( G_Object_Position,
                                                      G_Target_Position ) );
 
-      -- G_Plane_Control.Aileron := Pitch_PID_Controller.step(PID_Pitch, error, dt);
-   end control_Heading;
+      error := delta_Angle( G_Object_Orientation.Yaw, G_Target_Orientation.Yaw );
 
-   procedure control_Roll is
-      error : constant Roll_Type := ( G_Object_Orientation.Roll - G_Target_Orientation.Roll );
-      now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
-   begin
-      G_Plane_Control.Aileron := Roll_PID_Controller.step(PID_Roll, error, dt);
-   end control_Roll;
-
+      G_Target_Orientation.Roll := Yaw_PID_Controller.step(PID_Yaw, error, dt);
+   end control_Yaw;
 
 
    function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type ) return Elevon_Angle_Array is
@@ -177,9 +211,9 @@ package body Controller with SPARK_Mode is
       result : Angle_Type := To - From;
    begin
       if result > 180.0 * Degree then
-         result := 180.0 * Degree - result;
+         result := 360.0 * Degree - result;
       elsif result < -180.0 * Degree then
-         result := result + 180.0 * Degree;
+         result := result + 360.0 * Degree;
       end if;
       return result;
    end delta_Angle;

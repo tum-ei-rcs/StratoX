@@ -1,5 +1,5 @@
 
-package body Generic_PID_Controller is
+package body Generic_PID_Controller with SPARK_Mode is
 
 
    procedure initialize( Pid : out Pid_Object; 
@@ -46,7 +46,7 @@ package body Generic_PID_Controller is
                   return PID_Output_Type 
    is
       derivate     : Unit_Type := 0.0;
-      output       : PID_Output_Type := PID_Output_Type( 0.0 );
+      output       : Unit_Type := Unit_Type( 0.0 );
       tmp_integral : Unit_Type := 0.0;
    begin
    
@@ -68,18 +68,19 @@ package body Generic_PID_Controller is
       
       
       -- Calculate Output with Gains
-      output := PID_Output_Type( Unit_Type( Pid.Kp ) * Unit_Type( error ) +
-                                 Unit_Type( Pid.Ki ) * Unit_Type( Pid.Integral ) +
-                                 Unit_Type( Pid.Kd ) * derivate );
+      output := Unit_Type( Pid.Kp ) * Unit_Type( error ) +
+                Unit_Type( Pid.Ki ) * Unit_Type( Pid.Integral ) +
+                Unit_Type( Pid.Kd ) * derivate;
+      
       
       -- Saturate Output
-      if output < Pid.Output_Limit_Low then
-         output := Pid.Output_Limit_Low;
-      elsif output > Pid.Output_Limit_High then
-         output := Pid.Output_Limit_High;
+      if output < Unit_Type( Pid.Output_Limit_Low ) then
+         output := Unit_Type( Pid.Output_Limit_Low );
+      elsif output > Unit_Type(Pid.Output_Limit_High) then
+         output := Unit_Type( Pid.Output_Limit_High );
       end if;
 
-      return output;
+      return PID_Output_Type( output );
    end step;
 
 end Generic_PID_Controller;

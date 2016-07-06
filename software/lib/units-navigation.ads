@@ -13,6 +13,17 @@ with Units.Vectors; use Units.Vectors;
 package Units.Navigation with SPARK_Mode is
 
 
+   -- Date
+   subtype Month_Type is Integer range 1 .. 12;
+   subtype Day_Of_Month_Type is Integer range 1 .. 31;
+   subtype Year_Type is Integer;
+
+   type Hour_Type is mod 24;
+   type Minute_Type is mod 60;
+   type Second_Type is mod 60;
+
+
+
    -- GPS Position
    subtype Longitude_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree;
    subtype Latitude_Type is Units.Angle_Type range -90.0 * Degree .. 90.0 * Degree;

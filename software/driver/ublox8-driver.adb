@@ -16,20 +16,30 @@ with ublox8.Protocol; use ublox8.Protocol;
 with Ada.Real_Time; use Ada.Real_Time;
 
 package body ublox8.Driver with
-Refined_State => (State => (G_position, G_heading))
+SPARK_Mode,
+Refined_State => (State => (G_GPS_Message, G_heading))
 is  
    package Fletcher16_Byte is new Fletcher16 (
                                                 Index_Type => Natural, 
                                                 Element_Type => Byte, 
                                                 Array_Type => Byte_Array);
    
-   
-   G_position : GPS_Loacation_Type := 
-      ( Longitude => 0.0 * Degree,
-        Latitude  => 0.0 * Degree,
-        Altitude  => 0.0 * Meter );
 
    G_heading : Heading_Type := NORTH;
+   
+   G_GPS_Message : GPS_Message_Type := 
+      ( year => 0,
+        month => 1,
+        day => 1,
+        hour => 0,
+        minute => 0,
+        second => 0,
+        fix => NO_FIX,
+        sats => 0,
+        lon => 0.0 * Degree,
+        lat => 0.0 * Degree,
+        alt => 0.0 * Meter,
+        speed => 0.0 * Meter / Second );
 
 
    UBLOX_M8N : constant HIL.UART.Device_ID_Type := HIL.Devices.GPS;
@@ -102,10 +112,10 @@ is
       pointer : buffer_pointer_Type := 0;
    begin
       isValid := False;
-      data := (others => Byte( 0 ) );
+      data := (others => Byte( 0 ) );  -- EXCEPTION: Bis hier
       
       HIL.UART.read(UBLOX_M8N, data_rx);
-      for i in 1 .. data_rx'Length - 1 loop
+      for i in 1 .. data_rx'Length - 2 loop
          if data_rx(i) = UBX_SYNC1 and data_rx(i + 1) = UBX_SYNC2 then
             pointer := buffer_pointer_Type( i - 1 );
             
@@ -118,7 +128,7 @@ is
             
                cks := Fletcher16_Byte.Checksum( head & message );
                if check(1) = cks.ck_a and check(2) = cks.ck_b then
-                  Logger.log(Logger.DEBUG, "UBX valid");
+                  Logger.log(Logger.TRACE, "UBX valid");
                   data := message;
                   if message(20) = 3 or message(20) = 4 then
                      isValid := True;
@@ -129,7 +139,7 @@ is
                end if;
             
             elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
-               Logger.log(Logger.DEBUG, "UBX Ack");
+               Logger.log(Logger.TRACE, "UBX Ack");
             end if;             
             
 
@@ -138,7 +148,7 @@ is
       end loop;
          
          -- got class 1, id 3, length 16 -> NAV_STATUS
-         Logger.log(Logger.DEBUG, "UBX msg class " & Integer'Image(Integer(head(3))) & ", id "
+         Logger.log(Logger.TRACE, "UBX msg class " & Integer'Image(Integer(head(3))) & ", id "
                     & Integer'Image(Integer(head(4))));
    end readFromDevice;   
 
@@ -229,10 +239,13 @@ is
    begin
       readFromDevice(data_rx, isValid);
       if isValid then
-         G_position.Longitude := Unit_Type(Float( HIL.toInteger_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
-         G_position.Latitude  := Unit_Type(Float( HIL.toInteger_32( data_rx(28 .. 31) ) ) * 1.0e-7) * Degree;
-         G_position.Altitude  := Unit_Type(Float( HIL.toInteger_32( data_rx(36 .. 39) ) )) * Milli * Meter;
-         Logger.log(Logger.DEBUG, "Long: " & AImage( G_position.Longitude ) );
+         G_GPS_Message.year := Year_Type( HIL.toUnsigned_16( data_rx( 4 .. 5 ) ) );
+         G_GPS_Message.month := Month_Type( data_rx( 6 ) );
+         G_GPS_Message.lon := Unit_Type(Float( HIL.toInteger_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
+         G_GPS_Message.lat := Unit_Type(Float( HIL.toInteger_32( data_rx(28 .. 31) ) ) * 1.0e-7) * Degree;
+         G_GPS_Message.alt := Unit_Type(Float( HIL.toInteger_32( data_rx(36 .. 39) ) )) * Milli * Meter;
+         
+         Logger.log(Logger.DEBUG, "Long: " & AImage( G_GPS_Message.lon ) );
       end if;
 
       -- logging
@@ -243,8 +256,13 @@ is
 
    function get_Position return GPS_Loacation_Type is
    begin
-      return G_position;
+      return (G_GPS_Message.lon, G_GPS_Message.lat, G_GPS_Message.alt);
    end get_Position;
+   
+   function get_GPS_Message return GPS_Message_Type is
+   begin
+      return G_GPS_Message;
+   end get_GPS_Message;
 
    function get_Direction return Heading_Type is
    begin

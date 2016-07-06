@@ -1,4 +1,4 @@
-package FAT_Filesystem.Directories with SPARK_Mode is
+package FAT_Filesystem.Directories with SPARK_Mode => Off is
 
    type Directory_Handle is private;
 

@@ -1,4 +1,5 @@
 
+with Generic_Signal;
 
 with IMU;
 with GPS;
@@ -16,6 +17,20 @@ package body Estimator with SPARK_Mode is
    Test : Translation_Vector := (0.0 * Meter, 0.0 * Meter, 0.0 * Meter);
    Foo  : constant Translation_Vector := (0.0 * Meter, 3.0 * Meter, 0.0 * Meter);
 
+   type State_Type is record
+      pos_signal : GPS.GPS_Sensor.Sensor_Signal.Signal_Type( 1 .. 10 );
+   end record;
+
+   type Sensor_Record is record
+      GPS1  : GPS.GPS_Tag;
+      Baro1 : Barometer.Barometer_Tag;
+      IMU1  : IMU.IMU_Tag;
+      Mag1  : Magnetometer.Magnetometer_Tag;
+   end record;
+
+
+   G_state  : State_Type;
+   G_Sensor : Sensor_Record;
 
    -- init
    procedure initialize is
@@ -63,6 +78,7 @@ package body Estimator with SPARK_Mode is
       G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
 
       GPS.Sensor.read_Measurement;
+      G_state.pos_signal(1).data := GPS.Sensor.get_Position;
 
    end update;
 

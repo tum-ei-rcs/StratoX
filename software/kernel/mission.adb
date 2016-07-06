@@ -2,6 +2,7 @@
 
 with Units.Navigation; use Units.Navigation;
 with Config;
+with HIL;
 
 with Units; use Units;
 
@@ -9,29 +10,46 @@ with Units; use Units;
 with Logger;
 with Estimator;
 with Controller;
+with NVRAM; use NVRAM;
 
 
 package body Mission is
 
-   G_state : Mission_State_Type := UNKNOWN;
-   G_Home_Position : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE * Degree, 
-                                            Config.DEFAULT_LATITUDE * Degree, 
-                                            0.0 * Meter);
+   type State_Type is record 
+      mission_state : Mission_State_Type := UNKNOWN;
+      mission_event : Mission_Event_Type := NONE;
+      home          : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE * Degree, 
+                                             Config.DEFAULT_LATITUDE * Degree, 
+                                             0.0 * Meter);
+      body_info     : Body_Type;
+   end record;
 
-   G_body_info : Body_Type;
+   G_state : State_Type;
    
    procedure start_New_Mission is
    begin
-      if G_state = UNKNOWN or G_state = WAITING_FOR_RESET then
-         G_state := INITIALIZING;
+      if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
+         G_state.mission_state := INITIALIZING;
+         Logger.log(Logger.INFO, "New Mission.");
       else
          Logger.log(Logger.WARN, "Mission running, cannot start new Mission!");
       end if;
    end start_New_Mission;
+   
+   procedure load_Mission is
+      old_state_val : HIL.Byte := HIL.Byte( 0 );
+   begin
+      NVRAM.Load( VAR_MISSIONSTATE, old_state_val );
+      G_state.mission_state := Mission_State_Type'Val( old_state_val );
+      if G_state.mission_state = UNKNOWN then
+         start_New_Mission;
+      end if;
+      Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
+   end load_Mission;
 
    procedure run_Mission is
    begin
-      case (G_state) is
+      case (G_state.mission_state) is
          when UNKNOWN => null;
          when INITIALIZING => 
             perform_Initialization;
@@ -68,7 +86,8 @@ package body Mission is
    
    procedure next_State is
    begin
-      G_state := Mission_State_Type'Succ(G_state);
+      G_state.mission_state := Mission_State_Type'Succ(G_state.mission_state);
+      NVRAM.Store( VAR_MISSIONSTATE, Mission_State_Type'Pos( G_state.mission_state ) );
    end next_State;
          
    procedure perform_Initialization is
@@ -94,14 +113,17 @@ package body Mission is
    begin
       next_State;
       Estimator.update;
-      G_Home_Position := Estimator.get_Position;
+      G_state.home := Estimator.get_Position;
       
    end wait_For_Release;
 
    procedure monitor_Ascend is
+      height : Altitude_Type := 0.0 * Meter;
    begin
       -- Estimator
       Estimator.update;
+      
+      
    end monitor_Ascend;
    
    procedure perform_Detach is
@@ -114,7 +136,7 @@ package body Mission is
          isAttached := False;
       end loop;
       
-      Controller.set_Target_Position( G_Home_Position );
+      Controller.set_Target_Position( G_state.home );
       next_State;
    end perform_Detach;
 
@@ -123,10 +145,10 @@ package body Mission is
       -- Estimator
       Estimator.update;
 
-      G_body_info.orientation := Estimator.get_Orientation;
+      G_state.body_info.orientation := Estimator.get_Orientation;
 
       -- Controller
-      Controller.set_Current_Orientation (G_body_info.orientation);
+      Controller.set_Current_Orientation (G_state.body_info.orientation);
       Controller.runOneCycle;
    end control_Descend;
 

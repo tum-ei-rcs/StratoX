@@ -49,7 +49,7 @@ is
    end write;
    
    procedure read(page : Page_Type; offset : Offset_Type; data : out Data_Type)
-   with pre => data'Length mod 2 = 0
+   with pre => data'Length mod 2 = 0 and data'Length > 0
    is
       Data_TX : HIL.UART.Data_Type(1 .. (4+data'Length)) := (     -- maximum 68 (4 + 64), but is this necessary?
                                                1 => HIL.Byte( 1 ),
@@ -112,7 +112,7 @@ is
       check_data : Data_Type := data;
    begin
       check_data(2) := 0;   -- reset crc field for calculation
-      return CRC8.calculateCRC8( check_data ) = data(2);      
+      return CRC8.calculateCRC8( check_data ) = data(2);      -- SPARK: index check might fail
    end valid_Package;
    
 
@@ -298,7 +298,7 @@ is
       write(PX4IO_PAGE_DIRECT_PWM, 0, Duty_Cycle);
       
       -- right
-      Duty_Cycle := HIL.toBytes( servo_Duty_Cycle( G_Servo_Angle_Right ) ); 
+      Duty_Cycle := HIL.toBytes( servo_Duty_Cycle( - G_Servo_Angle_Right ) );  -- Minus because Servo is flipped
       write(PX4IO_PAGE_DIRECT_PWM, 1, Duty_Cycle);
       
       -- motor

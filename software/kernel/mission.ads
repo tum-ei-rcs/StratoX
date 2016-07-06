@@ -31,6 +31,8 @@ package Mission is
    );
 
    procedure start_New_Mission;
+   
+   procedure load_Mission;
 
    procedure run_Mission;
 

@@ -40,9 +40,9 @@ package Config.Software is
    CFG_PID_ROLL_I : constant := 0.060;
    CFG_PID_ROLL_D : constant := 0.020;
 
-   CFG_PID_HEADING_P : constant := 0.450;
-   CFG_PID_HEADING_I : constant := 0.060;
-   CFG_PID_HEADING_D : constant := 0.020;
+   CFG_PID_YAW_P : constant := 0.070;
+   CFG_PID_YAW_I : constant := 0.050;
+   CFG_PID_YAW_D : constant := 0.010;
    
 
 
