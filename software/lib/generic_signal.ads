@@ -14,7 +14,7 @@ with Units; use Units;
 
 generic
    type Data_Type is private;
-   -- with function "/" (X : Data_Type; Y : Integer) return Data_Type is <>;
+   -- with function "/" (X : Data_Type; Y : Float) return Data_Type is <>;
    -- with function "+" (X,Y : Data_Type) return Data_Type is <>;
 package Generic_Signal with SPARK_Mode is
 

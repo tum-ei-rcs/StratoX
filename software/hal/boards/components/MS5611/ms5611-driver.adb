@@ -46,10 +46,10 @@ is
    
    subtype Sens_T1_Type is Float range 0.0 .. Float((2**16 - 1) * 2**15);
    subtype Off_T1_Type is Float range 0.0 .. Float((2**16 - 1) * 2**16);
-   subtype TCS_Type is Float range 0.0 .. Float((2**16 - 1) / 2**8);
-   subtype TCO_Type is Float range 0.0 .. Float((2**16 - 1) / 2**7);
+   subtype TCS_Type is Float range 0.0 .. Float(2**16 - 1) / Float(2**8);
+   subtype TCO_Type is Float range 0.0 .. Float(2**16 - 1) / Float(2**7);
    subtype T_Ref_Type is Float range 0.0 .. Float((2**16 - 1) * 2**8);
-   subtype Tempsens_Type is Float range 0.0 .. Float((2**16 - 1) / 2**23);
+   subtype Tempsens_Type is Float range 0.0 .. Float(2**16 - 1) / Float(2**23);
 
 
    subtype DT_Type is Float range -16776960.9 .. 16777216.9;

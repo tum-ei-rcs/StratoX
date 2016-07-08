@@ -10,6 +10,15 @@ package Barometer with SPARK_Mode is
       temperature : Temperature_Type;
    end record;
 
+--     function "+"(Left,Right : Barometer_Data_Type) return Barometer_Data_Type is
+--     ( (pressure => Left.pressure + Right.pressure,
+--          temperature => Left.temperature + Right.temperature) );
+--
+--     function "/"(Left : Barometer_Data_Type; Right : Float) return Barometer_Data_Type is
+--     ( (pressure => Left.pressure / Right,
+--          temperature => Left.temperature / Right) );
+
+
    package Barometer_Sensor is new Generic_Sensor(Barometer_Data_Type); use Barometer_Sensor;
 
    type Barometer_Tag is new Barometer_Sensor.Sensor_Tag with record

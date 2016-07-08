@@ -19,7 +19,7 @@ package Units with
 
    -- Basis Type
 
-   type Unit_Type is new Float with
+   type Unit_Type is new Float with  -- As tagged Type? -> Generics with Unit_Type'Class
         Dimension_System =>
         ((Unit_Name => Meter, Unit_Symbol => 'm', Dim_Symbol => 'L'),
          (Unit_Name => Kilogram, Unit_Symbol => "kg", Dim_Symbol => 'M'),
@@ -27,6 +27,8 @@ package Units with
          (Unit_Name => Ampere, Unit_Symbol => 'A', Dim_Symbol => 'I'),
          (Unit_Name => Kelvin, Unit_Symbol => 'K', Dim_Symbol => "Theta"),
          (Unit_Name => Radian, Unit_Symbol => "Rad", Dim_Symbol => "A"));
+
+   type Unit_Array is array (Natural range <>) of Unit_Type;
 
    -- Base Units
    subtype Length_Type is Unit_Type with
@@ -255,6 +257,9 @@ package Units with
 
 
    -- function Radian( degree : Float ) return Float
+
+   function average( signal : Unit_Array ) return Unit_Type;
+
 
    -- Image functions
    function Image (unit : Linear_Acceleration_Type) return String;

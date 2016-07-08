@@ -12,7 +12,17 @@ package body Units is
 --        end if;
 --     end Saturate;
 
-
+   function average( signal : Unit_Array ) return Unit_Type is
+      avg : Unit_Type;
+   begin
+      avg := signal( signal'First ) / Unit_Type( signal'Length );
+      if signal'Length > 1 then
+         for index in Integer range signal'First+1 .. signal'Last loop
+            avg := avg + signal( index ) / Unit_Type( signal'Length );
+         end loop;
+      end if;
+      return avg;
+   end average;
 
 
    function Image (unit : Linear_Acceleration_Type) return String is

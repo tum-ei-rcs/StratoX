@@ -39,6 +39,9 @@ package Estimator with SPARK_Mode is
 
 
 private
+
+   procedure update_Max_Height;
+
    G_Object_Orientation : Orientation_Type   := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
    G_Object_Position    : GPS_Loacation_Type := (0.0 * Degree, 0.0 * Degree, 0.0 * Meter);
 --     Object_Pose : Dynamics3D.Pose_Type := (

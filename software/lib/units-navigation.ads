@@ -35,6 +35,10 @@ package Units.Navigation with SPARK_Mode is
       Altitude  : Altitude_Type;
    end record;
 
+   type Longitude_Array is array (Natural range <>) of Longitude_Type;
+   type Latitude_Array is array (Natural range <>) of Latitude_Type;
+   type Altitude_Array is array (Natural range <>) of Altitude_Type;
+
 
 
    -- Orientation
