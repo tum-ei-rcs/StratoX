@@ -130,7 +130,7 @@ is
                if check(1) = cks.ck_a and check(2) = cks.ck_b then
                   Logger.log(Logger.TRACE, "UBX valid");
                   data := message;
-                  if message(20) = 3 or message(20) = 4 then
+                  if message(20) /= 0 then
                      isValid := True;
                   end if;
                else
@@ -245,6 +245,13 @@ is
          G_GPS_Message.lat := Unit_Type(Float( HIL.toInteger_32( data_rx(28 .. 31) ) ) * 1.0e-7) * Degree;
          G_GPS_Message.alt := Unit_Type(Float( HIL.toInteger_32( data_rx(36 .. 39) ) )) * Milli * Meter;
          
+         case data_rx(20) is
+         when HIL.Byte(2) => G_GPS_Message.fix := FIX_2D;
+         when HIL.Byte(3) => G_GPS_Message.fix := FIX_3D;
+         when others => G_GPS_Message.fix := NO_FIX;
+         end case;
+         
+         
          Logger.log(Logger.DEBUG, "Long: " & AImage( G_GPS_Message.lon ) );
       end if;
 
@@ -263,6 +270,11 @@ is
    begin
       return G_GPS_Message;
    end get_GPS_Message;
+   
+   function get_Fix return GPS_Fix_Type is
+   begin
+      return G_GPS_Message.fix;
+   end get_Fix;
 
    function get_Direction return Heading_Type is
    begin

@@ -24,8 +24,6 @@ is
    subtype Time_Type is Units.Time_Type;
 
 
-   type GPS_Fix_Type is (NO_FIX, FIX_2D, FIX_3D);
-
    type GPS_Message_Type is record
       year : Year_Type;              --*< Year (UTC)
       month : Month_Type;            --*< Month, range 1..12 (UTC)
@@ -51,6 +49,8 @@ is
    function get_Position return GPS_Loacation_Type;
 
    function get_GPS_Message return GPS_Message_Type;
+
+   function get_Fix return GPS_Fix_Type;
 
    -- function get_Direction return Direction_Type;
 

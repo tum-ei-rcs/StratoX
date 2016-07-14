@@ -83,6 +83,10 @@ package body Controller with SPARK_Mode is
                                       Unit_Type( Config.Software.CFG_PID_YAW_P ),
                                       Unit_Type( Config.Software.CFG_PID_YAW_I ),
                                       Unit_Type( Config.Software.CFG_PID_YAW_D ));
+
+      -- hold glider in position
+      Servo.set_Angle(Servo.LEFT_ELEVON, Elevon_Angle_Type'First );
+      Servo.set_Angle(Servo.RIGHT_ELEVON, Elevon_Angle_Type'First );
    end initialize;
 
 
@@ -136,9 +140,9 @@ package body Controller with SPARK_Mode is
       Servo.set_Angle(Servo.RIGHT_ELEVON, G_Elevon_Angles(RIGHT) );
 
       -- DEBUG Detach Test
-      if G_Object_Orientation.Yaw > 250.0*Degree and G_Object_Orientation.Yaw < 252.0*Degree then
-         detach;
-      end if;
+--        if G_Object_Orientation.Yaw > 250.0*Degree and G_Object_Orientation.Yaw < 252.0*Degree then
+--           detach;
+--        end if;
 
 
       PX4IO.Driver.sync_Outputs;

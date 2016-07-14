@@ -25,6 +25,8 @@ is
 
    function get_Position(Self : GPS_Tag) return GPS_Data_Type;
 
+   function get_GPS_Fix(Self : GPS_Tag) return GPS_Fix_Type;
+
    -- function get_Angular_Velocity (Self : GPS_Tag)
 
 

@@ -262,7 +262,7 @@ package Units with
 
 
    -- Image functions
-   function Image (unit : Linear_Acceleration_Type) return String;
+   function Image (unit : Unit_Type) return String;
 
    function AImage (unit : Angle_Type) return String;
 

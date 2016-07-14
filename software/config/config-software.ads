@@ -14,6 +14,11 @@ with Logger;
 package Config.Software is
 
    DEBUG_MODE_IS_ACTIVE : constant Boolean := True;
+   
+   CFG_IN_AIR_RESTART : constant Boolean := False;
+
+   -- CFG_GPS_BAUDRATE : constant Frequency_Type := 9600.0 * Hertz;
+
 
    CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;
 
@@ -27,7 +32,7 @@ package Config.Software is
 
    -- filter configuration
 
-   -- PID configuration
+
 
          
    
@@ -44,8 +49,5 @@ package Config.Software is
    CFG_PID_YAW_I : constant := 0.050;
    CFG_PID_YAW_D : constant := 0.010;
    
-
-
-
 
 end Config.Software;

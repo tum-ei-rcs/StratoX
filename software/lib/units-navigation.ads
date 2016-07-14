@@ -39,6 +39,7 @@ package Units.Navigation with SPARK_Mode is
    type Latitude_Array is array (Natural range <>) of Latitude_Type;
    type Altitude_Array is array (Natural range <>) of Altitude_Type;
 
+   type GPS_Fix_Type is (NO_FIX, FIX_2D, FIX_3D);
 
 
    -- Orientation

@@ -17,20 +17,21 @@ with Units.Navigation; use Units.Navigation;
 
 package Estimator with SPARK_Mode is
 
-
-
    -- init
    procedure initialize;
 
    -- fetch fresh measurement data
    procedure update;
    
-   
    function get_Orientation return Orientation_Type;
    
    function get_Position return GPS_Loacation_Type;
    
+   function get_GPS_Fix return GPS_Fix_Type;
+   
+   function get_current_Height return Altitude_Type;
   
+   function get_max_Height return Altitude_Type;
    
    
    function Orientation

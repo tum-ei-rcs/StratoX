@@ -25,7 +25,7 @@ package body Units is
    end average;
 
 
-   function Image (unit : Linear_Acceleration_Type) return String is
+   function Image (unit : Unit_Type) return String is
       first : constant Float  := Float'Truncation (Float (unit));
       rest  : constant String := Integer'Image (Integer ((Float (unit) - first) * 10.0));
    begin

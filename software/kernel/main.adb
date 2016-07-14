@@ -51,12 +51,11 @@ package body Main is
       -- wait to satisfy some timing
       delay until Clock + Milliseconds (50);
 
-      --PX4IO.Driver.initialize;
 
       Estimator.initialize;
       Controller.initialize;
 
-         -- Illustration how to use NVRAM
+      -- Illustration how to use NVRAM
 
       declare
          num_boots : HIL.Byte;
@@ -122,16 +121,19 @@ package body Main is
          LED_Manager.LED_sync;
 
 
-         -- Estimator
-         Estimator.update;
+         -- Mission
+         Mission.run_Mission;
 
+         -- Estimator
+--           Estimator.update;
+--  
          body_info.orientation := Estimator.get_Orientation;
          body_info.position := Estimator.get_Position;
-
-
-         -- Controller
-         Controller.set_Current_Orientation (body_info.orientation);
-         Controller.runOneCycle;
+--  
+--  
+--           -- Controller
+--           Controller.set_Current_Orientation (body_info.orientation);
+--           Controller.runOneCycle;
 
 
          -- Console
@@ -150,25 +152,24 @@ package body Main is
                   AImage (body_info.position.Longitude) & ", lat: " &
                   AImage (body_info.position.Latitude) & ", alt: " &
                   Integer'Image ( Integer( body_info.position.Altitude ) ));
+                  
+               Logger.log (Logger.INFO, "Profile:" & Integer'Image (loop_duration_max / Time_Span_Unit)); 
 
             when Console.ARM => Controller.activate;
 
             when Console.DISARM => Controller.deactivate;
 
             when Console.PROFILE =>
-               Logger.log (Logger.INFO, Integer'Image (loop_duration_max / Time_Span_Unit));
+               Logger.log (Logger.INFO, "Profile:" & Integer'Image (loop_duration_max / Time_Span_Unit));
 
             when others =>
                null;
          end case;
-
-
+         
          -- Profile
          if loop_duration_max < (Clock - loop_time_start) then
             loop_duration_max := Clock - loop_time_start;
          end if;
-
-         -- TODO: write mission state to NVRAM, if it has changed.
 
          -- wait remaining loop time
          delay until loop_time_start + Milliseconds (MAIN_TICK_RATE_MS);

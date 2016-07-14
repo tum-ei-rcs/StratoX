@@ -19,5 +19,10 @@ is
       return Driver.get_Position;
    end get_Position;
 
+   function get_GPS_Fix(Self : GPS_Tag) return GPS_Fix_Type is
+   begin
+      return Driver.get_Fix;
+   end get_GPS_Fix;
+
 
 end GPS;

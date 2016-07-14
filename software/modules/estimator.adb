@@ -18,16 +18,18 @@ package body Estimator with SPARK_Mode is
    type Height_Index_Type is mod 10;
 
    package Height_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => Altitude_Type);
+   package GPS_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => GPS_Loacation_Type);
 
+   G_height_buffer : Height_Buffer_Pack.Buffer_Type;
+   G_pos_buffer : GPS_Buffer_Pack.Buffer_Type;
 
-   Test : Translation_Vector := (0.0 * Meter, 0.0 * Meter, 0.0 * Meter);
-   Foo  : constant Translation_Vector := (0.0 * Meter, 3.0 * Meter, 0.0 * Meter);
-
-   G_height_buffer : Height_Buffer_Pack.Ring_Buffer_Type;
 
    type State_Type is record
-      pos_signal : GPS.GPS_Sensor.Sensor_Signal.Signal_Type( 1 .. 10 );
-      max_height : Altitude_Type;
+      fix : GPS_Fix_Type := NO_FIX;
+      avg_gps_height : Altitude_Type := 0.0 * Meter;
+      max_gps_height : Altitude_Type := 0.0 * Meter;
+      avg_baro_height : Altitude_Type := 0.0 * Meter;
+      max_baro_height : Altitude_Type := 0.0 * Meter;
    end record;
 
    type Sensor_Record is record
@@ -47,8 +49,8 @@ package body Estimator with SPARK_Mode is
    -- init
    procedure initialize is
    begin
-      Test := Test + Foo;
-      G_state.max_height := 0.0 * Meter;
+      G_state.max_gps_height := 0.0 * Meter;
+      G_state.max_baro_height := 0.0 * Meter;
 
       -- Orientation Sensors
       IMU.Sensor.initialize;
@@ -64,52 +66,99 @@ package body Estimator with SPARK_Mode is
    -- fetch fresh measurement data
    procedure update is
       Acc : Linear_Acceleration_Vector;
+      GFixS : String := "NO";
    begin
       -- Estimate Object Orientation
       IMU.Sensor.read_Measurement;
       Acc := IMU.Sensor.get_Linear_Acceleration;
 
-      Logger.log(Logger.TRACE,
-                 "Acc: " & Image( Acc(X) ) &
-                 ", " & Image( Acc(Y) ) &
-                 ", " & Image( Acc(Z) ) );
+      Logger.log(Logger.TRACE,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
 
       G_Object_Orientation := Orientation( Acc );
 
       Magnetometer.Sensor.read_Measurement;
       G_Object_Orientation.Yaw := Heading(Magnetometer.Sensor.get_Sample.data, G_Object_Orientation);
 
-      Logger.log(Logger.DEBUG,
-                 "Rad: " & AImage( G_Object_Orientation.Roll ) &
-                 ", " & AImage( G_Object_Orientation.Pitch ) &
-                 ", " & AImage( G_Object_Orientation.Yaw ) );
-
-
 
       -- Estimate Object Position
       Barometer.Sensor.read_Measurement; -- >= 4 calls for new data
-      G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
+
       G_height_buffer.push_back( G_Object_Position.Altitude );
       update_Max_Height;
 
 
       GPS.Sensor.read_Measurement;
-      G_state.pos_signal(1).data := GPS.Sensor.get_Position;
+      G_state.fix := GPS.Sensor.get_GPS_Fix;
+      -- FIXME: Sprung durch Baro Offset, falls GPS wegfällt
+      if G_state.fix = FIX_3D then
+         G_Object_Position := GPS.Sensor.get_Position;
+         GFixS := "3D";
+      elsif G_state.fix = FIX_2D then
+         GFixS := "2D";
+         G_Object_Position := GPS.Sensor.get_Position;
+         G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;  -- Overwrite Alt
+      else
+         GFixS := "NO";
+         G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
+      end if;
+      G_pos_buffer.push_back( GPS.Sensor.get_Position );
 
+      -- Outputs
+      Logger.log(Logger.DEBUG,
+                 "RPY: " & AImage( G_Object_Orientation.Roll ) &
+                 ", " & AImage( G_Object_Orientation.Pitch ) &
+                 ", " & AImage( G_Object_Orientation.Yaw ) );
+
+      Logger.log(Logger.DEBUG,
+                 "LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
+                 ", " & AImage( G_Object_Position.Latitude ) &
+                 ", " & Image( G_Object_Position.Altitude ) & "m, " & GFixS );
 
    end update;
-
 
    function get_Orientation return Orientation_Type is
    begin
       return G_Object_Orientation;
    end get_Orientation;
 
-
    function get_Position return GPS_Loacation_Type is
    begin
       return G_Object_Position;
    end get_Position;
+
+   function get_GPS_Fix return GPS_Fix_Type is
+   begin
+      return G_state.fix;
+   end get_GPS_Fix;
+
+
+   function get_current_Height return Altitude_Type is
+      result : Altitude_Type;
+   begin
+      if G_state.fix = FIX_3D then
+         result := G_state.avg_gps_height;
+      else
+         result := G_state.avg_baro_height;
+      end if;
+      return result;
+   end get_current_Height;
+
+   function get_max_Height return Altitude_Type is
+      result : Altitude_Type;
+   begin
+      if G_state.fix = FIX_3D then
+         result := G_state.max_gps_height;
+      else
+         result := G_state.max_baro_height;
+      end if;
+      return result;
+   end get_max_Height;
+
+
+
+
+
+
 
 
    function Orientation(gravity_vector : Linear_Acceleration_Vector) return Orientation_Type is
@@ -142,27 +191,61 @@ package body Estimator with SPARK_Mode is
    end Orientation;
 
    procedure update_Max_Height is
-      avg : Altitude_Type := 0.0 * Meter;
-      buf : Height_Buffer_Pack.Element_Array(0 .. G_height_buffer.Length-1);
 
-      function average( signal : Height_Buffer_Pack.Element_Array ) return Altitude_Type is
+      function gps_average( signal : GPS_Buffer_Pack.Element_Array ) return Altitude_Type is
+         avg : Altitude_Type;
+      begin
+         avg := signal( signal'First ).Altitude / Unit_Type( signal'Length );
+         if signal'Length > 1 then
+            for index in GPS_Buffer_Pack.Length_Type range 2 .. signal'Length loop
+               avg := avg + signal( index ).Altitude / Unit_Type( signal'Length );
+            end loop;
+         end if;
+         return avg;
+      end gps_average;
+
+
+      function baro_average( signal : Height_Buffer_Pack.Element_Array ) return Altitude_Type is
          avg : Altitude_Type;
       begin
          avg := signal( signal'First ) / Unit_Type( signal'Length );
          if signal'Length > 1 then
-            for index in Natural range 0 .. G_height_buffer.Length-1 loop
+            for index in Height_Buffer_Pack.Length_Type range 2 .. signal'Length loop
                avg := avg + signal( index ) / Unit_Type( signal'Length );
             end loop;
          end if;
          return avg;
-      end average;
+      end baro_average;
    begin
-      G_height_buffer.get_Buffer( buf );
-      avg := average( buf );
+      -- GPS
+      declare
+         buf : GPS_Buffer_Pack.Element_Array(1 .. G_pos_buffer.Length);
+      begin
+         G_pos_buffer.get_all( buf );
+         if G_pos_buffer.Length > 0 then
+            G_state.avg_gps_height := gps_average( buf );
+         end if;
+      end;
 
-      if avg > G_state.max_height then
-         G_state.max_height := avg;
+      if G_state.avg_gps_height > G_state.max_gps_height then
+         G_state.max_gps_height := G_state.avg_gps_height;
       end if;
+
+      -- Baro
+      declare
+         buf : Height_Buffer_Pack.Element_Array(1 .. G_height_buffer.Length);
+      begin
+         G_height_buffer.get_all( buf );
+         if G_height_buffer.Length > 0 then
+            G_state.avg_baro_height := baro_average( buf );
+         end if;
+      end;
+
+      if G_state.avg_baro_height > G_state.max_baro_height then
+         G_state.max_baro_height := G_state.avg_baro_height;
+      end if;
+
    end update_Max_Height;
+
 
 end Estimator;
