@@ -13,8 +13,6 @@ package Mission is
       DETACHING,
       DESCENDING,
       WAITING_ON_GROUND,
-      --WAITING_FOR_EVALUATION,
-      --EVALUATING,
       WAITING_FOR_RESET
    );
 
@@ -54,6 +52,6 @@ private
 
    procedure wait_On_Ground;
 
-   procedure perform_Evaluation;
+   procedure wait_For_Reset;
 
 end Mission;

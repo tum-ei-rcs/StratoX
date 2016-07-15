@@ -30,8 +30,12 @@ package Controller with SPARK_Mode is
    procedure set_Target_Pitch (pitch : Pitch_Type);
         
    procedure set_Current_Orientation (orientation : Orientation_Type);
+   
+   procedure log_Info;
 
    procedure runOneCycle;
+   
+   procedure set_hold;
    
    procedure detach;
 

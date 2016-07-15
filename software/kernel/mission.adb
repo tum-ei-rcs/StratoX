@@ -8,6 +8,7 @@ with HIL;
 with Units; use Units;
 
 
+with Console; use Console;
 with Logger;
 with Estimator;
 with Controller;
@@ -20,7 +21,8 @@ package body Mission is
       mission_state  : Mission_State_Type := UNKNOWN;
       mission_event  : Mission_Event_Type := NONE;
       last_call_time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      threshold_time : Time_Type := 0.0 * Second;
+      delta_threshold_time : Time_Type := 0.0 * Second;
+      target_threshold_time : Time_Type := 0.0 * Second;
       home           : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE * Degree, 
                                              Config.DEFAULT_LATITUDE * Degree, 
                                              0.0 * Meter);
@@ -46,13 +48,13 @@ package body Mission is
    begin
       NVRAM.Load( VAR_MISSIONSTATE, old_state_val );
       G_state.mission_state := Mission_State_Type'Val( old_state_val );
-      if G_state.mission_state = UNKNOWN then
+      if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
          start_New_Mission;
       else
-         Estimator.initialize;
-         Controller.initialize;
-      end if;
-      Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
+         -- Estimator.initialize;
+         -- Controller.initialize;
+         Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
+      end if;    
    end load_Mission;
 
    procedure run_Mission is
@@ -83,10 +85,8 @@ package body Mission is
          when WAITING_ON_GROUND =>
             wait_On_Ground;
             
-         --when WAITING_FOR_EVALUATION =>
-         --   wait_
          when WAITING_FOR_RESET =>
-            null;
+            wait_For_Reset;
             
       end case;
       
@@ -121,6 +121,8 @@ package body Mission is
       -- get initial values
       Estimator.update;
    
+      -- set hold
+      Controller.set_hold;
 
       -- check GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
@@ -130,7 +132,9 @@ package body Mission is
       end if;
 
       -- FOR TEST
-      if now > G_state.last_state_change + Ada.Real_Time.Milliseconds( 500 ) then
+      if now > G_state.last_state_change + Ada.Real_Time.Seconds( 10 ) then
+         G_state.home := Estimator.get_Position;
+         G_state.home.Altitude := Estimator.get_current_Height;
          next_State;
       end if;
       
@@ -150,6 +154,7 @@ package body Mission is
 
    procedure monitor_Ascend is
       height : Altitude_Type := 0.0 * Meter;
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       -- Estimator
       Estimator.update;
@@ -157,26 +162,34 @@ package body Mission is
      
       -- check target height
       if Estimator.get_current_Height >= G_state.home.Altitude + Config.CFG_TARGET_ALTITUDE_THRESHOLD then
-         G_state.threshold_time := G_state.threshold_time + 10.0 * Milli*Second;  -- TODO: calc dT     
-         if G_state.threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
+         G_state.target_threshold_time := G_state.target_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT     
+         if G_state.target_threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
+            Logger.log(Logger.INFO, "Target height reached. Detaching...");
             Logger.log(Logger.INFO, "Target height reached. Detaching...");
             next_State;
          end if;
       else
-         G_state.threshold_time := 0.0 * Second;
+         G_state.target_threshold_time := 0.0 * Second;
       end if;
       
       -- check for accidential drop
       if Estimator.get_current_Height < Estimator.get_max_Height - Config.CFG_DELTA_ALTITUDE_THRESH then
-         G_state.threshold_time := G_state.threshold_time + 10.0 * Milli*Second;  -- TODO: calc dT
-         if G_state.threshold_time >= Config.CFG_DELTA_ALTITUDE_THRESH_TIME then
+         G_state.delta_threshold_time := G_state.delta_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT
+         if G_state.delta_threshold_time >= Config.CFG_DELTA_ALTITUDE_THRESH_TIME then
+            Logger.log(Logger.INFO, "Unplanned drop detected...");
             Logger.log(Logger.INFO, "Unplanned drop detected...");
             next_State;         
          end if;
       else
-         G_state.threshold_time := 0.0 * Second;  -- TODO: calc dT
+         G_state.delta_threshold_time := 0.0 * Second;  -- TODO: calc dT
       end if;
-      
+   
+      -- Test 40 Sek descend
+      if now > G_state.last_state_change + Seconds(120) then
+         Logger.log(Logger.INFO, "Timeout Ascend");
+         Logger.log(Logger.INFO, "Timeout Ascend");
+         next_State;
+      end if;
       
    end monitor_Ascend;
    
@@ -191,11 +204,13 @@ package body Mission is
       end loop;
       
       Controller.set_Target_Position( G_state.home );
-      Logger.log(Logger.INFO, "Detach successful, flying home");
+      Estimator.reset_log_calls;     
+      Logger.log(Logger.INFO, "Detached");
       next_State;
    end perform_Detach;
 
    procedure control_Descend is
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       -- Estimator
       Estimator.update;
@@ -208,17 +223,38 @@ package body Mission is
       Controller.set_Current_Position (G_state.body_info.position);
       Controller.runOneCycle; 
       
+      
+      -- Test 40 Sek descend
+      if now > G_state.last_state_change + Seconds(120) then
+         Logger.log(Logger.INFO, "Timeout. Landed");
+         Controller.deactivate;
+         next_State;
+      end if;
+      
+      
    end control_Descend;
 
    procedure wait_On_Ground is
+      command : Console.User_Command_Type;
    begin
-      null;
+      -- Console
+      Console.read_Command( command );
+
+      case ( command ) is
+         when Console.DISARM =>
+            Logger.log(Logger.INFO, "Mission Finished");
+            next_State;
+            
+         when others =>
+            null;
+      end case;
+
    end wait_On_Ground;
 
-   procedure perform_Evaluation is
+   procedure wait_For_Reset is
    begin
       null;
-   end perform_Evaluation;
+   end wait_For_Reset;
 
 
 end Mission;

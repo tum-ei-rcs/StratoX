@@ -15,6 +15,12 @@ with Helper;
 
 package body Controller with SPARK_Mode is
 
+   type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP;
+
+   type State_Type is record
+      logger_calls : Logger_Call_Type;
+   end record;
+
    package Pitch_PID_Controller is new Generic_PID_Controller(Angle_Type,
                                                               Elevator_Angle_Type,
                                                               Unit_Type,
@@ -55,7 +61,7 @@ package body Controller with SPARK_Mode is
    G_Target_Orientation : Orientation_Type := (0.0 * Degree, -3.0 * Degree, 0.0 * Degree);
 
 
-
+   G_state : State_Type;
 
    G_Last_Call_Time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    G_Last_Roll_Control : Ada.Real_Time.Time := Ada.Real_Time.Clock;
@@ -84,9 +90,7 @@ package body Controller with SPARK_Mode is
                                       Unit_Type( Config.Software.CFG_PID_YAW_I ),
                                       Unit_Type( Config.Software.CFG_PID_YAW_D ));
 
-      -- hold glider in position
-      Servo.set_Angle(Servo.LEFT_ELEVON, Elevon_Angle_Type'First );
-      Servo.set_Angle(Servo.RIGHT_ELEVON, Elevon_Angle_Type'First );
+
    end initialize;
 
 
@@ -125,19 +129,40 @@ package body Controller with SPARK_Mode is
    end set_Current_Orientation;
 
 
+   procedure log_Info is
+   begin
+         Logger.log(Logger.DEBUG,
+                    "Home L" & AImage( G_Target_Position.Longitude ) &
+                 ", " & AImage( G_Target_Position.Latitude ) &
+                 ", " & Image( G_Target_Position.Altitude ) );
+         Logger.log(Logger.DEBUG,
+                    "TY: " & AImage( G_Target_Orientation.Yaw ) &
+                    ", TR: " & AImage( G_Target_Orientation.Roll ) &
+                    "   Elev: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) )
+                    );
+   end log_Info;
+
+
    procedure runOneCycle is
    begin
+      -- control
       control_Pitch;
       control_Yaw;
+      G_Target_Orientation.Roll := 10.0 * Degree;  -- TEST: Omakurve
       control_Roll;
 
+      -- mix
       G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron);
 
-      Logger.log(Logger.DEBUG, "Elevons: " & AImage( G_Elevon_Angles(LEFT) ) & ", "
-                 & AImage( G_Elevon_Angles(RIGHT) ) & ", Head: " & AImage( G_Target_Orientation.Yaw ) & ", Roll: " & AImage( G_Target_Orientation.Roll ) );
-
+      -- set servos
       Servo.set_Angle(Servo.LEFT_ELEVON, G_Elevon_Angles(LEFT) );
       Servo.set_Angle(Servo.RIGHT_ELEVON, G_Elevon_Angles(RIGHT) );
+
+      -- log
+      G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
+      if G_state.logger_calls = 0 then
+         log_Info;
+      end if;
 
       -- DEBUG Detach Test
 --        if G_Object_Orientation.Yaw > 250.0*Degree and G_Object_Orientation.Yaw < 252.0*Degree then
@@ -148,19 +173,27 @@ package body Controller with SPARK_Mode is
       PX4IO.Driver.sync_Outputs;
    end runOneCycle;
 
+   procedure set_hold is
+   begin
+       -- hold glider in position
+      Servo.set_Angle(Servo.LEFT_ELEVON, 35.0 * Degree );
+      Servo.set_Angle(Servo.RIGHT_ELEVON, 35.0 * Degree );
+      PX4IO.Driver.sync_Outputs;
+   end set_hold;
+
 
    procedure detach is
    begin
       for i in Integer range 1 .. 2 loop
-         Servo.set_Angle(Servo.LEFT_ELEVON, -30.0 *Degree );
-         Servo.set_Angle(Servo.RIGHT_ELEVON, -30.0 *Degree );
+         Servo.set_Angle(Servo.LEFT_ELEVON, -40.0 * Degree);
+         Servo.set_Angle(Servo.RIGHT_ELEVON, -40.0 * Degree);
          for k in Integer range 1 .. 100 loop
             PX4IO.Driver.sync_Outputs;
             Helper.delay_ms( 10 );
          end loop;
-         Servo.set_Angle(Servo.LEFT_ELEVON, 0.0 * Degree);
-         Servo.set_Angle(Servo.RIGHT_ELEVON, 0.0 * Degree);
-         for k in Integer range 1 .. 60 loop
+         Servo.set_Angle(Servo.LEFT_ELEVON, 20.0 *Degree );
+         Servo.set_Angle(Servo.RIGHT_ELEVON, 20.0 *Degree );
+         for k in Integer range 1 .. 30 loop
             PX4IO.Driver.sync_Outputs;
             Helper.delay_ms( 10 );
          end loop;

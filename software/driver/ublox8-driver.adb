@@ -88,7 +88,7 @@ is
       cks : constant Fletcher16_Byte.Checksum_Type := Fletcher16_Byte.Checksum( header(3 .. 6) & data );
       check : constant UBX_Checksum_Array := (1 => cks.ck_a, 2 => cks.ck_b);
       isReceived : Boolean := False;
-      retries : Natural := 3;
+      retries : Natural := 1;
    begin
       while isReceived = False and retries > 0 loop
          HIL.UART.write(UBLOX_M8N, header & data & check);
@@ -123,7 +123,7 @@ is
             
             if head(3) = UBX_CLASS_NAV and head(4) = UBX_ID_NAV_PVT and head(5) = UBX_LENGTH_NAV_PVT then 
                
-               message := data_rx(Integer(pointer + 7) .. Integer(pointer + 98));
+               message := data_rx(Integer(pointer + 7) .. Integer(pointer + 98));  -- EXCEPTION: mögliches 0 Array
                check := data_rx(Integer(pointer + 99) .. Integer(pointer + 100));         
             
                cks := Fletcher16_Byte.Checksum( head & message );
@@ -197,7 +197,7 @@ is
    
     
    
-      null;
+      for i in Integer range 1 .. 3 loop
       -- 1. Set binary protocol (CFG-PRT, own message)
       writeToDevice(msg_cfg_prt_head, msg_cfg_prt);  -- no ACK is expected here
       
@@ -206,6 +206,8 @@ is
 
       -- 3. Set message rates (CFG-MSG)
       delay_ms( 10 );
+      msg_cfg_msg(2) := Byte( 0 );
+      msg_cfg_msg(1) := UBX_ID_NAV_PVT;
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
       
       -- set other to 0
@@ -225,7 +227,10 @@ is
       
       msg_cfg_msg(1) := UBX_ID_NAV_STATUS;
       delay_ms( 10 );
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg); 
+      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
+      delay_ms( 10 );
+      
+      end loop;
       -- 4. set dynamic model
       
       

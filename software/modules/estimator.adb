@@ -9,13 +9,17 @@ with Barometer;
 with Magnetometer;
 
 with Units.Numerics; use Units.Numerics;
+with Units.Navigation; use Units.Navigation;
 
 with Logger;
+with Config.Software;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 package body Estimator with SPARK_Mode is
 
    type Height_Index_Type is mod 10;
+   type Baro_Call_Type is mod 2;
+   type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP;
 
    package Height_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => Altitude_Type);
    package GPS_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => GPS_Loacation_Type);
@@ -24,12 +28,16 @@ package body Estimator with SPARK_Mode is
    G_pos_buffer : GPS_Buffer_Pack.Buffer_Type;
 
 
+
+
    type State_Type is record
       fix : GPS_Fix_Type := NO_FIX;
       avg_gps_height : Altitude_Type := 0.0 * Meter;
       max_gps_height : Altitude_Type := 0.0 * Meter;
       avg_baro_height : Altitude_Type := 0.0 * Meter;
       max_baro_height : Altitude_Type := 0.0 * Meter;
+      baro_calls : Baro_Call_Type := 0;
+      logger_calls : Logger_Call_Type := 0;
    end record;
 
    type Sensor_Record is record
@@ -66,6 +74,7 @@ package body Estimator with SPARK_Mode is
    -- fetch fresh measurement data
    procedure update is
       Acc : Linear_Acceleration_Vector;
+      Mag : Magnetic_Flux_Density_Vector;
       GFixS : String := "NO";
    begin
       -- Estimate Object Orientation
@@ -77,14 +86,19 @@ package body Estimator with SPARK_Mode is
       G_Object_Orientation := Orientation( Acc );
 
       Magnetometer.Sensor.read_Measurement;
-      G_Object_Orientation.Yaw := Heading(Magnetometer.Sensor.get_Sample.data, G_Object_Orientation);
+      Mag := Magnetometer.Sensor.get_Sample.data;
+
+      Logger.log(Logger.TRACE, "Mag (uT):" & Image(Mag(X) * 1.0e6) & ", " & Image(Mag(Y) * 1.0e6) & ", " & Image(Mag(Z) * 1.0e6) );
+      G_Object_Orientation.Yaw := Heading(Mag, G_Object_Orientation);
 
 
       -- Estimate Object Position
       Barometer.Sensor.read_Measurement; -- >= 4 calls for new data
-
-      G_height_buffer.push_back( G_Object_Position.Altitude );
-      update_Max_Height;
+      G_state.baro_calls := Baro_Call_Type'Succ( G_state.baro_calls );
+      if G_state.baro_calls = 0 then
+         G_height_buffer.push_back( Barometer.Sensor.get_Altitude );
+         update_Max_Height;
+      end if;
 
 
       GPS.Sensor.read_Measurement;
@@ -104,17 +118,30 @@ package body Estimator with SPARK_Mode is
       G_pos_buffer.push_back( GPS.Sensor.get_Position );
 
       -- Outputs
+      G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
+      if G_state.logger_calls = 0 then
+         log_Info;
+      end if;
+
+   end update;
+
+
+   procedure reset_log_calls is
+   begin
+      G_state.logger_calls := 0;
+   end reset_log_calls;
+
+   procedure log_Info is
+   begin
       Logger.log(Logger.DEBUG,
                  "RPY: " & AImage( G_Object_Orientation.Roll ) &
                  ", " & AImage( G_Object_Orientation.Pitch ) &
-                 ", " & AImage( G_Object_Orientation.Yaw ) );
-
-      Logger.log(Logger.DEBUG,
-                 "LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
+                 ", " & AImage( G_Object_Orientation.Yaw ) &
+                 "   LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
                  ", " & AImage( G_Object_Position.Latitude ) &
-                 ", " & Image( G_Object_Position.Altitude ) & "m, " & GFixS );
+                 ", " & Image( get_current_Height ) & "m, Fix: " & Integer'Image( GPS_Fix_Type'Pos( G_state.fix ) ) );
+   end log_Info;
 
-   end update;
 
    function get_Orientation return Orientation_Type is
    begin
@@ -246,6 +273,5 @@ package body Estimator with SPARK_Mode is
       end if;
 
    end update_Max_Height;
-
 
 end Estimator;

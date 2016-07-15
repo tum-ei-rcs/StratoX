@@ -23,6 +23,10 @@ package Estimator with SPARK_Mode is
    -- fetch fresh measurement data
    procedure update;
    
+   procedure reset_log_calls;
+   
+   procedure log_Info;
+   
    function get_Orientation return Orientation_Type;
    
    function get_Position return GPS_Loacation_Type;

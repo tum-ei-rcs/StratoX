@@ -26,6 +26,8 @@ with Interfaces; use Interfaces;
 
 package body Main is
 
+   type LED_Counter_Type is mod 1000/Config.Software.MAIN_TICK_RATE_MS/2;
+   G_led_counter : LED_Counter_Type := 0;
 
 
    procedure initialize is
@@ -55,8 +57,10 @@ package body Main is
       Estimator.initialize;
       Controller.initialize;
 
+      -- wait to satisfy some timing
+      delay until Clock + Milliseconds (1500);
+      
       -- Illustration how to use NVRAM
-
       declare
          num_boots : HIL.Byte;
 
@@ -107,7 +111,7 @@ package body Main is
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
       Logger.log (Logger.INFO, msg);
-      Mission.start_New_Mission;
+      Mission.load_Mission;
 
 
       -- arm PX4IO
@@ -117,8 +121,13 @@ package body Main is
          loop_time_start := Clock;
 
          -- LED alive
-         LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
-         LED_Manager.LED_sync;
+         --LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
+         G_led_counter := LED_Counter_Type'Succ( G_led_counter );
+         if G_led_counter < LED_Counter_Type'Last/2 then
+            LED_Manager.LED_switchOn;
+         else
+            LED_Manager.LED_switchOff;
+         end if;
 
 
          -- Mission
@@ -126,13 +135,14 @@ package body Main is
 
          -- Estimator
 --           Estimator.update;
---  
-         body_info.orientation := Estimator.get_Orientation;
-         body_info.position := Estimator.get_Position;
---  
---  
+--  --  
+--           body_info.orientation := Estimator.get_Orientation;
+--           body_info.position := Estimator.get_Position;
+--  --  
+--  --  
 --           -- Controller
 --           Controller.set_Current_Orientation (body_info.orientation);
+--           Controller.set_Current_Position (body_info.position);
 --           Controller.runOneCycle;
 
 
@@ -143,15 +153,8 @@ package body Main is
             when Console.TEST => perform_Self_Test;
 
             when Console.STATUS =>
-               Logger.log( Logger.INFO, "RPY: " &
-                  AImage (body_info.orientation.Roll) & ", " &
-                  AImage (body_info.orientation.Pitch) & ", " &
-                  AImage (body_info.orientation.Yaw));
-
-               Logger.log( Logger.INFO, "GPS: long: " &
-                  AImage (body_info.position.Longitude) & ", lat: " &
-                  AImage (body_info.position.Latitude) & ", alt: " &
-                  Integer'Image ( Integer( body_info.position.Altitude ) ));
+               Estimator.log_Info;
+               Controller.log_Info;
                   
                Logger.log (Logger.INFO, "Profile:" & Integer'Image (loop_duration_max / Time_Span_Unit)); 
 

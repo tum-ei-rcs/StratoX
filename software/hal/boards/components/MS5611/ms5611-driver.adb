@@ -289,21 +289,22 @@ is
                end if;
             end;
 
-               when PRESSURE_CONVERSION =>
-               declare
-                  t_abs : Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12 (Clock cannot be a direct parameter)
-               begin
-                  if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
-                     read_adc (Baro, pressure_raw);
-                     if pressure_raw /= 0 then
-                        pressure := calculatePressure (pressure_raw, SENS, OFF);
-                        G_Baro_State.FSM_State := READY;
-                     else
-                        startConversion (D1, OSR_4096);
-                        G_Baro_State.FSM_State := PRESSURE_CONVERSION;
-                     end if;
+         when PRESSURE_CONVERSION =>
+            declare
+               t_abs : Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12 (Clock cannot be a direct parameter)
+            begin
+               if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
+                  read_adc (Baro, pressure_raw);
+                  if pressure_raw /= 0 then
+                     pressure := calculatePressure (pressure_raw, SENS, OFF);
+                     startConversion (D2, OSR_4096);
+                     G_Baro_State.FSM_State := TEMPERATURE_CONVERSION;
+                  else
+                     startConversion (D1, OSR_4096);
+                     G_Baro_State.FSM_State := PRESSURE_CONVERSION;
                   end if;
-               end;
+               end if;
+            end;
 
       end case;
 

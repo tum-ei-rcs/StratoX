@@ -46,7 +46,7 @@ is
       STM32.USARTs.Set_Stop_Bits( STM32.Device.USART_3, STM32.USARTs.Stopbits_1 );
       STM32.USARTs.Set_Word_Length( STM32.Device.USART_3, STM32.USARTs.Word_Length_8 );
       STM32.USARTs.Set_Parity( STM32.Device.USART_3, STM32.USARTs.No_Parity );
-      STM32.USARTs.Set_Baud_Rate( STM32.Device.USART_3, 1_500_000 );
+      STM32.USARTs.Set_Baud_Rate( STM32.Device.USART_3, 57_600 );
       STM32.USARTs.Set_Oversampling_Mode( STM32.Device.USART_3, STM32.USARTs.Oversampling_By_16 );
       STM32.USARTs.Set_Mode( STM32.Device.USART_3, STM32.USARTs.Tx_Rx_Mode );
       STM32.USARTs.Set_Flow_Control( STM32.Device.USART_3, STM32.USARTs.No_Flow_Control );
@@ -177,6 +177,7 @@ is
            STM32.USARTs.Interrupt_Enabled (STM32.Device.UART_4, STM32.USARTs.Received_Data_Not_Empty)
          then
             STM32.USARTs.Receive( STM32.Device.UART_4, data);
+            STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9(65) );
             Buffer( Integer(buffer_pointer) ) := Byte( data );
             buffer_pointer := buffer_pointer + 1;
             STM32.USARTs.Clear_Status (STM32.Device.UART_4, STM32.USARTs.Read_Data_Register_Not_Empty);

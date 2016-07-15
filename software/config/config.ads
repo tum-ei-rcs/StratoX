@@ -20,14 +20,14 @@ package Config is
    DEFAULT_LONGITUDE : constant := 11.60555;     -- Englischer Garten
    DEFAULT_LATITUDE  : constant := 48.16423;
 
-   OPTIMAL_PITCH : constant := -5.0;
+   OPTIMAL_PITCH : constant := -6.0;
 
    -- Thresholds
-   CFG_TARGET_ALTITUDE_THRESHOLD : constant := 40.0 * Meter;
-   CFG_TARGET_ALTITUDE_THRESHOLD_TIME : constant := 10.0 * Second;
+   CFG_TARGET_ALTITUDE_THRESHOLD : constant := 12.0 * Meter;
+   CFG_TARGET_ALTITUDE_THRESHOLD_TIME : constant := 6.0 * Second;
 
-   CFG_DELTA_ALTITUDE_THRESH : constant := 100.0 * Meter;  -- Diff
-   CFG_DELTA_ALTITUDE_THRESH_TIME : constant := 10.0 * Second;
+   CFG_DELTA_ALTITUDE_THRESH : constant := 5.0 * Meter;  -- Diff
+   CFG_DELTA_ALTITUDE_THRESH_TIME : constant := 4.0 * Second;
 
 
    -- Limits
