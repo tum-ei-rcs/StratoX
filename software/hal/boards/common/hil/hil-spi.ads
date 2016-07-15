@@ -39,7 +39,8 @@ is
    
    procedure transceive (Device : in Device_ID_Type; 
                          Data_TX : in Data_Type; 
-                         Data_RX : out Data_Type);
-   -- simultanously read and write
+                         Data_RX : out Data_Type) 
+     with Pre => Data_TX'Length = Data_RX'Length;
+   -- same as transfer, but simultanoeus read and write
 
 end HIL.SPI;

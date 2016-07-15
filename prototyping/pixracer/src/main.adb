@@ -10,8 +10,10 @@ with HIL.Devices;
 with NVRAM;
 with Logger;
 with LED_Manager;
+with Buzzer_Manager;
 with SDMemory;
 with SDMemory.Driver;
+with Units; use Units;
 
 package body Main is
 
@@ -25,6 +27,12 @@ package body Main is
       Logger.init (logret);
       Logger.log (Logger.INFO, "---------------");
       Logger.log (Logger.INFO, "CPU initialized");
+
+      Buzzer_Manager.Initialize;
+      --Buzzer_Manager.Set_Freq (2000.0 * Hertz);
+      Buzzer_Manager.Set_Timing (period => 1.0 * Second, length => 0.1 * Second);
+      Buzzer_Manager.Enable;
+      Buzzer_Manager.Tick;
 
       LED_Manager.LED_switchOff;
       LED_Manager.Set_Color ((1 => HIL.Devices.RED_LED));
@@ -49,6 +57,7 @@ package body Main is
          loop
             LED_Manager.LED_tick (Config.MAIN_TICK_RATE_MS);
             LED_Manager.LED_sync;
+            Buzzer_Manager.Tick;
 
             delay until t_next;
             t_next := t_next + Milliseconds (Config.MAIN_TICK_RATE_MS);
@@ -60,7 +69,7 @@ package body Main is
 
       Logger.log (Logger.INFO, "SD Card check...");
       SDMemory.Driver.List_Rootdir;
-
+      Buzzer_Manager.Disable;
    end Initialize;
 
    procedure Run_Loop is
@@ -77,6 +86,33 @@ package body Main is
       LED_Manager.Set_Color ((1 => HIL.Devices.GRN_LED));
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
+      -- welcome jingle
+      Buzzer_Manager.Set_Timing (period => 1.0 * Second, length => 0.1 * Second);
+      Buzzer_Manager.Enable;
+      declare
+         gleich : Ada.Real_Time.Time := Clock;
+      begin
+         Buzzer_Manager.Set_Freq (1000.0 * Hertz);
+         Buzzer_Manager.Tick;
+         gleich := gleich + Milliseconds(500);
+         delay until gleich;
+         Buzzer_Manager.Set_Freq (2000.0 * Hertz);
+         Buzzer_Manager.Tick;
+         gleich := gleich + Milliseconds(500);
+         delay until gleich;
+         Buzzer_Manager.Set_Freq (4000.0 * Hertz);
+         Buzzer_Manager.Tick;
+         gleich := gleich + Milliseconds(500);
+         delay until gleich;
+
+         Buzzer_Manager.Disable;
+         gleich := gleich + Milliseconds(1000);
+         delay until gleich;
+      end;
+
+      Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
+      Buzzer_Manager.Enable;
+
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
       bootcounter := bootcounter + 1;
       Logger.log (Logger.INFO, "Build Date: " & Compilation_Date & " " & Compilation_Time);
@@ -88,6 +124,7 @@ package body Main is
          --  LED heartbeat
          LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
          LED_Manager.LED_sync;
+         Buzzer_Manager.Tick;
 
 --           --  UART Test
 --           --  HIL.UART.write(HIL.UART.Console, (70, 65) );

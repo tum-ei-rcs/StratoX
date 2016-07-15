@@ -33,6 +33,9 @@ is
       STM32.Device.Enable_Clock( STM32.Device.UART_4 );
       STM32.Device.Enable_Clock( STM32.Device.USART_7 );
  
+      -- Timers
+      STM32.Device.Enable_Clock (STM32.Device.Timer_2);
+      STM32.Device.Reset (STM32.Device.Timer_2);
  
    end configure;
    

@@ -7,7 +7,7 @@ with HIL.Devices;
 with Ada.Real_Time;
 
 --  @summary
---  Target-independent specification for HIL of Clock
+--  Target-independent specification for HIL of Clocks
 package HIL.Clock with
    SPARK_Mode
 is

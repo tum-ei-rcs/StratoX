@@ -23,6 +23,11 @@ is
 --  --     SPI1_CS_L3GD20H : constant Dev_GPIO := STM32.Device.PC13;  -- Gyro
 --
 
+   ---------------------------------------------------------------
+   -- PIN DEFINITIONS OF THINGS THAT ARE NOT VISIBLE TO HIL USER
+   ---------------------------------------------------------------
+
+
    --  SPI2: FRAM + BARO
    SPI2_SCK     : constant Dev_GPIO := STM32.Device.PB10; -- OK
    SPI2_MISO    : constant Dev_GPIO := STM32.Device.PB14; -- OK
@@ -117,9 +122,19 @@ is
                                                         Output_Type => Push_Pull,
                                                         Speed => Speed_2MHz,
                                                         Resistors => Floating );
+
+      Config_Out_Buz : constant GPIO_Port_Configuration := (
+                                                            Mode => Mode_AF,
+                                                            Output_Type => Push_Pull,
+                                                            Speed => Speed_50MHz,
+                                                            Resistors => Floating);
    begin
       -- configure LEDs
       Configure_IO (Points => (1 => map(RED_LED), 2 => map (BLU_LED), 3 => map (GRN_LED)), Config => Config_Out);
+
+      -- FIXME: this doesn't belong here.
+      Configure_IO (Points => (1 => STM32.Device.PA15), Config => Config_Out_Buz);
+      Configure_Alternate_Function (Points => (1 => STM32.Device.PA15), AF => GPIO_AF_TIM2); -- allow timer 2 to control buzzer
 
       --------------------------------
       --  SPU & CHIP SELECT
