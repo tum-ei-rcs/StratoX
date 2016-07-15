@@ -32,6 +32,9 @@ is
       STM32.Device.Enable_Clock( STM32.Device.USART_6 );   -- PX4IO 
       STM32.Device.Enable_Clock( STM32.Device.USART_7 );   -- SER 5
  
+      -- Timers
+      STM32.Device.Enable_Clock (STM32.Device.Timer_2);
+      STM32.Device.Reset (STM32.Device.Timer_2); -- wiithout this not reliable
  
    end configure;
    

@@ -58,7 +58,7 @@ package STM32.Board is
    Blue  : User_LED renames PB3;
 
    LCH_LED : User_LED renames Red;
-
+     
    All_LEDs  : GPIO_Points := Green & Red & Blue;
 
    procedure Initialize_LEDs;
@@ -75,9 +75,9 @@ package STM32.Board is
 
    
    ----------
-   -- Button
+   -- Buzzer
    ----------
-   --  TODO
+   --Buzzer : GPIO_Point renames PA15; -- this is timer2 channel 1 and timer2 etr
 
    
 --     ---------------

@@ -21,6 +21,7 @@ with Console;
 with Estimator;
 with Controller;
 with LED_Manager;
+with Buzzer_Manager;
 
 with Interfaces; use Interfaces;
 
@@ -42,6 +43,7 @@ package body Main is
 
       CPU.initialize;
 
+      Buzzer_Manager.Initialize;
       Logger.set_Log_Level (CFG_LOGGER_LEVEL_UART);
       --perform_Self_Test;
 
@@ -59,7 +61,7 @@ package body Main is
 
       -- wait to satisfy some timing
       delay until Clock + Milliseconds (1500);
-      
+
       -- Illustration how to use NVRAM
       declare
          num_boots : HIL.Byte;
@@ -113,12 +115,18 @@ package body Main is
       Logger.log (Logger.INFO, msg);
       Mission.load_Mission;
 
+      -- beep ever 10 seconds for one second at 1kHz.
+      Buzzer_Manager.Set_Freq (1000.0 * Hertz);
+      Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
+      Buzzer_Manager.Enable;
 
       -- arm PX4IO
       Controller.activate;
 
       loop
          loop_time_start := Clock;
+
+         Buzzer_Manager.Tick;
 
          -- LED alive
          --LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
@@ -135,11 +143,11 @@ package body Main is
 
          -- Estimator
 --           Estimator.update;
---  --  
+--  --
 --           body_info.orientation := Estimator.get_Orientation;
 --           body_info.position := Estimator.get_Position;
---  --  
---  --  
+--  --
+--  --
 --           -- Controller
 --           Controller.set_Current_Orientation (body_info.orientation);
 --           Controller.set_Current_Position (body_info.position);
@@ -155,8 +163,8 @@ package body Main is
             when Console.STATUS =>
                Estimator.log_Info;
                Controller.log_Info;
-                  
-               Logger.log (Logger.INFO, "Profile:" & Integer'Image (loop_duration_max / Time_Span_Unit)); 
+
+               Logger.log (Logger.INFO, "Profile:" & Integer'Image (loop_duration_max / Time_Span_Unit));
 
             when Console.ARM => Controller.activate;
 
@@ -168,7 +176,7 @@ package body Main is
             when others =>
                null;
          end case;
-         
+
          -- Profile
          if loop_duration_max < (Clock - loop_time_start) then
             loop_duration_max := Clock - loop_time_start;
