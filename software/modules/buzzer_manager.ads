@@ -9,6 +9,17 @@ with Units; use Units;
 --  Interface to use a buzzer/beeper.
 package Buzzer_Manager is
 
+   subtype T_Name is Character
+     with Static_Predicate => T_Name in 'a' .. 'g'; -- c,d,e,f,g,a,b
+   subtype T_Octave is Integer range 3 .. 8;
+   type Tone_Type is record
+      name   : T_Name;
+      octave : T_Octave; -- 3=small octave
+   end record;
+   --  A4 = 440Hz
+
+   type Song_Type is array (Positive range <>) of Tone_Type;
+
    procedure Initialize;
 
    procedure Tick;
@@ -23,6 +34,15 @@ package Buzzer_Manager is
    procedure Set_Freq (f : in Frequency_Type)
      with Pre => f > 0.0 * Hertz;
    --  define the frequency of the beep in Hertz
+
+   procedure Set_Tone (t : Tone_Type);
+
+   procedure Set_Song (s : Song_Type);
+
+   function Tone_To_Frequency (tone : Tone_Type) return Frequency_Type;
+   --  compute the frequency for the given tone name.
+   --  Examples:
+   --   a' => 400
 
    procedure Set_Timing (period : in Time_Type; length : in Time_Type)
      with Pre => period > length and

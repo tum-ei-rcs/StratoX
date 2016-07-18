@@ -5,6 +5,7 @@
 -- Authors: Martin Becker (becker@rcs.ei.tum.de>
 with STM32.Timers; use STM32.Timers;
 with System.OS_Interface;
+with HIL.UART;
 
 --  @summary
 --  Target-specific implementation of HIL for Timers. Pixracer.
@@ -47,6 +48,9 @@ package body HIL.Timers with SPARK_Mode => Off is
    begin
       --  1. select clk source (internal is default)
 
+      -- 4. disable preload
+      STM32.Timers.Set_Autoreload_Preload (This, False);
+
       --  2. write ARR and CCRx to set event period. Counter decrements
       --  until zero, then starts at value=Period again.
       Calculate_Prescaler_and_Period (Frequency, Prescaler, Period);
@@ -63,9 +67,6 @@ package body HIL.Timers with SPARK_Mode => Off is
       begin
          STM32.Timers.Configure_Channel_Output (This, Channel, Toggle, Enable, Value, High);
       end ;
-
-      -- 4. disable preload
-      STM32.Timers.Set_Autoreload_Preload (This, False);
 
       -- 5. finally enable channel
       STM32.Timers.Enable_Channel (This, Channel);

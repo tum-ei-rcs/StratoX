@@ -29,10 +29,6 @@ package body Main is
       Logger.log (Logger.INFO, "CPU initialized");
 
       Buzzer_Manager.Initialize;
-      --Buzzer_Manager.Set_Freq (2000.0 * Hertz);
-      Buzzer_Manager.Set_Timing (period => 1.0 * Second, length => 0.1 * Second);
-      Buzzer_Manager.Enable;
-      Buzzer_Manager.Tick;
 
       LED_Manager.LED_switchOff;
       LED_Manager.Set_Color ((1 => HIL.Devices.RED_LED));
@@ -57,7 +53,6 @@ package body Main is
          loop
             LED_Manager.LED_tick (Config.MAIN_TICK_RATE_MS);
             LED_Manager.LED_sync;
-            Buzzer_Manager.Tick;
 
             delay until t_next;
             t_next := t_next + Milliseconds (Config.MAIN_TICK_RATE_MS);
@@ -69,7 +64,7 @@ package body Main is
 
       Logger.log (Logger.INFO, "SD Card check...");
       SDMemory.Driver.List_Rootdir;
-      Buzzer_Manager.Disable;
+      Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
 
    procedure Run_Loop is
@@ -82,36 +77,29 @@ package body Main is
         with Import, Convention => Intrinsic;
       function Compilation_Time return String -- implementation-defined (GNAT)
         with Import, Convention => Intrinsic;
+      gleich : Ada.Real_Time.Time;
+      song : constant Buzzer_Manager.Song_Type := (('c',5),('d',5),('c',5),('f',5),
+                                                   ('e',5),('c',5),('d',5),('c',5),
+                                                   ('g',5),('f',5),('c',5),('c',6),
+                                                   ('a',5),('f',5),('e',5),('d',5),
+                                                   ('b',5),('a',5),('f',5),('g',5),
+                                                   ('f',5)); -- happy birthday
    begin
       LED_Manager.Set_Color ((1 => HIL.Devices.GRN_LED));
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
-      -- welcome jingle
-      Buzzer_Manager.Set_Timing (period => 1.0 * Second, length => 0.1 * Second);
+      Buzzer_Manager.Set_Timing (period => 0.5 * Second, length => 0.1 * Second); -- gapless
       Buzzer_Manager.Enable;
-      declare
-         gleich : Ada.Real_Time.Time := Clock;
-      begin
-         Buzzer_Manager.Set_Freq (1000.0 * Hertz);
-         Buzzer_Manager.Tick;
-         gleich := gleich + Milliseconds(500);
-         delay until gleich;
-         Buzzer_Manager.Set_Freq (2000.0 * Hertz);
-         Buzzer_Manager.Tick;
-         gleich := gleich + Milliseconds(500);
-         delay until gleich;
-         Buzzer_Manager.Set_Freq (4000.0 * Hertz);
-         Buzzer_Manager.Tick;
-         gleich := gleich + Milliseconds(500);
-         delay until gleich;
 
-         Buzzer_Manager.Disable;
-         gleich := gleich + Milliseconds(1000);
+      gleich := Clock;
+      for x in 1 .. song'Length loop
+         Buzzer_Manager.Set_Tone (song (x));
+         Buzzer_Manager.Tick;
+         gleich := gleich + Milliseconds(250);
          delay until gleich;
-      end;
-
-      Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
-      Buzzer_Manager.Enable;
+         Buzzer_Manager.Tick;
+      end loop;
+      Buzzer_Manager.Disable;
 
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
       bootcounter := bootcounter + 1;

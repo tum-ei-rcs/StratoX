@@ -84,6 +84,37 @@ package body Buzzer_Manager is
       is_configured := True;
    end Reconfigure_Hardware_Timer;
 
+   function Tone_To_Frequency (tone : Tone_Type) return Frequency_Type is
+      f : Frequency_Type;
+      subtype octave_modifier is Unit_Type;
+      o : constant octave_modifier := octave_modifier (tone.octave - 2);
+   begin
+      --  frequencies for octave 3 (small octave)
+      case tone.name is
+         when 'c' => f := 130.813 * Hertz;
+         when 'd' => f := 146.832 * Hertz;
+         when 'e' => f := 164.814 * Hertz;
+         when 'f' => f := 174.614 * Hertz;
+         when 'g' => f := 195.998 * Hertz;
+         when 'a' => f := 220.000 * Hertz;
+         when 'b' => f := 246.942 * Hertz;
+      end case;
+      --  now multiply with octave above 3
+      f := f * o;
+      return f;
+   end Tone_To_Frequency;
+
+   procedure Set_Tone (t : Tone_Type) is
+      f : constant Frequency_Type := Tone_To_Frequency (t);
+   begin
+      Set_Freq (f);
+   end Set_Tone;
+
+   procedure Set_Song (s : Song_Type) is
+   begin
+      null;
+   end Set_Song;
+
    procedure Set_Freq (f : in Frequency_Type) is
    begin
       cur_freq := f;
