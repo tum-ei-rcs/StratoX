@@ -219,8 +219,9 @@ private
       FAT_Addr        : Unsigned_32;
       Num_Clusters    : Unsigned_32;
       Window_Block    : Unsigned_32 := 16#FFFF_FFFF#;
-      Window          : Block (0 .. 511); -- that is too big for polling (rxoverrun), but making smaller crashes
+      Window          : Block (0 .. 511);
    end record;
+   for FAT_Filesystem'Alignment use 32; -- might be necessary, because Window is a DMA address
 
    function Ensure_Block
      (FS    : in out FAT_Filesystem;

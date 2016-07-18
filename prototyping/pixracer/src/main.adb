@@ -78,28 +78,23 @@ package body Main is
       function Compilation_Time return String -- implementation-defined (GNAT)
         with Import, Convention => Intrinsic;
       gleich : Ada.Real_Time.Time;
-      song : constant Buzzer_Manager.Song_Type := (('c',5),('d',5),('c',5),('f',5),
-                                                   ('e',5),('c',5),('d',5),('c',5),
-                                                   ('g',5),('f',5),('c',5),('c',6),
-                                                   ('a',5),('f',5),('e',5),('d',5),
-                                                   ('b',5),('a',5),('f',5),('g',5),
-                                                   ('f',5)); -- happy birthday
+      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6)); -- happy birthday
    begin
       LED_Manager.Set_Color ((1 => HIL.Devices.GRN_LED));
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
-      Buzzer_Manager.Set_Timing (period => 0.5 * Second, length => 0.1 * Second); -- gapless
-      Buzzer_Manager.Enable;
-
-      gleich := Clock;
-      for x in 1 .. song'Length loop
-         Buzzer_Manager.Set_Tone (song (x));
-         Buzzer_Manager.Tick;
-         gleich := gleich + Milliseconds(250);
-         delay until gleich;
-         Buzzer_Manager.Tick;
-      end loop;
-      Buzzer_Manager.Disable;
+--        Buzzer_Manager.Set_Timing (period => 0.5 * Second, length => 0.1 * Second); -- gapless
+--        Buzzer_Manager.Enable;
+--
+--        gleich := Clock;
+--        for x in 1 .. song'Length loop
+--           Buzzer_Manager.Set_Tone (song (x));
+--           Buzzer_Manager.Tick;
+--           gleich := gleich + Milliseconds(250);
+--           delay until gleich;
+--           Buzzer_Manager.Tick;
+--        end loop;
+--        Buzzer_Manager.Disable;
 
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
       bootcounter := bootcounter + 1;

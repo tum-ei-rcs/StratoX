@@ -13,6 +13,9 @@ with STM32.GPIO;              use STM32.GPIO;
 with STM32.SDMMC;             use STM32.SDMMC;
 with Cortex_M.Cache;
 
+with HAL;
+with Ada.Unchecked_Conversion;
+
 with Media_Reader.SDCard.Config; use Media_Reader.SDCard.Config;
 
 package body Media_Reader.SDCard is
@@ -20,7 +23,7 @@ package body Media_Reader.SDCard is
 --     Tx_IRQ            : constant Interrupt_ID :=
 --                           Ada.Interrupts.Names.DMA2_Stream6_Interrupt;
 
-   Use_DMA : Boolean := False;
+   Use_DMA : Boolean := True;
 
    procedure Ensure_Card_Informations
      (Controller : in out SDCard_Controller) with Inline_Always;
@@ -33,7 +36,7 @@ package body Media_Reader.SDCard is
    ------------
    -- DMA_Rx --
    ------------
-
+   -- on-chip DMA facility signals end of DMA transfer
    protected DMA_Interrupt_Handler is
       pragma Interrupt_Priority (255);
 
@@ -56,7 +59,7 @@ package body Media_Reader.SDCard is
    ------------------
    -- SDMMC_Status --
    ------------------
-
+   -- on-chip SD controller signals 'data end' and flags
    protected SDMMC_Interrupt_Handler is
       pragma Interrupt_Priority (250);
 
@@ -113,6 +116,7 @@ package body Media_Reader.SDCard is
         STM32.SDMMC.As_Controller (SD_Device'Access);
 
       Disable (SD_DMA, SD_DMA_Rx_Stream);
+      -- see http://blog.frankvh.com/2011/12/30/stm32f2xx-stm32f4xx-sdio-interface-part-2/, comment 5+6.
       Configure
         (SD_DMA,
          SD_DMA_Rx_Stream,
@@ -120,14 +124,14 @@ package body Media_Reader.SDCard is
           Direction                    => Peripheral_To_Memory,
           Increment_Peripheral_Address => False,
           Increment_Memory_Address     => True,
-          Peripheral_Data_Format       => Words,
+          Peripheral_Data_Format       => Words, -- essential: the memory buffer must be aligned to this setting. was words. Nothing helps.
           Memory_Data_Format           => Words,
           Operation_Mode               => Peripheral_Flow_Control_Mode,
-          Priority                     => Priority_Very_High,
-          FIFO_Enabled                 => True,
-          FIFO_Threshold               => FIFO_Threshold_Full_Configuration,
-          Memory_Burst_Size            => Memory_Burst_Inc4,
-          Peripheral_Burst_Size        => Peripheral_Burst_Inc4));
+          Priority                     => Priority_Medium, -- SD is not so important.
+          FIFO_Enabled                 => True, -- datasheet recommends True. False doesn't help.
+          FIFO_Threshold               => FIFO_Threshold_Full_Configuration, -- was: FIFO_Threshold_Full_Configuration,
+          Memory_Burst_Size            => Memory_Burst_Inc4, -- was Inc4
+          Peripheral_Burst_Size        => Peripheral_Burst_Inc4)); -- was Inc4. Single does not help
       Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);
 
       Disable (SD_DMA, SD_DMA_Tx_Stream);
@@ -303,7 +307,7 @@ package body Media_Reader.SDCard is
               (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Indicated);
 
             DMA_Status := DMA_No_Error;
-            Finished := True;
+            Finished := True; -- we actually get here, good
          end if;
 
          if Finished then
@@ -401,8 +405,17 @@ package body Media_Reader.SDCard is
    is
       Ret     : SD_Error;
       DMA_Err : DMA_Error_Code;
+      subtype Word_Data is SD_Data (1 .. 4);
+      function To_Data is new Ada.Unchecked_Conversion
+        (HAL.Word, Word_Data);
+      TmpData : Word_Data;
    begin
       Ensure_Card_Informations (Controller);
+
+      -- debug: reset out buffer
+      for k in Data'Range loop
+         Data (k) := 16#AA#;
+      end loop;
 
       if Use_DMA then
 
@@ -425,12 +438,24 @@ package body Media_Reader.SDCard is
             return False;
          end if;
 
-         SDMMC_Interrupt_Handler.Wait_Transfer (Ret);
-         DMA_Interrupt_Handler.Wait_Transfer (DMA_Err);
+         SDMMC_Interrupt_Handler.Wait_Transfer (Ret); -- this unblocks: ret= ok
+         DMA_Interrupt_Handler.Wait_Transfer (DMA_Err); -- this unblocks: DMA_err = no err
 
+
+         -- following two lines are supposed to flush the FIFO, see manual RM0090 DMA Controller/FIFO Flush
+         --Disable (SD_DMA, SD_DMA_Rx_Stream);
+         --Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);
+         -- not working
+
+
+         -- FIX: read pending DMA tail. That works and indeed carries the missing data.
+         while Get_Flag (Controller.Device, RX_Active) loop
+            TmpData (1 .. 4) := To_Data (Read_FIFO (Controller.Device)); -- 4 bytes per FIFO element
+         end loop;
+
+         -- after having removed the tail, this doesn't block anymore.
          loop
-            exit when not Get_Flag (Controller.Device, RX_Active);
-            -- FIXME: this hangs forever.
+            exit when not Get_Flag (Controller.Device, RX_Active); -- not that FIFO is empty, that works.
          end loop;
 
          Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);

@@ -76,8 +76,8 @@ package body STM32.SDMMC is
       DPSM               : Boolean;
       DMA_Enabled        : Boolean);
 
-   function Read_FIFO
-     (Controller : in out SDMMC_Controller) return Word;
+   --function Read_FIFO
+   --  (Controller : in out SDMMC_Controller) return Word;
 
    procedure Write_FIFO
      (Controller : in out SDMMC_Controller; data : Word);
@@ -1288,9 +1288,9 @@ package body STM32.SDMMC is
          --  Wide bus mode enable bit
          WIDBUS         => Bus_Wide_1B,
          --  SDIO_CK dephasing selection bit
-         NEGEDGE        => Edge_Falling, -- Errata sheet STM: NEGEDGE=1 (falling) should be used
+         NEGEDGE        => Edge_Rising, -- Errata sheet STM: NEGEDGE=1 (falling) should *not* be used
          --  HW Flow Control enable
-         HWFC_EN        => False, -- Errata sheet STM: glitchts => DCRCFAIL asserted. Workaround: Do not use HW flow ctrl. *gasp*
+         HWFC_EN        => False, -- Errata sheet STM: glitches => DCRCFAIL asserted. Workaround: Do not use HW flow ctrl. *gasp*
          others         => <>);
       delay until Clock + Milliseconds (1);
 
@@ -1315,7 +1315,7 @@ package body STM32.SDMMC is
       end if;
 
       --  Now use the card to nominal speed : 25MHz
-      Controller.Periph.CLKCR.CLKDIV := 0; -- we keep slow, because we are polling.
+      Controller.Periph.CLKCR.CLKDIV := 0;
       Clear_Static_Flags (Controller);
       delay until Clock + Milliseconds (1);
 
@@ -1742,6 +1742,10 @@ package body STM32.SDMMC is
       --  Wait 1ms: After a data write, data cannot be written to this register
       --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
       --  periods.
+
+
+      Controller.Periph.CLKCR.CLKDIV := 16#0#; --  switch to nominal speed, in case polling was active before
+
       delay until Clock + Milliseconds (1);
 
       Enable_Interrupt (Controller, Data_CRC_Fail_Interrupt);
@@ -1754,7 +1758,7 @@ package body STM32.SDMMC is
          Stream             => Stream,
          Source             => Controller.Periph.FIFO'Address,
          Destination        => Data (Data'First)'Address,
-         Data_Count         => Data'Length / 4,
+         Data_Count         => Data'Length / 4, -- count is 32bit words, data'length in bytes
          Enabled_Interrupts => (Transfer_Error_Interrupt    => True,
                                 FIFO_Error_Interrupt        => True,
                                 Transfer_Complete_Interrupt => True,

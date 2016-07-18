@@ -259,6 +259,8 @@ package STM32.SDMMC is
    function Last_Operation
      (Controller : SDMMC_Controller) return SDMMC_Operation;
 
+   function Read_FIFO
+     (Controller : in out SDMMC_Controller) return Word; -- originally this was in the body
 private
 
    type SDMMC_Command is new Byte;
