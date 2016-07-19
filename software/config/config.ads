@@ -23,7 +23,7 @@ package Config is
    OPTIMAL_PITCH : constant := -6.0;
 
    -- Thresholds
-   CFG_TARGET_ALTITUDE_THRESHOLD : constant := 60.0 * Meter;
+   CFG_TARGET_ALTITUDE_THRESHOLD : constant := 70.0 * Meter;
    CFG_TARGET_ALTITUDE_THRESHOLD_TIME : constant := 6.0 * Second;
 
    CFG_DELTA_ALTITUDE_THRESH : constant := 8.0 * Meter;  -- Diff
