@@ -1,0 +1,36 @@
+project Default is
+
+   Fake_Drivers := ("ublox8.ads", "ublox8-driver.ads","hmc5883l-driver.adb","ms5611-driver.adb", "mpu6000-driver.adb",
+                    "barometer.adb", "magnetometer.adb");
+
+        
+   Fake_Packages := ("logger.ads", "config.ads", "config-software.ads", "hil-devices.ads", 
+                          "hil-spi.adb", "hil-uart.adb");
+
+   HAL_Packages := ("hil.ads", "hal.ads", "hil-spi.ads", "hil.adb", "hil-uart.ads");
+        
+   Original_Files := ("estimator.adb", "estimator.ads", "units.adb", "units.ads", "units-numerics.ads", 
+                      "units-numerics.adb", "units-navigation.ads", "units-navigation.adb", "generic_signal.ads", 
+                      "generic_sensor.ads", "generic_queue.ads", "units-vectors.ads","imu.ads", "barometer.ads", 
+                      "gps.ads", "magnetometer.ads", "hmc5883l.ads", "hmc5883l-driver.ads", "gps.adb", "imu.adb",
+                      "mpu6000.ads", "ms5611.ads", "ms5611-driver.ads","mpu6000-driver.ads");
+        
+   Test_Harness := ("main.adb");
+        
+   for Source_Files use Original_Files & Fake_Drivers & HAL_Packages & Fake_Packages & Test_Harness;
+        for Source_Dirs use ("src", "src/fakedev", "../../lib", "../../driver", "../../hal/boards/common/tools", "../../modules", 
+                            "../../modules/sensors", "../../hal/boards/common/hil", "../../hal/hal/src", 
+                            "../../hal/boards/components/HMC5883L", "../../hal/boards/components/MPU6000",
+                            "../../hal/boards/components/MS5611");
+
+   package Compiler is
+      for Switches ("Ada") use ("-g", "-O2");
+   end Compiler;
+
+   package Ide is
+   end Ide;
+
+   for Object_Dir use "obj/";
+
+end Default;
+

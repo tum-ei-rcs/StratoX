@@ -1,6 +1,6 @@
 
 with Generic_Signal;
-with Generic_Sensor;
+--with Generic_Sensor;
 with Generic_Queue;
 
 with IMU;
