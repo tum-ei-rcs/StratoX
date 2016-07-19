@@ -195,7 +195,7 @@ package body Mission is
       end if;
    
       -- Check Timeout
-      if now > G_state.last_state_change + Seconds(300) then   -- 600
+      if now > G_state.last_state_change + Seconds(600) then   -- 600
          Logger.log(Logger.INFO, "Timeout Ascend");
          Logger.log(Logger.INFO, "Timeout Ascend");
          next_State;
