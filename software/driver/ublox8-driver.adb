@@ -182,7 +182,7 @@ is
                                               
       msg_cfg_msg : Data_Type(0 .. 2) := (0 => UBX_CLASS_NAV,
                                           1 => UBX_ID_NAV_PVT,
-                                          2 => Byte( 10 ) );  -- rate in Hz?
+                                          2 => Byte( 10 ) );  -- rate in multiple of measurement rate: 2 => 2*1Hz 
                                           
       current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
@@ -206,7 +206,7 @@ is
 
       -- 3. Set message rates (CFG-MSG)
       delay_ms( 10 );
-      msg_cfg_msg(2) := Byte( 0 );
+      msg_cfg_msg(2) := Byte( 1 );
       msg_cfg_msg(1) := UBX_ID_NAV_PVT;
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
       

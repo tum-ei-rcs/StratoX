@@ -47,12 +47,10 @@ package body Estimator with SPARK_Mode is
       Mag1  : Magnetometer.Magnetometer_Tag;
    end record;
 
-   -- type Sensor_Array is array(1 .. 2) of Generic_Sensor.Sensor_Tag;
-
 
    G_state  : State_Type;
    G_Sensor : Sensor_Record;
-   -- G_Sensors : Sensor_Array;
+
 
    -- init
    procedure initialize is
@@ -101,7 +99,7 @@ package body Estimator with SPARK_Mode is
       end if;
 
 
-      GPS.Sensor.read_Measurement;
+      -- GPS.Sensor.read_Measurement;
       G_state.fix := GPS.Sensor.get_GPS_Fix;
       -- FIXME: Sprung durch Baro Offset, falls GPS wegfällt
       if G_state.fix = FIX_3D then

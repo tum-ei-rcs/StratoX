@@ -9,6 +9,7 @@ with Units; use Units;
 
 
 with Console; use Console;
+with Buzzer_Manager;
 with Logger;
 with Estimator;
 with Controller;
@@ -103,14 +104,21 @@ package body Mission is
    
    
    procedure perform_Initialization is
+      -- The_Final_Countdown : Buzzer_Manager.Song_Type := ();
    begin
       G_state.last_state_change := Ada.Real_Time.Clock;
       G_state.body_info.orientation := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
       G_state.body_info.position := (0.0 * Degree, 0.0 * Degree, 0.0 * Meter);
    
-      -- Estimator.initialize;
-      -- Controller.initialize;
+      -- set hold
+      -- Controller.set_hold;
+      
       Logger.log(Logger.INFO, "Mission Initialized");
+      -- beep ever 10 seconds for one second at 1kHz.
+      -- Buzzer_Manager.Set_Freq (1000.0 * Hertz);
+      -- Buzzer_Manager.Set_Timing (period => 5.0 * Second, length => 1.0 * Second);
+      -- Buzzer_Manager.Set_Song(The_Final_Countdown)
+      -- Buzzer_Manager.Enable;  
       next_State;
    end perform_Initialization;
 
@@ -120,7 +128,7 @@ package body Mission is
    
       -- get initial values
       Estimator.update;
-   
+      
       -- set hold
       Controller.set_hold;
 
@@ -132,9 +140,9 @@ package body Mission is
       end if;
 
       -- FOR TEST
-      if now > G_state.last_state_change + Ada.Real_Time.Seconds( 10 ) then
+      if now > G_state.last_state_change + Ada.Real_Time.Seconds( 20 ) then
          G_state.home := Estimator.get_Position;
-         G_state.home.Altitude := Estimator.get_current_Height;
+         G_state.home.Altitude := Estimator.get_current_Height;       
          next_State;
       end if;
       
@@ -159,7 +167,9 @@ package body Mission is
       -- Estimator
       Estimator.update;
      
-     
+      -- set hold
+      Controller.set_hold; 
+  
       -- check target height
       if Estimator.get_current_Height >= G_state.home.Altitude + Config.CFG_TARGET_ALTITUDE_THRESHOLD then
          G_state.target_threshold_time := G_state.target_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT     
@@ -184,8 +194,8 @@ package body Mission is
          G_state.delta_threshold_time := 0.0 * Second;  -- TODO: calc dT
       end if;
    
-      -- Test 40 Sek descend
-      if now > G_state.last_state_change + Seconds(120) then
+      -- Check Timeout
+      if now > G_state.last_state_change + Seconds(300) then   -- 600
          Logger.log(Logger.INFO, "Timeout Ascend");
          Logger.log(Logger.INFO, "Timeout Ascend");
          next_State;
@@ -224,10 +234,16 @@ package body Mission is
       Controller.runOneCycle; 
       
       
-      -- Test 40 Sek descend
-      if now > G_state.last_state_change + Seconds(120) then
+      -- Timeout for Landing
+      if now > G_state.last_state_change + Seconds(180) then
          Logger.log(Logger.INFO, "Timeout. Landed");
          Controller.deactivate;
+             
+         -- beep ever 10 seconds for one second at 1kHz.
+         -- Buzzer_Manager.Set_Freq (1000.0 * Hertz);
+         -- Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
+         -- Buzzer_Manager.Enable;          
+         
          next_State;
       end if;
       
@@ -237,6 +253,10 @@ package body Mission is
    procedure wait_On_Ground is
       command : Console.User_Command_Type;
    begin
+   
+      -- Buzzer_Manager.Tick;
+      next_State;
+   
       -- Console
       Console.read_Command( command );
 

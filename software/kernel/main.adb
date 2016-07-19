@@ -116,17 +116,17 @@ package body Main is
       Mission.load_Mission;
 
       -- beep ever 10 seconds for one second at 1kHz.
-      Buzzer_Manager.Set_Freq (1000.0 * Hertz);
-      Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
-      Buzzer_Manager.Enable;
-
+      --Buzzer_Manager.Set_Freq (1000.0 * Hertz);
+      --Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
+      --Buzzer_Manager.Set_Song( "The Final Countdown" );
+      --Buzzer_Manager.Enable;
+      
       -- arm PX4IO
       Controller.activate;
 
       loop
          loop_time_start := Clock;
 
-         Buzzer_Manager.Tick;
 
          -- LED alive
          --LED_Manager.LED_tick (MAIN_TICK_RATE_MS);

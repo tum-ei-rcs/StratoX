@@ -138,8 +138,8 @@ is
       Configure_IO( Points => (1 => map(RED_LED)), Config => Config_Out );
 
       -- FIXME: this doesn't belong here.
-      Configure_IO (Points => (1 => STM32.Device.PA15), Config => Config_Out_Buz);
-      Configure_Alternate_Function (Points => (1 => STM32.Device.PA15), AF => GPIO_AF_TIM2); -- allow timer 2 to control buzzer
+      -- Configure_IO (Points => (1 => STM32.Device.PA15), Config => Config_Out_Buz);
+      -- Configure_Alternate_Function (Points => (1 => STM32.Device.PA15), AF => GPIO_AF_TIM2); -- allow timer 2 to control buzzer
 
       -- configure SPI 1
       Configure_IO( Points => (SPI1_SCK, SPI1_MISO, SPI1_MOSI), Config => Config_SPI1 );
