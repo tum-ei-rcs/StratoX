@@ -16,7 +16,7 @@ project Default is
                       "magnetometer.ads", "magnetometer.adb", "hmc5883l.ads", "hmc5883l-driver.ads",
                       "mpu6000.ads", "ms5611.ads", "ms5611-driver.ads","mpu6000-driver.ads", "ulog.ads");
         
-   Test_Harness := ("main.adb", "simulation.ads");
+   Test_Harness := ("main.adb", "simulation.ads", "simulation.adb");
         
    Tools := ("csv.adb", "csv.ads");
         

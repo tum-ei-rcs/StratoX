@@ -18,6 +18,9 @@ package CSV is
    function Get_Column (name : String) return Float;
    -- get value for label
 
+   procedure Dump_Columns;
+   -- print all column data of current row
+
    function End_Of_File return Boolean;
 
    procedure Close;

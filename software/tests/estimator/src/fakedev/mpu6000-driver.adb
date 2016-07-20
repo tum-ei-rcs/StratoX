@@ -1,27 +1,11 @@
-with CSV;
 with Simulation;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body MPU6000.Driver  with
-Refined_State => (State => (Is_Init, have_data, csv_file, Device_Address))
+Refined_State => (State => (Is_Init, Device_Address))
 is
 
-   package CSV_here is new CSV (filename => "mpu6000.csv");
-   have_data : Boolean := False;
-   csv_file : File_Type;
-
-   procedure Init is
-   begin
-      if not CSV_here.Open then
-         Put_Line ("MPU6000: Error opening file");
-         Simulation.Finished := True;
-         return;
-      else
-         Put_Line ("MPU6000: Replay from file");
-         have_data := True;
-         CSV_here.Parse_Header;
-      end if;
-   end Init;
+   procedure Init is null;
 
    --  Test if the MPU6000 is initialized and connected.
    function Test return Boolean is (True);
@@ -46,23 +30,13 @@ is
     Gyro_Y : out Integer_16;
     Gyro_Z : out Integer_16) is
    begin
-      if not have_data and then CSV_here.End_Of_File then
-         Simulation.Finished := True;
-         Put_Line ("MPU6000: EOF");
-         return;
-      end if;
 
-      if not csv_here.Parse_Row then
-         Simulation.Finished := True;
-         Put_Line ("MPU6000: Row error");
-      end if;
-
-      Acc_X := Integer_16 (CSV_here.Get_Column ("accx"));
-      Acc_Y := Integer_16 (CSV_here.Get_Column ("accy"));
-      Acc_Z := Integer_16 (CSV_here.Get_Column ("accz"));
-      Gyro_X := Integer_16 (CSV_here.Get_Column ("gyrx"));
-      Gyro_Y := Integer_16 (CSV_here.Get_Column ("gyry"));
-      Gyro_Z := Integer_16 (CSV_here.Get_Column ("gyrz"));
+      Acc_X := Integer_16 (Simulation.CSV_here.Get_Column ("AccX"));
+      Acc_Y := Integer_16 (Simulation.CSV_here.Get_Column ("AccY"));
+      Acc_Z := Integer_16 (Simulation.CSV_here.Get_Column ("AccZ"));
+      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("GyrX"));
+      Gyro_Y := Integer_16 (Simulation.CSV_here.Get_Column ("GyrY"));
+      Gyro_Z := Integer_16 (Simulation.CSV_here.Get_Column ("GyrZ"));
    end Get_Motion_6;
 
    --  Set clock source setting.

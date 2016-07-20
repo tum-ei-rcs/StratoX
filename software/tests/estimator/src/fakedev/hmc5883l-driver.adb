@@ -1,28 +1,11 @@
-with CSV;
 with Simulation;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body hmc5883l.driver with
-Refined_State => (State => (buffer, mode, csv_file, have_data))
+Refined_State => (State => (buffer, mode))
 is
 
-   package CSV_here is new CSV (filename => "hmc5883l.csv");
-   have_data : Boolean := False;
-   csv_file : File_Type;
-
-   procedure initialize is
-   begin
-      if not CSV_here.Open then
-         Put_Line ("HMC5833L: Error opening file");
-         Simulation.Finished := True;
-         return;
-      else
-         Put_Line ("HMC5833L: Replay from file");
-         have_data := True;
-         CSV_here.Parse_Header;
-      end if;
-   end;
-
+   procedure initialize is null;
 
    function testConnection return Boolean is (True);
 

@@ -11,18 +11,24 @@ procedure main is
    est_malt : Altitude_Type;
 
 begin
+   Simulation.init;
    Estimator.initialize;
 
    Read_Loop :
    loop
-
+      Simulation.update;
       exit Read_Loop when Simulation.Finished;
+
       Estimator.update;
---        est_ort := Estimator.get_Orientation;
---        est_loc := Estimator.get_Position;
+
+      est_ort := Estimator.get_Orientation;
+      est_loc := Estimator.get_Position;
       est_gfx := Estimator.get_GPS_Fix;
---        est_calt := Estimator.get_current_Height;
---        est_malt := Estimator.get_max_Height;
-      delay (0.1);
+      est_calt := Estimator.get_current_Height;
+      est_malt := Estimator.get_max_Height;
+      -- TODO: log to file
+
+      delay (0.01);
    end loop Read_Loop;
+   Simulation.close;
 end main;

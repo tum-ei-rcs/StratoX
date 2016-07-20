@@ -1,15 +1,11 @@
-with CSV;
 with Simulation;
 with Ada.Text_IO; use Ada.Text_IO;
 with Units; use Units;
 
 package body ublox8.driver with
 SPARK_Mode => Off,
-Refined_State => (State => (have_data, csv_file)) is
+Refined_State => (State => (null)) is
 
-   package CSV_here is new CSV (filename => "ublox8.csv");
-   have_data : Boolean := False;
-   csv_file : File_Type;
 
    cur_loc : GPS_Loacation_Type; -- L,L,A
    cur_msg : GPS_Message_Type;
@@ -17,40 +13,19 @@ Refined_State => (State => (have_data, csv_file)) is
 
    procedure reset is null;
 
-   procedure init is
-   begin
-      if not CSV_here.Open then
-         Put_Line ("Ublox8: Error opening file");
-         Simulation.Finished := True;
-         return;
-      else
-         Put_Line ("Ublox8: Replay from file");
-         have_data := True;
-         CSV_here.Parse_Header;
-      end if;
-   end init;
+   procedure init is null;
 
    procedure update_val is
    begin
-      if not have_data and then CSV_here.End_Of_File then
-         Simulation.Finished := True;
-         Put_Line ("Ublox8: EOF");
-         return;
-      end if;
 
-      if not csv_here.Parse_Row then
-         Simulation.Finished := True;
-         Put_Line ("Ublox8: Row error");
-      end if;
+      cur_loc.Longitude := Longitude_Type ( Simulation.CSV_here.Get_Column ("Lng"));
+      cur_loc.Latitude := Latitude_Type (  Simulation.CSV_here.Get_Column ("Lat"));
+      cur_loc.Altitude := Altitude_Type (  Simulation.CSV_here.Get_Column ("Alt"));
 
-      cur_loc.Longitude := Longitude_Type ( CSV_here.Get_Column ("lon"));
-      cur_loc.Latitude := Latitude_Type ( CSV_here.Get_Column ("lat"));
-      cur_loc.Altitude := Altitude_Type ( CSV_here.Get_Column ("alt"));
+      cur_fix := GPS_Fix_Type'Enum_Val (2);-- GPS_Fix_Type'Enum_Val (Integer ( Simulation.CSV_here.Get_Column ("fix")));
 
-      cur_fix := GPS_Fix_Type'Enum_Val (Integer (CSV_here.Get_Column ("fix")));
-
-      cur_msg.sats := Integer (CSV_here.Get_Column ("nsat"));
-      cur_msg.speed := Linear_Velocity_Type (CSV_here.Get_Column ("speed"));
+      cur_msg.sats := Integer ( Simulation.CSV_here.Get_Column ("NSats"));
+      cur_msg.speed := Linear_Velocity_Type ( Simulation.CSV_here.Get_Column ("Spd"));
 
       -- don't care about the following for now:
       cur_msg.year := 2016;

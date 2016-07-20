@@ -7,6 +7,7 @@ package body CSV is
 
    package Associative_Str is new Ada.Containers.Ordered_Maps(Integer, Unbounded_String);
    package Associative_Data is new Ada.Containers.Ordered_Maps(Unbounded_String, Float);
+   use Associative_Data;
    Col_Map  : Associative_Str.Map; -- maps column number to column name
    Data_Map : Associative_Data.Map; -- maps column name to current data
 
@@ -20,11 +21,24 @@ package body CSV is
       return Ada.Text_IO.End_Of_File (file);
    end End_Of_File;
 
+   procedure Dump_Columns is
+     Index : Associative_Data.Cursor := Data_Map.First;
+   begin
+      while Index /= Associative_Data.No_Element loop
+         Put (To_String (Key (Index)) & "=" & Float'Image (Element (Index)));
+         Index := Next (Index);
+         if Index /= Associative_Data.No_Element then
+            Put (", ");
+         end if;
+      end loop;
+      New_Line;
+   end;
+
    function Get_Column (name : String) return Float is
       colname : Unbounded_String :=  To_Unbounded_String (name);
    begin
       if not Data_Map.Contains (colname) then
-         Put_Line ("ERROR: no column " & name & " in file " & filename);
+         Put_Line ("ERROR: no column '" & name & "' in file " & filename);
          return 0.0;
       else
          return Data_Map.Element (colname);
