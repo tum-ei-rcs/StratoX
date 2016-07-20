@@ -38,13 +38,14 @@ package Estimator with SPARK_Mode is
    function get_max_Height return Altitude_Type;
    
    
-   function Orientation
-     (gravity_vector : Linear_Acceleration_Vector) return Orientation_Type;
+   
 
 
 
 private
-
+   function Orientation
+     (gravity_vector : Linear_Acceleration_Vector) return Orientation_Type;
+   
    procedure update_Max_Height;
 
    G_Object_Orientation : Orientation_Type   := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);

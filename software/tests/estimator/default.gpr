@@ -16,18 +16,26 @@ project Default is
                       "magnetometer.ads", "magnetometer.adb", "hmc5883l.ads", "hmc5883l-driver.ads",
                       "mpu6000.ads", "ms5611.ads", "ms5611-driver.ads","mpu6000-driver.ads", "ulog.ads");
         
-   Test_Harness := ("main.adb");
+   Test_Harness := ("main.adb", "simulation.ads");
         
-   for Source_Files use Original_Files & Fake_Drivers & HAL_Packages & Fake_Packages & Test_Harness;
-        for Source_Dirs use ("src", "src/fakedev", "../../lib", "../../lib/ulog", "../../driver", "../../hal/boards/common/tools", "../../modules", 
+   Tools := ("csv.adb", "csv.ads");
+        
+   for Source_Files use Original_Files & Fake_Drivers & Tools & HAL_Packages & Fake_Packages & Test_Harness;
+        for Source_Dirs use ("src", "src/fakedev", "src/tools", "../../lib", "../../lib/ulog", "../../driver", "../../hal/boards/common/tools", "../../modules", 
                             "../../modules/sensors", "../../hal/boards/common/hil", "../../hal/hal/src", 
                             "../../hal/boards/components/HMC5883L", "../../hal/boards/components/MPU6000",
                             "../../hal/boards/components/MS5611");
 
+   for Main use ("main.adb");        
+        
    package Compiler is
-      for Switches ("Ada") use ("-g", "-O2");
+      for Switches ("Ada") use ("-g", "-O0");
    end Compiler;
 
+        package Binder is
+                for Switches ("Ada") use ("-E");
+        end Binder;
+        
    package Ide is
    end Ide;
 
