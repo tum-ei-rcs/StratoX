@@ -17,12 +17,10 @@ begin
    loop
 
       exit Read_Loop when Simulation.Finished;
-      Put_Line ("update");
       Estimator.update;
-      Put_Line ("Predict");
 --        est_ort := Estimator.get_Orientation;
 --        est_loc := Estimator.get_Position;
---        est_gfx := Estimator.get_GPS_Fix;
+      est_gfx := Estimator.get_GPS_Fix;
 --        est_calt := Estimator.get_current_Height;
 --        est_malt := Estimator.get_max_Height;
       delay (0.1);
