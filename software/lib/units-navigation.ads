@@ -44,7 +44,7 @@ package Units.Navigation with SPARK_Mode is
 
    -- Orientation
    subtype Roll_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree;
-   subtype Pitch_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree; -- FIXME: -90 .. 90 ?
+   subtype Pitch_Type is Units.Angle_Type range -90.0 * Degree .. 90.0 * Degree; -- FIXME: -90 .. 90 ?
    subtype Yaw_Type is Units.Angle_Type range 0.0 * Degree .. 360.0 * Degree;
 
    type Orientation_Type is record
@@ -76,7 +76,25 @@ package Units.Navigation with SPARK_Mode is
 
    function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type;
 
+   function To_Orientation( rotation : Rotation_Vector ) return Orientation_Type is
+   (  wrap_Angle( rotation(Roll), Roll_Type'First, Roll_Type'Last ),
+      wrap_Angle( rotation(Pitch), Pitch_Type'First, Pitch_Type'Last ),
+      wrap_Angle( rotation(Yaw), Yaw_Type'First, Yaw_Type'Last ) );
 
+
+   function "+" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
+   ( wrap_Angle( Angle_Type( Left.Roll ) + Right(Roll), Roll_Type'First, Roll_Type'Last ),
+         wrap_Angle( Angle_Type( Left.Pitch) + Right(Pitch), Pitch_Type'First, Pitch_Type'Last ),
+         wrap_Angle( Angle_Type( Left.Yaw) + Right(Yaw), Yaw_Type'First, Yaw_Type'Last ) );
+
+   function "-" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
+   ( wrap_Angle( Left.Roll - Right(Roll), Roll_Type'First, Roll_Type'Last ),
+         wrap_Angle( Left.Pitch - Right(Pitch), Pitch_Type'First, Pitch_Type'Last ),
+         wrap_Angle( Left.Yaw - Right(Yaw), Yaw_Type'First, Yaw_Type'Last ) );
+
+
+   function "-" (Left, Right : Orientation_Type) return Rotation_Vector is
+   ( Left.Roll - Right.Roll, Left.Pitch - Right.Pitch, Left.Yaw - Right.Yaw );
 
 
 end Units.Navigation;

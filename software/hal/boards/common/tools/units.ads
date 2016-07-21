@@ -252,6 +252,15 @@ package Units with
      (Time_Type
         (Float ((rtime) / Ada.Real_Time.Microseconds (1)) * 1.0e-6));
 
+   -- wrap angle between two values
+   -- idea: shift range to 0 .. X, wrap with mod, shift back
+   function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
+   ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
+--     with
+--     pre => max > min,
+--     post => wrap_Angle'Result in min .. max;
+-- if angle - min < 0.0 * Degree then Angle_Type'Remainder( (angle - min), (max-min) ) + max else
+
 
   -- procedure Saturate(input : Unit_Type; output : in out Unit_Type);
 

@@ -164,8 +164,8 @@ is
                                               
       msg_cfg_prt : Data_Type(0 .. 19) := (0 => UBX_TX_CFG_PRT_PORTID,
                                            2 => Byte(0),
-                                           4 => Byte( 2#1100_0000# ), -- uart mode 8bit
-                                           5 => Byte( 2#0000_1000# ), -- uart mode no parity, 1 stop bit
+                                           4 => HIL.toBytes( UBX_TX_CFG_PRT_MODE )(1), -- uart mode 8N1
+                                           5 => HIL.toBytes( UBX_TX_CFG_PRT_MODE )(2), -- uart mode no parity, 1 stop bit
                                            8 => HIL.toBytes( HIL.Config.UBLOX_BAUD_RATE_HZ )(1),
                                            9 => HIL.toBytes( HIL.Config.UBLOX_BAUD_RATE_HZ )(2),
                                            12 => Byte( 1 ),  -- ubx protocol
@@ -182,7 +182,14 @@ is
                                               
       msg_cfg_msg : Data_Type(0 .. 2) := (0 => UBX_CLASS_NAV,
                                           1 => UBX_ID_NAV_PVT,
-                                          2 => Byte( 10 ) );  -- rate in multiple of measurement rate: 2 => 2*1Hz 
+                                          2 => Byte( 10 ) );  -- rate in multiple of measurement rate: 2 => 2*1Hz
+                                          
+      msg_cfg_rate_head : UBX_Header_Array := (1 => UBX_SYNC1,
+                                              2 => UBX_SYNC2,
+                                              3 => UBX_CLASS_CFG,
+                                              4 => UBX_ID_CFG_RATE,
+                                              5 => Byte(3),  -- length
+                                              6 => Byte(0));
                                           
       current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
@@ -197,7 +204,7 @@ is
    
     
    
-      for i in Integer range 1 .. 3 loop
+      for i in Integer range 1 .. 2 loop
       -- 1. Set binary protocol (CFG-PRT, own message)
       writeToDevice(msg_cfg_prt_head, msg_cfg_prt);  -- no ACK is expected here
       
@@ -205,11 +212,11 @@ is
       -- 2. Set baudrate (CFG-PRT, again own message)
 
       -- 3. Set message rates (CFG-MSG)
-      delay_ms( 10 );
-      msg_cfg_msg(2) := Byte( 1 );
-      msg_cfg_msg(1) := UBX_ID_NAV_PVT;
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
-      
+--        delay_ms( 10 );
+--        msg_cfg_msg(2) := Byte( 5 );
+--        msg_cfg_msg(1) := UBX_ID_NAV_PVT;
+--        writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
+--        
       -- set other to 0
       msg_cfg_msg(2) := Byte( 0 );
       msg_cfg_msg(1) := UBX_ID_NAV_POSLLH;
@@ -229,6 +236,12 @@ is
       delay_ms( 10 );
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
       delay_ms( 10 );
+      
+      -- set NAV_PVT to 0.2Hz
+      msg_cfg_msg(2) := Byte( 5 );
+      msg_cfg_msg(1) := UBX_ID_NAV_PVT;
+      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
+      delay_ms( 10 );    
       
       end loop;
       -- 4. set dynamic model
@@ -257,7 +270,9 @@ is
          end case;
          
          
-         Logger.log(Logger.DEBUG, "Long: " & AImage( G_GPS_Message.lon ) );
+         Logger.log(Logger.TRACE, "Long: " & AImage( G_GPS_Message.lon ) );
+      else
+         G_GPS_Message.fix := NO_FIX;
       end if;
 
       -- logging

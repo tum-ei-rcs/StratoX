@@ -14,6 +14,7 @@ with Logger;
 with Estimator;
 with Controller;
 with NVRAM; use NVRAM;
+with Interfaces; use Interfaces;
 
 
 package body Mission is
@@ -37,6 +38,7 @@ package body Mission is
    procedure start_New_Mission is
    begin
       if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
+         NVRAM.Reset;
          G_state.mission_state := INITIALIZING;
          Logger.log(Logger.INFO, "New Mission.");
       else
@@ -46,14 +48,18 @@ package body Mission is
    
    procedure load_Mission is
       old_state_val : HIL.Byte := HIL.Byte( 0 );
+      height : HIL.Byte_Array_2;
    begin
       NVRAM.Load( VAR_MISSIONSTATE, old_state_val );
       G_state.mission_state := Mission_State_Type'Val( old_state_val );
       if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
          start_New_Mission;
       else
-         -- Estimator.initialize;
-         -- Controller.initialize;
+         NVRAM.Load( VAR_HOME_HEIGHT_L, height(1) );
+         NVRAM.Load( VAR_HOME_HEIGHT_H, height(2) );
+         G_state.home.Altitude := Unit_Type( HIL.toUnsigned_16( height ) ) * Meter;
+         Logger.log(Logger.DEBUG, "Home Height: " & Image(G_state.home.Altitude) );
+         
          Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
       end if;    
    end load_Mission;
@@ -142,7 +148,9 @@ package body Mission is
       -- FOR TEST
       if now > G_state.last_state_change + Ada.Real_Time.Seconds( 20 ) then
          G_state.home := Estimator.get_Position;
-         G_state.home.Altitude := Estimator.get_current_Height;       
+         G_state.home.Altitude := Estimator.get_current_Height;
+         NVRAM.Store( VAR_HOME_HEIGHT_L, HIL.toBytes( Unsigned_16( G_state.home.Altitude ) )(1) );
+         NVRAM.Store( VAR_HOME_HEIGHT_H, HIL.toBytes( Unsigned_16( G_state.home.Altitude ) )(2) );
          next_State;
       end if;
       
@@ -195,7 +203,7 @@ package body Mission is
       end if;
    
       -- Check Timeout
-      if now > G_state.last_state_change + Seconds(600) then   -- 600
+      if now > G_state.last_state_change + Seconds(20) then   -- 600
          Logger.log(Logger.INFO, "Timeout Ascend");
          Logger.log(Logger.INFO, "Timeout Ascend");
          next_State;
@@ -235,7 +243,7 @@ package body Mission is
       
       
       -- Timeout for Landing
-      if now > G_state.last_state_change + Seconds(180) then
+      if now > G_state.last_state_change + Seconds(90) then
          Logger.log(Logger.INFO, "Timeout. Landed");
          Controller.deactivate;
              

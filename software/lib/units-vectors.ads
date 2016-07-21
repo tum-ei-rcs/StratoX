@@ -10,11 +10,11 @@
 
 
 
--- with Ada.Numerics.Generic_Real_Arrays;
+with Ada.Numerics.Generic_Real_Arrays;
 
 package Units.Vectors with SPARK_Mode is
 
-   -- package Unit_Arrays is new Ada.Numerics.Generic_Real_Arrays(Unit_Type);
+   package Unit_Arrays_Pack is new Ada.Numerics.Generic_Real_Arrays(Unit_Type);
 
    subtype Scalar is Unit_Type;
    type Vector3D_Type is array(1 .. 3) of Unit_Type;
@@ -31,9 +31,16 @@ package Units.Vectors with SPARK_Mode is
    subtype Translation_Vector_Array is Vector3D_Type; -- of Length_Type;
 
    --subtype Position_Vector is Karthesian_Vector_Type with Dimension => (Symbol => 'm', Meter => 1, others => 0);
+--     type Dim_Vector_Type is array(Cartesian_Coordinates_Type) of Unit_Type with Dimension_System =>
+--          ((Unit_Name => Meter, Unit_Symbol => 'm', Dim_Symbol => 'L'),
+--           (Unit_Name => Kilogram, Unit_Symbol => "kg", Dim_Symbol => 'M'),
+--           (Unit_Name => Second, Unit_Symbol => 's', Dim_Symbol => 'T'),
+--           (Unit_Name => Ampere, Unit_Symbol => 'A', Dim_Symbol => 'I'),
+--           (Unit_Name => Kelvin, Unit_Symbol => 'K', Dim_Symbol => "Theta"),
+--           (Unit_Name => Radian, Unit_Symbol => "Rad", Dim_Symbol => "A"));
+
+
    type Translation_Vector is array(1 .. 3) of Length_Type; -- of Length_Type;
-
-
 
    type Linear_Velocity_Vector is array(Cartesian_Coordinates_Type) of Linear_Velocity_Type;
    type Linear_Acceleration_Vector is array(Cartesian_Coordinates_Type) of Linear_Acceleration_Type;
@@ -53,9 +60,14 @@ package Units.Vectors with SPARK_Mode is
    type Tait_Bryan_Angle_Type is (ROLL, PITCH, YAW);
    type Euler_Angle_Type is (X1, Z2, X3);
 
+   type Unit_Vector is array(Tait_Bryan_Angle_Type) of Angle_Type;
+
+   type Angle_Vector is array(Tait_Bryan_Angle_Type) of Angle_Type;
+   type Rotation_Vector is array(Tait_Bryan_Angle_Type) of Angle_Type;
 
    type Angular_Velocity_Vector is array(Tait_Bryan_Angle_Type) of Angular_Velocity_Type;
    type Angular_Acceleration_Vector is array(Tait_Bryan_Angle_Type) of Angular_Velocity_Type;
+
 
 
    function "+" (Left, Right : Translation_Vector) return Translation_Vector is
@@ -64,9 +76,42 @@ package Units.Vectors with SPARK_Mode is
            Left(3) + Right(3)
            ) );
 
+   function "+" (Left, Right : Rotation_Vector) return Rotation_Vector is
+      ( Left(Roll) + Right(Roll), Left(Pitch) + Right(Pitch), Left(Yaw) + Right(Yaw) );
+
+   function "*" (Left : Unit_Type; Right : Rotation_Vector) return Rotation_Vector is
+      ( ( Left * Right(Roll), Left * Right(Pitch), Left * Right(Yaw) ) );
+
+
+   function "+" (Left, Right : Angular_Velocity_Vector) return Angular_Velocity_Vector is
+      ( (  Left(Roll) + Right(Roll),
+           Left(Pitch) + Right(Pitch),
+           Left(Yaw) + Right(Yaw)
+           ) );
+
+   function "-" (Left, Right : Angular_Velocity_Vector) return Angular_Velocity_Vector is
+      ( (  Left(Roll) - Right(Roll),
+           Left(Pitch) - Right(Pitch),
+           Left(Yaw) - Right(Yaw)
+           ) );
+
+   function "*" (Left : Angular_Velocity_Vector; Right : Time_Type) return Rotation_Vector is
+      ( ( Left(Roll) * Right, Left(Pitch) * Right, Left(Yaw) * Right ) );
+
+
    procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);
 
    function "abs" (vector : Cartesian_Vector_Type) return Unit_Type;
+
+
+   -- Matrices
+   subtype Unit_Vector2D is Unit_Arrays_Pack.Real_Vector(1..2);
+   subtype Unit_Matrix2D is Unit_Arrays_Pack.Real_Matrix(1..2, 1..2);
+
+
+   subtype Unit_Vector3D is Unit_Arrays_Pack.Real_Vector(1..3);
+   subtype Unit_Matrix3D is Unit_Arrays_Pack.Real_Matrix(1..3, 1..3);
+
 
 
 end Units.Vectors;

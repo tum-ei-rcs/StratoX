@@ -4,6 +4,7 @@ with Generic_Sensor;
 with Interfaces; use Interfaces;
 
 with Units.Vectors; use Units.Vectors;
+with Units.Navigation; use Units.Navigation;
 with MPU6000.Driver; use MPU6000;
 
 
@@ -34,7 +35,17 @@ package IMU with SPARK_Mode is
    overriding procedure read_Measurement(Self : in out IMU_Tag) with
    Global => (MPU6000.Driver.State);
 
+   procedure perform_Kalman_Filtering(Self : IMU_Tag; newAngle : Orientation_Type);
+
    function get_Linear_Acceleration(Self : IMU_Tag) return Linear_Acceleration_Vector;
+
+   function get_Angular_Velocity(Self : IMU_Tag) return Angular_Velocity_Vector;
+
+   function get_Orientation(Self : IMU_Tag) return Orientation_Type;
+
+   function Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; Angular_Rate : Angular_Velocity_Vector) return Orientation_Type;
+
+
 
    procedure check_Freefall(Self : in out IMU_Tag; isFreefall : out Boolean);
 

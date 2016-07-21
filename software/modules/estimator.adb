@@ -72,16 +72,28 @@ package body Estimator with SPARK_Mode is
    -- fetch fresh measurement data
    procedure update is
       Acc : Linear_Acceleration_Vector;
+      Gyro : Angular_Velocity_Vector;
+      Acc_Orientation : Orientation_Type;
+      CF_Orientation : Orientation_Type;
       Mag : Magnetic_Flux_Density_Vector;
       GFixS : String := "NO";
+
    begin
       -- Estimate Object Orientation
       IMU.Sensor.read_Measurement;
       Acc := IMU.Sensor.get_Linear_Acceleration;
+      Gyro := IMU.Sensor.get_Angular_Velocity;
 
       Logger.log(Logger.TRACE,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
 
-      G_Object_Orientation := Orientation( Acc );
+      Acc_Orientation := Orientation( Acc );
+      -- CF_Orientation := IMU.Fused_Orientation( IMU.Sensor, Acc_Orientation, Gyro);
+      IMU.perform_Kalman_Filtering( IMU.Sensor, Acc_Orientation );
+      G_Object_Orientation := IMU.Sensor.get_Orientation;
+
+      Logger.log(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", " & AImage( Acc_Orientation.Pitch ) & ", " & AImage( Acc_Orientation.Yaw ) );
+      -- Logger.log(Logger.INFO, "CF : " & AImage( CF_Orientation.Roll ) & ", " & AImage( CF_Orientation.Pitch ) & ", " & AImage( CF_Orientation.Yaw ) );
+      Logger.log(Logger.INFO, "KM : " & AImage( G_Object_Orientation.Roll ) & ", " & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
 
       Magnetometer.Sensor.read_Measurement;
       Mag := Magnetometer.Sensor.get_Sample.data;
@@ -99,7 +111,7 @@ package body Estimator with SPARK_Mode is
       end if;
 
 
-      -- GPS.Sensor.read_Measurement;
+      GPS.Sensor.read_Measurement;
       G_state.fix := GPS.Sensor.get_GPS_Fix;
       -- FIXME: Sprung durch Baro Offset, falls GPS wegfällt
       if G_state.fix = FIX_3D then
@@ -118,7 +130,8 @@ package body Estimator with SPARK_Mode is
       -- Outputs
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
-         log_Info;
+         -- log_Info;
+         null;
       end if;
 
    end update;

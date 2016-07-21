@@ -43,9 +43,9 @@ is
    type Word_Array is array(Natural range <>) of Unsigned_32;
 
 
-   --subtype Byte_Array_2 is Byte_Array(1..2); -- not working (explicit raise in flow_utility.adb)
+   subtype Byte_Array_2 is Byte_Array(1..2); -- not working (explicit raise in flow_utility.adb)
 
-   type Byte_Array_2 is array(1..2) of Byte;
+   -- type Byte_Array_2 is Byte_Array(1..2);
    type Byte_Array_4 is array(1..4) of Byte;
 
 

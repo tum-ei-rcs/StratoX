@@ -148,7 +148,7 @@ package body Controller with SPARK_Mode is
       -- control
       control_Pitch;
       control_Yaw;
-      G_Target_Orientation.Roll := 10.0 * Degree;  -- TEST: Omakurve
+      -- G_Target_Orientation.Roll := 10.0 * Degree;  -- TEST: Omakurve
       control_Roll;
 
       -- mix
@@ -260,21 +260,34 @@ package body Controller with SPARK_Mode is
    function Heading(source_location : GPS_Loacation_Type;
                     target_location  : GPS_Loacation_Type)
                     return Heading_Type is
-      result : Heading_Type := NORTH;
+      result : Angle_Type := 0.0 * Degree;
    begin
       if source_location.Longitude /= target_location.Longitude or source_location.Latitude /= target_location.Latitude then
+         Logger.log(Logger.TRACE, "Calculating Heading: ");
+         Logger.log(Logger.TRACE,
+                    "Source LLA" & AImage( source_location.Longitude ) &
+                 ", " & AImage( source_location.Latitude ) &
+                 ", " & Image( source_location.Altitude ) );
+                  Logger.log(Logger.TRACE,
+                    "Target LLA" & AImage( target_location.Longitude ) &
+                 ", " & AImage( target_location.Latitude ) &
+                 ", " & Image( target_location.Altitude ) );
          result := Arctan( Sin( delta_Angle( source_location.Longitude,
                                            target_location.Longitude ) ) *
                          Cos( target_location.Latitude ),
                          Cos( source_location.Latitude ) * Sin( target_location.Latitude ) -
-                         Sin( source_location.Latitude ) * Sin( target_location.Latitude ) *
-                         Cos( target_location.Latitude ) *
+                         Sin( source_location.Latitude ) * Cos( target_location.Latitude ) *
                          Cos( delta_Angle( source_location.Longitude,
                                       target_location.Longitude ) ),
                      DEGREE_360
                         );
       end if;
-      return result;
+
+      -- Constrain to Heading_Type
+      if result < 0.0 * Degree then
+         result := result + Heading_Type'Last;
+      end if;
+      return Heading_Type( result );
    end Heading;
 
 
