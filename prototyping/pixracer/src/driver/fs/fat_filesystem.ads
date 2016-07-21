@@ -124,7 +124,7 @@ private
 
    type FAT_Disk_Parameter (Version : FAT_Version := FAT16) is record
       OEM_Name                : String (1 .. 8);
-      Block_Size_In_Bytes     : Unsigned_16;
+      Block_Size_In_Bytes     : Unsigned_16; -- also called sector
       Blocks_Per_Cluster      : Unsigned_8;
       Reserved_Blocks         : Unsigned_16;
       Number_Of_FATs          : Unsigned_8;

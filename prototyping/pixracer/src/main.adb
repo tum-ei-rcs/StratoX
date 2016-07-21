@@ -77,8 +77,8 @@ package body Main is
         with Import, Convention => Intrinsic;
       function Compilation_Time return String -- implementation-defined (GNAT)
         with Import, Convention => Intrinsic;
-      gleich : Ada.Real_Time.Time;
-      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6)); -- happy birthday
+--      gleich : Ada.Real_Time.Time;
+--      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6)); -- happy birthday
    begin
       LED_Manager.Set_Color ((1 => HIL.Devices.GRN_LED));
       LED_Manager.LED_blink (LED_Manager.SLOW);

@@ -447,17 +447,26 @@ package body Media_Reader.SDCard is
          -- not working
 
 
-         -- Workaround: DMA leaves a tail in the buffer. read pending it.
+         -- Workaround: DMA leaves a tail in the SDIO FIFO buffer.  We don'T know why, yet.
+         -- ALso, we don't know how long, but it should be < 32bit*16, since otherwise FIFO would
+         -- be more than half full and thus trigger another DMA burst.
+         -- Read the tail, count how long it is, and then copy over to the target buffer.
          declare
-            k : Integer := 0;
-            TmpData : SD_Data ( 1 .. 16 );
+            Tail_Data : SD_Data ( 0 .. 15 );
+            k : Unsigned_32 := Tail_Data'First;
+            next_data : Unsigned_32;
          begin
             while Get_Flag (Controller.Device, RX_Active) loop
-               if k <
-               TmpData (1 .. 4) := To_Data (Read_FIFO (Controller.Device)); -- 4 bytes per FIFO element
-               k := k + 4;
+               if k < Tail_Data'Length then
+                  Tail_Data (k .. k + 3) := To_Data (Read_FIFO (Controller.Device)); -- 4 bytes per FIFO element
+                  k := k + 4;
+               end if;
             end loop;
-            -- how many did we actually read
+            if k > 0 then
+               k := k - 1;
+               next_data := Unsigned_32 (Data'Last) - k;
+               Data (Unsigned_16 (next_data) .. Data'Last) := Block (Tail_Data (0 .. k));
+            end if;
          end;
 
          -- after having removed the tail, this doesn't block anymore.
@@ -468,7 +477,7 @@ package body Media_Reader.SDCard is
          Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);
          Disable (SD_DMA, SD_DMA_Rx_Stream);
 
-         -- why?:
+         -- Flush the data cache
          Cortex_M.Cache.Invalidate_DCache
            (Start => Data (Data'First)'Address,
             Len   => Data'Length);
