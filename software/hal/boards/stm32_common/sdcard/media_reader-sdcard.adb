@@ -408,14 +408,13 @@ package body Media_Reader.SDCard is
       subtype Word_Data is SD_Data (1 .. 4);
       function To_Data is new Ada.Unchecked_Conversion
         (HAL.Word, Word_Data);
-      TmpData : Word_Data;
    begin
       Ensure_Card_Informations (Controller);
 
       -- debug: reset out buffer
-      for k in Data'Range loop
-         Data (k) := 16#AA#;
-      end loop;
+--        for k in Data'Range loop
+--           Data (k) := 16#AA#;
+--        end loop;
 
       if Use_DMA then
 
@@ -448,10 +447,18 @@ package body Media_Reader.SDCard is
          -- not working
 
 
-         -- FIX: read pending DMA tail. That works and indeed carries the missing data.
-         while Get_Flag (Controller.Device, RX_Active) loop
-            TmpData (1 .. 4) := To_Data (Read_FIFO (Controller.Device)); -- 4 bytes per FIFO element
-         end loop;
+         -- Workaround: DMA leaves a tail in the buffer. read pending it.
+         declare
+            k : Integer := 0;
+            TmpData : SD_Data ( 1 .. 16 );
+         begin
+            while Get_Flag (Controller.Device, RX_Active) loop
+               if k <
+               TmpData (1 .. 4) := To_Data (Read_FIFO (Controller.Device)); -- 4 bytes per FIFO element
+               k := k + 4;
+            end loop;
+            -- how many did we actually read
+         end;
 
          -- after having removed the tail, this doesn't block anymore.
          loop
@@ -461,12 +468,12 @@ package body Media_Reader.SDCard is
          Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);
          Disable (SD_DMA, SD_DMA_Rx_Stream);
 
+         -- why?:
          Cortex_M.Cache.Invalidate_DCache
            (Start => Data (Data'First)'Address,
             Len   => Data'Length);
 
-         return Ret = OK
-           and then DMA_Err = DMA_No_Error;
+         return Ret = OK and then DMA_Err = DMA_No_Error;
 
       else
          -- polling => rx overrun possible

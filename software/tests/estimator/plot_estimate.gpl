@@ -3,15 +3,19 @@
 set datafile separator ";"
 set termoption dashed
 
-plot 'estimate.csv' using 1:2 with lines lt 1 lc rgb 'red' title columnhead, \
-     'estimate.csv' using 1:3 with lines lt 1 lc rgb 'blue' title columnhead, \
-     'estimate.csv' using 1:4 with lines lt 1 lc rgb 'green' title columnhead, \
+plot 'estimate.csv' using 1:($2*-1) with lines lt 1 lc rgb 'blue' title columnhead, \
+     'estimate.csv' using 1:($3*-1) with lines lt 1 lc rgb 'red' title columnhead, \
+     'estimate.csv' using 1:5 with lines axes x1y2 lt 1 lc rgb 'black' title 'altitude', \
      'reference.csv' using 1:2 with lines lt 3 lc rgb 'red' title columnhead, \
-     'reference.csv' using 1:3 with lines lt 3 lc rgb 'blue' title columnhead, \
-     'reference.csv' using 1:4 with lines lt 3 lc rgb 'green' title columnhead
+     'reference.csv' using 1:3 with lines lt 3 lc rgb 'blue' title columnhead
+#     'estimate.csv' using 1:4 with lines lt 1 lc rgb 'green' title columnhead, \   
+#     'reference.csv' using 1:4 with lines lt 3 lc rgb 'green' title columnhead
 
 set title 'estimates'
-set ylabel 'value'
+set ylabel 'angle estimate'
+set y2label 'altitude'
+set y2tics
+set y2range [450:600]
 set xlabel 'time [s]'
 set grid
 pause -1
