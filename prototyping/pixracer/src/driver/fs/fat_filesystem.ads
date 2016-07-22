@@ -30,6 +30,8 @@ package FAT_Filesystem with SPARK_Mode is
       Too_Many_Open_Files, --  Number of opened files > Max
       Invalid_Parameter,
       No_MBR_Found,
+      Device_Full,
+      Allocation_Error,
       No_Partition_Found);
 
    type FAT_Filesystem is limited private;
@@ -230,6 +232,13 @@ private
      (FS    : in out FAT_Filesystem;
       Block : Unsigned_32) return Status_Code;
 
+   function Write_Window
+     ( FS : in out FAT_Filesystem;
+       Block : Unsigned_32) return Status_Code;
+
+   procedure Writeback_FsInfo (FS : in out FAT_Filesystem)
+     with Pre => Version (FS) = FAT32;
+
    function Cluster_To_Block
      (FS      : FAT_Filesystem;
       Cluster : Unsigned_32) return Unsigned_32
@@ -271,7 +280,7 @@ private
    function Allocate_Cluster
      (FS : in out FAT_Filesystem;
       cluster : Unsigned_32) return Boolean
-     with Pre => FS.FSInfo.Free_Clusters > 0;
+     with Pre => Version (FS) = FAT32 and then FS.FSInfo.Free_Clusters > 0;
 
    function Get_Free_Cluster (FS : in out FAT_Filesystem) return Unsigned_32;
    --  @summary scan for a free cluster and return its number

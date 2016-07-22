@@ -9,27 +9,62 @@ package body FAT_Filesystem is
      (FS     : in out FAT_Filesystem;
       Status : out Status_Code);
 
-   function Allocate_Cluster (FS : in out FAT_Filesystem; cluster : Unsigned_32) return Boolean is
+   function Allocate_Cluster (FS : in out FAT_Filesystem;
+                              cluster : Unsigned_32) return Boolean
+   is
       LAST_CLUSTER : constant Unsigned_32 := 16#0FFF_FFF8#;
    begin
-      if FS.Set_FAT ( cluster, LAST_CLUSTER ) then
+      if FS.Set_FAT (cluster, LAST_CLUSTER) then
          FS.FSInfo.Free_Clusters := FS.FSInfo.Free_Clusters - 1;
          FS.FSInfo.Last_Allocated_Cluster := cluster;
-         -- FIXME: writeback FSInfo?
+         FS.Writeback_FsInfo;
          return True;
       else
          return False;
       end if;
    end Allocate_Cluster;
 
+   procedure Writeback_FsInfo
+     (FS : in out FAT_Filesystem)
+   is
+      subtype FSInfo_Block is Block (0 .. 11);
+      function From_FSInfo is new Ada.Unchecked_Conversion
+        (FAT_FS_Info, FSInfo_Block);
+
+      Status : Status_Code;
+      fat_begin_lba : constant Unsigned_32 :=
+        FS.LBA + Unsigned_32 (FS.FSInfo_Block_Number);
+      ret : Status_Code;
+      pragma Unreferenced (ret);
+   begin
+      FS.Window_Block := 16#FFFF_FFFF#;
+      Status := FS.Ensure_Block (fat_begin_lba);
+
+      if Status /= OK then
+         return;
+      end if;
+
+      --  again, check the generic FAT block signature
+      if FS.Window (510 .. 511) /= (16#55#, 16#AA#) then
+         return;
+      end if;
+
+      --  good. now we got the entire FSinfo in our window.
+      --  modify that part of the window and writeback.
+      FS.Window (16#1E4# .. 16#1EF#) := From_FSInfo (FS.FSInfo);
+      ret := FS.Write_Window (Block => fat_begin_lba);
+   end Writeback_FsInfo;
+
    function Get_Free_Cluster (FS : in out FAT_Filesystem) return Unsigned_32 is
       cand : Unsigned_32 := FS.Most_Recently_Allocated_Cluster;
    begin
-      --  try shortcut: last allocated + 1 could be free
-      if cand /= INVALID_CLUSTER and then cand < FS.Num_Clusters then
-         cand := cand + 1;
-         if FS.Is_Free_Cluster (FS.Get_FAT (cand)) then
-            return cand;
+      if FS.Version = FAT32 then
+         --  try shortcut: last allocated + 1 could be free
+         if cand /= INVALID_CLUSTER and then cand < FS.Num_Clusters then
+            cand := cand + 1;
+            if FS.Is_Free_Cluster (FS.Get_FAT (cand)) then
+               return cand;
+            end if;
          end if;
       end if;
 
@@ -79,14 +114,14 @@ package body FAT_Filesystem is
       Status     : out Status_Code) return FAT_Filesystem_Access
    is
       subtype Word_Data is Media_Reader.Block (0 .. 3);
-      --function To_Byte is new
-      --  Ada.Unchecked_Conversion (Media_Reader.Block (0), Unsigned_8);
       function To_Word is new
         Ada.Unchecked_Conversion (Word_Data, Unsigned_32);
       Ret      : FAT_Filesystem_Access;
       P_Idx    : Unsigned_16;
       P_Data   : Media_Reader.Block (0 .. 15);
       N_Blocks : Unsigned_32;
+
+      BOOTCODE_SIZE : constant := 446;
 
    begin
       --  Find a free Volume handle
@@ -130,7 +165,7 @@ package body FAT_Filesystem is
       Partition_Loop : for P in 1 .. 4 loop
          --  Partitions are defined as an array of 16 bytes from
          --  base MBR + 446 (16#1BE#)
-         P_Idx  := 446 + Unsigned_16 (P - 1) * 16;
+         P_Idx  := BOOTCODE_SIZE + Unsigned_16 (P - 1) * 16;
          P_Data := Ret.Window (P_Idx .. P_Idx + 15);
 
          --  Retrieve the number of blocks/sectors in the partition.
@@ -308,6 +343,14 @@ package body FAT_Filesystem is
       FS.Mounted := False;
    end Close;
 
+   function Write_Window
+     ( FS : in out FAT_Filesystem;
+       Block : Unsigned_32) return Status_Code
+   is
+   begin
+      return Internal_Error; -- TODO: implement
+   end Write_Window;
+
    ------------------
    -- Ensure_Block --
    ------------------
@@ -346,13 +389,14 @@ package body FAT_Filesystem is
         (Unsigned_16, B2);
       function From_Int32 is new Ada.Unchecked_Conversion
         (Unsigned_32, B4);
+
+      fat_block : Unsigned_32;
    begin
 
       case FS.Version is
          when FAT16 =>
-            Status := Ensure_Block
-              (FS,
-               FS.FAT_Addr + Cluster * 2 / FS.Block_Size_In_Bytes);
+            fat_block := FS.FAT_Addr + Cluster * 2 / FS.Block_Size_In_Bytes;
+            Status := Ensure_Block (FS, fat_block);
 
             if Status /= OK then
                return False;
@@ -362,9 +406,8 @@ package body FAT_Filesystem is
             FS.Window (Idx .. Idx + 1) := From_Int16 (Unsigned_16 (Value and 16#FFFF#));
 
          when FAT32 =>
-            Status := Ensure_Block
-              (FS,
-               FS.FAT_Addr + Cluster * 4 / FS.Block_Size_In_Bytes);
+            fat_block := FS.FAT_Addr + Cluster * 4 / FS.Block_Size_In_Bytes;
+            Status := Ensure_Block (FS, fat_block);
 
             if Status /= OK then
                return False;
@@ -374,8 +417,8 @@ package body FAT_Filesystem is
             FS.Window (Idx .. Idx + 3) := From_Int32 (Value and 16#0FFF_FFFF#);
       end case;
 
-      --  TODO: write FAT back to disk
-      return True;
+      --  write FAT back to disk
+      return OK = FS.Write_Window (fat_block);
    end Set_FAT;
 
    function Get_FAT
@@ -407,7 +450,6 @@ package body FAT_Filesystem is
             end if;
 
             Idx := Unsigned_16 ((Cluster * 2) mod FS.Block_Size_In_Bytes);
-
             return Unsigned_32 (To_Int16 (FS.Window (Idx .. Idx + 1)));
 
          when FAT32 =>
@@ -420,7 +462,6 @@ package body FAT_Filesystem is
             end if;
 
             Idx := Unsigned_16 ((Cluster * 4) mod FS.Block_Size_In_Bytes);
-
             return To_Int32 (FS.Window (Idx .. Idx + 3)) and 16#0FFF_FFFF#;
       end case;
    end Get_FAT;

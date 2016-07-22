@@ -14,8 +14,12 @@ package FAT_Filesystem.Directories with SPARK_Mode is
      with Pre => Is_Subdirectory (E);
    -- get handle of given item. Handle can be used with Read().
 
+   function Make_Entry
+     (Parent  : in out Directory_Handle;
+      Ent     : out Directory_Entry) return Status_Code;
+
    function Make_Directory
-     (Parent  : Directory_Handle;
+     (Parent  : in out Directory_Handle;
       newname : String;
       Dir     : out Directory_Handle) return Status_Code;
    -- create a new directory in the given one

@@ -30,20 +30,62 @@ package body FAT_Filesystem.Directories is
       return OK;
    end Open_Root_Directory;
 
-   function Make_Directory
-     (Parent : Directory_Handle;
-      newname : String;
-      Dir : out Directory_Handle) return Status_Code
+   function Make_Entry
+     (Parent  : in out Directory_Handle;
+      Ent     : out Directory_Entry) return Status_Code
    is
+      c        : Unsigned_32;
+      Ent_Last : Directory_Entry;
+      need_cluster : Boolean;
    begin
       if Parent.FS.Version /= FAT32 then
          --  we only support FAT32 for now.
          return Internal_Error;
       end if;
 
-      -- find free cluster
+      -- find last entry
 
-      --
+      -- now we need to find the offset within the cluster
+      need_cluster := True; -- TODO
+
+      if need_cluster then
+
+         -- find free cluster
+         c := Parent.FS.Get_Free_Cluster;
+         if c = INVALID_CLUSTER then
+            return Device_Full;
+         end if;
+
+         -- allocate it
+         if not Parent.FS.Allocate_Cluster (c) then
+            return Allocation_Error;
+         end if;
+      else
+         c := Parent.Start_Cluster;
+      end if;
+
+      -- now add the new
+
+      return OK;
+   end Make_Entry;
+
+   function Make_Directory
+     (Parent : in out Directory_Handle;
+      newname : String;
+      Dir : out Directory_Handle) return Status_Code
+   is
+      Ent      : Directory_Entry;
+   begin
+      if Parent.FS.Version /= FAT32 then
+         --  we only support FAT32 for now.
+         return Internal_Error;
+      end if;
+
+      if Make_Entry (Parent, Ent) /= OK then
+         return Allocation_Error;
+      end if;
+
+      -- TODO: fill entry attrs to make it a directory
 
       return OK;
    end Make_Directory;
