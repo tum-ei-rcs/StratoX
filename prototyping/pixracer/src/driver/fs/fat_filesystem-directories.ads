@@ -1,27 +1,30 @@
 package FAT_Filesystem.Directories with SPARK_Mode is
 
-   type Directory_Handle is private;
+   type Directory_Handle is private; -- used to read directories
 
    function Open_Root_Directory
      (FS  : FAT_Filesystem_Access;
       Dir : out Directory_Handle) return Status_Code;
 
-   type Directory_Entry is private;
+   type Directory_Entry is private; -- used to represent one item in directory
 
    function Open
      (E   : Directory_Entry;
       Dir : out Directory_Handle) return Status_Code
      with Pre => Is_Subdirectory (E);
+   -- get handle of given item. Handle can be used with Read().
 
    function Make_Directory
      (Parent  : Directory_Handle;
       newname : String;
       Dir     : out Directory_Handle) return Status_Code;
+   -- create a new directory in the given one
 
    procedure Close (Dir : in out Directory_Handle);
 
    function Read (Dir : in out Directory_Handle;
                   DEntry : out Directory_Entry) return Status_Code;
+   --  @summary get the next entry in the given directory
 
    function Name (E : Directory_Entry) return String;
 
@@ -114,6 +117,7 @@ private
       Current_Cluster : Unsigned_32;
       Current_Block   : Unsigned_32;
    end record;
+   -- used to read the directory
 
    type Directory_Entry is record
       FS            : FAT_Filesystem_Access;
@@ -125,6 +129,7 @@ private
       Start_Cluster : Unsigned_32;
       Size          : Unsigned_32;
    end record;
+   -- each item in a directory is described by this
 
    function Is_Read_Only (E : Directory_Entry) return Boolean
    is (E.Attributes.Read_Only);

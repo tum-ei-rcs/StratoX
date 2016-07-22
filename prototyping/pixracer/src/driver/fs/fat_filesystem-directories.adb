@@ -36,7 +36,16 @@ package body FAT_Filesystem.Directories is
       Dir : out Directory_Handle) return Status_Code
    is
    begin
-      return Internal_Error; -- not yet implemented
+      if Parent.FS.Version /= FAT32 then
+         --  we only support FAT32 for now.
+         return Internal_Error;
+      end if;
+
+      -- find free cluster
+
+      --
+
+      return OK;
    end Make_Directory;
 
    ----------
@@ -145,24 +154,28 @@ package body FAT_Filesystem.Directories is
 
       DEntry.L_Name_First := DEntry.L_Name'Last + 1;
 
+      -- fetch next directory entry...loop until we have a valid (non-deleted) entry
       loop
          Block_Off :=
            Unsigned_16
              (Unsigned_32 (Dir.Current_Index) * 32
               mod Dir.FS.Block_Size_In_Bytes);
+         -- offset of entry within current block
 
+         -- do we need to fetch the next block?
          if Dir.Current_Index > 0
            and then Block_Off = 0
          then
             Dir.Current_Block := Dir.Current_Block + 1;
+            -- do we need to fetch the next cluster?
             if Dir.Current_Block -
               Dir.FS.Cluster_To_Block (Dir.Current_Cluster) =
               Unsigned_32 (Dir.FS.Number_Of_Blocks_Per_Cluster)
             then
                Dir.Current_Cluster := Dir.FS.Get_FAT (Dir.Current_Cluster);
 
-               if Dir.Current_Cluster = 1
-                 or else Dir.FS.EOC (Dir.Current_Cluster)
+               if Dir.Current_Cluster = INVALID_CLUSTER
+                 or else Dir.FS.Is_Last_Cluster (Dir.Current_Cluster)
                then
                   return Internal_Error;
                end if;
@@ -171,6 +184,7 @@ package body FAT_Filesystem.Directories is
                  Dir.FS.Cluster_To_Block (Dir.Current_Cluster);
             end if;
 
+            -- read next block
             Ret := Dir.FS.Ensure_Block (Dir.Current_Block);
 
             if Ret /= OK then
@@ -178,17 +192,19 @@ package body FAT_Filesystem.Directories is
             end if;
          end if;
 
+         -- are we at the end of the entries?
          if Dir.FS.Window (Block_Off) = 0 then
-            --  End of entries
             Dir.Current_Index := 16#FFFF#;
             return Invalid_Object_Entry;
          end if;
 
+         -- okay, there are more entries. each entry is 32bytes:
          D_Entry := To_Entry (Dir.FS.Window (Block_Off .. Block_Off + 31));
          Dir.Current_Index := Dir.Current_Index + 1;
 
-         --  Check if we have a VFAT entry here by checking that the
-         --  attributes are 16#0F# (e.g. all attributes set except
+         --  Check if we have a VFAT entry here (an ugly Win95 extension
+         --  allowing for longer filenames) by checking that the
+         --  attributes are 16#0F# (e.g., all attributes set except
          --  subdirectory and archive)
          if D_Entry.Attributes = VFAT_Directory_Entry_Attribute then
             V_Entry := To_VFAT_Entry (D_Entry);
@@ -263,7 +279,7 @@ package body FAT_Filesystem.Directories is
                DEntry.L_Name_First := DEntry.L_Name'Last + 1;
             end if;
 
-            return OK;
+            return OK; -- finished fetching next entry
          end if;
       end loop;
    end Read;

@@ -9,6 +9,46 @@ package body FAT_Filesystem is
      (FS     : in out FAT_Filesystem;
       Status : out Status_Code);
 
+   function Allocate_Cluster (FS : in out FAT_Filesystem; cluster : Unsigned_32) return Boolean is
+      LAST_CLUSTER : constant Unsigned_32 := 16#0FFF_FFF8#;
+   begin
+      if FS.Set_FAT ( cluster, LAST_CLUSTER ) then
+         FS.FSInfo.Free_Clusters := FS.FSInfo.Free_Clusters - 1;
+         FS.FSInfo.Last_Allocated_Cluster := cluster;
+         -- FIXME: writeback FSInfo?
+         return True;
+      else
+         return False;
+      end if;
+   end Allocate_Cluster;
+
+   function Get_Free_Cluster (FS : in out FAT_Filesystem) return Unsigned_32 is
+      cand : Unsigned_32 := FS.Most_Recently_Allocated_Cluster;
+   begin
+      --  try shortcut: last allocated + 1 could be free
+      if cand /= INVALID_CLUSTER and then cand < FS.Num_Clusters then
+         cand := cand + 1;
+         if FS.Is_Free_Cluster (FS.Get_FAT (cand)) then
+            return cand;
+         end if;
+      end if;
+
+      --  otherwise exhaustively search for first free cluster
+      declare
+         c : Unsigned_32 := FIRST_CLUSTER;
+      begin
+         Scan_Loop : loop
+            exit Scan_Loop when FS.Is_Free_Cluster (FS.Get_FAT (c));
+            if c = FS.Num_Clusters then
+               return INVALID_CLUSTER;
+            end if;
+            c := c + 1;
+         end loop Scan_Loop;
+      end;
+
+      return INVALID_CLUSTER;
+   end Get_Free_Cluster;
+
    ----------
    -- Trim --
    ----------
@@ -25,6 +65,11 @@ package body FAT_Filesystem is
       return "";
    end Trim;
 
+   function Is_FAT_Partition (typecode : Unsigned_8) return Boolean is
+     (typecode = 16#0b#) or (typecode = 16#0c#) or --  FAT32
+     (typecode = 16#0e#) or (typecode = 16#0f#) or --  FAT32
+     (typecode = 16#04#); -- FAT16
+
    ----------
    -- Open --
    ----------
@@ -34,6 +79,8 @@ package body FAT_Filesystem is
       Status     : out Status_Code) return FAT_Filesystem_Access
    is
       subtype Word_Data is Media_Reader.Block (0 .. 3);
+      --function To_Byte is new
+      --  Ada.Unchecked_Conversion (Media_Reader.Block (0), Unsigned_8);
       function To_Word is new
         Ada.Unchecked_Conversion (Word_Data, Unsigned_32);
       Ret      : FAT_Filesystem_Access;
@@ -60,7 +107,7 @@ package body FAT_Filesystem is
       Ret.Mounted := True;
       Ret.Controller := Controller;
 
-      --  Let's read the MBR
+      --  Let's read the MBR (first 512B)
       Status := Ret.Ensure_Block (0);
 
       if Status /= OK then
@@ -77,30 +124,38 @@ package body FAT_Filesystem is
          return null;
       end if;
 
-      --  Now check the partition entries: 4 partitions for the MBR
-      for P in 1 .. 4 loop
+      --  Now check the partition entries: 4 partitions for the MBR,
+      --  right after the boot code, which occupies the first 446B
+      --  of the MBR. Then open the first FAT partition that we find.
+      Partition_Loop : for P in 1 .. 4 loop
          --  Partitions are defined as an array of 16 bytes from
          --  base MBR + 446 (16#1BE#)
          P_Idx  := 446 + Unsigned_16 (P - 1) * 16;
          P_Data := Ret.Window (P_Idx .. P_Idx + 15);
 
-         --  Retrieve the number of blocks in the partition.
+         --  Retrieve the number of blocks/sectors in the partition.
          N_Blocks := To_Word (P_Data (12 .. 15));
 
          if N_Blocks > 0 then
             --  The partition is valid
-            Ret.LBA := To_Word (P_Data (8 .. 11));
-
-            exit;
+            declare
+               typecode : constant Unsigned_8 := P_Data (4);
+            begin
+               if Is_FAT_Partition (typecode) then
+                  Ret.LBA := To_Word (P_Data (8 .. 11)); -- start address/LBA
+                  exit Partition_Loop;
+               end if;
+            end;
 
          elsif P = 4 then
-            --  Last of the partition is not valid: there's no valid partition
+            --  Last of the partition is also not valid.
+            --  Thus, there's no valid partition at all.
             Status := No_Partition_Found;
             Ret.Mounted := False;
 
             return null;
          end if;
-      end loop;
+      end loop Partition_Loop;
 
       Initialize_FS (Ret.all, Status);
 
@@ -159,6 +214,7 @@ package body FAT_Filesystem is
    -- Initialize_FS --
    -------------------
 
+   --  @summary read FAT volume ID (first 512 B)
    procedure Initialize_FS
      (FS     : in out FAT_Filesystem;
       Status : out Status_Code)
@@ -173,12 +229,13 @@ package body FAT_Filesystem is
 
    begin
       FS.Window_Block := 16#FFFF_FFFF#;
-      Status := FS.Ensure_Block (FS.LBA);
+      Status := FS.Ensure_Block (FS.LBA); -- read partitions first block ("volume id")
 
       if Status /= OK then
          return;
       end if;
 
+      -- check volume signature: must be 55,AA
       if FS.Window (510 .. 511) /= (16#55#, 16#AA#) then
          Status := No_Filesystem;
          return;
@@ -187,15 +244,20 @@ package body FAT_Filesystem is
       FS.Disk_Parameters :=
         To_Disk_Parameter (FS.Window (0 .. 91));
 
+      -- read the first file allocation table (FAT) and get FS info (#free, etc.)
       if FS.Version = FAT32 then
-         Status :=
-           FS.Ensure_Block (FS.LBA + Unsigned_32 (FS.FSInfo_Block_Number));
+         declare
+            fat_begin_lba : constant Unsigned_32 :=
+              FS.LBA + Unsigned_32 (FS.FSInfo_Block_Number);
+         begin
+            Status := FS.Ensure_Block (fat_begin_lba);
+         end;
 
          if Status /= OK then
             return;
          end if;
 
-         --  Check the generic FAT block signature
+         -- again, check the generic FAT block signature
          if FS.Window (510 .. 511) /= (16#55#, 16#AA#) then
             Status := No_Filesystem;
             return;
@@ -203,9 +265,12 @@ package body FAT_Filesystem is
 
          FS.FSInfo :=
            To_FSInfo (FS.Window (16#1E4# .. 16#1EF#));
+         -- read #free clusters, last alloc'd cluster, signature
       end if;
 
+      -- compute LBA for FAT and data clusters
       declare
+         -- where the clusters with data start relative to Volume ID LBA
          Data_Offset_In_Block : constant Unsigned_32 :=
                                   Unsigned_32 (FS.Reserved_Blocks) +
                                   FS.FAT_Table_Size_In_Blocks *
@@ -268,9 +333,50 @@ package body FAT_Filesystem is
       return OK;
    end Ensure_Block;
 
-   -------------
-   -- Get_FAT --
-   -------------
+   function Set_FAT
+     (FS      : in out FAT_Filesystem;
+      Cluster : Unsigned_32;
+      Value   : Unsigned_32) return Boolean
+   is
+      Status    : Status_Code;
+      Idx       : Unsigned_16;
+      subtype B2 is Block (1 .. 2);
+      subtype B4 is Block (1 .. 4);
+      function From_Int16 is new Ada.Unchecked_Conversion
+        (Unsigned_16, B2);
+      function From_Int32 is new Ada.Unchecked_Conversion
+        (Unsigned_32, B4);
+   begin
+
+      case FS.Version is
+         when FAT16 =>
+            Status := Ensure_Block
+              (FS,
+               FS.FAT_Addr + Cluster * 2 / FS.Block_Size_In_Bytes);
+
+            if Status /= OK then
+               return False;
+            end if;
+
+            Idx := Unsigned_16 ((Cluster * 2) mod FS.Block_Size_In_Bytes);
+            FS.Window (Idx .. Idx + 1) := From_Int16 (Unsigned_16 (Value and 16#FFFF#));
+
+         when FAT32 =>
+            Status := Ensure_Block
+              (FS,
+               FS.FAT_Addr + Cluster * 4 / FS.Block_Size_In_Bytes);
+
+            if Status /= OK then
+               return False;
+            end if;
+
+            Idx := Unsigned_16 ((Cluster * 4) mod FS.Block_Size_In_Bytes);
+            FS.Window (Idx .. Idx + 3) := From_Int32 (Value and 16#0FFF_FFFF#);
+      end case;
+
+      --  TODO: write FAT back to disk
+      return True;
+   end Set_FAT;
 
    function Get_FAT
      (FS      : in out FAT_Filesystem;
@@ -286,7 +392,7 @@ package body FAT_Filesystem is
         (B4, Unsigned_32);
 
    begin
-      if Cluster < 2 or else Cluster >= FS.Num_Clusters then
+      if Cluster < FIRST_CLUSTER or else Cluster >= FS.Num_Clusters then
          return 1;
       end if;
 
@@ -310,7 +416,7 @@ package body FAT_Filesystem is
                FS.FAT_Addr + Cluster * 4 / FS.Block_Size_In_Bytes);
 
             if Status /= OK then
-               return 1;
+               return INVALID_CLUSTER;
             end if;
 
             Idx := Unsigned_16 ((Cluster * 4) mod FS.Block_Size_In_Bytes);

@@ -99,7 +99,15 @@ package body SDMemory.Driver is
          if not Error_State then
             Logger.log (Logger.INFO, "SD Card listing:");
             while Read (Dir, Ent) = OK loop
-               Logger.log (Logger.INFO, " +- " & Name (Ent) & (if Is_Subdirectory (Ent) then "/" else ""));
+               if Is_System_File (Ent) then
+                  declare
+                     Contents : String (1 .. 16);
+                  begin
+                     Logger.log (Logger.INFO, " +- " & Name (Ent) & ": " & Contents);
+                  end;
+               else
+                  Logger.log (Logger.INFO, " +- " & Name (Ent) & (if Is_Subdirectory (Ent) then "/" else ""));
+               end if;
             end loop;
             Close (Dir);
             Close (FS);
