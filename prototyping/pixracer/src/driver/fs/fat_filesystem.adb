@@ -24,6 +24,26 @@ package body FAT_Filesystem is
       end if;
    end Allocate_Cluster;
 
+   function Append_Cluster
+     (FS: in out FAT_Filesystem;
+      Last_Cluster : Unsigned_32;
+      New_Cluster  : out Unsigned_32) return Status_Code
+   is
+   begin
+      New_Cluster := FS.Get_Free_Cluster;
+      if New_Cluster = INVALID_CLUSTER then
+         return Device_Full;
+      end if;
+      if not FS.Allocate_Cluster (New_Cluster) then
+         return Allocation_Error;
+      end if;
+      --  chain it to the formerly last cluster
+      if not FS.Set_FAT (Last_Cluster, New_Cluster) then
+         return Allocation_Error;
+      end if;
+      return OK;
+   end Append_Cluster;
+
    procedure Writeback_FsInfo
      (FS : in out FAT_Filesystem)
    is
@@ -84,9 +104,20 @@ package body FAT_Filesystem is
       return INVALID_CLUSTER;
    end Get_Free_Cluster;
 
-   ----------
-   -- Trim --
-   ----------
+   --  turn a string into a fixed-length string:
+   --  if too short, pad with spaces until it reaches the given length
+   --  if too long, then crop
+   procedure StrCpySpace (outstring : out String; instring : String) is
+   begin
+      if instring'Length >= outstring'Length then
+         -- trim
+         outstring := instring (instring'First .. instring'First + outstring'Length - 1);
+      else
+         -- pad
+         outstring (1 .. instring'Length) := instring;
+         outstring (instring'Length + 1 .. outstring'Length) := (others => ' ');
+      end if;
+   end StrCpySpace;
 
    function Trim (S : String) return String
    is
@@ -99,6 +130,16 @@ package body FAT_Filesystem is
 
       return "";
    end Trim;
+
+   function StrChr (S : String; C : Character) return Integer is
+   begin
+      for idx in S'Range loop
+         if S (idx) = C then
+            return idx;
+         end if;
+      end loop;
+      return S'Last + 1;
+   end StrChr;
 
    function Is_FAT_Partition (typecode : Unsigned_8) return Boolean is
      (typecode = 16#0b#) or (typecode = 16#0c#) or --  FAT32

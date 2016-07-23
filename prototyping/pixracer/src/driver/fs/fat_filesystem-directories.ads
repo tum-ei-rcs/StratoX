@@ -12,17 +12,15 @@ package FAT_Filesystem.Directories with SPARK_Mode is
      (E   : Directory_Entry;
       Dir : out Directory_Handle) return Status_Code
      with Pre => Is_Subdirectory (E);
-   -- get handle of given item. Handle can be used with Read().
-
-   function Allocate_Entry
-     (Parent  : in  Directory_Entry;
-      Ent     : out Directory_Entry) return Status_Code;
+   --  get handle of given item. Handle can be used with Read().
 
    function Make_Directory
      (Parent  : in Directory_Entry;
       newname : String;
-      Dir     : out Directory_Handle) return Status_Code;
-   -- create a new directory in the given one
+      D_Entry : out Directory_Entry) return Status_Code
+     with Pre => newname'Length <= 12;
+   --  create a new directory within the given one
+   --  we only allow short names for now
 
    procedure Close (Dir : in out Directory_Handle);
 
@@ -63,8 +61,8 @@ private
       Time       : Unsigned_16;
       Date       : Unsigned_16;
       Cluster_L  : Unsigned_16;
-      Size       : Unsigned_32;
-   end record with Size => 32 * 8;
+      Size       : Unsigned_32; -- TODO: what is this?
+   end record with Size => 32 * 8; --  32 Byte per entry
 
    for FAT_Directory_Entry use record
       Filename   at 16#00# range 0 .. 63;
@@ -125,20 +123,32 @@ private
 
    type Directory_Entry is record
       FS            : FAT_Filesystem_Access;
-      L_Name        : String (1 .. 128);
-      L_Name_First  : Natural := 129;
-      S_Name        : String (1 .. 12);
-      S_Name_Last   : Natural := 0;
+      Long_Name        : String (1 .. 128); -- long name (VFAT)
+      Long_Name_First  : Natural := 129; -- where it starts
+      Short_Name       : String (1 .. 12); -- short name
+      Short_Name_Last  : Natural := 0; -- where it starts
       Attributes    : FAT_Directory_Entry_Attribute;
       Start_Cluster : Unsigned_32;
-      Size          : Unsigned_32;
+      Size          : Unsigned_32; -- TODO: what is this?
    end record;
    --  each item in a directory is described by this
+
+   function Allocate_Entry
+     (Parent_Ent : in  Directory_Entry;
+      Ent_Addr   : out FAT_Address) return Status_Code;
+   --  find a location for a new entry within Parent_Ent
+
+   procedure Set_Shortname (newname : String; E : in out FAT_Directory_Entry)
+     with Pre => newname'Length > 0;
+
+   function Directory_To_FAT_Entry
+     (D_Entry : in Directory_Entry;
+      F_Entry : out FAT_Directory_Entry) return Status_Code;
 
    function FAT_To_Directory_Entry
      (FS : FAT_Filesystem_Access;
       F_Entry : in FAT_Directory_Entry;
-      DEntry : in out Directory_Entry;
+      D_Entry : in out Directory_Entry;
       Last_Seq : in out VFAT_Sequence_Number) return Status_Code;
 
    function Is_Read_Only (E : Directory_Entry) return Boolean

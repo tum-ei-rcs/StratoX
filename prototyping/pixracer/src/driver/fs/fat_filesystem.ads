@@ -203,6 +203,14 @@ private
 
    function Trim (S : String) return String;
 
+   procedure StrCpySpace (outstring : out String; instring : String);
+   --  copy instring to outstring. If too short, pad with ' '. if
+   --  too long, trim.
+
+   function StrChr (S : String; C : Character) return Integer;
+   --  search for occurence of character in string.
+   --  return index in S, or S'Last + 1 if not found.
+
    type FAT_FS_Info is record
       Signature              : String (1 .. 4);
       Free_Clusters          : Unsigned_32;
@@ -229,6 +237,12 @@ private
    end record;
    for FAT_Filesystem'Alignment use 32; -- might be necessary, because Window is a DMA address
 
+   type FAT_Address is record
+      --Cluster   : Unsigned_32; -- cluster number into which Block_LBA falls
+      Block_LBA : Unsigned_32; -- block address, absolute
+      Block_Off : Unsigned_16; -- offset within block in bytes
+   end record;
+
    function Ensure_Block
      (FS    : in out FAT_Filesystem;
       Block : Unsigned_32) return Status_Code;
@@ -248,6 +262,14 @@ private
    --  note: FAT starts counting clusters with 2. Thus, to get the LBA,
    --  subtract FIRST_CLUSTER
    --  cluster size is within 8 .. 64 blocks
+   --  B := Data_Area + (Cluster - FIRST_CLUSTER) * BPC
+
+   function Block_To_Cluster
+     (FS        : FAT_Filesystem;
+      Block_LBA : Unsigned_32) return Unsigned_32
+   is (Block_LBA / (Unsigned_32 (FS.Number_Of_Blocks_Per_Cluster))
+       - FS.Data_Area + FIRST_CLUSTER);
+   -- => Cluster = Block/BPC - Data_Area + FIRST_CLUSTER
 
    subtype FAT_Entry is Unsigned_32;
 
@@ -277,6 +299,14 @@ private
       ent : FAT_Entry) return Boolean
    is ((ent and 16#0FFF_FFFF#) = 16#0#);
    --  return true if the FAT entry indicates the cluster being unused
+
+   function Append_Cluster
+     (FS: in out FAT_Filesystem; -- FIXME: why is this access? inconsistent with Allocate_Cluster etc.
+      Last_Cluster : Unsigned_32;
+      New_Cluster  : out Unsigned_32) return Status_Code
+     with Pre => Version (FS) = FAT32 and then FS.FSInfo.Free_Clusters > 0;
+   --  @summary convenience function. COmbines Get_Free_Cluster,
+   --  Allocate_Cluster and Set_FAT
 
    function Allocate_Cluster
      (FS : in out FAT_Filesystem;

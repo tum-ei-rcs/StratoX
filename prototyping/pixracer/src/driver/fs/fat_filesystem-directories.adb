@@ -6,6 +6,8 @@ package body FAT_Filesystem.Directories is
    -- Open_Root_Directory --
    -------------------------
 
+   ENTRY_SIZE : constant := 32;
+
    function Open_Root_Directory
      (FS  : FAT_Filesystem_Access;
       Dir : out Directory_Handle) return Status_Code
@@ -31,107 +33,69 @@ package body FAT_Filesystem.Directories is
    end Open_Root_Directory;
 
    function Allocate_Entry
-     (Parent  : Directory_Entry;
-      Ent     : out Directory_Entry) return Status_Code
+     (Parent_Ent : Directory_Entry;
+      Ent_Addr   : out FAT_Address) return Status_Code
    is
-      c            : Unsigned_32;
-      need_cluster : Boolean;
-      need_block   : Boolean;
-      Ret          : Status_Code;
       Block_Off    : Unsigned_16;
-      Handle       : Directory_Handle;
+      Parent       : Directory_Handle;
    begin
-      if Parent.FS.Version /= FAT32 then
+      if Parent_Ent.FS.Version /= FAT32 then
          --  we only support FAT32 for now.
          return Internal_Error;
       end if;
 
-      --  get handle from entry
-      if Open (Parent, Handle) /= OK then
+      --  skip to last entry
+      if Open (Parent_Ent, Parent) /= OK then
          return Invalid_Object_Entry;
       end if;
-
-      Ret := Handle.FS.Ensure_Block (Handle.Current_Block);
-      if Ret /= OK then
-         return Ret;
-      end if;
-
-      need_cluster := False;
-      --  go to the last directory entry
-      Find_Last : loop
-         Block_Off :=
-           Unsigned_16
-             (Unsigned_32 (Handle.Current_Index) * 32
-              mod Parent.FS.Block_Size_In_Bytes);
-         --  offset of entry within current block
-
-         --  do we need to fetch the next block?
-         if Handle.Current_Index > 0
-           and then Block_Off = 0
-         then
-            Handle.Current_Block := Handle.Current_Block + 1;
-            --  do we need to fetch the next cluster?
-            if Handle.Current_Block -
-              Handle.FS.Cluster_To_Block (Handle.Current_Cluster) =
-              Unsigned_32 (Handle.FS.Number_Of_Blocks_Per_Cluster)
-            then
-               Handle.Current_Cluster := Handle.FS.Get_FAT (Handle.Current_Cluster);
-
-               if Handle.Current_Cluster = INVALID_CLUSTER or
-                  Handle.FS.Is_Last_Cluster (Handle.Current_Cluster) then
-                  return Internal_Error;
-               end if;
-
-               Handle.Current_Block :=
-                 Handle.FS.Cluster_To_Block (Handle.Current_Cluster);
-            end if;
-
-            --  read next block
-            Ret := Handle.FS.Ensure_Block (Handle.Current_Block);
-
-            if Ret /= OK then
-               return Ret;
-            end if;
-         end if;
-
-         --  are we at the end of the entries?
-         if Handle.FS.Window (Block_Off) = 0 then
-            Handle.Current_Index := 16#FFFF#;
-            return Too_Many_Entries;
-         end if;
-
-         --  okay, there are more entries. each entry is 32bytes:
-         --  Ent := To_Entry (Dir.FS.Window (Block_Off .. Block_Off + 31));
-         Handle.Current_Index := Handle.Current_Index + 1;
-      end loop Find_Last;
-
-      need_block := False;
+      declare
+         Ent : Directory_Entry;
+      begin
+         while Read (Parent, Ent) = OK loop
+            null;
+         end loop;
+      end;
 
       --  if we are here, then we reached the last entry in the directory.
       --  see whether block_off is small enough to accommodate another entry
       --  block_Off .. Block_Off + 31 must be available, otherwise we need a
       --  the next block
-      need_cluster := need_block and False; -- TODO
+      --Parent.Current_Index := Parent.Current_Index + 1;
+      Block_Off := Unsigned_16 (Unsigned_32
+                                (Parent.Current_Index) * ENTRY_SIZE
+                                mod Parent.FS.Block_Size_In_Bytes);
+      --  offset of entry within current block
 
-      --  if the next block is still in the cluster, then just continue writing.
-      --  otherwise we have to allocate a new cluster
-      if need_cluster then
-
-         --  find free cluster
-         c := Parent.FS.Get_Free_Cluster;
-         if c = INVALID_CLUSTER then
-            return Device_Full;
+      --  do we need a new block?
+      if Block_Off = 0 and then Parent.Current_Index > 0 then
+         --  need a new block
+         Parent.Current_Block := Parent.Current_Block + 1;
+         --  do we need to allocate a new cluster for the new block?
+         if Parent.Current_Block -
+           Parent.FS.Cluster_To_Block (Parent.Current_Cluster) =
+           Unsigned_32 (Parent.FS.Number_Of_Blocks_Per_Cluster)
+         then
+            --  need another cluster. find free one and allocate it
+            declare
+               New_Cluster : Unsigned_32;
+               Status : Status_Code;
+            begin
+               Status := Parent.FS.Append_Cluster
+                 (Last_Cluster => Parent.Current_Cluster,
+                  New_Cluster => New_Cluster);
+               if Status /= OK then
+                  return Status;
+               end if;
+               Parent.Current_Cluster := New_Cluster;
+               Parent.Current_Block :=
+                 Parent.FS.Cluster_To_Block (Parent.Current_Cluster);
+            end;
          end if;
-
-         --  allocate it
-         if not Parent.FS.Allocate_Cluster (c) then
-            return Allocation_Error;
-         end if;
-      else
-         c := Parent.Start_Cluster;
       end if;
-
-      --  now add the new
+      --  now write the new entry to the allocated space (Parent.current_clock + block_off)
+      --Ent_Addr.Cluster := Parent.Current_Cluster;
+      Ent_Addr.Block_LBA := Parent.Current_Block;
+      Ent_Addr.Block_Off := Block_Off;
 
       return OK;
    end Allocate_Entry;
@@ -139,9 +103,15 @@ package body FAT_Filesystem.Directories is
    function Make_Directory
      (Parent  : in Directory_Entry;
       newname : String;
-      Dir     : out Directory_Handle) return Status_Code
+      D_Entry : out Directory_Entry) return Status_Code
    is
-      Ent : Directory_Entry;
+      subtype Entry_Data is Block (1 .. 32);
+      function From_Entry is new Ada.Unchecked_Conversion
+        (FAT_Directory_Entry, Entry_Data);
+
+      F_Entry  : FAT_Directory_Entry;
+      Ent_Addr : FAT_Address;
+      Status   : Status_Code;
    begin
       if Parent.FS.Version /= FAT32 then
          --  we only support FAT32 for now.
@@ -149,16 +119,45 @@ package body FAT_Filesystem.Directories is
       end if;
 
       --  find a place for another entry and return it
-      if Allocate_Entry (Parent, Ent) /= OK then
+      if Allocate_Entry (Parent, Ent_Addr) /= OK then
          return Allocation_Error;
       end if;
 
-      --  TODO: fill entry attrs to make it a directory
-      --  read the block where the new entry goes
-      --  copy over to FS.Window
-      --  write back the block with the new entry
+      --  read complete block
+      Status := Parent.FS.Ensure_Block (Ent_Addr.Block_LBA);
+      if Status /= OK then
+         return Status;
+      end if;
 
-      return OK;
+      --  fill entry attrs to make it a directory
+      D_Entry.FS := Parent.FS;
+      D_Entry.Attributes.Read_Only := False;
+      D_Entry.Attributes.Hidden := False;
+      D_Entry.Attributes.Archive := False;
+      D_Entry.Attributes.System_File := False;
+      D_Entry.Attributes.Volume_Label := False;
+      D_Entry.Attributes.Subdirectory := True;
+      D_Entry.Start_Cluster := Parent.FS.Block_To_Cluster (Ent_Addr.Block_LBA);
+      D_Entry.Size := 0; -- directories always carry zero
+      StrCpySpace (D_Entry.Short_Name, newname);
+      D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
+      D_Entry.Short_Name_Last := D_Entry.Short_Name'Length;
+
+      --  encode into FAT entry
+      Status := Directory_To_FAT_Entry (D_Entry, F_Entry);
+      if Status /= OK then
+         return Status;
+      end if;
+
+      --  copy over to FS.Window
+      Parent.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off + ENTRY_SIZE - 1)
+        := From_Entry (F_Entry);
+
+      --  write back the block with the new entry
+      Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);
+
+      -- TODO: create obligatory entries "." and ".."
+      return Status;
    end Make_Directory;
 
    ----------
@@ -193,6 +192,28 @@ package body FAT_Filesystem.Directories is
       Dir.Current_Block   := 0;
    end Close;
 
+   --  @summary encode Directory_Entry into FAT_Directory_Entry
+   function Directory_To_FAT_Entry
+     (D_Entry : in Directory_Entry;
+      F_Entry : out FAT_Directory_Entry) return Status_Code
+   is
+   begin
+      F_Entry.Date := 0; -- FIXME: set date/time
+      F_Entry.Time := 0;
+      F_Entry.Size := D_Entry.Size;
+      F_Entry.Attributes := D_Entry.Attributes;
+      Set_Shortname (Name (D_Entry), F_Entry);
+      F_Entry.Cluster_L := Unsigned_16 (D_Entry.Start_Cluster and 16#FFFF#);
+      if D_Entry.FS.Version = FAT16 then
+         F_Entry.Cluster_H := 0;
+      else
+         F_Entry.Cluster_H := Unsigned_16 (Shift_Right
+              (D_Entry.Start_Cluster and 16#FFFF_0000#, 16));
+      end if;
+
+      return OK;
+   end Directory_To_FAT_Entry;
+
    --  @summary decypher the raw entry (file/dir name, etc) and write
    --           to record.
    --  @return OK when decipher is complete, otherwise needs to be
@@ -201,7 +222,7 @@ package body FAT_Filesystem.Directories is
    function FAT_To_Directory_Entry
      (FS : FAT_Filesystem_Access;
       F_Entry : in FAT_Directory_Entry;
-      DEntry : in out Directory_Entry;
+      D_Entry : in out Directory_Entry;
       Last_Seq : in out VFAT_Sequence_Number) return Status_Code
    is
       procedure Prepend
@@ -247,21 +268,23 @@ package body FAT_Filesystem.Directories is
          V_Entry := To_VFAT_Entry (F_Entry);
 
          if V_Entry.VFAT_Attr.Stop_Bit then
-            DEntry.L_Name_First := DEntry.L_Name'Last + 1;
+            D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
+            --  invalidate long name
+
             Last_Seq := 0;
 
          else
             if Last_Seq = 0
               or else Last_Seq - 1 /= V_Entry.VFAT_Attr.Sequence
             then
-               DEntry.L_Name_First := DEntry.L_Name'Last + 1;
+               D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
             end if;
 
             Last_Seq := V_Entry.VFAT_Attr.Sequence;
 
-            Prepend (V_Entry.Name_3, DEntry.L_Name, DEntry.L_Name_First);
-            Prepend (V_Entry.Name_2, DEntry.L_Name, DEntry.L_Name_First);
-            Prepend (V_Entry.Name_1, DEntry.L_Name, DEntry.L_Name_First);
+            Prepend (V_Entry.Name_3, D_Entry.Long_Name, D_Entry.Long_Name_First);
+            Prepend (V_Entry.Name_2, D_Entry.Long_Name, D_Entry.Long_Name_First);
+            Prepend (V_Entry.Name_1, D_Entry.Long_Name, D_Entry.Long_Name_First);
 
             if V_Entry.VFAT_Attr.Sequence = 1 then
                CRC := V_Entry.Checksum;
@@ -272,7 +295,7 @@ package body FAT_Filesystem.Directories is
         and then Character'Pos (F_Entry.Filename (1)) /= 16#E5# --  Ignore deleted files
       then
          --  any other entry, which we return with "OK".
-         if DEntry.L_Name_First not in DEntry.L_Name'Range then
+         if D_Entry.Long_Name_First not in D_Entry.Long_Name'Range then
             Matches := False;
          else
             Current_CRC := 0;
@@ -292,29 +315,32 @@ package body FAT_Filesystem.Directories is
          declare
             Base   : String renames Trim (F_Entry.Filename);
             Ext    : String renames Trim (F_Entry.Extension);
-            S_Name : constant String :=
+            Short_Name : constant String :=
               Base &
             (if Ext'Length > 0
              then "." & Trim (F_Entry.Extension)
              else "");
          begin
-            DEntry.S_Name (1 .. S_Name'Length) := S_Name;
-            DEntry.S_Name_Last := S_Name'Length;
+            --  set short name
+            D_Entry.Short_Name (1 .. Short_Name'Length) := Short_Name;
+            D_Entry.Short_Name_Last := Short_Name'Length;
          end;
 
-         DEntry.Attributes    := F_Entry.Attributes;
-         DEntry.Start_Cluster := Unsigned_32 (F_Entry.Cluster_L);
-         DEntry.Size          := F_Entry.Size;
-         DEntry.FS            := FS;
+         D_Entry.Attributes    := F_Entry.Attributes;
+         D_Entry.Start_Cluster := Unsigned_32 (F_Entry.Cluster_L);
+         D_Entry.Size          := F_Entry.Size;
+         D_Entry.FS            := FS;
+         -- FIXME: add date and time
 
          if FS.Version = FAT32 then
-            DEntry.Start_Cluster :=
-              DEntry.Start_Cluster or
+            D_Entry.Start_Cluster :=
+              D_Entry.Start_Cluster or
               Shift_Left (Unsigned_32 (F_Entry.Cluster_H), 16);
          end if;
 
          if not Matches then
-            DEntry.L_Name_First := DEntry.L_Name'Last + 1;
+            --  invalidate long name
+            D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
          end if;
 
          return OK; -- finished fetching next entry
@@ -322,15 +348,9 @@ package body FAT_Filesystem.Directories is
       return Invalid_Name;
    end FAT_To_Directory_Entry;
 
-   ----------
-   -- Read --
-   ----------
-
    function Read (Dir    : in out Directory_Handle;
                   DEntry : out Directory_Entry) return Status_Code
    is
-
-
       Ret     : Status_Code;
       F_Entry : FAT_Directory_Entry;
       subtype Entry_Data is Block (1 .. 32);
@@ -353,12 +373,12 @@ package body FAT_Filesystem.Directories is
          return Ret;
       end if;
 
-      DEntry.L_Name_First := DEntry.L_Name'Last + 1;
+      DEntry.Long_Name_First := DEntry.Long_Name'Last + 1; -- invalidate long name
 
       Fetch_Next : loop
          Block_Off :=
            Unsigned_16
-             (Unsigned_32 (Dir.Current_Index) * 32
+             (Unsigned_32 (Dir.Current_Index) * ENTRY_SIZE
               mod Dir.FS.Block_Size_In_Bytes);
          --  offset of entry within current block
 
@@ -399,29 +419,63 @@ package body FAT_Filesystem.Directories is
          end if;
 
          --  okay, there are more entries. each entry is 32bytes:
-         F_Entry := To_Entry (Dir.FS.Window (Block_Off .. Block_Off + 31));
+         F_Entry := To_Entry (Dir.FS.Window
+                              (Block_Off .. Block_Off + ENTRY_SIZE - 1));
          Dir.Current_Index := Dir.Current_Index + 1;
 
          --  continue until we have an entry...because VFAT has multiple parts
-         if FAT_To_Directory_Entry (Dir.FS, F_Entry, DEntry, Last_Seq) = OK then
+         if FAT_To_Directory_Entry
+           (Dir.FS, F_Entry, DEntry, Last_Seq) = OK
+         then
             exit Fetch_Next;
          end if;
-
       end loop Fetch_Next;
       return OK;
    end Read;
 
-   ----------
-   -- Name --
-   ----------
-
-   function Name (E : Directory_Entry) return String
-   is
+   procedure Set_Shortname (newname : String; E : in out FAT_Directory_Entry) is
    begin
-      if E.L_Name_First in E.L_Name'Range then
-         return E.L_Name (E.L_Name_First .. E.L_Name'Last);
+      if E.Attributes.Subdirectory then
+         StrCpySpace (outstring => E.Filename, instring => newname);
+         if newname'Length > E.Filename'Length then
+            StrCpySpace (E.Extension, newname (newname'First + E.Filename'Length .. newname'Last));
+         else
+            StrCpySpace (E.Extension, "");
+         end if;
       else
-         return E.S_Name (E.S_Name'First .. E.S_Name_Last);
+         --  file: remove '.' and limit to 8+3...
+         declare
+            base  : String (1 .. 8);
+            ext   : String (1 .. 3);
+            dotpos : constant Integer := StrChr (newname, '.');
+         begin
+            if dotpos in newname'Range then
+               if dotpos = newname'First then
+                  StrCpySpace (base, "");
+               else
+                  StrCpySpace (base, newname (newname'First .. dotpos - 1));
+               end if;
+               if dotpos = newname'Last then
+                  StrCpySpace (ext, "");
+               else
+                  StrCpySpace (ext, newname (dotpos + 1 .. newname'Last));
+               end if;
+            else
+               StrCpySpace (base, newname);
+               StrCpySpace (ext, "");
+            end if;
+            E.Filename := base;
+            E.Extension := ext;
+         end;
+      end if;
+   end Set_Shortname;
+
+   function Name (E : Directory_Entry) return String is
+   begin
+      if E.Long_Name_First in E.Long_Name'Range then
+         return E.Long_Name (E.Long_Name_First .. E.Long_Name'Last);
+      else
+         return E.Short_Name (E.Short_Name'First .. E.Short_Name_Last);
       end if;
    end Name;
 
