@@ -264,7 +264,7 @@ package body FAT_Filesystem is
 
    begin
       FS.Window_Block := 16#FFFF_FFFF#;
-      Status := FS.Ensure_Block (FS.LBA); -- read partitions first block ("volume id")
+      Status := FS.Ensure_Block (FS.LBA); -- read partition's first block ("volume id")
 
       if Status /= OK then
          return;

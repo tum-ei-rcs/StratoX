@@ -8,8 +8,14 @@ package SDMemory.Driver is
    procedure Init_Filesys;
    --  initialize the interface
 
+   procedure Close_Filesys;
+   --  closes the interface
+
    procedure List_Rootdir;
    --  example copied from AdaCore/Ada_Drivers_Library
+
+   procedure Make_Logdir (dirname : String);
+   --  @summary create new folder in root directory
 
    --  TODO: add file-style I/O procedures
 end SDMemory.Driver;

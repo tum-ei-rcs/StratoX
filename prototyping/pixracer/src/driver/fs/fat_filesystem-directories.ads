@@ -14,12 +14,12 @@ package FAT_Filesystem.Directories with SPARK_Mode is
      with Pre => Is_Subdirectory (E);
    -- get handle of given item. Handle can be used with Read().
 
-   function Make_Entry
-     (Parent  : in out Directory_Handle;
+   function Allocate_Entry
+     (Parent  : in  Directory_Entry;
       Ent     : out Directory_Entry) return Status_Code;
 
    function Make_Directory
-     (Parent  : in out Directory_Handle;
+     (Parent  : in Directory_Entry;
       newname : String;
       Dir     : out Directory_Handle) return Status_Code;
    -- create a new directory in the given one
@@ -116,12 +116,12 @@ private
 
    type Directory_Handle is record
       FS              : FAT_Filesystem_Access;
-      Current_Index   : Unsigned_16;
-      Start_Cluster   : Unsigned_32;
-      Current_Cluster : Unsigned_32;
-      Current_Block   : Unsigned_32;
+      Current_Index   : Unsigned_16; -- current entry in the directory
+      Start_Cluster   : Unsigned_32; -- first cluster of the direcory
+      Current_Cluster : Unsigned_32; -- cluster belonging to current_index
+      Current_Block   : Unsigned_32; -- block belonging to current index
    end record;
-   -- used to read the directory
+   --  used to read directories
 
    type Directory_Entry is record
       FS            : FAT_Filesystem_Access;
@@ -133,7 +133,13 @@ private
       Start_Cluster : Unsigned_32;
       Size          : Unsigned_32;
    end record;
-   -- each item in a directory is described by this
+   --  each item in a directory is described by this
+
+   function FAT_To_Directory_Entry
+     (FS : FAT_Filesystem_Access;
+      F_Entry : in FAT_Directory_Entry;
+      DEntry : in out Directory_Entry;
+      Last_Seq : in out VFAT_Sequence_Number) return Status_Code;
 
    function Is_Read_Only (E : Directory_Entry) return Boolean
    is (E.Attributes.Read_Only);

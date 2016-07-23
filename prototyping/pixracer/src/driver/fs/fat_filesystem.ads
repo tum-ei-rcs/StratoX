@@ -32,6 +32,7 @@ package FAT_Filesystem with SPARK_Mode is
       No_MBR_Found,
       Device_Full,
       Allocation_Error,
+      Too_Many_Entries,
       No_Partition_Found);
 
    type FAT_Filesystem is limited private;
