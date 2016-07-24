@@ -203,6 +203,13 @@ package STM32.SDMMC is
       Stream     : STM32.DMA.DMA_Stream_Selector;
       Data       : out SD_Data) return SD_Error;
 
+   function Write_Blocks_DMA
+     (Controller : in out SDMMC_Controller;
+      Addr       : Unsigned_64;
+      DMA        : STM32.DMA.DMA_Controller;
+      Stream     : STM32.DMA.DMA_Stream_Selector;
+      Data       : SD_Data) return SD_Error;
+
    function Stop_Transfer
      (Controller : in out SDMMC_Controller) return SD_Error;
 
@@ -218,7 +225,8 @@ package STM32.SDMMC is
       Data_Timeout,
       RX_Overrun,
       TX_Underrun,
-      RX_Active);
+      RX_Active,
+      TX_Active);
 
    subtype SDMMC_Clearable_Flags is SDMMC_Flags range Data_End .. TX_Underrun;
 
@@ -394,7 +402,8 @@ private
           when Data_Timeout  => Controller.Periph.STA.DTIMEOUT,
           when RX_Overrun    => Controller.Periph.STA.RXOVERR,
           when TX_Underrun   => Controller.Periph.STA.TXUNDERR,
-          when RX_Active     => Controller.Periph.STA.RXACT);
+          when RX_Active     => Controller.Periph.STA.RXACT,
+          when TX_Active     => Controller.Periph.STA.TXACT);
 
    function Last_Operation
      (Controller : SDMMC_Controller) return SDMMC_Operation

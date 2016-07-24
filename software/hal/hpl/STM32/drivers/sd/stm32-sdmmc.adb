@@ -1806,6 +1806,92 @@ package body STM32.SDMMC is
       return Err;
    end Read_Blocks_DMA;
 
+   -- new and untested writing function
+   function Write_Blocks_DMA
+     (Controller : in out SDMMC_Controller;
+      Addr       : Unsigned_64;
+      DMA        : STM32.DMA.DMA_Controller;
+      Stream     : STM32.DMA.DMA_Stream_Selector;
+      Data       : SD_Data) return SD_Error
+   is
+      Write_Address : constant Unsigned_64 :=
+                       (if Controller.Card_Type = High_Capacity_SD_Card
+                        then Addr / 512 else Addr); -- FIXME: why 512? Cluster size of SD card?
+      Err          : SD_Error;
+      N_Blocks     : constant Positive := Data'Length / BLOCKLEN;
+      Command      : SDMMC_Command;
+      use STM32.DMA;
+
+   begin
+      Controller.Periph.DCTRL := (DTEN   => False,
+                                  others => <>);
+      --  Wait 1ms: After a data write, data cannot be written to this register
+      --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
+      --  periods.
+
+
+      Controller.Periph.CLKCR.CLKDIV := 16#0#; --  switch to nominal speed, in case polling was active before
+
+      delay until Clock + Milliseconds (1);
+
+      Enable_Interrupt (Controller, Data_CRC_Fail_Interrupt);
+      Enable_Interrupt (Controller, Data_Timeout_Interrupt);
+      Enable_Interrupt (Controller, Data_End_Interrupt);
+      Enable_Interrupt (Controller, TX_Underrun_Interrupt);
+
+      STM32.DMA.Start_Transfer_with_Interrupts
+        (Unit               => DMA,
+         Stream             => Stream,
+         Destination        => Controller.Periph.FIFO'Address,
+         Source             => Data (Data'First)'Address,
+         Data_Count         => Data'Length / 4, -- count is 32bit words, data'length in bytes
+         Enabled_Interrupts => (Transfer_Error_Interrupt    => True,
+                                FIFO_Error_Interrupt        => True,
+                                Transfer_Complete_Interrupt => True,
+                                others                      => False));
+
+      Send_Command
+        (Controller,
+         Command_Index      => Set_Blocklen,
+         Argument           => BLOCKLEN,
+         Response           => Short_Response,
+         CPSM               => True,
+         Wait_For_Interrupt => False);
+      Err := Response_R1_Error (Controller, Set_Blocklen);
+
+      if Err /= OK then
+         return Err;
+      end if;
+
+      Configure_Data
+        (Controller,
+         Data_Length        => UInt25 (N_Blocks) * BLOCKLEN,
+         Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
+         Transfer_Direction => Write,
+         Transfer_Mode      => Block,
+         DPSM               => True,
+         DMA_Enabled        => True);
+
+      if N_Blocks > 1 then
+         Command := Write_Multi_Block;
+         Controller.Operation := Write_Multiple_Blocks_Operation;
+      else
+         Command := Write_Single_Block;
+         Controller.Operation := Write_Single_Block_Operation;
+      end if;
+
+      Send_Command
+        (Controller,
+         Command_Index      => Command,
+         Argument           => Word (Write_Address),
+         Response           => Short_Response,
+         CPSM               => True,
+         Wait_For_Interrupt => False);
+      Err := Response_R1_Error (Controller, Command);
+
+      return Err;
+   end Write_Blocks_DMA;
+
    -------------------------
    -- Get_Transfer_Status --
    -------------------------

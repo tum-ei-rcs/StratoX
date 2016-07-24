@@ -18,7 +18,7 @@ package FAT_Filesystem.Directories with SPARK_Mode is
      (Parent  : in Directory_Entry;
       newname : String;
       D_Entry : out Directory_Entry) return Status_Code
-     with Pre => newname'Length <= 12;
+     with Pre => newname'Length < 12;
    --  create a new directory within the given one
    --  we only allow short names for now
 
@@ -133,8 +133,14 @@ private
    end record;
    --  each item in a directory is described by this
 
+   type FAT_Name is record
+      Base : String (1 .. 8);
+      Ext  : String (1 .. 3);
+   end record;
+
    function Allocate_Entry
      (Parent_Ent : in  Directory_Entry;
+      New_Name   : String;
       Ent_Addr   : out FAT_Address) return Status_Code;
    --  find a location for a new entry within Parent_Ent
 

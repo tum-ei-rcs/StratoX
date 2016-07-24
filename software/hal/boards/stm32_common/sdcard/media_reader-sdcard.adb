@@ -394,9 +394,62 @@ package body Media_Reader.SDCard is
 
    end SDMMC_Interrupt_Handler;
 
-   ----------------
-   -- Read_Block --
-   ----------------
+   overriding function Write_Block
+     (Controller   : in out SDCard_Controller;
+      Block_Number : Unsigned_32;
+      Data         : Block) return Boolean
+   is
+      Ret     : SD_Error;
+      DMA_Err : DMA_Error_Code;
+   begin
+      Ensure_Card_Informations (Controller);
+
+      if Use_DMA then
+
+         -- Flush the data cache
+         Cortex_M.Cache.Invalidate_DCache
+           (Start => Data (Data'First)'Address,
+            Len   => Data'Length);
+
+         DMA_Interrupt_Handler.Set_Transfer_State;
+         SDMMC_Interrupt_Handler.Set_Transfer_State (Controller);
+
+         Ret := Write_Blocks_DMA
+           (Controller.Device,
+            Unsigned_64 (Block_Number) *
+                Unsigned_64 (Controller.Info.Card_Block_Size),
+            SD_DMA,
+            SD_DMA_Tx_Stream,
+            SD_Data (Data));
+
+         if Ret /= OK then
+            DMA_Interrupt_Handler.Clear_Transfer_State;
+            SDMMC_Interrupt_Handler.Clear_Transfer_State;
+            Abort_Transfer (SD_DMA, SD_DMA_Tx_Stream, DMA_Err);
+
+            return False;
+         end if;
+
+         SDMMC_Interrupt_Handler.Wait_Transfer (Ret); -- this unblocks: ret= ok
+         DMA_Interrupt_Handler.Wait_Transfer (DMA_Err); -- this unblocks: DMA_err = no err
+
+         loop
+            exit when not Get_Flag (Controller.Device, TX_Active); -- not that FIFO is empty, that works.
+         end loop;
+
+         Clear_All_Status (SD_DMA, SD_DMA_Tx_Stream);
+         Disable (SD_DMA, SD_DMA_Tx_Stream);
+
+         return Ret = OK and then DMA_Err = DMA_No_Error;
+
+      else
+         Ret := Write_Blocks (Controller.Device,
+                              Unsigned_64 (Block_Number) *
+                                Unsigned_64 (Controller.Info.Card_Block_Size),
+                              SD_Data (Data));
+         return Ret = OK;
+      end if;
+   end Write_Block;
 
    overriding function Read_Block
      (Controller   : in out SDCard_Controller;

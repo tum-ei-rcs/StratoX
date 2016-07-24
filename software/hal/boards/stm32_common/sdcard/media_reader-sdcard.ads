@@ -26,6 +26,11 @@ package Media_Reader.SDCard is
       Block_Number : Unsigned_32;
       Data         : out Block) return Boolean;
 
+   overriding function Write_Block
+     (Controller   : in out SDCard_Controller;
+      Block_Number : Unsigned_32;
+      Data         : Block) return Boolean;
+
    procedure Set_DMA  (on : Boolean);
 
 private

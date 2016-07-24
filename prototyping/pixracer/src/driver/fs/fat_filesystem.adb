@@ -72,7 +72,7 @@ package body FAT_Filesystem is
       --  good. now we got the entire FSinfo in our window.
       --  modify that part of the window and writeback.
       FS.Window (16#1E4# .. 16#1EF#) := From_FSInfo (FS.FSInfo);
-      ret := FS.Write_Window (Block => fat_begin_lba);
+      ret := FS.Write_Window (Block_Arg => fat_begin_lba);
    end Writeback_FsInfo;
 
    function Get_Free_Cluster (FS : in out FAT_Filesystem) return Unsigned_32 is
@@ -103,43 +103,6 @@ package body FAT_Filesystem is
 
       return INVALID_CLUSTER;
    end Get_Free_Cluster;
-
-   --  turn a string into a fixed-length string:
-   --  if too short, pad with spaces until it reaches the given length
-   --  if too long, then crop
-   procedure StrCpySpace (outstring : out String; instring : String) is
-   begin
-      if instring'Length >= outstring'Length then
-         -- trim
-         outstring := instring (instring'First .. instring'First + outstring'Length - 1);
-      else
-         -- pad
-         outstring (1 .. instring'Length) := instring;
-         outstring (instring'Length + 1 .. outstring'Length) := (others => ' ');
-      end if;
-   end StrCpySpace;
-
-   function Trim (S : String) return String
-   is
-   begin
-      for J in reverse S'Range loop
-         if S (J) /= ' ' then
-            return S (S'First .. J);
-         end if;
-      end loop;
-
-      return "";
-   end Trim;
-
-   function StrChr (S : String; C : Character) return Integer is
-   begin
-      for idx in S'Range loop
-         if S (idx) = C then
-            return idx;
-         end if;
-      end loop;
-      return S'Last + 1;
-   end StrChr;
 
    function Is_FAT_Partition (typecode : Unsigned_8) return Boolean is
      (typecode = 16#0b#) or (typecode = 16#0c#) or --  FAT32
@@ -386,10 +349,13 @@ package body FAT_Filesystem is
 
    function Write_Window
      ( FS : in out FAT_Filesystem;
-       Block : Unsigned_32) return Status_Code
+       Block_Arg : Unsigned_32) return Status_Code
    is
    begin
-      return Internal_Error; -- TODO: implement
+      if not FS.Controller.Write_Block (Block_Arg, FS.Window) then
+         return Disk_Error;
+      end if;
+      return OK;
    end Write_Window;
 
    ------------------
@@ -398,21 +364,20 @@ package body FAT_Filesystem is
 
    function Ensure_Block
      (FS    : in out FAT_Filesystem;
-      Block : Unsigned_32) return Status_Code
+      Block_Arg : Unsigned_32) return Status_Code
    is
    begin
       --  ??? Should use re-entrance protection here
-      if FS.Window_Block = Block then
+      if FS.Window_Block = Block_Arg then
          return OK;
       end if;
 
-      if not FS.Controller.Read_Block (Block, FS.Window) then
+      if not FS.Controller.Read_Block (Block_Arg, FS.Window) then
          FS.Window_Block  := 16#FFFF_FFFF#;
-
          return Disk_Error;
       end if;
 
-      FS.Window_Block := Block;
+      FS.Window_Block := Block_Arg;
 
       return OK;
    end Ensure_Block;

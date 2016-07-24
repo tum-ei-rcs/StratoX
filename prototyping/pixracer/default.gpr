@@ -12,7 +12,8 @@ project Default is
                        "src/config",
                        "src/driver",
                        "src/driver/fs",
-                       "src/modules"
+                       "src/modules",
+                       "src/lib"
    );
 
    for Object_Dir use "obj";

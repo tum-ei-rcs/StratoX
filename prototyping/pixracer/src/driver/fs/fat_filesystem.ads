@@ -1,5 +1,6 @@
 with Interfaces;   use Interfaces;
 with Media_Reader; use Media_Reader;
+with MyStrings;    use MyStrings;
 
 package FAT_Filesystem with SPARK_Mode is
 
@@ -201,16 +202,6 @@ private
       FS_Type_Fat16           at 16#36# range 0 .. 63;
    end record;
 
-   function Trim (S : String) return String;
-
-   procedure StrCpySpace (outstring : out String; instring : String);
-   --  copy instring to outstring. If too short, pad with ' '. if
-   --  too long, trim.
-
-   function StrChr (S : String; C : Character) return Integer;
-   --  search for occurence of character in string.
-   --  return index in S, or S'Last + 1 if not found.
-
    type FAT_FS_Info is record
       Signature              : String (1 .. 4);
       Free_Clusters          : Unsigned_32;
@@ -238,18 +229,18 @@ private
    for FAT_Filesystem'Alignment use 32; -- might be necessary, because Window is a DMA address
 
    type FAT_Address is record
-      --Cluster   : Unsigned_32; -- cluster number into which Block_LBA falls
+      --  Cluster   : Unsigned_32; -- cluster number into which Block_LBA falls
       Block_LBA : Unsigned_32; -- block address, absolute
       Block_Off : Unsigned_16; -- offset within block in bytes
    end record;
 
    function Ensure_Block
-     (FS    : in out FAT_Filesystem;
-      Block : Unsigned_32) return Status_Code;
+     (FS        : in out FAT_Filesystem;
+      Block_Arg : Unsigned_32) return Status_Code;
 
    function Write_Window
-     ( FS : in out FAT_Filesystem;
-       Block : Unsigned_32) return Status_Code;
+     (FS        : in out FAT_Filesystem;
+      Block_Arg : Unsigned_32) return Status_Code;
 
    procedure Writeback_FsInfo (FS : in out FAT_Filesystem)
      with Pre => Version (FS) = FAT32;
@@ -269,7 +260,7 @@ private
       Block_LBA : Unsigned_32) return Unsigned_32
    is (Block_LBA / (Unsigned_32 (FS.Number_Of_Blocks_Per_Cluster))
        - FS.Data_Area + FIRST_CLUSTER);
-   -- => Cluster = Block/BPC - Data_Area + FIRST_CLUSTER
+   --  => Cluster = Block/BPC - Data_Area + FIRST_CLUSTER
 
    subtype FAT_Entry is Unsigned_32;
 
@@ -301,7 +292,7 @@ private
    --  return true if the FAT entry indicates the cluster being unused
 
    function Append_Cluster
-     (FS: in out FAT_Filesystem; -- FIXME: why is this access? inconsistent with Allocate_Cluster etc.
+     (FS : in out FAT_Filesystem;
       Last_Cluster : Unsigned_32;
       New_Cluster  : out Unsigned_32) return Status_Code
      with Pre => Version (FS) = FAT32 and then FS.FSInfo.Free_Clusters > 0;

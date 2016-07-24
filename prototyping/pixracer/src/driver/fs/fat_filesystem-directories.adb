@@ -32,74 +32,6 @@ package body FAT_Filesystem.Directories is
       return OK;
    end Open_Root_Directory;
 
-   function Allocate_Entry
-     (Parent_Ent : Directory_Entry;
-      Ent_Addr   : out FAT_Address) return Status_Code
-   is
-      Block_Off    : Unsigned_16;
-      Parent       : Directory_Handle;
-   begin
-      if Parent_Ent.FS.Version /= FAT32 then
-         --  we only support FAT32 for now.
-         return Internal_Error;
-      end if;
-
-      --  skip to last entry
-      if Open (Parent_Ent, Parent) /= OK then
-         return Invalid_Object_Entry;
-      end if;
-      declare
-         Ent : Directory_Entry;
-      begin
-         while Read (Parent, Ent) = OK loop
-            null;
-         end loop;
-      end;
-
-      --  if we are here, then we reached the last entry in the directory.
-      --  see whether block_off is small enough to accommodate another entry
-      --  block_Off .. Block_Off + 31 must be available, otherwise we need a
-      --  the next block
-      --Parent.Current_Index := Parent.Current_Index + 1;
-      Block_Off := Unsigned_16 (Unsigned_32
-                                (Parent.Current_Index) * ENTRY_SIZE
-                                mod Parent.FS.Block_Size_In_Bytes);
-      --  offset of entry within current block
-
-      --  do we need a new block?
-      if Block_Off = 0 and then Parent.Current_Index > 0 then
-         --  need a new block
-         Parent.Current_Block := Parent.Current_Block + 1;
-         --  do we need to allocate a new cluster for the new block?
-         if Parent.Current_Block -
-           Parent.FS.Cluster_To_Block (Parent.Current_Cluster) =
-           Unsigned_32 (Parent.FS.Number_Of_Blocks_Per_Cluster)
-         then
-            --  need another cluster. find free one and allocate it
-            declare
-               New_Cluster : Unsigned_32;
-               Status : Status_Code;
-            begin
-               Status := Parent.FS.Append_Cluster
-                 (Last_Cluster => Parent.Current_Cluster,
-                  New_Cluster => New_Cluster);
-               if Status /= OK then
-                  return Status;
-               end if;
-               Parent.Current_Cluster := New_Cluster;
-               Parent.Current_Block :=
-                 Parent.FS.Cluster_To_Block (Parent.Current_Cluster);
-            end;
-         end if;
-      end if;
-      --  now write the new entry to the allocated space (Parent.current_clock + block_off)
-      --Ent_Addr.Cluster := Parent.Current_Cluster;
-      Ent_Addr.Block_LBA := Parent.Current_Block;
-      Ent_Addr.Block_Off := Block_Off;
-
-      return OK;
-   end Allocate_Entry;
-
    function Make_Directory
      (Parent  : in Directory_Entry;
       newname : String;
@@ -112,6 +44,7 @@ package body FAT_Filesystem.Directories is
       F_Entry  : FAT_Directory_Entry;
       Ent_Addr : FAT_Address;
       Status   : Status_Code;
+
    begin
       if Parent.FS.Version /= FAT32 then
          --  we only support FAT32 for now.
@@ -119,8 +52,9 @@ package body FAT_Filesystem.Directories is
       end if;
 
       --  find a place for another entry and return it
-      if Allocate_Entry (Parent, Ent_Addr) /= OK then
-         return Allocation_Error;
+      Status := Allocate_Entry (Parent, newname, Ent_Addr);
+      if Status /= OK then
+         return Status;
       end if;
 
       --  read complete block
@@ -139,9 +73,9 @@ package body FAT_Filesystem.Directories is
       D_Entry.Attributes.Subdirectory := True;
       D_Entry.Start_Cluster := Parent.FS.Block_To_Cluster (Ent_Addr.Block_LBA);
       D_Entry.Size := 0; -- directories always carry zero
-      StrCpySpace (D_Entry.Short_Name, newname);
-      D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
+      StrCpySpace (instring => newname, outstring => D_Entry.Short_Name);
       D_Entry.Short_Name_Last := D_Entry.Short_Name'Length;
+      D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
 
       --  encode into FAT entry
       Status := Directory_To_FAT_Entry (D_Entry, F_Entry);
@@ -156,7 +90,7 @@ package body FAT_Filesystem.Directories is
       --  write back the block with the new entry
       Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);
 
-      -- TODO: create obligatory entries "." and ".."
+      --  TODO: create obligatory entries "." and ".."
       return Status;
    end Make_Directory;
 
@@ -330,7 +264,7 @@ package body FAT_Filesystem.Directories is
          D_Entry.Start_Cluster := Unsigned_32 (F_Entry.Cluster_L);
          D_Entry.Size          := F_Entry.Size;
          D_Entry.FS            := FS;
-         -- FIXME: add date and time
+         --  FIXME: add date and time
 
          if FS.Version = FAT32 then
             D_Entry.Start_Cluster :=
@@ -479,4 +413,80 @@ package body FAT_Filesystem.Directories is
       end if;
    end Name;
 
+   function Allocate_Entry
+     (Parent_Ent : Directory_Entry;
+      New_Name   : String;
+      Ent_Addr   : out FAT_Address) return Status_Code
+   is
+      Block_Off    : Unsigned_16;
+      Parent       : Directory_Handle;
+   begin
+      if Parent_Ent.FS.Version /= FAT32 then
+         --  we only support FAT32 for now.
+         return Internal_Error;
+      end if;
+
+      --  skip to last entry, and make sure name doesn't exist
+      if Open (Parent_Ent, Parent) /= OK then
+         return Invalid_Object_Entry;
+      end if;
+      declare
+         Ent : Directory_Entry;
+      begin
+         while Read (Parent, Ent) = OK loop
+            declare
+               ent_name : constant String := Name (Ent);
+            begin
+               --  FIXME: this isn't completely right, since ent_name
+               --  went through FAT name compression, but New_Name not.
+               if ent_name = New_Name then
+                  return Already_Exists;
+               end if;
+            end;
+         end loop;
+      end;
+
+      --  if we are here, then we reached the last entry in the directory.
+      --  see whether block_off is small enough to accommodate another entry
+      --  block_Off .. Block_Off + 31 must be available, otherwise we need a
+      --  the next block
+      --  Parent.Current_Index := Parent.Current_Index + 1;
+      Block_Off := Unsigned_16 (Unsigned_32
+                                (Parent.Current_Index) * ENTRY_SIZE
+                                mod Parent.FS.Block_Size_In_Bytes);
+      --  offset of entry within current block
+
+      --  do we need a new block?
+      if Block_Off = 0 and then Parent.Current_Index > 0 then
+         --  need a new block
+         Parent.Current_Block := Parent.Current_Block + 1;
+         --  do we need to allocate a new cluster for the new block?
+         if Parent.Current_Block -
+           Parent.FS.Cluster_To_Block (Parent.Current_Cluster) =
+           Unsigned_32 (Parent.FS.Number_Of_Blocks_Per_Cluster)
+         then
+            --  need another cluster. find free one and allocate it
+            declare
+               New_Cluster : Unsigned_32;
+               Status : Status_Code;
+            begin
+               Status := Parent.FS.Append_Cluster
+                 (Last_Cluster => Parent.Current_Cluster,
+                  New_Cluster => New_Cluster);
+               if Status /= OK then
+                  return Status;
+               end if;
+               Parent.Current_Cluster := New_Cluster;
+               Parent.Current_Block :=
+                 Parent.FS.Cluster_To_Block (Parent.Current_Cluster);
+            end;
+         end if;
+      end if;
+      --  now write the new entry to the allocated space (Parent.current_clock + block_off)
+      --  Ent_Addr.Cluster := Parent.Current_Cluster;
+      Ent_Addr.Block_LBA := Parent.Current_Block;
+      Ent_Addr.Block_Off := Block_Off;
+
+      return OK;
+   end Allocate_Entry;
 end FAT_Filesystem.Directories;

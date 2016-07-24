@@ -14,6 +14,7 @@ with Buzzer_Manager;
 with SDMemory;
 with SDMemory.Driver;
 with Units; use Units;
+with Buildinfo;
 
 package body Main is
 
@@ -64,6 +65,12 @@ package body Main is
 
       Logger.log (Logger.INFO, "SD Card check...");
       SDMemory.Driver.List_Rootdir;
+      declare
+         logname : constant String := Buildinfo.Short_Datetime;
+      begin
+         Logger.log (Logger.INFO, "Log name: " & logname);
+         SDMemory.Driver.Make_Logdir (logname);
+      end;
       Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
 
@@ -73,10 +80,6 @@ package body Main is
       loop_time_start   : Time      := Clock;
       bootcounter : HIL.Byte;
 
-      function Compilation_Date return String -- implementation-defined (GNAT)
-        with Import, Convention => Intrinsic;
-      function Compilation_Time return String -- implementation-defined (GNAT)
-        with Import, Convention => Intrinsic;
 --      gleich : Ada.Real_Time.Time;
 --      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6)); -- happy birthday
    begin
@@ -98,7 +101,8 @@ package body Main is
 
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
       bootcounter := bootcounter + 1;
-      Logger.log (Logger.INFO, "Build Date: " & Compilation_Date & " " & Compilation_Time);
+      Logger.log (Logger.INFO, "Build Date: " & Buildinfo.Compilation_Date &
+                    " " & Buildinfo.Compilation_Time);
       Logger.log (Logger.INFO, "Bootcount:  " & HIL.Byte'Image (bootcounter));
       NVRAM.Store (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
       loop
