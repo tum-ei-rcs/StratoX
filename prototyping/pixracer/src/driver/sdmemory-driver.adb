@@ -1,12 +1,12 @@
 --  with Ada.Unchecked_Conversion;
 with Interfaces;                 use Interfaces;
 
-with STM32.SDMMC;                use STM32.SDMMC;
---  with STM32.Board;                use STM32.Board;
+with STM32.SDMMC;                      use STM32.SDMMC;
 
-with FAT_Filesystem;             use FAT_Filesystem;
-with FAT_Filesystem.Directories; use FAT_Filesystem.Directories;
-with Media_Reader.SDCard;        use Media_Reader.SDCard;
+with FAT_Filesystem;                   use FAT_Filesystem;
+with FAT_Filesystem.Directories;       use FAT_Filesystem.Directories;
+with FAT_Filesystem.Directories.Files; use FAT_Filesystem.Directories.Files;
+with Media_Reader.SDCard;              use Media_Reader.SDCard;
 with Logger;
 
 package body SDMemory.Driver is
@@ -16,6 +16,9 @@ package body SDMemory.Driver is
    Error_State   : Boolean := False;
    FS            : FAT_Filesystem_Access;
    SD_Initialized   : Boolean := False;
+
+   fh_log   : File_Handle;
+   log_open : Boolean := False;
 
    procedure Close_Filesys is
    begin
@@ -81,30 +84,57 @@ package body SDMemory.Driver is
       SD_Initialized := True;
    end Init_Filesys;
 
-   procedure Make_Logdir (dirname : String) is
-      Dir_Root : Directory_Handle;
-      Dir_Log  : Directory_Handle;
+   --  creates a new directory within root, that is named
+   --  after the build.
+   function Start_Logfile (dirname : String; filename : String) return Boolean is
+      Hnd_Root : Directory_Handle;
+      Status   : Status_Code;
+      Log_Dir  : Directory_Entry;
+      Log_Hnd  : Directory_Handle;
    begin
       if (not SD_Initialized) or Error_State then
-         return;
+         return False;
       end if;
 
-      if Open_Root_Directory (FS, Dir_Root) /= OK then
+      if Open_Root_Directory (FS, Hnd_Root) /= OK then
          Error_State := True;
-         return;
+         return False;
       end if;
 
---        if Make_Directory (Parent => Dir_Root,
---                           newname => dirname,
---                           Dir => Dir_Log) /= OK
---        then
---           Logger.log (Logger.ERROR, "SD Card: Error creating directory in root");
---        else
---           Logger.log (Logger.INFO, "SD Card: Created directory /" & dirname);
---        end if;
-      Close (Dir_Root);
+      --  1. create log directory
+      Status := Make_Directory (Parent => Hnd_Root,
+                                newname => dirname,
+                                D_Entry => Log_Dir);
+      if Status /= OK and then Status /= Already_Exists
+      then
+         Logger.log (Logger.ERROR,
+                     "SD Card: Error creating directory in root:" &
+                       Status'Img);
+         return False;
+      end if;
+      Close (Hnd_Root);
 
-   end Make_Logdir;
+      Status := Open (E => Log_Dir, Dir => Log_Hnd);
+      if Status /= OK then
+         Logger.log (Logger.ERROR,
+                     "SD Card: Error opening log dir in root:" &
+                       Status'Img);
+         return False;
+      end if;
+
+      --  2. create log file
+      Status := File_Create (Parent => Log_Hnd,
+                             newname => filename,
+                             File => fh_log);
+      if Status /= OK then
+         Logger.log (Logger.ERROR,
+                     "SD Card: Error creating log file:" &
+                       Status'Img);
+         return False;
+      end if;
+      log_open := True;
+      return True;
+   end Start_Logfile;
 
    procedure List_Rootdir is
       Dir : Directory_Handle;
@@ -131,10 +161,11 @@ package body SDMemory.Driver is
                Contents : String (1 .. 16);
             begin
                --  TODO: read first 16 bytes of file
-               Logger.log (Logger.INFO, " +- " & Name (Ent) & ": " & Contents);
+               Logger.log (Logger.INFO, " +- " & Get_Name (Ent) & ": " & Contents);
             end;
          else
-            Logger.log (Logger.INFO, " +- " & Name (Ent) & (if Is_Subdirectory (Ent) then "/" else ""));
+            Logger.log (Logger.INFO, " +- " & Get_Name (Ent) &
+                        (if Is_Subdirectory (Ent) then "/" else ""));
          end if;
       end loop;
       Close (Dir);

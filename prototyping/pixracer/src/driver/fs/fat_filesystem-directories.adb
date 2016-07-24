@@ -6,8 +6,6 @@ package body FAT_Filesystem.Directories is
    -- Open_Root_Directory --
    -------------------------
 
-   ENTRY_SIZE : constant := 32;
-
    function Open_Root_Directory
      (FS  : FAT_Filesystem_Access;
       Dir : out Directory_Handle) return Status_Code
@@ -33,7 +31,7 @@ package body FAT_Filesystem.Directories is
    end Open_Root_Directory;
 
    function Make_Directory
-     (Parent  : in Directory_Entry;
+     (Parent  : in out Directory_Handle;
       newname : String;
       D_Entry : out Directory_Entry) return Status_Code
    is
@@ -53,7 +51,9 @@ package body FAT_Filesystem.Directories is
 
       --  find a place for another entry and return it
       Status := Allocate_Entry (Parent, newname, Ent_Addr);
-      if Status /= OK then
+      if Status = Already_Exists then
+         null;
+      elsif Status /= OK then
          return Status;
       end if;
 
@@ -94,21 +94,21 @@ package body FAT_Filesystem.Directories is
       return Status;
    end Make_Directory;
 
-   ----------
-   -- Open --
-   ----------
+   procedure Rewind ( Dir : in out Directory_Handle) is
+   begin
+      Dir.Current_Cluster := Dir.Start_Cluster;
+      Dir.Current_Block   := Dir.FS.Cluster_To_Block (Dir.Start_Cluster);
+      Dir.Current_Index   := 0;
+   end Rewind;
 
    function Open
      (E   : Directory_Entry;
       Dir : out Directory_Handle) return Status_Code
    is
    begin
-      Dir.Start_Cluster := E.Start_Cluster;
-      Dir.Current_Block := E.FS.Cluster_To_Block (E.Start_Cluster);
       Dir.FS := E.FS;
-      Dir.Current_Cluster := Dir.Start_Cluster;
-      Dir.Current_Index   := 0;
-
+      Dir.Start_Cluster := E.Start_Cluster;
+      Rewind (Dir);
       return OK;
    end Open;
 
@@ -136,7 +136,7 @@ package body FAT_Filesystem.Directories is
       F_Entry.Time := 0;
       F_Entry.Size := D_Entry.Size;
       F_Entry.Attributes := D_Entry.Attributes;
-      Set_Shortname (Name (D_Entry), F_Entry);
+      Set_Shortname (Get_Name (D_Entry), F_Entry);
       F_Entry.Cluster_L := Unsigned_16 (D_Entry.Start_Cluster and 16#FFFF#);
       if D_Entry.FS.Version = FAT16 then
          F_Entry.Cluster_H := 0;
@@ -404,46 +404,56 @@ package body FAT_Filesystem.Directories is
       end if;
    end Set_Shortname;
 
-   function Name (E : Directory_Entry) return String is
+   function Get_Name (E : Directory_Entry) return String is
    begin
       if E.Long_Name_First in E.Long_Name'Range then
          return E.Long_Name (E.Long_Name_First .. E.Long_Name'Last);
       else
          return E.Short_Name (E.Short_Name'First .. E.Short_Name_Last);
       end if;
-   end Name;
+   end Get_Name;
+
+   function Get_Entry
+     (Parent : in out Directory_Handle;
+      E_Name : String;
+      Ent    : out Directory_Entry) return Boolean
+   is
+   begin
+      Rewind (Parent);
+      while Read (Parent, Ent) = OK loop
+         declare
+            ent_name : constant String := Get_Name (Ent);
+         begin
+            --  FIXME: this isn't completely right, since ent_name
+            --  went through FAT name compression, but New_Name not.
+            if ent_name = E_Name then
+               return True;
+            end if;
+         end;
+      end loop;
+
+      return False;
+   end Get_Entry;
 
    function Allocate_Entry
-     (Parent_Ent : Directory_Entry;
-      New_Name   : String;
-      Ent_Addr   : out FAT_Address) return Status_Code
+     (Parent   : in out Directory_Handle;
+      New_Name : String;
+      Ent_Addr : out FAT_Address) return Status_Code
    is
       Block_Off    : Unsigned_16;
-      Parent       : Directory_Handle;
    begin
-      if Parent_Ent.FS.Version /= FAT32 then
+      if Parent.FS.Version /= FAT32 then
          --  we only support FAT32 for now.
          return Internal_Error;
       end if;
 
-      --  skip to last entry, and make sure name doesn't exist
-      if Open (Parent_Ent, Parent) /= OK then
-         return Invalid_Object_Entry;
-      end if;
       declare
          Ent : Directory_Entry;
       begin
-         while Read (Parent, Ent) = OK loop
-            declare
-               ent_name : constant String := Name (Ent);
-            begin
-               --  FIXME: this isn't completely right, since ent_name
-               --  went through FAT name compression, but New_Name not.
-               if ent_name = New_Name then
-                  return Already_Exists;
-               end if;
-            end;
-         end loop;
+         if Get_Entry (Parent => Parent, E_Name => New_Name, Ent => Ent)
+         then
+            return Already_Exists;
+         end if;
       end;
 
       --  if we are here, then we reached the last entry in the directory.

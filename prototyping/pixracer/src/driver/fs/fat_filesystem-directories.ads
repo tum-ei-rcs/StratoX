@@ -15,12 +15,13 @@ package FAT_Filesystem.Directories with SPARK_Mode is
    --  get handle of given item. Handle can be used with Read().
 
    function Make_Directory
-     (Parent  : in Directory_Entry;
+     (Parent  : in out Directory_Handle;
       newname : String;
       D_Entry : out Directory_Entry) return Status_Code
      with Pre => newname'Length < 12;
    --  create a new directory within the given one
-   --  we only allow short names for now
+   --  we only allow short names for now.
+   --  if directory already exists, returns its entry.
 
    procedure Close (Dir : in out Directory_Handle);
 
@@ -28,7 +29,7 @@ package FAT_Filesystem.Directories with SPARK_Mode is
                   DEntry : out Directory_Entry) return Status_Code;
    --  @summary get the next entry in the given directory
 
-   function Name (E : Directory_Entry) return String;
+   function Get_Name (E : Directory_Entry) return String;
 
    function Is_Read_Only (E : Directory_Entry) return Boolean;
 
@@ -133,15 +134,19 @@ private
    end record;
    --  each item in a directory is described by this
 
-   type FAT_Name is record
-      Base : String (1 .. 8);
-      Ext  : String (1 .. 3);
-   end record;
+   ENTRY_SIZE : constant := 32;
+
+   procedure Rewind ( Dir : in out Directory_Handle);
+
+   function Get_Entry
+     (Parent : in out Directory_Handle;
+      E_Name : String;
+      Ent    : out Directory_Entry) return Boolean;
 
    function Allocate_Entry
-     (Parent_Ent : in  Directory_Entry;
-      New_Name   : String;
-      Ent_Addr   : out FAT_Address) return Status_Code;
+     (Parent   : in out Directory_Handle;
+      New_Name : String;
+      Ent_Addr : out FAT_Address) return Status_Code;
    --  find a location for a new entry within Parent_Ent
 
    procedure Set_Shortname (newname : String; E : in out FAT_Directory_Entry)

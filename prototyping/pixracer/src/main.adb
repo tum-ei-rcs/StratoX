@@ -22,6 +22,7 @@ package body Main is
       success : Boolean := False;
       t_next  : Ada.Real_Time.Time;
       logret  : Logger.Init_Error_Code;
+      bootcounter : HIL.Byte;
    begin
       CPU.initialize;
 
@@ -63,13 +64,25 @@ package body Main is
          delay until Clock + Milliseconds (50);
       end if;
 
+      NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
+      bootcounter := bootcounter + 1;
+      Logger.log (Logger.INFO, "Build Date: " & Buildinfo.Compilation_Date &
+                    " " & Buildinfo.Compilation_Time);
+      Logger.log (Logger.INFO, "Bootcount:  " & HIL.Byte'Image (bootcounter));
+      NVRAM.Store (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
+
       Logger.log (Logger.INFO, "SD Card check...");
       SDMemory.Driver.List_Rootdir;
       declare
-         logname : constant String := Buildinfo.Short_Datetime;
+         buildstring : constant String := Buildinfo.Short_Datetime;
+         fname : constant String := bootcounter'Img & ".ulog";
       begin
-         Logger.log (Logger.INFO, "Log name: " & logname);
-         SDMemory.Driver.Make_Logdir (logname);
+         if not SDMemory.Driver.Start_Logfile (dirname => buildstring, filename => fname)
+         then
+            Logger.log (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
+         else
+            Logger.log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
+         end if;
       end;
       Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
@@ -78,7 +91,6 @@ package body Main is
       --  data    : HIL.SPI.Data_Type (1 .. 3)  := (others => 0);
       --  data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);
       loop_time_start   : Time      := Clock;
-      bootcounter : HIL.Byte;
 
 --      gleich : Ada.Real_Time.Time;
 --      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6)); -- happy birthday
@@ -99,12 +111,7 @@ package body Main is
 --        end loop;
 --        Buzzer_Manager.Disable;
 
-      NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
-      bootcounter := bootcounter + 1;
-      Logger.log (Logger.INFO, "Build Date: " & Buildinfo.Compilation_Date &
-                    " " & Buildinfo.Compilation_Time);
-      Logger.log (Logger.INFO, "Bootcount:  " & HIL.Byte'Image (bootcounter));
-      NVRAM.Store (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
+
       loop
          loop_time_start := Clock;
 

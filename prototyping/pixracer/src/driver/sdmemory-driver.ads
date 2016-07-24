@@ -14,8 +14,8 @@ package SDMemory.Driver is
    procedure List_Rootdir;
    --  example copied from AdaCore/Ada_Drivers_Library
 
-   procedure Make_Logdir (dirname : String);
-   --  @summary create new folder in root directory
+   function Start_Logfile (dirname : String; filename : String) return Boolean;
+   --  @summary create new logfile
 
    --  TODO: add file-style I/O procedures
 end SDMemory.Driver;
