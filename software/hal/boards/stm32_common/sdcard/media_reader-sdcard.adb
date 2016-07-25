@@ -141,18 +141,18 @@ package body Media_Reader.SDCard is
       Configure
         (SD_DMA,
          SD_DMA_Tx_Stream,
-         (Channel                      => SD_DMA_Tx_Channel,
-          Direction                    => Memory_To_Peripheral,
-          Increment_Peripheral_Address => False,
-          Increment_Memory_Address     => True,
-          Peripheral_Data_Format       => Words,
-          Memory_Data_Format           => Words,
-          Operation_Mode               => Peripheral_Flow_Control_Mode,
-          Priority                     => Priority_Very_High,
-          FIFO_Enabled                 => True,
-          FIFO_Threshold               => FIFO_Threshold_Full_Configuration,
-          Memory_Burst_Size            => Memory_Burst_Inc4,
-          Peripheral_Burst_Size        => Peripheral_Burst_Inc4));
+         (Channel                      => SD_DMA_Tx_Channel, -- OK
+          Direction                    => Memory_To_Peripheral, -- OK
+          Increment_Peripheral_Address => False, -- OK
+          Increment_Memory_Address     => True, -- OK
+          Peripheral_Data_Format       => Words, -- was: Words
+          Memory_Data_Format           => Words, -- was: Words
+          Operation_Mode               => Peripheral_Flow_Control_Mode, -- was: periph
+          Priority                     => Priority_Very_High, -- OK
+          FIFO_Enabled                 => True, -- OK
+          FIFO_Threshold               => FIFO_Threshold_Full_Configuration, -- only full allowed. see manual.
+          Memory_Burst_Size            => Memory_Burst_Inc4, -- OK
+          Peripheral_Burst_Size        => Peripheral_Burst_Inc4)); -- OK
       Clear_All_Status (SD_DMA, SD_DMA_Tx_Stream);
    end Initialize;
 
@@ -471,8 +471,8 @@ package body Media_Reader.SDCard is
             return False;
          end if;
 
+         DMA_Interrupt_Handler.Wait_Transfer (DMA_Err); -- this unblocks
          SDMMC_Interrupt_Handler.Wait_Transfer (Ret); -- TX underrun!
-         DMA_Interrupt_Handler.Wait_Transfer (DMA_Err); -- this unblocks: DMA_err = no err
 
          loop
             exit when not Get_Flag (Controller.Device, TX_Active);

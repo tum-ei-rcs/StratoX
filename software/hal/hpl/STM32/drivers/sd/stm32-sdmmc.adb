@@ -1294,7 +1294,7 @@ package body STM32.SDMMC is
          others         => <>);
       delay until Clock + Milliseconds (1);
 
-      Controller.Periph.DTIMER := SD_DATATIMEOUT;
+      Controller.Periph.DTIMER := SD_DATATIMEOUT; -- gives us time to read/write FIFO before errors occur
 
       Ret := Power_On (Controller);
 
@@ -1409,7 +1409,7 @@ package body STM32.SDMMC is
       -- (that is, blocks of size < card's blocklen) reads.
       -- this means, we get an rxoverflow here, unless we read
       -- very slowly
-      Controller.Periph.CLKCR.CLKDIV := 16#76#; --  400 kHz max
+      Controller.Periph.CLKCR.CLKDIV := 16#76#; --  400 kHz max because we are polling/pushing
       Clear_Static_Flags (Controller);
       --  Wait 1ms: After a data write, data cannot be written to this register
       --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
@@ -1737,6 +1737,14 @@ package body STM32.SDMMC is
       use STM32.DMA;
 
    begin
+      if not STM32.DMA.Compatible_Alignments (DMA,
+                                              Stream,
+                                              Controller.Periph.FIFO'Address,
+                                              Data (Data'First)'Address)
+      then
+         return DMA_Alignment_Error;
+      end if;
+
       Controller.Periph.DCTRL := (DTEN   => False,
                                   others => <>);
       --  Wait 1ms: After a data write, data cannot be written to this register
@@ -1826,36 +1834,27 @@ package body STM32.SDMMC is
       start      : Time := Clock;
       Timeout    : Boolean := False;
    begin
+
+      if not STM32.DMA.Compatible_Alignments (DMA,
+                                              Stream,
+                                              Controller.Periph.FIFO'Address,
+                                              Data (Data'First)'Address)
+      then
+         return DMA_Alignment_Error;
+      end if;
+
+      --  this is all according tom STM RM0090 sec.31.3.2 p. 1036. But something is wrong.
+
       Controller.Periph.DCTRL := (DTEN   => False,
                                   others => <>);
       --  Wait 1ms: After a data write, data cannot be written to this register
       --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
       --  periods.
-
+      Clear_Static_Flags (Controller);
 
       Controller.Periph.CLKCR.CLKDIV := 16#0#; --  switch to nominal speed, in case polling was active before
-
       delay until Clock + Milliseconds (1);
 
-      Enable_Interrupt (Controller, Data_CRC_Fail_Interrupt);
-      Enable_Interrupt (Controller, Data_Timeout_Interrupt);
-      Enable_Interrupt (Controller, Data_End_Interrupt);
-      Enable_Interrupt (Controller, TX_Underrun_Interrupt);
-
-
-      --  set block length
-      Send_Command
-        (Controller,
-         Command_Index      => Set_Blocklen,
-         Argument           => BLOCKLEN,
-         Response           => Short_Response,
-         CPSM               => True,
-         Wait_For_Interrupt => False);
-      Err := Response_R1_Error (Controller, Set_Blocklen);
-
-      if Err /= OK then
-         return Err;
-      end if;
 
       --  wait until card is ready for data added
       Wait_Ready_loop :
@@ -1890,19 +1889,39 @@ package body STM32.SDMMC is
          return Timeout_Error;
       end if;
 
+      Enable_Interrupt (Controller, Data_CRC_Fail_Interrupt);
+      Enable_Interrupt (Controller, Data_Timeout_Interrupt);
+      Enable_Interrupt (Controller, Data_End_Interrupt); -- this never comes
+      Enable_Interrupt (Controller, TX_Underrun_Interrupt); -- not used in https://github.com/lvniqi/STM32F4xx_DSP_StdPeriph_Lib_V1.3.0/blob/master/Libraries/SDIO/sdio_sdcard.c
+      -- TODO: stop bit interrupt
+
       -- start DMA first
       STM32.DMA.Start_Transfer_with_Interrupts
         (Unit               => DMA,
          Stream             => Stream,
          Destination        => Controller.Periph.FIFO'Address,
          Source             => Data (Data'First)'Address,
-         Data_Count         => Data'Length / 4, -- count is 32bit words, data'length in bytes
+         Data_Count         => Data'Length / 4, -- count is in 32bit words (see DMA config), data'length in bytes
          Enabled_Interrupts => (Transfer_Error_Interrupt    => True,
-                                FIFO_Error_Interrupt        => True,
+                                FIFO_Error_Interrupt        => True, -- test: comment to see what happens
                                 Transfer_Complete_Interrupt => True,
                                 others                      => False));
 
-      --  set target address
+      --  set block size
+      Send_Command
+        (Controller,
+         Command_Index      => Set_Blocklen,
+         Argument           => BLOCKLEN,
+         Response           => Short_Response,
+         CPSM               => True,
+         Wait_For_Interrupt => False);
+      Err := Response_R1_Error (Controller, Set_Blocklen);
+
+      if Err /= OK then
+         return Err;
+      end if;
+
+      --  set write address & single/multi mode
       if N_Blocks > 1 then
          Command := Write_Multi_Block;
          Controller.Operation := Write_Multiple_Blocks_Operation;
@@ -1918,11 +1937,12 @@ package body STM32.SDMMC is
          CPSM               => True,
          Wait_For_Interrupt => False);
       Err := Response_R1_Error (Controller, Command);
+      --  according to RM0090 we should wait for SDIO_STA[6] = CMDREND interrupt, which is this:
       if Err /= OK then
          return Err;
       end if;
 
-      --  start the DMA transfer
+      --  and now enable the card with DTEN, which is this:
       Configure_Data
         (Controller,
          Data_Length        => UInt25 (N_Blocks) * BLOCKLEN,
@@ -1931,9 +1951,13 @@ package body STM32.SDMMC is
          Transfer_Mode      => Block,
          DPSM               => True,
          DMA_Enabled        => True);
+
       --  this triggers the transfer and immediately triggers a TX FIFO Underrun.
       --  The DMA has very litte time to actually fill the buffer
       --  see http://blog.frankvh.com/2011/12/30/stm32f2xx-stm32f4xx-sdio-interface-part-2/ to avoid TX_UNDERRUN
+
+      --  according to RM0090: wait for STA[10]=DBCKEND
+      --  check that no channels are still enabled by polling DMA Enabled Channel Status Reg
 
       return Err;
    end Write_Blocks_DMA;

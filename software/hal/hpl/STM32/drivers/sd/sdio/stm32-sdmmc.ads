@@ -53,7 +53,8 @@ package STM32.SDMMC is
       WP_Erase_Skip,
       Erase_Reset,
       AKE_SEQ_Error,
-      Invalid_Voltage_Range);
+      Invalid_Voltage_Range,
+      DMA_Alignment_Error);
 
    type Supported_SD_Memory_Cards is
      (STD_Capacity_SD_Card_V1_1,
