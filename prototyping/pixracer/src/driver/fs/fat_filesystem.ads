@@ -258,8 +258,8 @@ private
    function Block_To_Cluster
      (FS        : FAT_Filesystem;
       Block_LBA : Unsigned_32) return Unsigned_32
-   is (Block_LBA / (Unsigned_32 (FS.Number_Of_Blocks_Per_Cluster))
-       - FS.Data_Area + FIRST_CLUSTER);
+   is ((Block_LBA - FS.Data_Area) /
+       (Unsigned_32 (FS.Number_Of_Blocks_Per_Cluster)) + FIRST_CLUSTER);
    --  => Cluster = Block/BPC - Data_Area + FIRST_CLUSTER
 
    subtype FAT_Entry is Unsigned_32;

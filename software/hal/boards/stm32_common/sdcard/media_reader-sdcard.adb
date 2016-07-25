@@ -49,8 +49,11 @@ package body Media_Reader.SDCard is
 
    private
 
-      procedure Interrupt
+      procedure Interrupt_RX
         with Attach_Handler => Rx_IRQ, Unreferenced;
+
+      procedure Interrupt_TX
+        with Attach_Handler => Tx_IRQ, Unreferenced;
 
       Finished   : Boolean := True;
       DMA_Status : DMA_Error_Code;
@@ -281,8 +284,9 @@ package body Media_Reader.SDCard is
       -- Interrupt --
       ---------------
 
-      procedure Interrupt is
+      procedure Interrupt_RX is
       begin
+
          if Status (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Indicated) then
             Disable_Interrupt (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Interrupt);
             Clear_Status (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Indicated);
@@ -307,7 +311,7 @@ package body Media_Reader.SDCard is
               (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Indicated);
 
             DMA_Status := DMA_No_Error;
-            Finished := True; -- we actually get here, good
+            Finished := True;
          end if;
 
          if Finished then
@@ -315,7 +319,44 @@ package body Media_Reader.SDCard is
                Disable_Interrupt (SD_DMA, SD_DMA_Rx_Stream, Int);
             end loop;
          end if;
-      end Interrupt;
+      end Interrupt_RX;
+
+      procedure Interrupt_TX is
+      begin
+
+         if Status (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Indicated) then
+            Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Interrupt);
+            Clear_Status (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Indicated);
+
+            DMA_Status := DMA_FIFO_Error;
+            Finished := True;
+         end if;
+
+         if Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Error_Indicated) then
+            Disable_Interrupt
+              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Error_Interrupt);
+            Clear_Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Error_Indicated);
+
+            DMA_Status := DMA_Transfer_Error;
+            Finished := True;
+         end if;
+
+         if Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Indicated) then
+            Disable_Interrupt
+              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Interrupt);
+            Clear_Status
+              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Indicated);
+
+            DMA_Status := DMA_No_Error;
+            Finished := True;
+         end if;
+
+         if Finished then
+            for Int in STM32.DMA.DMA_Interrupt loop
+               Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, Int);
+            end loop;
+         end if;
+      end Interrupt_TX;
 
    end DMA_Interrupt_Handler;
 
@@ -430,11 +471,11 @@ package body Media_Reader.SDCard is
             return False;
          end if;
 
-         SDMMC_Interrupt_Handler.Wait_Transfer (Ret); -- this unblocks: ret= ok
+         SDMMC_Interrupt_Handler.Wait_Transfer (Ret); -- TX underrun!
          DMA_Interrupt_Handler.Wait_Transfer (DMA_Err); -- this unblocks: DMA_err = no err
 
          loop
-            exit when not Get_Flag (Controller.Device, TX_Active); -- not that FIFO is empty, that works.
+            exit when not Get_Flag (Controller.Device, TX_Active);
          end loop;
 
          Clear_All_Status (SD_DMA, SD_DMA_Tx_Stream);
@@ -451,6 +492,7 @@ package body Media_Reader.SDCard is
       end if;
    end Write_Block;
 
+   --  that works.
    overriding function Read_Block
      (Controller   : in out SDCard_Controller;
       Block_Number : Unsigned_32;
@@ -463,11 +505,6 @@ package body Media_Reader.SDCard is
         (HAL.Word, Word_Data);
    begin
       Ensure_Card_Informations (Controller);
-
-      -- debug: reset out buffer
---        for k in Data'Range loop
---           Data (k) := 16#AA#;
---        end loop;
 
       if Use_DMA then
 
@@ -524,7 +561,7 @@ package body Media_Reader.SDCard is
 
          -- after having removed the tail, this doesn't block anymore.
          loop
-            exit when not Get_Flag (Controller.Device, RX_Active); -- not that FIFO is empty, that works.
+            exit when not Get_Flag (Controller.Device, RX_Active); -- now that FIFO is empty, that works.
          end loop;
 
          Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);

@@ -74,7 +74,7 @@ package body Main is
       SDMemory.Driver.List_Rootdir;
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
-         fname : constant String := bootcounter'Img & ".ulog";
+         fname : constant String := bootcounter'Img & ".log";
       begin
          if not SDMemory.Driver.Start_Logfile (dirname => buildstring, filename => fname)
          then

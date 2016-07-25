@@ -19,20 +19,17 @@ package body FAT_Filesystem.Directories is
 
    begin
       if FS.Version = FAT16 then
-         Dir.Start_Cluster   := 0;
-         Dir.Current_Block   :=
-           Unsigned_32 (FS.Reserved_Blocks) +
-           FS.FAT_Table_Size_In_Blocks *
-             Unsigned_32 (FS.Number_Of_FATs);
+         Dir.Dir_Begin := (Cluster => 0, Index => 0, Block =>
+                             Unsigned_32 (FS.Reserved_Blocks) +
+                             FS.FAT_Table_Size_In_Blocks *
+                               Unsigned_32 (FS.Number_Of_FATs));
       else
-         Dir.Start_Cluster := FS.Root_Dir_Cluster;
-         Dir.Current_Block := FS.Cluster_To_Block (FS.Root_Dir_Cluster);
+         Dir.Dir_Begin := (Cluster => FS.Root_Dir_Cluster,
+                           Block => FS.Cluster_To_Block (FS.Root_Dir_Cluster),
+                           Index => 0);
       end if;
-
       Dir.FS := FS;
-      Dir.Current_Cluster := Dir.Start_Cluster;
-      Dir.Current_Index   := 0;
-
+      Rewind (Dir);
       return OK;
    end Open_Root_Directory;
 
@@ -58,7 +55,12 @@ package body FAT_Filesystem.Directories is
       --  find a place for another entry and return it
       Status := Allocate_Entry (Parent, newname, Ent_Addr);
       if Status = Already_Exists then
-         null;
+         --  FIXME: this is highly inefficient. Get it from Allocate_Entry() somehow.
+         if Get_Entry (Parent, newname, D_Entry) then
+            return OK;
+         else
+            return Internal_Error;
+         end if;
       elsif Status /= OK then
          return Status;
       end if;
@@ -100,11 +102,10 @@ package body FAT_Filesystem.Directories is
       return Status;
    end Make_Directory;
 
-   procedure Rewind ( Dir : in out Directory_Handle) is
+   procedure Rewind (Dir : in out Directory_Handle) is
    begin
-      Dir.Current_Cluster := Dir.Start_Cluster;
-      Dir.Current_Block   := Dir.FS.Cluster_To_Block (Dir.Start_Cluster);
-      Dir.Current_Index   := 0;
+      Dir.Dir_Current := Dir.Dir_Begin;
+      Dir.Dir_End     := Dir.Dir_Begin;
    end Rewind;
 
    function Open
@@ -113,7 +114,7 @@ package body FAT_Filesystem.Directories is
    is
    begin
       Dir.FS := E.FS;
-      Dir.Start_Cluster := E.Start_Cluster;
+      Dir.Dir_Begin := (Cluster => E.Start_Cluster, Index => 0, Block => E.FS.Cluster_To_Block (E.Start_Cluster));
       Rewind (Dir);
       return OK;
    end Open;
@@ -126,10 +127,8 @@ package body FAT_Filesystem.Directories is
    is
    begin
       Dir.FS              := null;
-      Dir.Current_Index   := 0;
-      Dir.Start_Cluster   := 0;
-      Dir.Current_Cluster := 0;
-      Dir.Current_Block   := 0;
+      Dir.Dir_Begin   := (Cluster => INVALID_CLUSTER, Block => 0, Index => 0);
+      Rewind (Dir);
    end Close;
 
    --  @summary encode Directory_Entry into FAT_Directory_Entry
@@ -300,15 +299,15 @@ package body FAT_Filesystem.Directories is
       Last_Seq    : VFAT_Sequence_Number := 0;
       Block_Off   : Unsigned_16;
    begin
-      if Dir.Start_Cluster = 0
-        and then Dir.Current_Index >= Dir.FS.Number_Of_Entries_In_Root_Dir
+      if Dir.Dir_Begin.Cluster = 0
+        and then Dir.Dir_Current.Index >= Dir.FS.Number_Of_Entries_In_Root_Dir
       then
          return Invalid_Object_Entry;
-      elsif Dir.Current_Index = 16#FFFF# then
+      elsif Dir.Dir_Current.Index = 16#FFFF# then -- we are at the end
          return Invalid_Object_Entry;
       end if;
 
-      Ret := Dir.FS.Ensure_Block (Dir.Current_Block);
+      Ret := Dir.FS.Ensure_Block (Dir.Dir_Current.Block);
       if Ret /= OK then
          return Ret;
       end if;
@@ -318,34 +317,34 @@ package body FAT_Filesystem.Directories is
       Fetch_Next : loop
          Block_Off :=
            Unsigned_16
-             (Unsigned_32 (Dir.Current_Index) * ENTRY_SIZE
+             (Unsigned_32 (Dir.Dir_Current.Index) * ENTRY_SIZE
               mod Dir.FS.Block_Size_In_Bytes);
          --  offset of entry within current block
 
          --  do we need to fetch the next block?
-         if Dir.Current_Index > 0
+         if Dir.Dir_Current.Index > 0
            and then Block_Off = 0
          then
-            Dir.Current_Block := Dir.Current_Block + 1;
+            Dir.Dir_Current.Block := Dir.Dir_Current.Block + 1;
             --  do we need to fetch the next cluster?
-            if Dir.Current_Block -
-              Dir.FS.Cluster_To_Block (Dir.Current_Cluster) =
+            if Dir.Dir_Current.Block -
+              Dir.FS.Cluster_To_Block (Dir.Dir_Current.Cluster) =
               Unsigned_32 (Dir.FS.Number_Of_Blocks_Per_Cluster)
             then
-               Dir.Current_Cluster := Dir.FS.Get_FAT (Dir.Current_Cluster);
+               Dir.Dir_Current.Cluster := Dir.FS.Get_FAT (Dir.Dir_Current.Cluster);
 
-               if Dir.Current_Cluster = INVALID_CLUSTER
-                 or else Dir.FS.Is_Last_Cluster (Dir.Current_Cluster)
+               if Dir.Dir_Current.Cluster = INVALID_CLUSTER
+                 or else Dir.FS.Is_Last_Cluster (Dir.Dir_Current.Cluster)
                then
                   return Internal_Error;
                end if;
 
-               Dir.Current_Block :=
-                 Dir.FS.Cluster_To_Block (Dir.Current_Cluster);
+               Dir.Dir_Current.Block :=
+                 Dir.FS.Cluster_To_Block (Dir.Dir_Current.Cluster);
             end if;
 
             --  read next block
-            Ret := Dir.FS.Ensure_Block (Dir.Current_Block);
+            Ret := Dir.FS.Ensure_Block (Dir.Dir_Current.Block);
 
             if Ret /= OK then
                return Ret;
@@ -354,14 +353,18 @@ package body FAT_Filesystem.Directories is
 
          --  are we at the end of the entries?
          if Dir.FS.Window (Block_Off) = 0 then
-            Dir.Current_Index := 16#FFFF#;
+            Dir.Dir_Current.Index := 16#FFFF#;
+            --  invalidates the handle...next call to this will return. because Dir_current.block is invalid now
             return Invalid_Object_Entry;
          end if;
+
+         --  if we are here, then the entry is valid
+         Dir.Dir_End := Dir.Dir_Current;
 
          --  okay, there are more entries. each entry is 32bytes:
          F_Entry := To_Entry (Dir.FS.Window
                               (Block_Off .. Block_Off + ENTRY_SIZE - 1));
-         Dir.Current_Index := Dir.Current_Index + 1;
+         Dir.Dir_Current.Index := Dir.Dir_Current.Index + 1;
 
          --  continue until we have an entry...because VFAT has multiple parts
          if FAT_To_Directory_Entry
@@ -441,6 +444,14 @@ package body FAT_Filesystem.Directories is
       return False;
    end Get_Entry;
 
+   procedure Goto_Last_Entry (Parent   : in out Directory_Handle) is
+      Tmp : Directory_Entry;
+   begin
+      while (Read (Parent, Tmp)) = OK loop
+         null;
+      end loop;
+   end Goto_Last_Entry;
+
    function Allocate_Entry
      (Parent   : in out Directory_Handle;
       New_Name : String;
@@ -456,29 +467,32 @@ package body FAT_Filesystem.Directories is
       declare
          Ent : Directory_Entry;
       begin
-         if Get_Entry (Parent => Parent, E_Name => New_Name, Ent => Ent)
-         then
+         if Get_Entry (Parent => Parent, E_Name => New_Name, Ent => Ent) then
             return Already_Exists;
          end if;
       end;
+
+      Goto_Last_Entry (Parent);
+
+      --  now append
+      Parent.Dir_End.Index := Parent.Dir_End.Index + 1;
 
       --  if we are here, then we reached the last entry in the directory.
       --  see whether block_off is small enough to accommodate another entry
       --  block_Off .. Block_Off + 31 must be available, otherwise we need a
       --  the next block
-      --  Parent.Current_Index := Parent.Current_Index + 1;
       Block_Off := Unsigned_16 (Unsigned_32
-                                (Parent.Current_Index) * ENTRY_SIZE
+                                (Parent.Dir_End.Index) * ENTRY_SIZE
                                 mod Parent.FS.Block_Size_In_Bytes);
       --  offset of entry within current block
 
       --  do we need a new block?
-      if Block_Off = 0 and then Parent.Current_Index > 0 then
+      if Block_Off = 0 and then Parent.Dir_End.Index > 0 then
          --  need a new block
-         Parent.Current_Block := Parent.Current_Block + 1;
+         Parent.Dir_End.Block := Parent.Dir_End.Block + 1;
          --  do we need to allocate a new cluster for the new block?
-         if Parent.Current_Block -
-           Parent.FS.Cluster_To_Block (Parent.Current_Cluster) =
+         if Parent.Dir_End.Block -
+           Parent.FS.Cluster_To_Block (Parent.Dir_End.Cluster) =
            Unsigned_32 (Parent.FS.Number_Of_Blocks_Per_Cluster)
          then
             --  need another cluster. find free one and allocate it
@@ -487,22 +501,20 @@ package body FAT_Filesystem.Directories is
                Status : Status_Code;
             begin
                Status := Parent.FS.Append_Cluster
-                 (Last_Cluster => Parent.Current_Cluster,
+                 (Last_Cluster => Parent.Dir_End.Cluster,
                   New_Cluster => New_Cluster);
                if Status /= OK then
                   return Status;
                end if;
-               Parent.Current_Cluster := New_Cluster;
-               Parent.Current_Block :=
-                 Parent.FS.Cluster_To_Block (Parent.Current_Cluster);
+               Parent.Dir_End.Cluster := New_Cluster;
+               Parent.Dir_End.Block :=
+                 Parent.FS.Cluster_To_Block (Parent.Dir_End.Cluster);
             end;
          end if;
       end if;
-      --  now write the new entry to the allocated space (Parent.current_clock + block_off)
-      --  Ent_Addr.Cluster := Parent.Current_Cluster;
-      Ent_Addr.Block_LBA := Parent.Current_Block;
+      --  return the allocated space
+      Ent_Addr.Block_LBA := Parent.Dir_End.Block;
       Ent_Addr.Block_Off := Block_Off;
-
       return OK;
    end Allocate_Entry;
 end FAT_Filesystem.Directories;

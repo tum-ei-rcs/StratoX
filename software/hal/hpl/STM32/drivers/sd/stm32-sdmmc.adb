@@ -1460,7 +1460,7 @@ package body STM32.SDMMC is
          end if;
 
          cardstatus := Controller.Periph.RESP1;
-         exit Wait_Ready_Loop when (cardstatus and 16#100#) = 0;
+         exit Wait_Ready_Loop when (cardstatus and 16#100#) /= 0;
       end loop Wait_Ready_Loop;
 
       if Timeout then
@@ -1822,6 +1822,9 @@ package body STM32.SDMMC is
       Command      : SDMMC_Command;
       use STM32.DMA;
 
+      cardstatus : HAL.Word;
+      start      : Time := Clock;
+      Timeout    : Boolean := False;
    begin
       Controller.Periph.DCTRL := (DTEN   => False,
                                   others => <>);
@@ -1839,17 +1842,8 @@ package body STM32.SDMMC is
       Enable_Interrupt (Controller, Data_End_Interrupt);
       Enable_Interrupt (Controller, TX_Underrun_Interrupt);
 
-      STM32.DMA.Start_Transfer_with_Interrupts
-        (Unit               => DMA,
-         Stream             => Stream,
-         Destination        => Controller.Periph.FIFO'Address,
-         Source             => Data (Data'First)'Address,
-         Data_Count         => Data'Length / 4, -- count is 32bit words, data'length in bytes
-         Enabled_Interrupts => (Transfer_Error_Interrupt    => True,
-                                FIFO_Error_Interrupt        => True,
-                                Transfer_Complete_Interrupt => True,
-                                others                      => False));
 
+      --  set block length
       Send_Command
         (Controller,
          Command_Index      => Set_Blocklen,
@@ -1863,15 +1857,52 @@ package body STM32.SDMMC is
          return Err;
       end if;
 
-      Configure_Data
-        (Controller,
-         Data_Length        => UInt25 (N_Blocks) * BLOCKLEN,
-         Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
-         Transfer_Direction => Write,
-         Transfer_Mode      => Block,
-         DPSM               => True,
-         DMA_Enabled        => True);
+      --  wait until card is ready for data added
+      Wait_Ready_loop :
+      loop
+         declare
+            now : Time := Clock;
+         begin
+            if now - start > Milliseconds (100) then
+               Timeout := True;
+               exit Wait_Ready_Loop;
+            end if;
+         end;
 
+         Send_Command
+           (Controller,
+            Command_Index      => Send_Status,
+            Argument           => Controller.RCA,
+            Response           => Short_Response,
+            CPSM               => True,
+            Wait_For_Interrupt => False);
+         Err := Response_R1_Error (Controller, Send_Status);
+
+         if Err /= OK then
+            return Err;
+         end if;
+
+         cardstatus := Controller.Periph.RESP1;
+         exit Wait_Ready_Loop when (cardstatus and 16#100#) /= 0;
+      end loop Wait_Ready_Loop;
+
+      if Timeout then
+         return Timeout_Error;
+      end if;
+
+      -- start DMA first
+      STM32.DMA.Start_Transfer_with_Interrupts
+        (Unit               => DMA,
+         Stream             => Stream,
+         Destination        => Controller.Periph.FIFO'Address,
+         Source             => Data (Data'First)'Address,
+         Data_Count         => Data'Length / 4, -- count is 32bit words, data'length in bytes
+         Enabled_Interrupts => (Transfer_Error_Interrupt    => True,
+                                FIFO_Error_Interrupt        => True,
+                                Transfer_Complete_Interrupt => True,
+                                others                      => False));
+
+      --  set target address
       if N_Blocks > 1 then
          Command := Write_Multi_Block;
          Controller.Operation := Write_Multiple_Blocks_Operation;
@@ -1879,7 +1910,6 @@ package body STM32.SDMMC is
          Command := Write_Single_Block;
          Controller.Operation := Write_Single_Block_Operation;
       end if;
-
       Send_Command
         (Controller,
          Command_Index      => Command,
@@ -1888,6 +1918,22 @@ package body STM32.SDMMC is
          CPSM               => True,
          Wait_For_Interrupt => False);
       Err := Response_R1_Error (Controller, Command);
+      if Err /= OK then
+         return Err;
+      end if;
+
+      --  start the DMA transfer
+      Configure_Data
+        (Controller,
+         Data_Length        => UInt25 (N_Blocks) * BLOCKLEN,
+         Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
+         Transfer_Direction => Write,
+         Transfer_Mode      => Block,
+         DPSM               => True,
+         DMA_Enabled        => True);
+      --  this triggers the transfer and immediately triggers a TX FIFO Underrun.
+      --  The DMA has very litte time to actually fill the buffer
+      --  see http://blog.frankvh.com/2011/12/30/stm32f2xx-stm32f4xx-sdio-interface-part-2/ to avoid TX_UNDERRUN
 
       return Err;
    end Write_Blocks_DMA;

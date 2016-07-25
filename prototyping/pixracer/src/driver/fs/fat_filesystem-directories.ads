@@ -34,6 +34,8 @@ package FAT_Filesystem.Directories with SPARK_Mode is
    function Read (Dir : in out Directory_Handle;
                   DEntry : out Directory_Entry) return Status_Code;
    --  @summary get the next entry in the given directory
+   --  after calling this, Dir.Dir_Current are invalid iff return /= OK.
+   --  However, the Dir_Begin and Dir_End components are always valid.
 
    function Get_Name (E : Directory_Entry) return String;
 
@@ -121,12 +123,23 @@ private
 --        Current_Cluster : Unsigned_32;
 --     end record;
 
+   type Directory_Handle_Pointer is record
+      Index   : Unsigned_16;
+      Cluster : Unsigned_32;
+      Block   : Unsigned_32;
+   end record;
+
    type Directory_Handle is record
-      FS              : FAT_Filesystem_Access;
-      Current_Index   : Unsigned_16; -- current entry in the directory
-      Start_Cluster   : Unsigned_32; -- first cluster of the direcory
-      Current_Cluster : Unsigned_32; -- cluster belonging to current_index
-      Current_Block   : Unsigned_32; -- block belonging to current index
+      FS               : FAT_Filesystem_Access;
+
+      Dir_Begin   : Directory_Handle_Pointer;
+      Dir_Current : Directory_Handle_Pointer;
+      Dir_End     : Directory_Handle_Pointer;
+
+--        Current_Index    : Unsigned_16; -- current entry in the directory
+--        Start_Cluster    : Unsigned_32; -- first cluster of the direcory
+--        Current_Cluster  : Unsigned_32; -- cluster belonging to current_index
+--        Current_Block    : Unsigned_32; -- block belonging to current index
    end record;
    --  used to read directories
 
@@ -143,12 +156,15 @@ private
    end record;
    --  each item in a directory is described by this in high-level view
 
-   procedure Rewind ( Dir : in out Directory_Handle);
+   procedure Rewind (Dir : in out Directory_Handle);
 
    function Get_Entry
      (Parent : in out Directory_Handle;
       E_Name : String;
       Ent    : out Directory_Entry) return Boolean;
+
+   procedure Goto_Last_Entry (Parent   : in out Directory_Handle);
+   --  proceed to last entry in given directory
 
    function Allocate_Entry
      (Parent   : in out Directory_Handle;
