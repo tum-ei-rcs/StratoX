@@ -348,8 +348,8 @@ package body FAT_Filesystem is
    end Close;
 
    function Write_Window
-     ( FS : in out FAT_Filesystem;
-       Block_Arg : Unsigned_32) return Status_Code
+     (FS : in out FAT_Filesystem;
+      Block_Arg : Unsigned_32) return Status_Code
    is
    begin
       if not FS.Controller.Write_Block (Block_Arg, FS.Window) then

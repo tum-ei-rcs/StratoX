@@ -38,7 +38,7 @@ package body Media_Reader.SDCard is
    ------------
    -- on-chip DMA facility signals end of DMA transfer
    protected DMA_Interrupt_Handler is
-      pragma Interrupt_Priority (255);
+      pragma Interrupt_Priority (254);
 
       procedure Set_Transfer_State;
       --  Informes the DMA Int handler that a transfer is about to start
@@ -105,7 +105,7 @@ package body Media_Reader.SDCard is
           Output_Type => Push_Pull,
           Speed       => Speed_High,
           Resistors   => Pull_Up));
-      Configure_Alternate_Function (SD_Pins, GPIO_AF_SDIO);
+      Configure_Alternate_Function (SD_Pins, GPIO_AF_SDIO); -- essential!
 
       --  GPIO configuration for the SD-Detect pin
 --        Configure_IO
@@ -462,6 +462,8 @@ package body Media_Reader.SDCard is
             SD_DMA,
             SD_DMA_Tx_Stream,
             SD_Data (Data));
+         -- this always leaves the last 12 byte standing. Why?
+         -- also...NDTR is not what it should be.
 
          if Ret /= OK then
             DMA_Interrupt_Handler.Clear_Transfer_State;
@@ -475,6 +477,8 @@ package body Media_Reader.SDCard is
          SDMMC_Interrupt_Handler.Wait_Transfer (Ret); -- TX underrun!
 
          loop
+            -- FIXME: some people claim, that this goes wrong with multiblock, see
+            -- http://blog.frankvh.com/2011/09/04/stm32f2xx-sdio-sd-card-interface/
             exit when not Get_Flag (Controller.Device, TX_Active);
          end loop;
 
@@ -538,6 +542,10 @@ package body Media_Reader.SDCard is
 
 
          -- Workaround: DMA leaves a tail in the SDIO FIFO buffer.  We don'T know why, yet.
+         -- one reason might be mentioned in AN4031 sec.4.9.1: "When managing peripheral reads
+         -- over DMA memory port, software must ensure that 4x extra words are read from the
+         -- peripheral. This is to guarantee that last valid data are transferred-out from
+         -- DMA FIFO". However, in our case data is in SDIO FIFO.
          -- ALso, we don't know how long, but it should be < 32bit*16, since otherwise FIFO would
          -- be more than half full and thus trigger another DMA burst.
          -- Read the tail, count how long it is, and then copy over to the target buffer.

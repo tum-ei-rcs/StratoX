@@ -1294,7 +1294,7 @@ package body STM32.SDMMC is
          others         => <>);
       delay until Clock + Milliseconds (1);
 
-      Controller.Periph.DTIMER := SD_DATATIMEOUT; -- gives us time to read/write FIFO before errors occur
+      Controller.Periph.DTIMER := SD_DATATIMEOUT; -- gives us time to read/write FIFO before errors occur. FIXME: too long
 
       Ret := Power_On (Controller);
 
@@ -1705,6 +1705,11 @@ package body STM32.SDMMC is
       elsif Controller.Periph.STA.RXOVERR then
          Controller.Periph.ICR.RXOVERRC := True;
          return Rx_Overrun;
+
+      elsif Controller.Periph.STA.STBITERR then
+         Controller.Periph.ICR.STBITERRC := True;
+         return Startbit_Not_Detected;
+
       end if;
 
       for J in Unsigned_32'(1) .. SD_DATATIMEOUT loop
@@ -1952,10 +1957,6 @@ package body STM32.SDMMC is
          DPSM               => True,
          DMA_Enabled        => True);
 
-      --  this triggers the transfer and immediately triggers a TX FIFO Underrun.
-      --  The DMA has very litte time to actually fill the buffer
-      --  see http://blog.frankvh.com/2011/12/30/stm32f2xx-stm32f4xx-sdio-interface-part-2/ to avoid TX_UNDERRUN
-
       --  according to RM0090: wait for STA[10]=DBCKEND
       --  check that no channels are still enabled by polling DMA Enabled Channel Status Reg
 
@@ -1966,24 +1967,32 @@ package body STM32.SDMMC is
    -- Get_Transfer_Status --
    -------------------------
 
-   function Get_Transfer_Status
-     (Controller : in out SDMMC_Controller) return SD_Error
-   is
-   begin
-      if Controller.Periph.STA.DTIMEOUT then
-         Controller.Periph.ICR.DTIMEOUTC := True;
-         return Timeout_Error;
-
-      elsif Controller.Periph.STA.DCRCFAIL then
-         Controller.Periph.ICR.DCRCFAILC := True; -- clear
-         return CRC_Check_Fail;
-
-      elsif Controller.Periph.STA.RXOVERR then
-         Controller.Periph.ICR.RXOVERRC := True;
-         return Rx_Overrun;
-      end if;
-
-      return OK;
-   end Get_Transfer_Status;
+--     function Get_Transfer_Status
+--       (Controller : in out SDMMC_Controller) return SD_Error
+--     is
+--     begin
+--        if Controller.Periph.STA.DTIMEOUT then
+--           Controller.Periph.ICR.DTIMEOUTC := True;
+--           return Timeout_Error;
+--
+--        elsif Controller.Periph.STA.DCRCFAIL then
+--           Controller.Periph.ICR.DCRCFAILC := True; -- clear
+--           return CRC_Check_Fail;
+--
+--        elsif Controller.Periph.STA.TXUNDERR then
+--           Controller.Periph.ICR.TXUNDERRC := True;
+--           return TX_Underrun;
+--
+--        elsif Controller.Periph.STA.STBITERR then
+--           Controller.Periph.ICR.STBITERRC := True;
+--           return Startbit_Not_Detected;
+--
+--        elsif Controller.Periph.STA.RXOVERR then
+--           Controller.Periph.ICR.RXOVERRC := True;
+--           return Rx_Overrun;
+--        end if;
+--
+--        return OK;
+--     end Get_Transfer_Status;
 
 end STM32.SDMMC;

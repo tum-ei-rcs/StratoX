@@ -217,8 +217,8 @@ package STM32.SDMMC is
    function Get_FIFO_Address
      (Controller : SDMMC_Controller) return System.Address;
 
-   function Get_Transfer_Status
-     (Controller : in out SDMMC_Controller) return SD_Error;
+--     function Get_Transfer_Status
+--       (Controller : in out SDMMC_Controller) return SD_Error;
 
    type SDMMC_Flags is
      (Data_End,
