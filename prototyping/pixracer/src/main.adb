@@ -13,7 +13,6 @@ with LED_Manager;
 with Buzzer_Manager;
 with SDMemory;
 with SDMemory.Driver;
-with Units; use Units;
 with Buildinfo;
 
 package body Main is
@@ -82,6 +81,7 @@ package body Main is
             Logger.log (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
          else
             Logger.log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
+            SDMemory.Driver.Write_Log (SDMemory.Driver.To_File_Data ("Hello World"));
          end if;
       end;
       Logger.log (Logger.INFO, "SD Card check done");
@@ -93,7 +93,7 @@ package body Main is
       loop_time_start   : Time      := Clock;
 
 --      gleich : Ada.Real_Time.Time;
---      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6)); -- happy birthday
+--      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6));
    begin
       LED_Manager.Set_Color ((1 => HIL.Devices.GRN_LED));
       LED_Manager.LED_blink (LED_Manager.SLOW);

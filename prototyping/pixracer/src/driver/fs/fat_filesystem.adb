@@ -25,7 +25,7 @@ package body FAT_Filesystem is
    end Allocate_Cluster;
 
    function Append_Cluster
-     (FS: in out FAT_Filesystem;
+     (FS : in out FAT_Filesystem;
       Last_Cluster : Unsigned_32;
       New_Cluster  : out Unsigned_32) return Status_Code
    is

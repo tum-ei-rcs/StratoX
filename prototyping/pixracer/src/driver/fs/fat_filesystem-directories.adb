@@ -1,5 +1,11 @@
+--  Project: StratoX
+--  System:  Stratosphere Balloon Flight Controller
+--  Author: Martin Becker (becker@rcs.ei.tum.de)
+--  based on AdaCore's Ada_Driver_Library
+
 with Ada.Unchecked_Conversion;
 
+--  @summary Directory (end directory entries) handling for FAT FS
 package body FAT_Filesystem.Directories is
 
    -------------------------

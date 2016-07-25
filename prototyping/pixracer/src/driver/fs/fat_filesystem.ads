@@ -296,13 +296,14 @@ private
       Last_Cluster : Unsigned_32;
       New_Cluster  : out Unsigned_32) return Status_Code
      with Pre => Version (FS) = FAT32 and then FS.FSInfo.Free_Clusters > 0;
-   --  @summary convenience function. COmbines Get_Free_Cluster,
-   --  Allocate_Cluster and Set_FAT
+   --  @summary convenience function. Combines Get_Free_Cluster,
+   --  Allocate_Cluster and Set_FAT (to chain New_Cluster to Last_Cluster).
 
    function Allocate_Cluster
      (FS : in out FAT_Filesystem;
       cluster : Unsigned_32) return Boolean
      with Pre => Version (FS) = FAT32 and then FS.FSInfo.Free_Clusters > 0;
+   --  mark the given cluster in the FAT as "used", and update FS Info
 
    function Get_Free_Cluster (FS : in out FAT_Filesystem) return Unsigned_32;
    --  @summary scan for a free cluster and return its number

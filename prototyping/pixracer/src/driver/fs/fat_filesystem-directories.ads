@@ -1,3 +1,9 @@
+--  Project: StratoX
+--  System:  Stratosphere Balloon Flight Controller
+--  Author: Martin Becker (becker@rcs.ei.tum.de)
+--  based on AdaCore's Ada_Driver_Library
+
+--  @summary Directory (end directory entries) handling for FAT FS
 package FAT_Filesystem.Directories with SPARK_Mode is
 
    type Directory_Handle is private; -- used to read directories
@@ -77,6 +83,8 @@ private
       Size       at 16#1C# range 0 .. 31;
    end record;
 
+   ENTRY_SIZE : constant := 32;
+
    VFAT_Directory_Entry_Attribute : constant FAT_Directory_Entry_Attribute :=
                                       (Subdirectory => False,
                                        Archive      => False,
@@ -123,18 +131,17 @@ private
    --  used to read directories
 
    type Directory_Entry is record
-      FS            : FAT_Filesystem_Access;
+      FS               : FAT_Filesystem_Access;
       Long_Name        : String (1 .. 128); -- long name (VFAT)
       Long_Name_First  : Natural := 129; -- where it starts
       Short_Name       : String (1 .. 12); -- short name
       Short_Name_Last  : Natural := 0; -- where it starts
-      Attributes    : FAT_Directory_Entry_Attribute;
-      Start_Cluster : Unsigned_32;
-      Size          : Unsigned_32; -- TODO: what is this?
+      Attributes       : FAT_Directory_Entry_Attribute;
+      Start_Cluster    : Unsigned_32; -- the address of the data
+      Size             : Unsigned_32;
+      Entry_Address    : FAT_Address; -- the address of the entry itself
    end record;
-   --  each item in a directory is described by this
-
-   ENTRY_SIZE : constant := 32;
+   --  each item in a directory is described by this in high-level view
 
    procedure Rewind ( Dir : in out Directory_Handle);
 

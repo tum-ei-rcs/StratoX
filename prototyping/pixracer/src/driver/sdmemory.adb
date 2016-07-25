@@ -1,9 +1,9 @@
--- Project: Strato
--- System:  Stratosphere Balloon Flight Controller
--- Author: Martin Becker (becker@rcs.ei.tum.de)
+--  Project: Strato
+--  System:  Stratosphere Balloon Flight Controller
+--  Author: Martin Becker (becker@rcs.ei.tum.de)
 with SDMemory.Driver;
 
--- @summary top-level package for reading/writing to SD card
+--  @summary top-level package for reading/writing to SD card
 package body SDMemory is
    procedure Init is
    begin

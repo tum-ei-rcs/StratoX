@@ -159,9 +159,9 @@ package body SDMemory.Driver is
          if Is_System_File (Ent) then
             declare
                Contents : String (1 .. 16);
+               pragma Unreferenced (Contents); -- later, when File_Read works.
             begin
-               --  TODO: read first 16 bytes of file
-               Logger.log (Logger.INFO, " +- " & Get_Name (Ent) & ": " & Contents);
+               Logger.log (Logger.INFO, " +- " & Get_Name (Ent));
             end;
          else
             Logger.log (Logger.INFO, " +- " & Get_Name (Ent) &
@@ -169,5 +169,37 @@ package body SDMemory.Driver is
          end if;
       end loop;
       Close (Dir);
+      pragma Unreferenced (Dir);
    end List_Rootdir;
+
+   procedure Write_Log (Data : FAT_Filesystem.Directories.Files.File_Data) is
+   begin
+      if not log_open then
+         return;
+      end if;
+      declare
+         n_written : constant Integer := File_Write (File => fh_log, Data => Data);
+      begin
+         if n_written < Data'Length then
+            if n_written < 0 then
+               Logger.log (Logger.ERROR, "Logfile write error");
+            else
+               Logger.log (Logger.ERROR, "Logfile wrote only " & n_written'Img &
+                             " bytes instead of " & Data'Length'Img);
+            end if;
+         end if;
+      end;
+   end Write_Log;
+
+   function To_File_Data (S : String) return FAT_Filesystem.Directories.Files.File_Data is
+      d   : File_Data (1 .. S'Length);
+      idx : Unsigned_16 := d'First;
+   begin
+      for k in S'Range loop
+         d (idx) := Character'Pos (S (k));
+         idx := idx + 1;
+      end loop;
+      return d;
+   end To_File_Data;
+
 end SDMemory.Driver;

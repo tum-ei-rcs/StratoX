@@ -6,23 +6,33 @@
 with FAT_Filesystem;
 with FAT_Filesystem.Directories; use FAT_Filesystem.Directories;
 
+--  @summary File handling for FAT FS
 package FAT_Filesystem.Directories.Files with SPARK_Mode is
 
    type File_Handle is private;
 
    type File_Mode is (Read_Mode, Write_Mode);
 
-   subtype File_Data is Block;
+   subtype File_Data is Media_Reader.Block;
 
    function File_Create
      (Parent  : in out Directory_Handle;
       newname : String;
       File    : out File_Handle) return Status_Code;
+   --  create a new file in the given directory, and return
+   --  handle for write access
 
    function File_Write
      (File : in out File_Handle;
       Data : File_Data) return Integer;
    --  @return number of bytes written (at most Data'Length), or -1 on error.
+
+   function File_Open_Readonly
+     (Ent  : in out Directory_Entry;
+      File : in out File_Data) return Status_Code
+     with Pre => Is_System_File (Ent);
+   --  open the file given by the directory entry and return
+   --  handle for read access;
 
    function File_Read
      (File : in out File_Handle;
@@ -46,6 +56,7 @@ private
       Buffer              : File_Data (1 .. 512); --  size of one block in FAT/SD card
       Buffer_Level        : Natural := 0; -- how much data in Buffer is meaningful
       Bytes_Total         : Unsigned_32 := 0; -- how many bytes were read/written
+      D_Entry             : Directory_Entry; -- the associated directory entry
    end record;
    --  used to access files
 end FAT_Filesystem.Directories.Files;
