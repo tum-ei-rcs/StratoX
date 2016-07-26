@@ -59,7 +59,7 @@ project Default is
 
    package Builder is
       for Global_Configuration_Pragmas use "gnat.adc";
-
+      for Switches ("buildinfo.adb") use ("-f"); -- force recompilation, to have build string correct
       case Build_Mode is
 
          when "debug" =>

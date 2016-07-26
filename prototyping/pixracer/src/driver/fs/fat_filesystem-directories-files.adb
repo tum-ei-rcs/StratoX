@@ -64,13 +64,9 @@ package body FAT_Filesystem.Directories.Files is
       File.D_Entry.Attributes.Volume_Label := False;
       File.D_Entry.Attributes.Subdirectory := False;
       File.D_Entry.Start_Cluster := new_cluster;
+      File.D_Entry.Entry_Address := Ent_Addr;
       File.D_Entry.Size := 0; -- file is empty, yet
-
-      --  FIXME: 8+3 scheme
-      StrCpySpace (instring => newname, outstring => File.D_Entry.Short_Name);
-
-      File.D_Entry.Short_Name_Last := File.D_Entry.Short_Name'Length;
-      File.D_Entry.Long_Name_First := File.D_Entry.Long_Name'Last + 1;
+      Set_Name (newname, File.D_Entry);
 
       --  encode into FAT entry
       Status := Directory_To_FAT_Entry (File.D_Entry, F_Entry);

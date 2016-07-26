@@ -145,14 +145,18 @@ private
 
    type Directory_Entry is record
       FS               : FAT_Filesystem_Access;
-      Long_Name        : String (1 .. 128); -- long name (VFAT)
-      Long_Name_First  : Natural := 129; -- where it starts
-      Short_Name       : String (1 .. 12); -- short name
-      Short_Name_Last  : Natural := 0; -- where it starts
+
+      Name             : String (1 .. 128);
+      Name_First       : Natural := 129; -- where the string starts within 'Name'
+      Name_Last        : Natural := 0; -- where the string ends within 'Name'
+
+      CRC              : Unsigned_8 := 0;
+
       Attributes       : FAT_Directory_Entry_Attribute;
-      Start_Cluster    : Unsigned_32; -- the address of the data
+      Start_Cluster    : Unsigned_32; -- the address of the data/contents of the entry
       Size             : Unsigned_32;
       Entry_Address    : FAT_Address; -- the address of the entry itself
+      --  FIXME: add time stamps, attributes, etc.
    end record;
    --  each item in a directory is described by this in high-level view
 
@@ -172,7 +176,10 @@ private
       Ent_Addr : out FAT_Address) return Status_Code;
    --  find a location for a new entry within Parent_Ent
 
-   procedure Set_Shortname (newname : String; E : in out FAT_Directory_Entry)
+   procedure Set_Name (newname : String; D : in out Directory_Entry)
+     with Pre => newname'Length > 0;
+
+   procedure Set_Name (newname : String; E : in out FAT_Directory_Entry)
      with Pre => newname'Length > 0;
 
    function Directory_To_FAT_Entry

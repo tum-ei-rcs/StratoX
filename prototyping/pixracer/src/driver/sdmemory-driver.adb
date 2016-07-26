@@ -129,7 +129,7 @@ package body SDMemory.Driver is
       if Status /= OK then
          Logger.log (Logger.ERROR,
                      "SD Card: Error creating log file:" &
-                       Status'Img);
+                       Status_Code'image (Status));
          return False;
       end if;
       log_open := True;

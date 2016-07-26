@@ -46,6 +46,7 @@ package body FAT_Filesystem.Directories is
       Ent_Addr : FAT_Address;
       Status   : Status_Code;
 
+      dir_cluster : Unsigned_32 := INVALID_CLUSTER;
    begin
       if Parent.FS.Version /= FAT32 then
          --  we only support FAT32 for now.
@@ -57,7 +58,7 @@ package body FAT_Filesystem.Directories is
       if Status = Already_Exists then
          --  FIXME: this is highly inefficient. Get it from Allocate_Entry() somehow.
          if Get_Entry (Parent, newname, D_Entry) then
-            return OK;
+            return Already_Exists;
          else
             return Internal_Error;
          end if;
@@ -65,7 +66,19 @@ package body FAT_Filesystem.Directories is
          return Status;
       end if;
 
-      --  read complete block
+      --  if we are here, then a new entry was created
+
+      --  first, allocate a new cluster for the directory contents
+      dir_cluster := Parent.FS.Get_Free_Cluster;
+      if dir_cluster = INVALID_CLUSTER then
+         return Device_Full;
+      end if;
+      if not Parent.FS.Allocate_Cluster (dir_cluster)
+      then
+         return Allocation_Error;
+      end if;
+
+      --  now write the directory entry in the parent
       Status := Parent.FS.Ensure_Block (Ent_Addr.Block_LBA);
       if Status /= OK then
          return Status;
@@ -79,11 +92,10 @@ package body FAT_Filesystem.Directories is
       D_Entry.Attributes.System_File := False;
       D_Entry.Attributes.Volume_Label := False;
       D_Entry.Attributes.Subdirectory := True;
-      D_Entry.Start_Cluster := Parent.FS.Block_To_Cluster (Ent_Addr.Block_LBA);
+      D_Entry.Start_Cluster := dir_cluster;
       D_Entry.Size := 0; -- directories always carry zero
-      StrCpySpace (instring => newname, outstring => D_Entry.Short_Name);
-      D_Entry.Short_Name_Last := D_Entry.Short_Name'Length;
-      D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
+      D_Entry.Entry_Address := Ent_Addr;
+      Set_Name (newname, D_Entry);
 
       --  encode into FAT entry
       Status := Directory_To_FAT_Entry (D_Entry, F_Entry);
@@ -92,12 +104,13 @@ package body FAT_Filesystem.Directories is
       end if;
 
       --  copy over to FS.Window
-      Parent.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off + ENTRY_SIZE - 1) := From_Entry (F_Entry);
+      Parent.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off + ENTRY_SIZE - 1)
+        := From_Entry (F_Entry);
 
       --  write back the block with the new entry
       Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);
 
-      --  TODO: create obligatory entries "." and ".."
+      --  TODO: create obligatory entries "." and "..", and then terminate dir with another zero entry.
       return Status;
    end Make_Directory;
 
@@ -113,7 +126,9 @@ package body FAT_Filesystem.Directories is
    is
    begin
       Dir.FS := E.FS;
-      Dir.Dir_Begin := (Cluster => E.Start_Cluster, Index => 0, Block => E.FS.Cluster_To_Block (E.Start_Cluster));
+      Dir.Dir_Begin := (Cluster => E.Start_Cluster,
+                        Index => 0,
+                        Block => E.FS.Cluster_To_Block (E.Start_Cluster));
       Rewind (Dir);
       return OK;
    end Open;
@@ -140,7 +155,7 @@ package body FAT_Filesystem.Directories is
       F_Entry.Time := 0;
       F_Entry.Size := D_Entry.Size;
       F_Entry.Attributes := D_Entry.Attributes;
-      Set_Shortname (Get_Name (D_Entry), F_Entry);
+      Set_Name (Get_Name (D_Entry), F_Entry);
       F_Entry.Cluster_L := Unsigned_16 (D_Entry.Start_Cluster and 16#FFFF#);
       if D_Entry.FS.Version = FAT16 then
          F_Entry.Cluster_H := 0;
@@ -195,74 +210,83 @@ package body FAT_Filesystem.Directories is
 
       function To_VFAT_Entry is new Ada.Unchecked_Conversion
         (FAT_Directory_Entry, VFAT_Directory_Entry);
-
-      CRC         : Unsigned_8 := 0;
-      Matches     : Boolean;
-      Current_CRC : Unsigned_8;
       V_Entry     : VFAT_Directory_Entry;
-      C           : Unsigned_8;
+      Is_VFAT_Ent : Boolean;
    begin
       if F_Entry.Attributes = VFAT_Directory_Entry_Attribute then
+         Is_VFAT_Ent := True;
          V_Entry := To_VFAT_Entry (F_Entry);
 
          if V_Entry.VFAT_Attr.Stop_Bit then
-            D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
-            --  invalidate long name
-
+            D_Entry.Name_First := D_Entry.Name'Last + 1;  --  starts here. invalidate long name.
             Last_Seq := 0;
-
          else
             if Last_Seq = 0
               or else Last_Seq - 1 /= V_Entry.VFAT_Attr.Sequence
             then
-               D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
+               D_Entry.Name_First := D_Entry.Name'Last + 1;
             end if;
 
             Last_Seq := V_Entry.VFAT_Attr.Sequence;
 
-            Prepend (V_Entry.Name_3, D_Entry.Long_Name, D_Entry.Long_Name_First);
-            Prepend (V_Entry.Name_2, D_Entry.Long_Name, D_Entry.Long_Name_First);
-            Prepend (V_Entry.Name_1, D_Entry.Long_Name, D_Entry.Long_Name_First);
+            Prepend (V_Entry.Name_3, D_Entry.Name, D_Entry.Name_First);
+            Prepend (V_Entry.Name_2, D_Entry.Name, D_Entry.Name_First);
+            Prepend (V_Entry.Name_1, D_Entry.Name, D_Entry.Name_First);
 
             if V_Entry.VFAT_Attr.Sequence = 1 then
-               CRC := V_Entry.Checksum;
+               D_Entry.CRC := V_Entry.Checksum;
             end if;
          end if;
          --  VFAT needs more data...cannot return "OK", yet
       elsif not F_Entry.Attributes.Volume_Label --  Ignore Volumes
         and then Character'Pos (F_Entry.Filename (1)) /= 16#E5# --  Ignore deleted files
       then
-         --  any other entry, which we return with "OK".
-         if D_Entry.Long_Name_First not in D_Entry.Long_Name'Range then
-            Matches := False;
+         --  either the "tail" of a VFAT entry, or a regular entry
+         if D_Entry.Name_First not in D_Entry.Name'Range then
+            --  regular entry
+            Is_VFAT_Ent := False;
          else
-            Current_CRC := 0;
-            Last_Seq := 0;
-
-            for Ch of String'(F_Entry.Filename & F_Entry.Extension) loop
-               C := Character'Enum_Rep (Ch);
-               Current_CRC := Shift_Right (Current_CRC and 16#FE#, 1)
-                 or Shift_Left (Current_CRC and 16#01#, 7);
-               --  Modulo addition
-               Current_CRC := Current_CRC + C;
-            end loop;
-
-            Matches := Current_CRC = CRC;
+            --  VFAT tail. must check crc
+            Is_VFAT_Ent := True;
+            declare
+               Current_CRC : Unsigned_8 := 0;
+               C           : Unsigned_8 := 0;
+            begin
+               Last_Seq := 0;
+               for Ch of String'(F_Entry.Filename & F_Entry.Extension) loop
+                  C := Character'Enum_Rep (Ch);
+                  Current_CRC := Shift_Right (Current_CRC and 16#FE#, 1)
+                    or Shift_Left (Current_CRC and 16#01#, 7);
+                  --  Modulo addition
+                  Current_CRC := Current_CRC + C;
+               end loop;
+               Is_VFAT_Ent := Current_CRC = D_Entry.CRC; -- if mismatch, drop VFAT entry
+            end;
          end if;
 
-         declare
-            Base   : String renames Trim (F_Entry.Filename);
-            Ext    : String renames Trim (F_Entry.Extension);
-            Short_Name : constant String :=
-              Base &
-            (if Ext'Length > 0
-             then "." & Trim (F_Entry.Extension)
-             else "");
-         begin
-            --  set short name
-            D_Entry.Short_Name (1 .. Short_Name'Length) := Short_Name;
-            D_Entry.Short_Name_Last := Short_Name'Length;
-         end;
+         if Is_VFAT_Ent then
+            --  terminate string
+            D_Entry.Name_Last := D_Entry.Name'Last;
+         else
+            --  set short name for regular entries
+            if not F_Entry.Attributes.Subdirectory then
+               declare
+                  Base   : String renames Trim (F_Entry.Filename);
+                  Ext    : String renames Trim (F_Entry.Extension);
+                  Ent_Name : constant String :=
+                    Base & (if Ext'Length > 0 then "." & Ext else "");
+               begin
+                  Set_Name (Ent_Name, D_Entry);
+               end;
+            else
+               declare
+                  Cat_Name : constant String := F_Entry.Filename & F_Entry.Extension;
+                  Ent_Name : String renames Trim (Cat_Name);
+               begin
+                  Set_Name (Ent_Name, D_Entry);
+               end;
+            end if;
+         end if;
 
          D_Entry.Attributes    := F_Entry.Attributes;
          D_Entry.Start_Cluster := Unsigned_32 (F_Entry.Cluster_L);
@@ -274,11 +298,6 @@ package body FAT_Filesystem.Directories is
             D_Entry.Start_Cluster :=
               D_Entry.Start_Cluster or
               Shift_Left (Unsigned_32 (F_Entry.Cluster_H), 16);
-         end if;
-
-         if not Matches then
-            --  invalidate long name
-            D_Entry.Long_Name_First := D_Entry.Long_Name'Last + 1;
          end if;
 
          return OK; -- finished fetching next entry
@@ -311,7 +330,9 @@ package body FAT_Filesystem.Directories is
          return Ret;
       end if;
 
-      DEntry.Long_Name_First := DEntry.Long_Name'Last + 1; -- invalidate long name
+      --  invalidate name
+      DEntry.Name_First := DEntry.Name'Last + 1;
+      DEntry.Name_Last := DEntry.Name'First - 1;
 
       Fetch_Next : loop
          Block_Off :=
@@ -353,11 +374,11 @@ package body FAT_Filesystem.Directories is
          --  are we at the end of the entries?
          if Dir.FS.Window (Block_Off) = 0 then
             Dir.Dir_Current.Index := 16#FFFF#;
-            --  invalidates the handle...next call to this will return. because Dir_current.block is invalid now
+            --  invalidates the handle...next call to this will return.
+            --  because Dir_current.block is already invalid now
             return Invalid_Object_Entry;
          end if;
 
-         --  if we are here, then the entry is valid
          Dir.Dir_End := Dir.Dir_Current;
 
          --  okay, there are more entries. each entry is 32bytes:
@@ -372,10 +393,21 @@ package body FAT_Filesystem.Directories is
             exit Fetch_Next;
          end if;
       end loop Fetch_Next;
+      --  if we are here, then we have an entry
+      DEntry.Entry_Address := (Block_LBA => Dir.Dir_Current.Block, Block_Off => Block_Off);
       return OK;
    end Read;
 
-   procedure Set_Shortname (newname : String; E : in out FAT_Directory_Entry) is
+   procedure Set_Name (newname : String; D : in out Directory_Entry) is
+      maxlen  : constant Integer := newname'Length;
+      newlast : constant Integer := D.Name'First + maxlen - 1;
+   begin
+      D.Name (D.Name'First .. newlast) := newname;
+      D.Name_First := D.Name'First;
+      D.Name_Last := newlast;
+   end Set_Name;
+
+   procedure Set_Name (newname : String; E : in out FAT_Directory_Entry) is
    begin
       if E.Attributes.Subdirectory then
          StrCpySpace (outstring => E.Filename, instring => newname);
@@ -410,14 +442,14 @@ package body FAT_Filesystem.Directories is
             E.Extension := ext;
          end;
       end if;
-   end Set_Shortname;
+   end Set_Name;
 
    function Get_Name (E : Directory_Entry) return String is
    begin
-      if E.Long_Name_First in E.Long_Name'Range then
-         return E.Long_Name (E.Long_Name_First .. E.Long_Name'Last);
+      if E.Name_First in E.Name'Range and then E.Name_Last in E.Name'Range then
+         return E.Name (E.Name_First .. E.Name_Last);
       else
-         return E.Short_Name (E.Short_Name'First .. E.Short_Name_Last);
+         return "";
       end if;
    end Get_Name;
 

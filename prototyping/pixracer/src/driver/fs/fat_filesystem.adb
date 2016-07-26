@@ -12,7 +12,7 @@ package body FAT_Filesystem is
    function Allocate_Cluster (FS : in out FAT_Filesystem;
                               cluster : Unsigned_32) return Boolean
    is
-      LAST_CLUSTER : constant Unsigned_32 := 16#0FFF_FFF8#;
+      LAST_CLUSTER : constant Unsigned_32 := 16#FFFF_FFFF#;
    begin
       if FS.Set_FAT (cluster, LAST_CLUSTER) then
          FS.FSInfo.Free_Clusters := FS.FSInfo.Free_Clusters - 1;
@@ -420,7 +420,7 @@ package body FAT_Filesystem is
             end if;
 
             Idx := Unsigned_16 ((Cluster * 4) mod FS.Block_Size_In_Bytes);
-            FS.Window (Idx .. Idx + 3) := From_Int32 (Value and 16#0FFF_FFFF#);
+            FS.Window (Idx .. Idx + 3) := From_Int32 (Value);
       end case;
 
       --  write FAT back to disk
