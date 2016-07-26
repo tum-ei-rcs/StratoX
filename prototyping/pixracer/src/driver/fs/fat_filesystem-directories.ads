@@ -31,11 +31,14 @@ package FAT_Filesystem.Directories with SPARK_Mode is
 
    procedure Close (Dir : in out Directory_Handle);
 
-   function Read (Dir : in out Directory_Handle;
-                  DEntry : out Directory_Entry) return Status_Code;
+   function Read (Dir     : in out Directory_Handle;
+                  DEntry  : out Directory_Entry;
+                  Deleted : Boolean := False) return Status_Code;
    --  @summary get the next entry in the given directory
    --  after calling this, Dir.Dir_Current are invalid iff return /= OK.
    --  However, the Dir_Begin and Dir_End components are always valid.
+   --  if Deleted is true, then deleted entries are also returned and
+   --  marked with FS=null
 
    function Get_Name (E : Directory_Entry) return String;
 
@@ -162,10 +165,24 @@ private
 
    procedure Rewind (Dir : in out Directory_Handle);
 
+   function Get_Entry_Or_Deleted
+     (Parent   : in out Directory_Handle;
+      E_Name   : String;
+      Ent      : out Directory_Entry;
+      Deleted  : out Boolean) return Boolean;
+   --  search for entry with the given name.
+   --  if Deleted is true, then the 'Ent' points
+   --  to an empty directory entry that can be
+   --  re-used. If Deleted is false, then an entry
+   --  with the given name was actually found
+
+   function Is_Deleted (F_Entry : FAT_Directory_Entry) return Boolean;
+
    function Get_Entry
-     (Parent : in out Directory_Handle;
-      E_Name : String;
-      Ent    : out Directory_Entry) return Boolean;
+     (Parent   : in out Directory_Handle;
+      E_Name   : String;
+      Ent      : out Directory_Entry) return Boolean;
+   --  search for entry with the given name.
 
    procedure Goto_Last_Entry (Parent   : in out Directory_Handle);
    --  proceed to last entry in given directory
@@ -175,6 +192,7 @@ private
       New_Name : String;
       Ent_Addr : out FAT_Address) return Status_Code;
    --  find a location for a new entry within Parent_Ent
+   --  and make sure that the directory stays terminated
 
    procedure Set_Name (newname : String; D : in out Directory_Entry)
      with Pre => newname'Length > 0;
@@ -191,6 +209,11 @@ private
       F_Entry : in FAT_Directory_Entry;
       D_Entry : in out Directory_Entry;
       Last_Seq : in out VFAT_Sequence_Number) return Status_Code;
+   --  @summary decypher the raw entry (file/dir name, etc) and write
+   --           to record.
+   --  @return OK when decipher is complete, otherwise needs to be
+   --          called again with the next entry (VFAT entries have
+   --          multiple parts)
 
    function Is_Read_Only (E : Directory_Entry) return Boolean
    is (E.Attributes.Read_Only);
