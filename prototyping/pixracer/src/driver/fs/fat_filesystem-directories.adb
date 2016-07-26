@@ -92,8 +92,7 @@ package body FAT_Filesystem.Directories is
       end if;
 
       --  copy over to FS.Window
-      Parent.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off + ENTRY_SIZE - 1)
-        := From_Entry (F_Entry);
+      Parent.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off + ENTRY_SIZE - 1) := From_Entry (F_Entry);
 
       --  write back the block with the new entry
       Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);

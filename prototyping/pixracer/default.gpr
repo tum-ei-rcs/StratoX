@@ -50,6 +50,13 @@ project Default is
       for Default_Switches ("ada") use ("-r", "-E");
    end Binder;
 
+   package Linker is
+                for Default_Switches ("Ada") use
+                  ("-Wl,--defsym=__stack_size=16384",
+                  "-Wl,--gc-sections",
+                  "-Wl,--print-memory-usage");
+   end Linker;
+
    package Builder is
       for Global_Configuration_Pragmas use "gnat.adc";
 

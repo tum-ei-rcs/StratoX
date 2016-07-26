@@ -129,7 +129,7 @@ package body Media_Reader.SDCard is
           Increment_Memory_Address     => True,
           Peripheral_Data_Format       => Words, -- essential: the memory buffer must be aligned to this setting. was words. Nothing helps.
           Memory_Data_Format           => Words,
-          Operation_Mode               => Peripheral_Flow_Control_Mode,
+          Operation_Mode               => Peripheral_Flow_Control_Mode, -- https://github.com/lvniqi/STM32F4xx_DSP_StdPeriph_Lib_V1.3.0 uses Normal Mode
           Priority                     => Priority_Medium, -- SD is not so important.
           FIFO_Enabled                 => True, -- datasheet recommends True. False doesn't help.
           FIFO_Threshold               => FIFO_Threshold_Full_Configuration, -- was: FIFO_Threshold_Full_Configuration,
@@ -147,7 +147,7 @@ package body Media_Reader.SDCard is
           Increment_Memory_Address     => True, -- OK
           Peripheral_Data_Format       => Words, -- was: Words
           Memory_Data_Format           => Words, -- was: Words
-          Operation_Mode               => Peripheral_Flow_Control_Mode, -- was: periph
+          Operation_Mode               => Peripheral_Flow_Control_Mode, -- was: periph. but technically 'Normal' seems better
           Priority                     => Priority_Very_High, -- OK
           FIFO_Enabled                 => True, -- OK
           FIFO_Threshold               => FIFO_Threshold_Full_Configuration, -- only full allowed. see manual.
@@ -324,7 +324,20 @@ package body Media_Reader.SDCard is
       procedure Interrupt_TX is
       begin
 
+         if Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Indicated) then
+            Disable_Interrupt
+              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Interrupt);
+            Clear_Status
+              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Indicated);
+
+            DMA_Status := DMA_No_Error;
+            Finished := True;
+         end if;
+
          if Status (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Indicated) then
+            -- FIXME: this can be ignored when transfer is completed
+            -- however, it comes before Transfer_Complete_Indicated
+            -- so we need to ignore it.
             Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Interrupt);
             Clear_Status (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Indicated);
 
@@ -341,21 +354,11 @@ package body Media_Reader.SDCard is
             Finished := True;
          end if;
 
-         if Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Indicated) then
-            Disable_Interrupt
-              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Interrupt);
-            Clear_Status
-              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Indicated);
-
-            DMA_Status := DMA_No_Error;
-            Finished := True;
-         end if;
-
-         if Finished then
-            for Int in STM32.DMA.DMA_Interrupt loop
-               Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, Int);
-            end loop;
-         end if;
+--           if Finished then
+--              for Int in STM32.DMA.DMA_Interrupt loop
+--                 Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, Int);
+--              end loop;
+--           end if;
       end Interrupt_TX;
 
    end DMA_Interrupt_Handler;
@@ -455,6 +458,7 @@ package body Media_Reader.SDCard is
          DMA_Interrupt_Handler.Set_Transfer_State;
          SDMMC_Interrupt_Handler.Set_Transfer_State (Controller);
 
+         Clear_All_Status (SD_DMA, SD_DMA_Tx_Stream);
          Ret := Write_Blocks_DMA
            (Controller.Device,
             Unsigned_64 (Block_Number) *

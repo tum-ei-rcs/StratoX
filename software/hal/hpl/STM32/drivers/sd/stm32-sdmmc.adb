@@ -8,6 +8,7 @@
 with Ada.Unchecked_Conversion;
 with Ada.Real_Time;   use Ada.Real_Time;
 with STM32_SVD.SDIO;  use STM32_SVD.SDIO;
+with System;          use System;
 
 package body STM32.SDMMC is
 
@@ -1736,16 +1737,20 @@ package body STM32.SDMMC is
       Read_Address : constant Unsigned_64 :=
                        (if Controller.Card_Type = High_Capacity_SD_Card
                         then Addr / 512 else Addr); -- FIXME: why 512? Cluster size of SD card?
-      Err          : SD_Error;
-      N_Blocks     : constant Positive := Data'Length / BLOCKLEN;
-      Command      : SDMMC_Command;
-      use STM32.DMA;
 
+      Data_Len_Bytes : constant Natural := (Data'Length / 512) * 512;
+      Data_Len_Words : constant Natural := Data_Len_Bytes / 4;
+      N_Blocks       : constant Natural := Data_Len_Bytes / BLOCKLEN;
+      Data_Addr      : constant Address := Data (Data'first)'Address;
+
+      Err            : SD_Error;
+      Command        : SDMMC_Command;
+      use STM32.DMA;
    begin
       if not STM32.DMA.Compatible_Alignments (DMA,
                                               Stream,
                                               Controller.Periph.FIFO'Address,
-                                              Data (Data'First)'Address)
+                                              Data_Addr)
       then
          return DMA_Alignment_Error;
       end if;
@@ -1770,8 +1775,8 @@ package body STM32.SDMMC is
         (Unit               => DMA,
          Stream             => Stream,
          Source             => Controller.Periph.FIFO'Address,
-         Destination        => Data (Data'First)'Address,
-         Data_Count         => Data'Length / 4, -- count is 32bit words, data'length in bytes
+         Destination        => Data_Addr,
+         Data_Count         => Unsigned_16 (Data_Len_Words), -- because DMA is set up with words
          Enabled_Interrupts => (Transfer_Error_Interrupt    => True,
                                 FIFO_Error_Interrupt        => True,
                                 Transfer_Complete_Interrupt => True,
@@ -1829,21 +1834,27 @@ package body STM32.SDMMC is
    is
       Write_Address : constant Unsigned_64 :=
                        (if Controller.Card_Type = High_Capacity_SD_Card
-                        then Addr / 512 else Addr); -- FIXME: why 512? Cluster size of SD card?
-      Err          : SD_Error;
-      N_Blocks     : constant Positive := Data'Length / BLOCKLEN;
-      Command      : SDMMC_Command;
-      use STM32.DMA;
+                        then Addr / 512 else Addr); -- 512 is the min. block size of SD 2.0 card
 
+      Data_Len_Bytes : constant Natural := (Data'Length / 512) * 512;
+      --DMA_FLUSH      : constant := 4; --  DMA requires 4 words to flush
+      Data_Len_Words : constant Natural := Data_Len_Bytes / 4;
+      N_Blocks       : constant Natural := Data_Len_Bytes / BLOCKLEN;
+      Data_Addr      : constant Address := Data (Data'first)'Address;
+
+      Err        : SD_Error;
       cardstatus : HAL.Word;
       start      : Time := Clock;
       Timeout    : Boolean := False;
+      Command    : SDMMC_Command;
+
+      use STM32.DMA;
    begin
 
       if not STM32.DMA.Compatible_Alignments (DMA,
                                               Stream,
                                               Controller.Periph.FIFO'Address,
-                                              Data (Data'First)'Address)
+                                              Data_Addr)
       then
          return DMA_Alignment_Error;
       end if;
@@ -1855,11 +1866,10 @@ package body STM32.SDMMC is
       --  Wait 1ms: After a data write, data cannot be written to this register
       --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
       --  periods.
-      Clear_Static_Flags (Controller);
-
-      Controller.Periph.CLKCR.CLKDIV := 16#0#; --  switch to nominal speed, in case polling was active before
+      --Controller.Periph.CLKCR.CLKDIV := 16#0#; --  switch to nominal speed, in case polling was active before
       delay until Clock + Milliseconds (1);
 
+      Clear_Static_Flags (Controller);
 
       --  wait until card is ready for data added
       Wait_Ready_loop :
@@ -1905,8 +1915,8 @@ package body STM32.SDMMC is
         (Unit               => DMA,
          Stream             => Stream,
          Destination        => Controller.Periph.FIFO'Address,
-         Source             => Data (Data'First)'Address,
-         Data_Count         => Data'Length / 4, -- count is in 32bit words (see DMA config), data'length in bytes
+         Source             => Data_Addr,
+         Data_Count         => Unsigned_16 (Data_Len_Words), -- because DMA is set up with words
          Enabled_Interrupts => (Transfer_Error_Interrupt    => True,
                                 FIFO_Error_Interrupt        => True, -- test: comment to see what happens
                                 Transfer_Complete_Interrupt => True,

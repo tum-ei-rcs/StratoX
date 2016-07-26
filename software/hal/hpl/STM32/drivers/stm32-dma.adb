@@ -285,7 +285,7 @@ package body STM32.DMA is
          Stream,
          Source      => Source,
          Destination => Destination,
-         Data_Count => Data_Count);
+         Data_Count  => Data_Count);
 
       for Selected_Interrupt in Enabled_Interrupts'Range loop
          if Enabled_Interrupts (Selected_Interrupt) then
@@ -311,6 +311,8 @@ package body STM32.DMA is
       function W is new Ada.Unchecked_Conversion
         (Address, Word);
    begin
+      --  the following assignment has NO EFFECT if flow is controlled by
+      --  peripheral. The hardware resets it to 16#FFFF#, see RM0090 10.3.15.
       This_Stream.NDTR.NDT := Data_Count;
 
       if This_Stream.CR.DIR = Memory_To_Peripheral'Enum_Rep then
@@ -690,7 +692,7 @@ package body STM32.DMA is
          when Stream_6 =>
             case Flag is
                when FIFO_Error_Indicated =>
-                  return Unit.HISR.FEIF6;
+                  return Unit.HISR.FEIF6; -- underrun or overrunprint
                when Direct_Mode_Error_Indicated =>
                   return Unit.HISR.DMEIF6;
                when Transfer_Error_Indicated =>
@@ -826,7 +828,8 @@ package body STM32.DMA is
          This_Stream.CR.PBURST := Peripheral_Burst_Single'Enum_Rep;
       end if;
 
-      This_Stream.FCR.DMDIS := not Config.FIFO_Enabled;
+      -- was : This_Stream.FCR.DMDIS := not Config.FIFO_Enabled;
+      This_Stream.FCR.DMDIS := Config.FIFO_Enabled; -- but this is correct
 
       if Config.FIFO_Enabled then
          This_Stream.FCR.FTH :=
