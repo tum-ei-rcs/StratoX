@@ -18,11 +18,11 @@ Refined_State => (State => (null)) is
    procedure update_val is
    begin
 
-      cur_loc.Longitude := Longitude_Type ( Simulation.CSV_here.Get_Column ("Lng"));
-      cur_loc.Latitude := Latitude_Type (  Simulation.CSV_here.Get_Column ("Lat"));
-      cur_loc.Altitude := Altitude_Type (  Simulation.CSV_here.Get_Column ("Alt"));
+      --cur_loc.Longitude := Longitude_Type ( Simulation.CSV_here.Get_Column ("Lng"));
+      --cur_loc.Latitude := Latitude_Type (  Simulation.CSV_here.Get_Column ("Lat"));
+      --cur_loc.Altitude := Altitude_Type (  Simulation.CSV_here.Get_Column ("Alt"));
 
-      cur_fix := GPS_Fix_Type'Enum_Val (2);-- GPS_Fix_Type'Enum_Val (Integer ( Simulation.CSV_here.Get_Column ("fix")));
+      cur_fix := NO_FIX;-- GPS_Fix_Type'Enum_Val (Integer ( Simulation.CSV_here.Get_Column ("fix")));
 
       cur_msg.sats := Integer ( Simulation.CSV_here.Get_Column ("NSats"));
       cur_msg.speed := Linear_Velocity_Type ( Simulation.CSV_here.Get_Column ("Spd"));

@@ -38,7 +38,7 @@ package body Media_Reader.SDCard is
    ------------
    -- on-chip DMA facility signals end of DMA transfer
    protected DMA_Interrupt_Handler is
-      pragma Interrupt_Priority (255);
+      pragma Interrupt_Priority (254);
 
       procedure Set_Transfer_State;
       --  Informes the DMA Int handler that a transfer is about to start
@@ -49,8 +49,11 @@ package body Media_Reader.SDCard is
 
    private
 
-      procedure Interrupt
+      procedure Interrupt_RX
         with Attach_Handler => Rx_IRQ, Unreferenced;
+
+      procedure Interrupt_TX
+        with Attach_Handler => Tx_IRQ, Unreferenced;
 
       Finished   : Boolean := True;
       DMA_Status : DMA_Error_Code;
@@ -102,7 +105,7 @@ package body Media_Reader.SDCard is
           Output_Type => Push_Pull,
           Speed       => Speed_High,
           Resistors   => Pull_Up));
-      Configure_Alternate_Function (SD_Pins, GPIO_AF_SDIO);
+      Configure_Alternate_Function (SD_Pins, GPIO_AF_SDIO); -- essential!
 
       --  GPIO configuration for the SD-Detect pin
 --        Configure_IO
@@ -138,18 +141,18 @@ package body Media_Reader.SDCard is
       Configure
         (SD_DMA,
          SD_DMA_Tx_Stream,
-         (Channel                      => SD_DMA_Tx_Channel,
-          Direction                    => Memory_To_Peripheral,
-          Increment_Peripheral_Address => False,
-          Increment_Memory_Address     => True,
-          Peripheral_Data_Format       => Words,
-          Memory_Data_Format           => Words,
-          Operation_Mode               => Peripheral_Flow_Control_Mode,
-          Priority                     => Priority_Very_High,
-          FIFO_Enabled                 => True,
-          FIFO_Threshold               => FIFO_Threshold_Full_Configuration,
-          Memory_Burst_Size            => Memory_Burst_Inc4,
-          Peripheral_Burst_Size        => Peripheral_Burst_Inc4));
+         (Channel                      => SD_DMA_Tx_Channel, -- OK
+          Direction                    => Memory_To_Peripheral, -- OK
+          Increment_Peripheral_Address => False, -- OK
+          Increment_Memory_Address     => True, -- OK
+          Peripheral_Data_Format       => Words, -- was: Words
+          Memory_Data_Format           => Words, -- was: Words
+          Operation_Mode               => Peripheral_Flow_Control_Mode, -- was: periph
+          Priority                     => Priority_Very_High, -- OK
+          FIFO_Enabled                 => True, -- OK
+          FIFO_Threshold               => FIFO_Threshold_Full_Configuration, -- only full allowed. see manual.
+          Memory_Burst_Size            => Memory_Burst_Inc4, -- OK
+          Peripheral_Burst_Size        => Peripheral_Burst_Inc4)); -- OK
       Clear_All_Status (SD_DMA, SD_DMA_Tx_Stream);
    end Initialize;
 
@@ -281,8 +284,9 @@ package body Media_Reader.SDCard is
       -- Interrupt --
       ---------------
 
-      procedure Interrupt is
+      procedure Interrupt_RX is
       begin
+
          if Status (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Indicated) then
             Disable_Interrupt (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Interrupt);
             Clear_Status (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Indicated);
@@ -307,7 +311,7 @@ package body Media_Reader.SDCard is
               (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Indicated);
 
             DMA_Status := DMA_No_Error;
-            Finished := True; -- we actually get here, good
+            Finished := True;
          end if;
 
          if Finished then
@@ -315,7 +319,44 @@ package body Media_Reader.SDCard is
                Disable_Interrupt (SD_DMA, SD_DMA_Rx_Stream, Int);
             end loop;
          end if;
-      end Interrupt;
+      end Interrupt_RX;
+
+      procedure Interrupt_TX is
+      begin
+
+         if Status (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Indicated) then
+            Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Interrupt);
+            Clear_Status (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Indicated);
+
+            DMA_Status := DMA_FIFO_Error;
+            Finished := True;
+         end if;
+
+         if Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Error_Indicated) then
+            Disable_Interrupt
+              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Error_Interrupt);
+            Clear_Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Error_Indicated);
+
+            DMA_Status := DMA_Transfer_Error;
+            Finished := True;
+         end if;
+
+         if Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Indicated) then
+            Disable_Interrupt
+              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Interrupt);
+            Clear_Status
+              (SD_DMA, SD_DMA_Tx_Stream, Transfer_Complete_Indicated);
+
+            DMA_Status := DMA_No_Error;
+            Finished := True;
+         end if;
+
+         if Finished then
+            for Int in STM32.DMA.DMA_Interrupt loop
+               Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, Int);
+            end loop;
+         end if;
+      end Interrupt_TX;
 
    end DMA_Interrupt_Handler;
 
@@ -394,10 +435,68 @@ package body Media_Reader.SDCard is
 
    end SDMMC_Interrupt_Handler;
 
-   ----------------
-   -- Read_Block --
-   ----------------
+   overriding function Write_Block
+     (Controller   : in out SDCard_Controller;
+      Block_Number : Unsigned_32;
+      Data         : Block) return Boolean
+   is
+      Ret     : SD_Error;
+      DMA_Err : DMA_Error_Code;
+   begin
+      Ensure_Card_Informations (Controller);
 
+      if Use_DMA then
+
+         -- Flush the data cache
+         Cortex_M.Cache.Invalidate_DCache
+           (Start => Data (Data'First)'Address,
+            Len   => Data'Length);
+
+         DMA_Interrupt_Handler.Set_Transfer_State;
+         SDMMC_Interrupt_Handler.Set_Transfer_State (Controller);
+
+         Ret := Write_Blocks_DMA
+           (Controller.Device,
+            Unsigned_64 (Block_Number) *
+                Unsigned_64 (Controller.Info.Card_Block_Size),
+            SD_DMA,
+            SD_DMA_Tx_Stream,
+            SD_Data (Data));
+         -- this always leaves the last 12 byte standing. Why?
+         -- also...NDTR is not what it should be.
+
+         if Ret /= OK then
+            DMA_Interrupt_Handler.Clear_Transfer_State;
+            SDMMC_Interrupt_Handler.Clear_Transfer_State;
+            Abort_Transfer (SD_DMA, SD_DMA_Tx_Stream, DMA_Err);
+
+            return False;
+         end if;
+
+         DMA_Interrupt_Handler.Wait_Transfer (DMA_Err); -- this unblocks
+         SDMMC_Interrupt_Handler.Wait_Transfer (Ret); -- TX underrun!
+
+         loop
+            -- FIXME: some people claim, that this goes wrong with multiblock, see
+            -- http://blog.frankvh.com/2011/09/04/stm32f2xx-sdio-sd-card-interface/
+            exit when not Get_Flag (Controller.Device, TX_Active);
+         end loop;
+
+         Clear_All_Status (SD_DMA, SD_DMA_Tx_Stream);
+         Disable (SD_DMA, SD_DMA_Tx_Stream);
+
+         return Ret = OK and then DMA_Err = DMA_No_Error;
+
+      else
+         Ret := Write_Blocks (Controller.Device,
+                              Unsigned_64 (Block_Number) *
+                                Unsigned_64 (Controller.Info.Card_Block_Size),
+                              SD_Data (Data));
+         return Ret = OK;
+      end if;
+   end Write_Block;
+
+   --  that works.
    overriding function Read_Block
      (Controller   : in out SDCard_Controller;
       Block_Number : Unsigned_32;
@@ -408,14 +507,8 @@ package body Media_Reader.SDCard is
       subtype Word_Data is SD_Data (1 .. 4);
       function To_Data is new Ada.Unchecked_Conversion
         (HAL.Word, Word_Data);
-      TmpData : Word_Data;
    begin
       Ensure_Card_Informations (Controller);
-
-      -- debug: reset out buffer
-      for k in Data'Range loop
-         Data (k) := 16#AA#;
-      end loop;
 
       if Use_DMA then
 
@@ -448,25 +541,46 @@ package body Media_Reader.SDCard is
          -- not working
 
 
-         -- FIX: read pending DMA tail. That works and indeed carries the missing data.
-         while Get_Flag (Controller.Device, RX_Active) loop
-            TmpData (1 .. 4) := To_Data (Read_FIFO (Controller.Device)); -- 4 bytes per FIFO element
-         end loop;
+         -- Workaround: DMA leaves a tail in the SDIO FIFO buffer.  We don'T know why, yet.
+         -- one reason might be mentioned in AN4031 sec.4.9.1: "When managing peripheral reads
+         -- over DMA memory port, software must ensure that 4x extra words are read from the
+         -- peripheral. This is to guarantee that last valid data are transferred-out from
+         -- DMA FIFO". However, in our case data is in SDIO FIFO.
+         -- ALso, we don't know how long, but it should be < 32bit*16, since otherwise FIFO would
+         -- be more than half full and thus trigger another DMA burst.
+         -- Read the tail, count how long it is, and then copy over to the target buffer.
+         declare
+            Tail_Data : SD_Data ( 0 .. 15 );
+            k : Unsigned_32 := Tail_Data'First;
+            next_data : Unsigned_32;
+         begin
+            while Get_Flag (Controller.Device, RX_Active) loop
+               if k < Tail_Data'Length then
+                  Tail_Data (k .. k + 3) := To_Data (Read_FIFO (Controller.Device)); -- 4 bytes per FIFO element
+                  k := k + 4;
+               end if;
+            end loop;
+            if k > 0 then
+               k := k - 1;
+               next_data := Unsigned_32 (Data'Last) - k;
+               Data (Unsigned_16 (next_data) .. Data'Last) := Block (Tail_Data (0 .. k));
+            end if;
+         end;
 
          -- after having removed the tail, this doesn't block anymore.
          loop
-            exit when not Get_Flag (Controller.Device, RX_Active); -- not that FIFO is empty, that works.
+            exit when not Get_Flag (Controller.Device, RX_Active); -- now that FIFO is empty, that works.
          end loop;
 
          Clear_All_Status (SD_DMA, SD_DMA_Rx_Stream);
          Disable (SD_DMA, SD_DMA_Rx_Stream);
 
+         -- Flush the data cache
          Cortex_M.Cache.Invalidate_DCache
            (Start => Data (Data'First)'Address,
             Len   => Data'Length);
 
-         return Ret = OK
-           and then DMA_Err = DMA_No_Error;
+         return Ret = OK and then DMA_Err = DMA_No_Error;
 
       else
          -- polling => rx overrun possible

@@ -1,6 +1,7 @@
 with Estimator;
 with Units.Navigation; use Units.Navigation;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Real_Time; use Ada.Real_Time;
 with Simulation;
 
 procedure main is
@@ -11,20 +12,19 @@ procedure main is
    est_malt : Altitude_Type;
 
    outfile : File_Type;
+   next : Ada.Real_Time.Time;
 
    procedure startfile is
    begin
-      Put_Line (outfile, "time;roll;pitch;yaw");
+      Put_Line (outfile, "time;roll;pitch;yaw;alt");
    end startfile;
 
-   procedure write2file (o : Orientation_Type) is
+   procedure write2file (o : Orientation_Type; a: Altitude_Type) is
       t : Float := Simulation.CSV_here.Get_Column ("time");
    begin
-      Put_Line (outfile, t'img & ";" & Float (o.Roll)'img & ";" & Float (o.Pitch)'img & ";" & Float (o.Yaw)'img);
+      Put_Line (outfile, t'img & ";" & Float (o.Roll)'img & ";" & Float (o.Pitch)'img & ";" & Float (o.Yaw)'img & ";" & Float (a)'Img);
    end write2file;
 
-   type prescaler is mod 10;
-   k : prescaler := 0;
 begin
    Simulation.init;
    Estimator.initialize;
@@ -36,6 +36,7 @@ begin
    end if;
    startfile;
 
+   next := Clock;
    Read_Loop :
    loop
       Simulation.update;
@@ -49,14 +50,12 @@ begin
       est_calt := Estimator.get_current_Height;
       est_malt := Estimator.get_max_Height;
 
-      -- TODO: log to file
-      write2file (est_ort);
+      -- log to file
+      write2file (est_ort, est_calt);
 
       -- time to display output
-      if k = 0 then
-         delay (0.01);
-      end if;
-      k := k + 1;
+      delay until next;
+      next := next + Milliseconds (20);
    end loop Read_Loop;
    Simulation.close;
    Close (outfile);

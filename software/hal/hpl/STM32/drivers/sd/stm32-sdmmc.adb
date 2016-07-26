@@ -1294,7 +1294,7 @@ package body STM32.SDMMC is
          others         => <>);
       delay until Clock + Milliseconds (1);
 
-      Controller.Periph.DTIMER := SD_DATATIMEOUT;
+      Controller.Periph.DTIMER := SD_DATATIMEOUT; -- gives us time to read/write FIFO before errors occur. FIXME: too long
 
       Ret := Power_On (Controller);
 
@@ -1409,7 +1409,7 @@ package body STM32.SDMMC is
       -- (that is, blocks of size < card's blocklen) reads.
       -- this means, we get an rxoverflow here, unless we read
       -- very slowly
-      Controller.Periph.CLKCR.CLKDIV := 16#76#; --  400 kHz max
+      Controller.Periph.CLKCR.CLKDIV := 16#76#; --  400 kHz max because we are polling/pushing
       Clear_Static_Flags (Controller);
       --  Wait 1ms: After a data write, data cannot be written to this register
       --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
@@ -1460,7 +1460,7 @@ package body STM32.SDMMC is
          end if;
 
          cardstatus := Controller.Periph.RESP1;
-         exit Wait_Ready_Loop when (cardstatus and 16#100#) = 0;
+         exit Wait_Ready_Loop when (cardstatus and 16#100#) /= 0;
       end loop Wait_Ready_Loop;
 
       if Timeout then
@@ -1705,6 +1705,11 @@ package body STM32.SDMMC is
       elsif Controller.Periph.STA.RXOVERR then
          Controller.Periph.ICR.RXOVERRC := True;
          return Rx_Overrun;
+
+      elsif Controller.Periph.STA.STBITERR then
+         Controller.Periph.ICR.STBITERRC := True;
+         return Startbit_Not_Detected;
+
       end if;
 
       for J in Unsigned_32'(1) .. SD_DATATIMEOUT loop
@@ -1737,6 +1742,14 @@ package body STM32.SDMMC is
       use STM32.DMA;
 
    begin
+      if not STM32.DMA.Compatible_Alignments (DMA,
+                                              Stream,
+                                              Controller.Periph.FIFO'Address,
+                                              Data (Data'First)'Address)
+      then
+         return DMA_Alignment_Error;
+      end if;
+
       Controller.Periph.DCTRL := (DTEN   => False,
                                   others => <>);
       --  Wait 1ms: After a data write, data cannot be written to this register
@@ -1806,28 +1819,180 @@ package body STM32.SDMMC is
       return Err;
    end Read_Blocks_DMA;
 
+   -- new and untested writing function
+   function Write_Blocks_DMA
+     (Controller : in out SDMMC_Controller;
+      Addr       : Unsigned_64;
+      DMA        : STM32.DMA.DMA_Controller;
+      Stream     : STM32.DMA.DMA_Stream_Selector;
+      Data       : SD_Data) return SD_Error
+   is
+      Write_Address : constant Unsigned_64 :=
+                       (if Controller.Card_Type = High_Capacity_SD_Card
+                        then Addr / 512 else Addr); -- FIXME: why 512? Cluster size of SD card?
+      Err          : SD_Error;
+      N_Blocks     : constant Positive := Data'Length / BLOCKLEN;
+      Command      : SDMMC_Command;
+      use STM32.DMA;
+
+      cardstatus : HAL.Word;
+      start      : Time := Clock;
+      Timeout    : Boolean := False;
+   begin
+
+      if not STM32.DMA.Compatible_Alignments (DMA,
+                                              Stream,
+                                              Controller.Periph.FIFO'Address,
+                                              Data (Data'First)'Address)
+      then
+         return DMA_Alignment_Error;
+      end if;
+
+      --  this is all according tom STM RM0090 sec.31.3.2 p. 1036. But something is wrong.
+
+      Controller.Periph.DCTRL := (DTEN   => False,
+                                  others => <>);
+      --  Wait 1ms: After a data write, data cannot be written to this register
+      --  for three SDMMCCLK (48 MHz) clock periods plus two PCLK2 clock
+      --  periods.
+      Clear_Static_Flags (Controller);
+
+      Controller.Periph.CLKCR.CLKDIV := 16#0#; --  switch to nominal speed, in case polling was active before
+      delay until Clock + Milliseconds (1);
+
+
+      --  wait until card is ready for data added
+      Wait_Ready_loop :
+      loop
+         declare
+            now : Time := Clock;
+         begin
+            if now - start > Milliseconds (100) then
+               Timeout := True;
+               exit Wait_Ready_Loop;
+            end if;
+         end;
+
+         Send_Command
+           (Controller,
+            Command_Index      => Send_Status,
+            Argument           => Controller.RCA,
+            Response           => Short_Response,
+            CPSM               => True,
+            Wait_For_Interrupt => False);
+         Err := Response_R1_Error (Controller, Send_Status);
+
+         if Err /= OK then
+            return Err;
+         end if;
+
+         cardstatus := Controller.Periph.RESP1;
+         exit Wait_Ready_Loop when (cardstatus and 16#100#) /= 0;
+      end loop Wait_Ready_Loop;
+
+      if Timeout then
+         return Timeout_Error;
+      end if;
+
+      Enable_Interrupt (Controller, Data_CRC_Fail_Interrupt);
+      Enable_Interrupt (Controller, Data_Timeout_Interrupt);
+      Enable_Interrupt (Controller, Data_End_Interrupt); -- this never comes
+      Enable_Interrupt (Controller, TX_Underrun_Interrupt); -- not used in https://github.com/lvniqi/STM32F4xx_DSP_StdPeriph_Lib_V1.3.0/blob/master/Libraries/SDIO/sdio_sdcard.c
+      -- TODO: stop bit interrupt
+
+      -- start DMA first
+      STM32.DMA.Start_Transfer_with_Interrupts
+        (Unit               => DMA,
+         Stream             => Stream,
+         Destination        => Controller.Periph.FIFO'Address,
+         Source             => Data (Data'First)'Address,
+         Data_Count         => Data'Length / 4, -- count is in 32bit words (see DMA config), data'length in bytes
+         Enabled_Interrupts => (Transfer_Error_Interrupt    => True,
+                                FIFO_Error_Interrupt        => True, -- test: comment to see what happens
+                                Transfer_Complete_Interrupt => True,
+                                others                      => False));
+
+      --  set block size
+      Send_Command
+        (Controller,
+         Command_Index      => Set_Blocklen,
+         Argument           => BLOCKLEN,
+         Response           => Short_Response,
+         CPSM               => True,
+         Wait_For_Interrupt => False);
+      Err := Response_R1_Error (Controller, Set_Blocklen);
+
+      if Err /= OK then
+         return Err;
+      end if;
+
+      --  set write address & single/multi mode
+      if N_Blocks > 1 then
+         Command := Write_Multi_Block;
+         Controller.Operation := Write_Multiple_Blocks_Operation;
+      else
+         Command := Write_Single_Block;
+         Controller.Operation := Write_Single_Block_Operation;
+      end if;
+      Send_Command
+        (Controller,
+         Command_Index      => Command,
+         Argument           => Word (Write_Address),
+         Response           => Short_Response,
+         CPSM               => True,
+         Wait_For_Interrupt => False);
+      Err := Response_R1_Error (Controller, Command);
+      --  according to RM0090 we should wait for SDIO_STA[6] = CMDREND interrupt, which is this:
+      if Err /= OK then
+         return Err;
+      end if;
+
+      --  and now enable the card with DTEN, which is this:
+      Configure_Data
+        (Controller,
+         Data_Length        => UInt25 (N_Blocks) * BLOCKLEN,
+         Data_Block_Size    => Blocksize2DBLOCKSIZE (BLOCKLEN),
+         Transfer_Direction => Write,
+         Transfer_Mode      => Block,
+         DPSM               => True,
+         DMA_Enabled        => True);
+
+      --  according to RM0090: wait for STA[10]=DBCKEND
+      --  check that no channels are still enabled by polling DMA Enabled Channel Status Reg
+
+      return Err;
+   end Write_Blocks_DMA;
+
    -------------------------
    -- Get_Transfer_Status --
    -------------------------
 
-   function Get_Transfer_Status
-     (Controller : in out SDMMC_Controller) return SD_Error
-   is
-   begin
-      if Controller.Periph.STA.DTIMEOUT then
-         Controller.Periph.ICR.DTIMEOUTC := True;
-         return Timeout_Error;
-
-      elsif Controller.Periph.STA.DCRCFAIL then
-         Controller.Periph.ICR.DCRCFAILC := True; -- clear
-         return CRC_Check_Fail;
-
-      elsif Controller.Periph.STA.RXOVERR then
-         Controller.Periph.ICR.RXOVERRC := True;
-         return Rx_Overrun;
-      end if;
-
-      return OK;
-   end Get_Transfer_Status;
+--     function Get_Transfer_Status
+--       (Controller : in out SDMMC_Controller) return SD_Error
+--     is
+--     begin
+--        if Controller.Periph.STA.DTIMEOUT then
+--           Controller.Periph.ICR.DTIMEOUTC := True;
+--           return Timeout_Error;
+--
+--        elsif Controller.Periph.STA.DCRCFAIL then
+--           Controller.Periph.ICR.DCRCFAILC := True; -- clear
+--           return CRC_Check_Fail;
+--
+--        elsif Controller.Periph.STA.TXUNDERR then
+--           Controller.Periph.ICR.TXUNDERRC := True;
+--           return TX_Underrun;
+--
+--        elsif Controller.Periph.STA.STBITERR then
+--           Controller.Periph.ICR.STBITERRC := True;
+--           return Startbit_Not_Detected;
+--
+--        elsif Controller.Periph.STA.RXOVERR then
+--           Controller.Periph.ICR.RXOVERRC := True;
+--           return Rx_Overrun;
+--        end if;
+--
+--        return OK;
+--     end Get_Transfer_Status;
 
 end STM32.SDMMC;

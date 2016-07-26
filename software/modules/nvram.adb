@@ -5,6 +5,7 @@
 with Interfaces; use Interfaces;
 with HIL.NVRAM;  use HIL.NVRAM;
 with HIL; use HIL;
+with Buildinfo;  use Buildinfo;
 with Fletcher16;
 
 package body NVRAM with SPARK_Mode => Off,   -- Test
@@ -86,10 +87,6 @@ is
    --  header's address is fixed at beginning of NVRAM
 
    procedure Make_Header (newhdr : out NVRAM_Header) is
-      function Compilation_Date return String -- implementation-defined (GNAT)
-        with Import, Convention => Intrinsic;
-      function Compilation_Time return String -- implementation-defined (GNAT)
-        with Import, Convention => Intrinsic;
 
       build_date : constant String := Compilation_Date & Compilation_Time;
       crc        : constant Fletcher16_String.Checksum_Type :=
@@ -109,7 +106,7 @@ is
 
    procedure Read_Header (framhdr : out NVRAM_Header) is
    begin
-      framhdr := (Fletcher16_String.Byte(0), Fletcher16_String.Byte(0));
+      framhdr := (Fletcher16_String.Byte (0), Fletcher16_String.Byte (0));
       --  FIXME: can this be done safer. Maybe with aggregates?
       HIL.NVRAM.Read_Byte (addr => Hdr_To_Address +
                         framhdr.ck_a'Position, byte => framhdr.ck_a);

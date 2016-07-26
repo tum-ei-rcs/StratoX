@@ -1,0 +1,1 @@
+../../../../software/lib/mystrings.adb
