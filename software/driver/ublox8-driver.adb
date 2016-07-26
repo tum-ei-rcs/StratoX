@@ -89,9 +89,11 @@ is
       check : constant UBX_Checksum_Array := (1 => cks.ck_a, 2 => cks.ck_b);
       isReceived : Boolean := False;
       retries : Natural := 1;
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       while isReceived = False and retries > 0 loop
          HIL.UART.write(UBLOX_M8N, header & data & check);
+         delay until now + Milliseconds(2);
          waitForAck(isReceived);
          retries := retries - 1;
       end loop;

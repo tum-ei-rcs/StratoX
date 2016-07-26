@@ -57,6 +57,10 @@ package body Mission is
       else
          NVRAM.Load( VAR_HOME_HEIGHT_L, height(1) );
          NVRAM.Load( VAR_HOME_HEIGHT_H, height(2) );
+         NVRAM.Load( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
+         NVRAM.Load( VAR_GPS_TARGET_LAT_A,  Float( G_state.home.Latitude ) );
+         NVRAM.Load( VAR_GPS_TARGET_ALT_A,  Float( G_state.home.Altitude ) );
+         
          G_state.home.Altitude := Unit_Type( HIL.toUnsigned_16( height ) ) * Meter;
          Logger.log(Logger.DEBUG, "Home Height: " & Image(G_state.home.Altitude) );
          
@@ -101,6 +105,14 @@ package body Mission is
    end run_Mission;
 
    
+   procedure handle_Event( event : Mission_Event_Type ) is
+   begin
+      null;
+   end handle_Event;
+   
+   
+   
+   
    procedure next_State is
    begin
       G_state.mission_state := Mission_State_Type'Succ(G_state.mission_state);
@@ -130,6 +142,20 @@ package body Mission is
 
    procedure perform_Self_Test is
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      
+      procedure lock_Home is
+      begin
+         G_state.home := Estimator.get_Position;
+         G_state.home.Altitude := Estimator.get_current_Height;
+         NVRAM.Store( VAR_HOME_HEIGHT_L, HIL.toBytes( Unsigned_16( G_state.home.Altitude ) )(1) );
+         NVRAM.Store( VAR_HOME_HEIGHT_H, HIL.toBytes( Unsigned_16( G_state.home.Altitude ) )(2) );
+         
+         NVRAM.Store( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
+         NVRAM.Store( VAR_GPS_TARGET_LAT_A,  Float( G_state.home.Latitude ) );
+         NVRAM.Store( VAR_GPS_TARGET_ALT_A,  Float( G_state.home.Altitude ) );
+         
+      end lock_Home;
+      
    begin
    
       -- get initial values
@@ -140,17 +166,14 @@ package body Mission is
 
       -- check GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
-         G_state.home := Estimator.get_Position;
+         lock_Home;
          Logger.log(Logger.INFO, "Mission Ready");
          next_State;
       end if;
 
       -- FOR TEST
       if now > G_state.last_state_change + Ada.Real_Time.Seconds( 20 ) then
-         G_state.home := Estimator.get_Position;
-         G_state.home.Altitude := Estimator.get_current_Height;
-         NVRAM.Store( VAR_HOME_HEIGHT_L, HIL.toBytes( Unsigned_16( G_state.home.Altitude ) )(1) );
-         NVRAM.Store( VAR_HOME_HEIGHT_H, HIL.toBytes( Unsigned_16( G_state.home.Altitude ) )(2) );
+         lock_Home;
          next_State;
       end if;
       
@@ -179,6 +202,7 @@ package body Mission is
       Controller.set_hold; 
   
       -- check target height
+      -- FIXME: Sprung von Baro auf GPS hat ausgelöst.
       if Estimator.get_current_Height >= G_state.home.Altitude + Config.CFG_TARGET_ALTITUDE_THRESHOLD then
          G_state.target_threshold_time := G_state.target_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT     
          if G_state.target_threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
@@ -283,6 +307,8 @@ package body Mission is
    begin
       null;
    end wait_For_Reset;
+
+
 
 
 end Mission;

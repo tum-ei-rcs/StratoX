@@ -11,6 +11,8 @@ with HIL.Config;
 with Ada.Interrupts;       use Ada.Interrupts;
 with Ada.Interrupts.Names; use Ada.Interrupts.Names;
 
+with Generic_Queue; 
+
 
 --  @summary
 --  Target-specific mapping for HIL of UART
@@ -82,15 +84,19 @@ is
       
 
    
-   type buffer_pointer_Type is mod BUFFER_MAX;
+   type Buffer_Index_Type is mod BUFFER_MAX;
+   type Buffer_Type is array(Buffer_Index_Type) of Byte;
+   package Byte_Buffer_Pack is new Generic_Queue(Index_Type => Buffer_Index_Type, Element_Type => Byte);   
+      
       
    protected UART_Interrupt_Handler is
       pragma Interrupt_Priority (250);
       
       procedure get_Buffer(data : out Data_Type);
    private
-      buffer_pointer : buffer_pointer_Type := 0;
-      Buffer : Data_Type(0 .. BUFFER_MAX - 1);
+      buffer_pointer : Buffer_Index_Type := 0;
+      Queue : Byte_Buffer_Pack.Buffer_Tag;
+      Buffer : Buffer_Type := (others => Byte(0));
    
       procedure Handle_Interrupt
         with Attach_Handler => Ada.Interrupts.Names.UART4_Interrupt,
@@ -163,10 +169,21 @@ is
    
    
    protected body UART_Interrupt_Handler is
+      
 
       procedure get_Buffer(data : out Data_Type) is
+         buf_data : Byte_Buffer_Pack.Element_Array(1 .. data'Length);
       begin
-         data := Buffer(0 .. data'Length - 1);
+         data := (others => Byte( 0 ) );
+         if not Queue.Empty then
+            if data'Length <= Queue.Length then
+               Queue.get_front(buf_data);
+               data := Data_Type( buf_data );
+            else
+               Queue.get_front(buf_data(1 .. Queue.Length) );
+               data(data'First .. data'First + Queue.Length - 1) := Data_Type( buf_data(1 .. Queue.Length) );
+            end if;
+         end if;
       end get_Buffer;
 
       procedure Handle_Interrupt is
@@ -178,8 +195,7 @@ is
          then
             STM32.USARTs.Receive( STM32.Device.UART_4, data);
             STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9(65) );
-            Buffer( Integer(buffer_pointer) ) := Byte( data );
-            buffer_pointer := buffer_pointer + 1;
+            Queue.push_back( Byte( data ) );
             STM32.USARTs.Clear_Status (STM32.Device.UART_4, STM32.USARTs.Read_Data_Register_Not_Empty);
          end if;
          

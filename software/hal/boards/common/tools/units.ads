@@ -140,8 +140,8 @@ package Units with
         Dimension => (Radian => 1, Second => -2, others => 0);
 
    -- Prefix
-   --type Prefix_Type is digits 2 range 1.0e-24 .. 1.0e+24;
    subtype Prefix_Type is Unit_Type;
+   --type Prefix_Type is digits 2 range 1.0e-24 .. 1.0e+24;
    Yocto : constant Prefix_Type := Prefix_Type (1.0e-24);
    Zepto : constant Prefix_Type := Prefix_Type (1.0e-21);
    Atto  : constant Prefix_Type := Prefix_Type (1.0e-18);
@@ -164,24 +164,91 @@ package Units with
    Zetta : constant Prefix_Type := Prefix_Type (1.0e+21);
    Yotta : constant Prefix_Type := Prefix_Type (1.0e+24);
 
-   -- only multiplying of prefixes is allowed
-   --function "*" (Left : Prefix_Type; Right : Unit_Type) return Unit_Type is
-   --      ( Unit_Type( Left ) * Right );
+--     type The_Prefix_Type is (
+--     Yocto,
+--     Zepto,
+--     Atto ,
+--     Femto,
+--     Pico ,
+--     Nano ,
+--     Micro,
+--     Milli,
+--     Centi,
+--     Deci ,
+--     Deca ,
+--     Hecto,
+--     Kilo ,
+--     Mega ,
+--     Giga ,
+--     Tera ,
+--     Peta ,
+--     Exa  ,
+--     Zetta,
+--     Yotta );
+--
+--     for The_Prefix_Type use (
+--     Yocto => -24,
+--     Zepto => -21,
+--     Atto  => -18,
+--     Femto => -15,
+--     Pico  => -12,
+--     Nano  => -9,
+--     Micro => -6,
+--     Milli => -3,
+--     Centi => -2,
+--     Deci  => -1,
+--     Deca  =>  1,
+--     Hecto =>  2,
+--     Kilo  =>  3,
+--     Mega  =>  6,
+--     Giga  =>  9,
+--     Tera  =>  12,
+--     Peta  =>  15,
+--     Exa   =>  18,
+--     Zetta =>  21,
+--     Yotta =>  24 );
+--
+--
+--     -- only multiplying of prefixes is allowed
+--  --     function "*" (Left : Float; Right : The_Prefix_Type) return Unit_Type is
+--  --        ( if The_Prefix_Type'Enum_Rep(Right) < 0 then Unit_Type( Left / (1.0**(-The_Prefix_Type'Enum_Rep(Right))))
+--  --        else Unit_Type(Left * (1.0**The_Prefix_Type'Enum_Rep(Right))) );
+--  --         ( 10.0**The_Prefix_Type'Value(Left) * Right );
+--
+--  function "*" (Left : Float; Right : The_Prefix_Type) return Unit_Type is
+--  ( Unit_Type( case Right is
+--     when Yocto => Left * 1.0e-24,
+--     when Zepto => Left * 1.0e-21,
+--     when Atto  => Left * 1.0e-18,
+--     when Femto => Left * 1.0e-15,
+--     when Pico  => Left * 1.0e-12,
+--     when Nano  => Left * 1.0e-9,
+--     when Micro => Left * 1.0e-6,
+--     when Milli => Left * 1.0e-3,
+--     when Centi => Left * 1.0e-2,
+--     when Deci  => Left * 1.0e-1,
+--     when Deca  => Left * 1.0e1,
+--     when Hecto => Left * 1.0e2,
+--     when Kilo  => Left * 1.0e3,
+--     when Mega  => Left * 1.0e6,
+--     when Giga  => Left * 1.0e9,
+--     when Tera  => Left * 1.0e12,
+--     when Peta  => Left * 1.0e15,
+--     when Exa   => Left * 1.0e18,
+--     when Zetta => Left * 1.0e21,
+--     when Yotta => Left * 1.0e24 ) );
 
-   --function "*" (Left : Float; Right : Prefix_Type) return Unit_Type is
-   --       ( Unit_Type( Left * Float(Right) ) );
+
+--  function "*" (Left : Float; Right : Prefix_Type) return Unit_Type is
+--          ( Unit_Type( Left * Float(Right) ) );
 
    -- Base units
    Meter       : constant Length_Type := Length_Type (1.0);
-   Milli_Meter : constant Length_Type := 0.001 * Meter;
-   Kilo_Meter  : constant Length_Type := 1_000.0 * Meter;
 
    Kilogram : constant Mass_Type := Mass_Type (1.0);
    Gram     : constant Mass_Type := Mass_Type (1.0e-3);
 
    Second       : constant Time_Type := Time_Type (1.0);
-   Milli_Second : constant Time_Type := 1.0e-3 * Second;
-   Micro_Second : constant Time_Type := 1.0e-6 * Second;
 
    Ampere : constant Current_Type := Current_Type (1.0);
 
@@ -224,7 +291,7 @@ package Units with
 
    Tonne    : constant Mass_Type     := 1_000.0 * Kilogram;
    Angstrom : constant Length_Type   := 1.0 * Nano * Meter;
-   Litre    : constant Volume_Type   := 1.0 * (Deci * Meter)**3;
+   Litre    : constant Volume_Type   := 1.0 * (1.0 * Deci * Meter)**3;
    Bar      : constant Pressure_Type := 1_000.0 * Hecto * Pascal;
    Gauss    : constant Magnetic_Flux_Density_Type := 0.1 * Tesla;
 
@@ -245,12 +312,12 @@ package Units with
    function To_Time
      (rtime : Ada.Real_Time.Time) return Time_Type is
      (Time_Type
-        (Float ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1)) * 1.0e-6));
+        (Float ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
 
    function To_Time
      (rtime : Ada.Real_Time.Time_Span) return Time_Type is
      (Time_Type
-        (Float ((rtime) / Ada.Real_Time.Microseconds (1)) * 1.0e-6));
+        (Float ((rtime) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
 
    -- wrap angle between two values
    -- idea: shift range to 0 .. X, wrap with mod, shift back

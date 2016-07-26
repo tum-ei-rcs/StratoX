@@ -65,7 +65,7 @@ package body Main is
       -- Illustration how to use NVRAM
       declare
          num_boots : HIL.Byte;
-
+         exception_line : HIL.Byte_Array_2;
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots);
          if num_boots < HIL.Byte'Last then
@@ -73,6 +73,10 @@ package body Main is
             NVRAM.Store (NVRAM.VAR_BOOTCOUNTER, num_boots);
          end if;
          Logger.log (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
+         
+         NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
+         NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_H, exception_line(2));
+         
       end;
 
       -- TODO: pick up last mission state from NVRAM and continue where

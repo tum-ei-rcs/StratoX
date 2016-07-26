@@ -63,10 +63,20 @@ is
    type Float_Array is array(Natural range <>) of Float;
 
 
+   function From_Byte_Array_To_Float is new Ada.Unchecked_Conversion (Source => Byte_Array_4,
+                                                                           Target => Float); 
+                                                                           
+   function From_Float_To_Byte_Array is new Ada.Unchecked_Conversion (Source => Float,
+                                                                           Target => Byte_Array_4); 
+
    -- little endian (lowest byte first)
    -- FAILS  (unsigned arg, unconstrained return)
    function toBytes(uint : in Unsigned_16) return Byte_Array is
       (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
+      
+   function toBytes( source : in Float) return Byte_Array_4 is
+      (From_Float_To_Byte_Array( source ) )
+   with pre => source'Size = 32;   
 
    -- FAILS  (unsigned arg, constrained return)
    function toBytes_uc(uint : Unsigned_16) return Byte_Array_2 is
@@ -98,6 +108,9 @@ is
 
    function toCharacter( source : Byte ) return Character
    is ( Character'Val ( source ) );
+   
+   function toFloat( source : Byte_Array_4 ) return Float is
+   ( From_Byte_Array_To_Float( source ) );
 
 
    procedure write_Bits( register : in out Unsigned_8; 

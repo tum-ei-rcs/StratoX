@@ -4,6 +4,7 @@
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 with Interfaces; use Interfaces;
 with HIL.NVRAM;  use HIL.NVRAM;
+with HIL; use HIL;
 with Buildinfo;  use Buildinfo;
 with Fletcher16;
 
@@ -161,10 +162,31 @@ is
       HIL.NVRAM.Read_Byte (addr => Var_To_Address (variable), byte => data);
    end Load;
 
+   procedure Load (variable : in Variable_Name; data : out Float) is
+      bytes : Byte_Array_4;
+   begin
+      for index in Natural range 1 .. 4 loop
+         HIL.NVRAM.Read_Byte (addr => Var_To_Address (Variable_Name'Val( Variable_Name'Pos( variable ) -1 + index )), byte => bytes(index));
+      end loop;
+      data := HIL.toFloat( bytes );
+   end Load;
+
    procedure Store (variable : Variable_Name; data : in HIL.Byte) is
    begin
       HIL.NVRAM.Write_Byte (addr => Var_To_Address (variable), byte => data);
    end Store;
+
+   procedure Store (variable : in Variable_Name; data : in Float) is
+      bytes : Byte_Array_4 := HIL.toBytes( data );
+--        index : Positive := 1;
+   begin
+      for index in Natural range 1 .. 4 loop
+      --for var in Variable_Name range variable .. Variable_Name'Val( Variable_Name'Pos( variable ) -1 + index ) loop
+         HIL.NVRAM.Write_Byte (addr => Var_To_Address (Variable_Name'Val( Variable_Name'Pos( variable ) -1 + index )), byte => bytes(index));
+      end loop;
+   end Store;
+
+
 
    procedure Reset is
       hdr_this : NVRAM_Header;
