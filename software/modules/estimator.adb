@@ -22,10 +22,12 @@ package body Estimator with SPARK_Mode is
    type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP;
 
    package Height_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => Altitude_Type);
+   use Height_Buffer_Pack;
    package GPS_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => GPS_Loacation_Type);
+   use GPS_Buffer_Pack;
 
-   G_height_buffer : Height_Buffer_Pack.Buffer_Type;
-   G_pos_buffer : GPS_Buffer_Pack.Buffer_Type;
+   G_height_buffer : Height_Buffer_Pack.Buffer_Tag;
+   G_pos_buffer : GPS_Buffer_Pack.Buffer_Tag;
 
 
 
@@ -84,7 +86,9 @@ package body Estimator with SPARK_Mode is
       Acc := IMU.Sensor.get_Linear_Acceleration;
       Gyro := IMU.Sensor.get_Angular_Velocity;
 
-      Logger.log(Logger.TRACE,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
+      -- Logger.log(Logger.DEBUG,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
+      -- Logger.log(Logger.DEBUG,"Gyro: " & AImage(Gyro(Roll)*Second) & ", " & AImage(Gyro(Pitch)*Second) & ", " & AImage(Gyro(YAW)*Second) );
+
 
       Acc_Orientation := Orientation( Acc );
       -- CF_Orientation := IMU.Fused_Orientation( IMU.Sensor, Acc_Orientation, Gyro);
@@ -93,7 +97,7 @@ package body Estimator with SPARK_Mode is
 
       Logger.log(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", " & AImage( Acc_Orientation.Pitch ) & ", " & AImage( Acc_Orientation.Yaw ) );
       -- Logger.log(Logger.INFO, "CF : " & AImage( CF_Orientation.Roll ) & ", " & AImage( CF_Orientation.Pitch ) & ", " & AImage( CF_Orientation.Yaw ) );
-      Logger.log(Logger.INFO, "KM : " & AImage( G_Object_Orientation.Roll ) & ", " & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
+      -- Logger.log(Logger.INFO, "KM : " & AImage( G_Object_Orientation.Roll ) & ", " & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
 
       Magnetometer.Sensor.read_Measurement;
       Mag := Magnetometer.Sensor.get_Sample.data;
@@ -106,7 +110,7 @@ package body Estimator with SPARK_Mode is
       Barometer.Sensor.read_Measurement; -- >= 4 calls for new data
       G_state.baro_calls := Baro_Call_Type'Succ( G_state.baro_calls );
       if G_state.baro_calls = 0 then
-         G_height_buffer.push_back( Barometer.Sensor.get_Altitude );
+         Height_Buffer_Pack.push_back( G_height_buffer, Barometer.Sensor.get_Altitude );
          update_Max_Height;
       end if;
 
@@ -125,13 +129,12 @@ package body Estimator with SPARK_Mode is
          GFixS := "NO";
          G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
       end if;
-      G_pos_buffer.push_back( GPS.Sensor.get_Position );
+      GPS_Buffer_Pack.push_back( G_pos_buffer, GPS.Sensor.get_Position );
 
       -- Outputs
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
-         -- log_Info;
-         null;
+         log_Info;
       end if;
 
    end update;
@@ -215,7 +218,7 @@ package body Estimator with SPARK_Mode is
          -- Arctan: Only X = Y = 0 raises exception
          -- Output range: -Cycle/2.0 to Cycle/2.0, thus -180° to 180°
          angles.Roll  := Roll_Type ( Arctan(
-                                     gravity_vector(Y),
+                                     -gravity_vector(Y),   -- minus
                                      -gravity_vector(Z)
                                       ) );
 
@@ -257,10 +260,10 @@ package body Estimator with SPARK_Mode is
    begin
       -- GPS
       declare
-         buf : GPS_Buffer_Pack.Element_Array(1 .. G_pos_buffer.Length);
+         buf : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length(G_pos_buffer) );
       begin
-         G_pos_buffer.get_all( buf );
-         if G_pos_buffer.Length > 0 then
+         get_all( G_pos_buffer, buf );
+         if Length(G_pos_buffer) > 0 then
             G_state.avg_gps_height := gps_average( buf );
          end if;
       end;
@@ -271,10 +274,10 @@ package body Estimator with SPARK_Mode is
 
       -- Baro
       declare
-         buf : Height_Buffer_Pack.Element_Array(1 .. G_height_buffer.Length);
+         buf : Height_Buffer_Pack.Element_Array(1 .. Length(G_height_buffer));
       begin
-         G_height_buffer.get_all( buf );
-         if G_height_buffer.Length > 0 then
+         get_all( G_height_buffer, buf );
+         if Length(G_height_buffer) > 0 then
             G_state.avg_baro_height := baro_average( buf );
          end if;
       end;
