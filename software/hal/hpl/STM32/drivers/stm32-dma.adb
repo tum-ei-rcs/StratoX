@@ -723,7 +723,7 @@ package body STM32.DMA is
    -- Set_Counter --
    -----------------
 
-   procedure Set_Counter
+   procedure Set_NDT
      (Unit       : DMA_Controller;
       Stream     : DMA_Stream_Selector;
       Data_Count : Short)
@@ -731,13 +731,25 @@ package body STM32.DMA is
       This_Stream : DMA_Stream renames Get_Stream (Unit, Stream);
    begin
       This_Stream.NDTR.NDT := Data_Count;
-   end Set_Counter;
+   end Set_NDT;
 
-   ---------------------
-   -- Current_Counter --
-   ---------------------
+   function Items_Transferred
+     (Unit   : DMA_Controller;
+      Stream : DMA_Stream_Selector)
+      return Short
+   is
+      ndt : constant Unsigned_16 := Current_NDT (Unit, Stream);
+      items : Unsigned_16;
+   begin
+      if Operating_Mode (Unit, Stream) = Peripheral_Flow_Control_Mode then
+         items := 16#ffff# - ndt;
+      else
+         items := ndt;
+      end if;
+      return items;
+   end Items_Transferred;
 
-   function Current_Counter
+   function Current_NDT
      (Unit   : DMA_Controller;
       Stream : DMA_Stream_Selector)
       return Short
@@ -745,7 +757,7 @@ package body STM32.DMA is
       This_Stream : DMA_Stream renames Get_Stream (Unit, Stream);
    begin
       return This_Stream.NDTR.NDT;
-   end Current_Counter;
+   end Current_NDT;
 
    ---------------------
    -- Double_Buffered --

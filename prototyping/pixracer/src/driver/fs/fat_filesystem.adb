@@ -351,11 +351,8 @@ package body FAT_Filesystem is
      (FS : in out FAT_Filesystem;
       Block_Arg : Unsigned_32) return Status_Code
    is
-      --not_window : Block (1 .. 528); -- 512B + 4Words for DMA flush
    begin
-      -- XXX TODO FIXME: just for testing, not the real window
       if not FS.Controller.Write_Block (Block_Arg, FS.Window) then
-      --if not FS.Controller.Write_Block (Block_Arg, not_window) then
          return Disk_Error;
       end if;
       return OK;
@@ -445,7 +442,7 @@ package body FAT_Filesystem is
 
    begin
       if Cluster < FIRST_CLUSTER or else Cluster >= FS.Num_Clusters then
-         return 1;
+         return INVALID_CLUSTER;
       end if;
 
       case FS.Version is

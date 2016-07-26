@@ -35,7 +35,7 @@ package body FAT_Filesystem.Directories.Files is
          return Status;
       end if;
 
-      --  find free cluster
+      --  find free cluster or data
       new_cluster := Parent.FS.Get_Free_Cluster;
       if new_cluster = INVALID_CLUSTER then
          return Device_Full;

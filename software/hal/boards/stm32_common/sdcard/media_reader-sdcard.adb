@@ -45,6 +45,8 @@ package body Media_Reader.SDCard is
 
       procedure Clear_Transfer_State;
 
+      function Buffer_Error return Boolean;
+
       entry Wait_Transfer (Status : out DMA_Error_Code);
 
    private
@@ -56,7 +58,8 @@ package body Media_Reader.SDCard is
         with Attach_Handler => Tx_IRQ, Unreferenced;
 
       Finished   : Boolean := True;
-      DMA_Status : DMA_Error_Code;
+      DMA_Status : DMA_Error_Code := DMA_No_Error;
+      Had_Buffer_Error : Boolean := False;
    end DMA_Interrupt_Handler;
 
    ------------------
@@ -249,29 +252,20 @@ package body Media_Reader.SDCard is
    protected body DMA_Interrupt_Handler
    is
 
-      -------------------
-      -- Wait_Transfer --
-      -------------------
+      function Buffer_Error return Boolean is (Had_Buffer_Error);
 
       entry Wait_Transfer (Status : out DMA_Error_Code) when Finished is
       begin
          Status := DMA_Status;
       end Wait_Transfer;
 
-      ------------------------
-      -- Set_Transfer_State --
-      ------------------------
-
       procedure Set_Transfer_State
       is
       begin
          Finished := False;
          DMA_Status := DMA_No_Error;
+         Had_Buffer_Error := False;
       end Set_Transfer_State;
-
-      --------------------------
-      -- Clear_Transfer_State --
-      --------------------------
 
       procedure Clear_Transfer_State
       is
@@ -287,12 +281,22 @@ package body Media_Reader.SDCard is
       procedure Interrupt_RX is
       begin
 
+         if Status (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Indicated) then
+            Disable_Interrupt
+              (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Interrupt);
+            Clear_Status
+              (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Indicated);
+
+            DMA_Status := DMA_No_Error;
+            Finished := True;
+         end if;
+
          if Status (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Indicated) then
             Disable_Interrupt (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Interrupt);
             Clear_Status (SD_DMA, SD_DMA_Rx_Stream, FIFO_Error_Indicated);
 
-            DMA_Status := DMA_FIFO_Error;
-            Finished := True;
+            -- see Interrupt_TX
+            Had_Buffer_Error := True;
          end if;
 
          if Status (SD_DMA, SD_DMA_Rx_Stream, Transfer_Error_Indicated) then
@@ -301,16 +305,6 @@ package body Media_Reader.SDCard is
             Clear_Status (SD_DMA, SD_DMA_Rx_Stream, Transfer_Error_Indicated);
 
             DMA_Status := DMA_Transfer_Error;
-            Finished := True;
-         end if;
-
-         if Status (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Indicated) then
-            Disable_Interrupt
-              (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Interrupt);
-            Clear_Status
-              (SD_DMA, SD_DMA_Rx_Stream, Transfer_Complete_Indicated);
-
-            DMA_Status := DMA_No_Error;
             Finished := True;
          end if;
 
@@ -335,14 +329,29 @@ package body Media_Reader.SDCard is
          end if;
 
          if Status (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Indicated) then
-            -- FIXME: this can be ignored when transfer is completed
-            -- however, it comes before Transfer_Complete_Indicated
-            -- so we need to ignore it.
+            -- this signal can be ignored when transfer is completed
+            -- however, it comes before Transfer_Complete_Indicated and
+            -- We cannot use the value of the NDT register either, because
+            -- it's a race condition (the register lacks behind).
+            -- As a result, we have to ignore it.
             Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Interrupt);
             Clear_Status (SD_DMA, SD_DMA_Tx_Stream, FIFO_Error_Indicated);
+            Had_Buffer_Error := True;
 
-            DMA_Status := DMA_FIFO_Error;
-            Finished := True;
+--              declare
+--                 ndt : constant Unsigned_16 := Current_Counter (Unit => SD_DMA, Stream => SD_DMA_Tx_Stream);
+--                 ctr : Unsigned_16;
+--              begin
+--                 if Operating_Mode (Unit => SD_DMA, Stream => SD_DMA_Tx_Stream) = Peripheral_Flow_Control_Mode then
+--                    ctr := 16#ffff# - ndt;
+--                 else
+--                    ctr := ndt;
+--                 end if;
+--                 if ctr /= Expected then
+--                    DMA_Status := DMA_FIFO_Error;
+--                    Finished := True;
+--                 end if;
+--              end;
          end if;
 
          if Status (SD_DMA, SD_DMA_Tx_Stream, Transfer_Error_Indicated) then
@@ -354,11 +363,11 @@ package body Media_Reader.SDCard is
             Finished := True;
          end if;
 
---           if Finished then
---              for Int in STM32.DMA.DMA_Interrupt loop
---                 Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, Int);
---              end loop;
---           end if;
+         if Finished then
+            for Int in STM32.DMA.DMA_Interrupt loop
+               Disable_Interrupt (SD_DMA, SD_DMA_Tx_Stream, Int);
+            end loop;
+         end if;
       end Interrupt_TX;
 
    end DMA_Interrupt_Handler;
@@ -489,7 +498,12 @@ package body Media_Reader.SDCard is
          Clear_All_Status (SD_DMA, SD_DMA_Tx_Stream);
          Disable (SD_DMA, SD_DMA_Tx_Stream);
 
-         return Ret = OK and then DMA_Err = DMA_No_Error;
+         declare
+            data_incomplete : Boolean := DMA_Interrupt_Handler.Buffer_Error and then
+              Items_Transferred (SD_DMA, SD_DMA_Tx_Stream) /= Data'Length / 4;
+         begin
+            return Ret = OK and then DMA_Err = DMA_No_Error and then not data_incomplete;
+         end;
 
       else
          Ret := Write_Blocks (Controller.Device,
@@ -584,7 +598,12 @@ package body Media_Reader.SDCard is
            (Start => Data (Data'First)'Address,
             Len   => Data'Length);
 
-         return Ret = OK and then DMA_Err = DMA_No_Error;
+         declare
+            data_incomplete : Boolean := DMA_Interrupt_Handler.Buffer_Error and then
+              Items_Transferred (SD_DMA, SD_DMA_Tx_Stream) /= Data'Length / 4;
+         begin
+            return Ret = OK and then DMA_Err = DMA_No_Error and then not data_incomplete;
+         end;
 
       else
          -- polling => rx overrun possible
