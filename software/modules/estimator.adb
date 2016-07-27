@@ -14,7 +14,7 @@ with Units.Numerics; use Units.Numerics;
 with Units.Navigation; use Units.Navigation;
 
 with Logger;
-with Profiler;
+--with Profiler;
 
 with Config.Software;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
@@ -38,7 +38,7 @@ package body Estimator with SPARK_Mode is
 
    G_orientation_buffer : IMU_Buffer_Pack.Buffer_Tag;
 
-   G_Profiler : Profiler.Profile_Tag;
+   --G_Profiler : Profiler.Profile_Tag;
 
 
    type State_Type is record
@@ -80,7 +80,7 @@ package body Estimator with SPARK_Mode is
       GPS.Sensor.initialize;
 
       -- Profiler
-      G_Profiler.init("Estimator");
+      --G_Profiler.init("Estimator");
 
       Logger.log(Logger.INFO, "Estimator initialized");
    end initialize;
@@ -95,7 +95,7 @@ package body Estimator with SPARK_Mode is
       GFixS : String := "NO";
 
    begin
-      G_Profiler.start;
+      --G_Profiler.start;
 
       -- Estimate Object Orientation
       IMU.Sensor.read_Measurement;
@@ -162,7 +162,7 @@ package body Estimator with SPARK_Mode is
       end if;
 
 
-      G_Profiler.stop;
+      --G_Profiler.stop;
    end update;
 
 

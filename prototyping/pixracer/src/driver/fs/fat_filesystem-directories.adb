@@ -65,7 +65,7 @@ package body FAT_Filesystem.Directories is
          Sub_Entry.Start_Cluster := Start_Cluster;
          Sub_Entry.Size := 0; -- directories always carry zero
          Sub_Entry.Entry_Address := Ent_Addr;
-         Set_Name (Sub_Name, Sub_Entry);
+         Set_Name (Sub_Name, Sub_Entry); -- FIXME: something isn't right here. The implicit dot (8+3) is shown on my Linux machine
       end Fill_Entry_Subdirectory;
 
       function Entry_To_Window (Sub_Entry : Directory_Entry) return Status_Code;
