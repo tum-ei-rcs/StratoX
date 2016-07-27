@@ -277,7 +277,7 @@ package body Mission is
       
       
       -- Check stable position
-      if Estimator.get_Stable_Time > 20.0 * Second then
+      if Estimator.get_Stable_Time > 120.0 * Second then
          Logger.log(Logger.INFO, "Landed.");
          deactivate;
       end if;    

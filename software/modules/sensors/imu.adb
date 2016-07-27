@@ -46,7 +46,8 @@ package body IMU is
       
       if MPU6000.Driver.Test_Connection then
          Driver.Init;
-         Driver.Set_Full_Scale_Gyro_Range( FS_Range => Driver.MPU6000_Gyro_FS_500 );
+         Driver.Set_Full_Scale_Gyro_Range( FS_Range => Driver.MPU6000_Gyro_FS_2000 );
+         Driver.Set_Full_Scale_Accel_Range( FS_Range => Driver.MPU6000_Accel_FS_16 );
          Self.state := READY;
       else
          Self.state := ERROR;
@@ -106,7 +107,8 @@ package body IMU is
    
    function get_Linear_Acceleration(Self : IMU_Tag) return Linear_Acceleration_Vector is
       result : Linear_Acceleration_Vector;
-      sensitivity : constant Float := Driver.MPU6000_G_PER_LSB_2;
+      sensitivity : constant Float := Driver.MPU6000_G_PER_LSB_8;
+      -- Arduplane: 4G
    begin
       result := ( X => Unit_Type( Float( Self.sample.data.Acc_X ) * sensitivity ) * GRAVITY,
                   Y => Unit_Type( Float( Self.sample.data.Acc_Y ) * sensitivity ) * GRAVITY,
@@ -118,7 +120,7 @@ package body IMU is
 
    function get_Angular_Velocity(Self : IMU_Tag) return Angular_Velocity_Vector is
       result : Angular_Velocity_Vector;
-      sensitivity : constant Angular_Velocity_Type := Unit_Type( Driver.MPU6000_DEG_PER_LSB_500 ) * Degree / Second;
+      sensitivity : constant Angular_Velocity_Type := Unit_Type( Driver.MPU6000_DEG_PER_LSB_2000 ) * Degree / Second;
    begin
       result := ( Roll => Unit_Type( Float( Self.sample.data.Gyro_X ) ) * sensitivity,
                   Pitch => Unit_Type( Float( Self.sample.data.Gyro_Y ) ) * sensitivity,

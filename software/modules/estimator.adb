@@ -14,7 +14,7 @@ with Units.Numerics; use Units.Numerics;
 with Units.Navigation; use Units.Navigation;
 
 with Logger;
---with Profiler;
+with Profiler;
 
 with Config.Software;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
@@ -38,7 +38,7 @@ package body Estimator with SPARK_Mode is
 
    G_orientation_buffer : IMU_Buffer_Pack.Buffer_Tag;
 
-   --G_Profiler : Profiler.Profile_Tag;
+   G_Profiler : Profiler.Profile_Tag;
 
 
    type State_Type is record
@@ -80,7 +80,7 @@ package body Estimator with SPARK_Mode is
       GPS.Sensor.initialize;
 
       -- Profiler
-      --G_Profiler.init("Estimator");
+      G_Profiler.init("Estimator");
 
       Logger.log(Logger.INFO, "Estimator initialized");
    end initialize;
@@ -95,7 +95,7 @@ package body Estimator with SPARK_Mode is
       GFixS : String := "NO";
 
    begin
-      --G_Profiler.start;
+      G_Profiler.start;
 
       -- Estimate Object Orientation
       IMU.Sensor.read_Measurement;
@@ -121,6 +121,8 @@ package body Estimator with SPARK_Mode is
 
       Logger.log(Logger.TRACE, "Mag (uT):" & Image(Mag(X) * 1.0e6) & ", " & Image(Mag(Y) * 1.0e6) & ", " & Image(Mag(Z) * 1.0e6) );
       G_Object_Orientation.Yaw := Heading(Mag, G_Object_Orientation);
+
+
 
 
       -- Estimate Object Position
@@ -153,6 +155,7 @@ package body Estimator with SPARK_Mode is
       -- update stable measurements
       check_stable_Time;
 
+G_Profiler.start;
       -- Outputs
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
@@ -160,9 +163,9 @@ package body Estimator with SPARK_Mode is
          G_pos_buffer.push_back( GPS.Sensor.get_Position );
          G_orientation_buffer.push_back( G_Object_Orientation );
       end if;
+G_Profiler.stop;
 
 
-      --G_Profiler.stop;
    end update;
 
 
@@ -180,6 +183,8 @@ package body Estimator with SPARK_Mode is
                  "   LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
                  ", " & AImage( G_Object_Position.Latitude ) &
                  ", " & Image( get_current_Height ) & "m, Fix: " & Integer'Image( GPS_Fix_Type'Pos( G_state.fix ) ) );
+
+      G_Profiler.log;
    end log_Info;
 
 
