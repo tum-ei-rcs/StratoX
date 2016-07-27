@@ -36,7 +36,7 @@ project Default is
       case Build_Mode is
 
          when "debug" =>
-            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyakyM100", "-gnat12", "-gnata", "-gnatet=../target-gen.atp");
+            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyakyM100", "-gnat12", "-gnata", "-gnatet=../target-gen.atp", "-fcallgraph-info=su,da");
 
          when "release" =>
             for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.Xh.k.o", "-gnatVaimrs", "-gnato", "-gnat12");
@@ -51,15 +51,13 @@ project Default is
    end Binder;
 
    package Linker is
-                for Default_Switches ("Ada") use
-                  ("-Wl,--defsym=__stack_size=16384",
-                  "-Wl,--gc-sections",
-                  "-Wl,--print-memory-usage");
+      for Default_Switches ("ada") use ("-Wl,--defsym=__stack_size=16384", "-Wl,--gc-sections", "-Wl,--print-memory-usage");
    end Linker;
 
    package Builder is
       for Global_Configuration_Pragmas use "gnat.adc";
       for Switches ("buildinfo.adb") use ("-f"); -- force recompilation, to have build string correct
+
       case Build_Mode is
 
          when "debug" =>

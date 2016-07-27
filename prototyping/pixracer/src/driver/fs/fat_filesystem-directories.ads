@@ -2,6 +2,7 @@
 --  System:  Stratosphere Balloon Flight Controller
 --  Author: Martin Becker (becker@rcs.ei.tum.de)
 --  based on AdaCore's Ada_Driver_Library
+--  XXX! Nothing here is thread-safe!
 
 --  @summary Directory (end directory entries) handling for FAT FS
 package FAT_Filesystem.Directories with SPARK_Mode is

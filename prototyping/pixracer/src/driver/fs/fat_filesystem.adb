@@ -1,3 +1,4 @@
+--  XXX! Nothing here is thread-safe!
 with Ada.Unchecked_Conversion;
 
 package body FAT_Filesystem is
@@ -352,7 +353,8 @@ package body FAT_Filesystem is
       Block_Arg : Unsigned_32) return Status_Code
    is
    begin
-      if not FS.Controller.Write_Block (Block_Arg, FS.Window) then
+      FS.Window_Block := Block_Arg; -- now we hold this block in the window
+      if not FS.Controller.Write_Block (FS.Window_Block, FS.Window) then
          return Disk_Error;
       end if;
       return OK;
