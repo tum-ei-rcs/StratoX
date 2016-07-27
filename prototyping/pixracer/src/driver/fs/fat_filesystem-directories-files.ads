@@ -32,6 +32,8 @@ package FAT_Filesystem.Directories.Files with SPARK_Mode is
      (File : in out File_Handle) return Status_Code;
    --  force writing file to disk at this very moment (slow!)
 
+   function File_Size (File : File_Handle) return Unsigned_32;
+
    function File_Open_Readonly
      (Ent  : in out Directory_Entry;
       File : in out File_Data) return Status_Code

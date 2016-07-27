@@ -311,5 +311,10 @@ package body FAT_Filesystem.Directories.Files is
       return Status;
    end File_Flush;
 
+   ----------------
+   --  File_Size
+   ----------------
+
+   function File_Size (File : File_Handle) return Unsigned_32 is (File.Bytes_Total);
 
 end FAT_Filesystem.Directories.Files;
