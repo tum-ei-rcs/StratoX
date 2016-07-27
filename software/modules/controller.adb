@@ -144,12 +144,13 @@ package body Controller with SPARK_Mode is
                     ", TR: " & AImage( G_Target_Orientation.Roll ) &
                     "   Elev: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) )
                     );
+         G_state.control_profiler.log;
    end log_Info;
 
 
    procedure runOneCycle is
    begin
-      G_state.control_profiler.start;
+
 
       -- control
       control_Pitch;
@@ -164,22 +165,20 @@ package body Controller with SPARK_Mode is
       Servo.set_Angle(Servo.LEFT_ELEVON, G_Elevon_Angles(LEFT) );
       Servo.set_Angle(Servo.RIGHT_ELEVON, G_Elevon_Angles(RIGHT) );
 
+      -- Output
+      PX4IO.Driver.sync_Outputs;
+
+
+      G_state.control_profiler.start;
       -- log
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
          log_Info;
       end if;
 
-      -- DEBUG Detach Test
---        if G_Object_Orientation.Yaw > 250.0*Degree and G_Object_Orientation.Yaw < 252.0*Degree then
---           detach;
---        end if;
-
-      -- Output
-      PX4IO.Driver.sync_Outputs;
-
-
       G_state.control_profiler.stop;
+
+
    end runOneCycle;
 
    procedure set_hold is

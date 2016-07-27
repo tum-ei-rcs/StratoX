@@ -29,7 +29,7 @@ is
     Gyro_X : out Integer_16;
     Gyro_Y : out Integer_16;
     Gyro_Z : out Integer_16) is
-      SCALE_ACC : constant := 205.0; --  Acc: map -16g...+16g => -2^15-1 .. 2^15
+      SCALE_ACC : constant := 410.0; --  Acc: map -16g...+16g => -2^15-1 .. 2^15
       SCALE_GYR : constant := 936.0; --  Gyr: map +/- 35 rad/s => -2^15-1 .. 2^15
    begin
 
