@@ -274,7 +274,7 @@ package body FAT_Filesystem is
          return;
       end if;
 
-      -- check volume signature: must be 55,AA
+      --  check volume signature: must be 55,AA
       if FS.Window (510 .. 511) /= (16#55#, 16#AA#) then
          Status := No_Filesystem;
          return;
@@ -283,7 +283,7 @@ package body FAT_Filesystem is
       FS.Disk_Parameters :=
         To_Disk_Parameter (FS.Window (0 .. 91));
 
-      -- read the first file allocation table (FAT) and get FS info (#free, etc.)
+      --  read the first file allocation table (FAT) and get FS info (#free, etc.)
       if FS.Version = FAT32 then
          declare
             fat_begin_lba : constant Unsigned_32 :=
@@ -296,7 +296,7 @@ package body FAT_Filesystem is
             return;
          end if;
 
-         -- again, check the generic FAT block signature
+         --  again, check the generic FAT block signature
          if FS.Window (510 .. 511) /= (16#55#, 16#AA#) then
             Status := No_Filesystem;
             return;
@@ -304,12 +304,12 @@ package body FAT_Filesystem is
 
          FS.FSInfo :=
            To_FSInfo (FS.Window (16#1E4# .. 16#1EF#));
-         -- read #free clusters, last alloc'd cluster, signature
+         --  read #free clusters, last alloc'd cluster, signature
       end if;
 
-      -- compute LBA for FAT and data clusters
+      --  compute LBA for FAT and data clusters
       declare
-         -- where the clusters with data start relative to Volume ID LBA
+         --  where the clusters with data start relative to Volume ID LBA
          Data_Offset_In_Block : constant Unsigned_32 :=
                                   Unsigned_32 (FS.Reserved_Blocks) +
                                   FS.FAT_Table_Size_In_Blocks *

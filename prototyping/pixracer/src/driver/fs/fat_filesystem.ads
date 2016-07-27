@@ -381,8 +381,8 @@ private
        then "UNKNOWN"
        else
          (case Version (FS) is
-             when FAT16 => Trim (FS.Disk_Parameters.Volume_Label_Fat16),
-             when FAT32 => Trim (FS.Disk_Parameters.Volume_Label_Fat32)));
+             when FAT16 => RTrim (FS.Disk_Parameters.Volume_Label_Fat16),
+             when FAT32 => RTrim (FS.Disk_Parameters.Volume_Label_Fat32)));
 
    function File_System_Type
      (FS : FAT_Filesystem) return String
@@ -390,8 +390,8 @@ private
        then "FAT16"
        else
          (case Version (FS) is
-             when FAT16 => Trim (FS.Disk_Parameters.FS_Type_Fat16),
-             when FAT32 => Trim (FS.Disk_Parameters.FS_Type_Fat32)));
+             when FAT16 => RTrim (FS.Disk_Parameters.FS_Type_Fat16),
+             when FAT32 => RTrim (FS.Disk_Parameters.FS_Type_Fat32)));
 
    function Number_Of_Entries_In_Root_Dir
      (FS : FAT_Filesystem) return Unsigned_16

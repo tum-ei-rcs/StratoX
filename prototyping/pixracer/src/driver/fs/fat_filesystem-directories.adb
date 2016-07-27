@@ -33,6 +33,10 @@ package body FAT_Filesystem.Directories is
       return OK;
    end Open_Root_Directory;
 
+   -------------------------
+   --  Make_Directory
+   -------------------------
+
    function Make_Directory
      (Parent  : in out Directory_Handle;
       newname : String;
@@ -42,11 +46,51 @@ package body FAT_Filesystem.Directories is
       function From_Entry is new Ada.Unchecked_Conversion
         (FAT_Directory_Entry, Entry_Data);
 
-      F_Entry  : FAT_Directory_Entry;
-      Ent_Addr : FAT_Address;
-      Status   : Status_Code;
+      procedure Fill_Entry_Subdirectory (Sub_Entry     : in out Directory_Entry;
+                                         Sub_Name      : String;
+                                         Start_Cluster : Unsigned_32;
+                                         Ent_Addr      : FAT_Address);
+      procedure Fill_Entry_Subdirectory (Sub_Entry     : in out Directory_Entry;
+                                         Sub_Name      : String;
+                                         Start_Cluster : Unsigned_32;
+                                         Ent_Addr      : FAT_Address) is
+      begin
+         Sub_Entry.FS := Parent.FS;
+         Sub_Entry.Attributes.Read_Only := False;
+         Sub_Entry.Attributes.Hidden := False;
+         Sub_Entry.Attributes.Archive := False;
+         Sub_Entry.Attributes.System_File := False;
+         Sub_Entry.Attributes.Volume_Label := False;
+         Sub_Entry.Attributes.Subdirectory := True;
+         Sub_Entry.Start_Cluster := Start_Cluster;
+         Sub_Entry.Size := 0; -- directories always carry zero
+         Sub_Entry.Entry_Address := Ent_Addr;
+         Set_Name (Sub_Name, Sub_Entry);
+      end Fill_Entry_Subdirectory;
 
-      dir_cluster : Unsigned_32 := INVALID_CLUSTER;
+      function Entry_To_Window (Sub_Entry : Directory_Entry) return Status_Code;
+      function Entry_To_Window (Sub_Entry : Directory_Entry) return Status_Code is
+         F_Entry : FAT_Directory_Entry;
+         Status  : Status_Code;
+      begin
+         Status := Directory_To_FAT_Entry (Sub_Entry, F_Entry);
+         if Status /= OK then
+            return Status;
+         end if;
+
+         --  now write the directory entry in the parent
+         Status := Parent.FS.Ensure_Block (Sub_Entry.Entry_Address.Block_LBA);
+         if Status /= OK then
+            return Status;
+         end if;
+         Parent.FS.Window (Sub_Entry.Entry_Address.Block_Off .. Sub_Entry.Entry_Address.Block_Off
+                           + ENTRY_SIZE - 1) := From_Entry (F_Entry);
+         return OK;
+      end Entry_To_Window;
+
+      NewDir_Addr    : FAT_Address;
+      Status         : Status_Code;
+      NewDir_Cluster : Unsigned_32 := INVALID_CLUSTER;
    begin
       if Parent.FS.Version /= FAT32 then
          --  we only support FAT32 for now.
@@ -54,7 +98,7 @@ package body FAT_Filesystem.Directories is
       end if;
 
       --  find a place for another entry and return it
-      Status := Allocate_Entry (Parent, newname, Ent_Addr);
+      Status := Allocate_Entry (Parent, newname, NewDir_Addr);
       if Status = Already_Exists then
          --  FIXME: this is a bit inefficient.
          if Get_Entry (Parent, newname, D_Entry) then
@@ -69,46 +113,25 @@ package body FAT_Filesystem.Directories is
       --  if we are here, then a new entry was created
 
       --  first, allocate a new cluster for the directory contents
-      dir_cluster := Parent.FS.Get_Free_Cluster;
-      if dir_cluster = INVALID_CLUSTER then
+      NewDir_Cluster := Parent.FS.Get_Free_Cluster;
+      if NewDir_Cluster = INVALID_CLUSTER then
          return Device_Full;
       end if;
-      if not Parent.FS.Allocate_Cluster (dir_cluster)
+      if not Parent.FS.Allocate_Cluster (NewDir_Cluster)
       then
          return Allocation_Error;
       end if;
 
-      --  now write the directory entry in the parent
-      Status := Parent.FS.Ensure_Block (Ent_Addr.Block_LBA);
-      if Status /= OK then
-         return Status;
-      end if;
-
       --  fill entry attrs to make it a directory
-      D_Entry.FS := Parent.FS;
-      D_Entry.Attributes.Read_Only := False;
-      D_Entry.Attributes.Hidden := False;
-      D_Entry.Attributes.Archive := False;
-      D_Entry.Attributes.System_File := False;
-      D_Entry.Attributes.Volume_Label := False;
-      D_Entry.Attributes.Subdirectory := True;
-      D_Entry.Start_Cluster := dir_cluster;
-      D_Entry.Size := 0; -- directories always carry zero
-      D_Entry.Entry_Address := Ent_Addr;
-      Set_Name (newname, D_Entry);
+      Fill_Entry_Subdirectory (Sub_Entry => D_Entry, Sub_Name => newname,
+                               Start_Cluster => NewDir_Cluster, Ent_Addr => NewDir_Addr);
 
-      --  encode into FAT entry
-      Status := Directory_To_FAT_Entry (D_Entry, F_Entry);
+      --  write back to disk
+      Status := Entry_To_Window (D_Entry);
       if Status /= OK then
          return Status;
       end if;
-
-      --  copy over to FS.Window
-      Parent.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off + ENTRY_SIZE - 1)
-        := From_Entry (F_Entry);
-
-      --  write back the block with the new entry
-      Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);
+      Status := Parent.FS.Write_Window (D_Entry.Entry_Address.Block_LBA);
       if Status /= OK then
          return Status;
       end if;
@@ -116,102 +139,77 @@ package body FAT_Filesystem.Directories is
       -------------------------------------------------------------
       --  create obligatory entries "." and ".." in new directory
       -------------------------------------------------------------
+      --  we cannot use Allocate_Entry for this, because the directory
+      --  doesn't have a terminator, yet. And it's not required, because
+      --  block size is > 3 entries anyway.
+      pragma Assert (Parent.FS.Block_Size_In_Bytes >= 3 * ENTRY_SIZE);
+
       declare
-         New_Dir : Directory_Handle;
+         Dot_Addr  : FAT_Address := (Block_LBA => Parent.FS.Cluster_To_Block (NewDir_Cluster),
+                                     Block_Off => 0);
          Dot_Entry : Directory_Entry;
       begin
-         Status := Open (D_Entry, New_Dir); -- signal handler
+         --  entry "."
+         Fill_Entry_Subdirectory (Sub_Entry => Dot_Entry,
+                                  Sub_Name => ".",
+                                  Start_Cluster => NewDir_Cluster,  -- "." points to same cluster
+                                  Ent_Addr => Dot_Addr);
+         Status := Entry_To_Window (Dot_Entry);
          if Status /= OK then
             return Status;
          end if;
 
-         Status := Allocate_Entry (New_Dir, ".", Ent_Addr);
+         --  entry ".."
+         Dot_Addr.Block_Off := Dot_Addr.Block_Off + ENTRY_SIZE;
+         Fill_Entry_Subdirectory (Sub_Entry => Dot_Entry,
+                                  Sub_Name => "..",
+                                  Start_Cluster => Parent.Dir_Begin.Cluster, -- FIXME: Microsoft wants zero if Parent = Root
+                                  Ent_Addr => Dot_Addr);
+         Status := Entry_To_Window (Dot_Entry);
          if Status /= OK then
             return Status;
          end if;
 
-         --  now write the directory entry in the parent
-         Status := New_Dir.FS.Ensure_Block (Ent_Addr.Block_LBA);
-         if Status /= OK then
-            return Status;
-         end if;
+         --  terminator
+         Dot_Addr.Block_Off := Dot_Addr.Block_Off + ENTRY_SIZE;
+         Parent.FS.Window (Dot_Addr.Block_Off)  := 0;
 
-         --  fill entry attrs to make it a directory
-         Dot_Entry.FS := New_Dir.FS;
-         Dot_Entry.Attributes.Read_Only := False;
-         Dot_Entry.Attributes.Hidden := False;
-         Dot_Entry.Attributes.Archive := False;
-         Dot_Entry.Attributes.System_File := False;
-         Dot_Entry.Attributes.Volume_Label := False;
-         Dot_Entry.Attributes.Subdirectory := True;
-         Dot_Entry.Start_Cluster := dir_cluster; -- points to itself
-         Dot_Entry.Size := 0; -- directories always carry zero
-         Dot_Entry.Entry_Address := Ent_Addr;
-         Set_Name (".", Dot_Entry);
-
-         --  encode into FAT entry
-         Status := Directory_To_FAT_Entry (Dot_Entry, F_Entry);
-         if Status /= OK then
-            return Status;
-         end if;
-
-         --  copy over to FS.Window
-         New_Dir.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off + ENTRY_SIZE - 1)
-           := From_Entry (F_Entry);
-
-         ------------------
-         --  DOT DOT ENTRY
-         ------------------
-
-         Status := Allocate_Entry (New_Dir, "..", Ent_Addr);
-         if Status /= OK then
-            return Status;
-         end if;
-
-         --  now write the directory entry in the parent
-         Status := New_Dir.FS.Ensure_Block (Ent_Addr.Block_LBA);
-         if Status /= OK then
-            return Status;
-         end if;
-
-         --  fill entry attrs to make it a directory
-         Dot_Entry.FS := New_Dir.FS;
-         Dot_Entry.Attributes.Read_Only := False;
-         Dot_Entry.Attributes.Hidden := False;
-         Dot_Entry.Attributes.Archive := False;
-         Dot_Entry.Attributes.System_File := False;
-         Dot_Entry.Attributes.Volume_Label := False;
-         Dot_Entry.Attributes.Subdirectory := True;
-         Dot_Entry.Start_Cluster := Parent.Dir_Begin.Cluster; -- FIXME: if parent is root, then this shall be zero according to microsoft
-         Dot_Entry.Size := 0; -- directories always carry zero
-         Dot_Entry.Entry_Address := Ent_Addr;
-         Set_Name ("..", Dot_Entry);
-
-         --  encode into FAT entry
-         Status := Directory_To_FAT_Entry (Dot_Entry, F_Entry);
-         if Status /= OK then
-            return Status;
-         end if;
-
-         --  copy over to FS.Window.
-         New_Dir.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off + ENTRY_SIZE - 1)
-           := From_Entry (F_Entry);
-
-         --  finally..write back the block with the new directory contents
-         Status := New_Dir.FS.Write_Window (Ent_Addr.Block_LBA);
-         if Status /= OK then
-            return Status;
-         end if;
+         --  finally .. write back the block with the new directory contents
+         Status := Parent.FS.Write_Window (Parent.FS.Cluster_To_Block (NewDir_Cluster));
       end;
 
       return Status;
    end Make_Directory;
 
+   -------------------------
+   --  Invalidate_Handle_Pointer
+   -------------------------
+
+   procedure Invalidate_Handle_Pointer (h : in out Directory_Handle_Pointer) is
+   begin
+      h.Cluster := INVALID_CLUSTER;
+   end Invalidate_Handle_Pointer;
+
+   -------------------------
+   --  Valid_Handle_Pointer
+   -------------------------
+
+   function Valid_Handle_Pointer (h : Directory_Handle_Pointer) return Boolean
+   is (h.Cluster /= INVALID_CLUSTER);
+
+   -------------------------
+   --  Rewind
+   -------------------------
+
    procedure Rewind (Dir : in out Directory_Handle) is
    begin
       Dir.Dir_Current := Dir.Dir_Begin;
-      Dir.Dir_End     := Dir.Dir_Begin;
+      Invalidate_Handle_Pointer (Dir.Dir_End);
    end Rewind;
+
+   -------------------------
+   --  Open
+   -------------------------
 
    function Open
      (E   : Directory_Entry;
@@ -259,6 +257,10 @@ package body FAT_Filesystem.Directories is
 
       return OK;
    end Directory_To_FAT_Entry;
+
+   ----------------------------
+   -- FAT_To_Directory_Entry --
+   ----------------------------
 
    function FAT_To_Directory_Entry
      (FS : FAT_Filesystem_Access;
@@ -360,8 +362,8 @@ package body FAT_Filesystem.Directories is
             --  set short name for regular entries
             if not F_Entry.Attributes.Subdirectory then
                declare
-                  Base   : String renames Trim (F_Entry.Filename);
-                  Ext    : String renames Trim (F_Entry.Extension);
+                  Base   : String renames RTrim (F_Entry.Filename);
+                  Ext    : String renames RTrim (F_Entry.Extension);
                   Ent_Name : constant String :=
                     Base & (if Ext'Length > 0 then "." & Ext else "");
                begin
@@ -370,7 +372,7 @@ package body FAT_Filesystem.Directories is
             else
                declare
                   Cat_Name : constant String := F_Entry.Filename & F_Entry.Extension;
-                  Ent_Name : String renames Trim (Cat_Name);
+                  Ent_Name : String renames RTrim (Cat_Name);
                begin
                   Set_Name (Ent_Name, D_Entry);
                end;
@@ -394,19 +396,25 @@ package body FAT_Filesystem.Directories is
       return Invalid_Name;
    end FAT_To_Directory_Entry;
 
+   ---------------
+   --  Is_Deleted
+   ---------------
+
    function Is_Deleted (F_Entry : FAT_Directory_Entry) return Boolean
    is (Character'Pos (F_Entry.Filename (1)) = 16#E5#);
+
+   ---------------
+   --  Read Dir
+   ---------------
 
    function Read (Dir    : in out Directory_Handle;
                   DEntry : out Directory_Entry;
                   Deleted : Boolean := False) return Status_Code
    is
-      Ret     : Status_Code;
-      F_Entry : FAT_Directory_Entry;
       subtype Entry_Data is Block (1 .. 32);
-      function To_Entry is new Ada.Unchecked_Conversion
-        (Entry_Data, FAT_Directory_Entry);
-
+      function To_Entry is new Ada.Unchecked_Conversion (Entry_Data, FAT_Directory_Entry);
+      Ret         : Status_Code;
+      F_Entry     : FAT_Directory_Entry;
       Last_Seq    : VFAT_Sequence_Number := 0;
       Block_Off   : Unsigned_16;
    begin
@@ -427,6 +435,7 @@ package body FAT_Filesystem.Directories is
       DEntry.Name_First := DEntry.Name'Last + 1;
       DEntry.Name_Last := DEntry.Name'First - 1;
 
+      --  Dir_Current.index has been incremented before (in the previous call)
       Fetch_Next : loop
          Block_Off :=
            Unsigned_16
@@ -472,11 +481,11 @@ package body FAT_Filesystem.Directories is
             return Invalid_Object_Entry;
          end if;
 
-         Dir.Dir_End := Dir.Dir_Current;
-
          --  okay, there are more entries. each entry is 32bytes:
-         F_Entry := To_Entry (Dir.FS.Window
-                              (Block_Off .. Block_Off + ENTRY_SIZE - 1));
+         Dir.Dir_End := Dir.Dir_Current; -- remember last valid
+         F_Entry := To_Entry (Dir.FS.Window (Block_Off .. Block_Off + ENTRY_SIZE - 1));
+
+         --  move forward for next call of Read()
          Dir.Dir_Current.Index := Dir.Dir_Current.Index + 1;
 
          --  continue until we have an entry...because VFAT has multiple parts
@@ -497,15 +506,23 @@ package body FAT_Filesystem.Directories is
       return OK;
    end Read;
 
+   ---------------
+   --  Set_Name
+   ---------------
+
    procedure Set_Name (newname : String; D : in out Directory_Entry) is
-      maxlen  : constant Integer := newname'Length;
-      newlast : constant Integer := D.Name'First + maxlen - 1;
-      --  TODO: trim leading spaces. they are not allowed
+      trimname : String renames LTrim (newname); -- leading spaces not allowed in FAT
+      maxlen   : constant Integer := trimname'Length;
+      newlast  : constant Integer := D.Name'First + maxlen - 1;
    begin
-      D.Name (D.Name'First .. newlast) := newname;
+      D.Name (D.Name'First .. newlast) := trimname;
       D.Name_First := D.Name'First;
       D.Name_Last := newlast;
    end Set_Name;
+
+   ---------------
+   --  Set_Name
+   ---------------
 
    procedure Set_Name (newname : String; E : in out FAT_Directory_Entry) is
    begin
@@ -544,6 +561,10 @@ package body FAT_Filesystem.Directories is
       end if;
    end Set_Name;
 
+   ---------------
+   --  Get_Name
+   ---------------
+
    function Get_Name (E : Directory_Entry) return String is
    begin
       if E.Name_First in E.Name'Range and then E.Name_Last in E.Name'Range then
@@ -553,14 +574,18 @@ package body FAT_Filesystem.Directories is
       end if;
    end Get_Name;
 
+   -------------------------
+   --  Get_Entry_Or_Deleted
+   --------------------------
+
    function Get_Entry_Or_Deleted
      (Parent  : in out Directory_Handle;
       E_Name  : String;
       Ent     : out Directory_Entry;
       Deleted : out Boolean) return Boolean
-   is
+   is FAT_Approx_Name : String renames Trim (E_Name);
    begin
-      Rewind (Parent);
+      Rewind (Parent); Deleted := False;
       while Read (Parent, Ent, True) = OK loop
          if Ent.FS = null then
             Deleted := True;
@@ -580,6 +605,10 @@ package body FAT_Filesystem.Directories is
 
       return False;
    end Get_Entry_Or_Deleted;
+
+   ---------------
+   --  Get_Entry
+   ---------------
 
    function Get_Entry
      (Parent  : in out Directory_Handle;
@@ -603,6 +632,10 @@ package body FAT_Filesystem.Directories is
       return False;
    end Get_Entry;
 
+   ---------------------
+   --  Goto_Last_Entry
+   ---------------------
+
    procedure Goto_Last_Entry (Parent   : in out Directory_Handle) is
       Tmp : Directory_Entry;
    begin
@@ -611,13 +644,16 @@ package body FAT_Filesystem.Directories is
       end loop;
    end Goto_Last_Entry;
 
+   --------------------
+   --  Allocate_Entry
+   --------------------
 
    function Allocate_Entry
      (Parent   : in out Directory_Handle;
       New_Name : String;
       Ent_Addr : out FAT_Address) return Status_Code
    is
-      Block_Off    : Unsigned_16;
+      Block_Off : Unsigned_16;
    begin
       if Parent.FS.Version /= FAT32 then
          --  we only support FAT32 for now.
@@ -628,10 +664,8 @@ package body FAT_Filesystem.Directories is
          Ent : Directory_Entry;
          Deleted : Boolean;
       begin
-         if Get_Entry_Or_Deleted (Parent => Parent,
-                                  E_Name => New_Name,
-                                  Ent => Ent,
-                                  Deleted => Deleted)
+         if Get_Entry_Or_Deleted (Parent => Parent, E_Name => New_Name,
+                                  Ent => Ent, Deleted => Deleted)
          then
             if Deleted then
                --  silently re-use the deleted entry
@@ -644,14 +678,15 @@ package body FAT_Filesystem.Directories is
       end;
 
       --  if we are here, we really need to add a new entry.
-
-      --  XXX TODO: we must not do this when the Directory_Handle
-      --  stems from a newly created directory, as this doesn't
-      --  have a terminator, yet.
       Goto_Last_Entry (Parent);
 
+      if not Valid_Handle_Pointer (Parent.Dir_End) then
+         --  this means the directory is completely empty. should never happen
+         --  FIXME: for more robustness, we need to be able to start at index zero
+         return Internal_Error;
+      end if;
+
       --  now append
-      --  TODO: we need to be able to start at index zero
       Parent.Dir_End.Index := Parent.Dir_End.Index + 1;
 
       --  if we are here, then we reached the last entry in the directory.
@@ -661,7 +696,7 @@ package body FAT_Filesystem.Directories is
       Block_Off := Unsigned_16 (Unsigned_32
                                 (Parent.Dir_End.Index) * ENTRY_SIZE
                                 mod Parent.FS.Block_Size_In_Bytes);
-      --  offset of entry within current block
+
 
       --  do we need a new block?
       if Block_Off = 0 and then Parent.Dir_End.Index > 0 then
@@ -695,7 +730,7 @@ package body FAT_Filesystem.Directories is
       --  check if there is more space in the cluster after the new entry
       --  if yes, terminate the directory by writing a zero.
       --  Actually, Microsoft recommends to zero the entire cluster to
-      --  avoid this ugly hack. But this should be faster and is less wear.
+      --  avoid this ugly hack. But this should be faster and is less wearout.
       declare
          Terminator_Off : constant Unsigned_16 :=
            Unsigned_16 (Unsigned_32
@@ -710,7 +745,7 @@ package body FAT_Filesystem.Directories is
                return Status;
             end if;
             Parent.FS.Window (Terminator_Off) := 0;
-            Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);
+            Status := Parent.FS.Write_Window (Parent.Dir_End.Block);
             if Status /= OK then
                return Status;
             end if;
@@ -728,7 +763,7 @@ package body FAT_Filesystem.Directories is
                      return Status;
                   end if;
                   Parent.FS.Window (Parent.FS.Window'First) := 0;
-                  Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);
+                  Status := Parent.FS.Write_Window (Terminator_Block);
                   if Status /= OK then
                      return Status;
                   end if;

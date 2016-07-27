@@ -19,6 +19,12 @@ package MyStrings is
    --  if too short, pad with spaces until it reaches the given length
    --  if too long, then crop
 
-   function Trim (S : String) return String;
+   function RTrim (S : String) return String;
    --  remove trailing spaces
+
+   function LTrim (S : String) return String;
+   --  remove leading spaces
+
+   function Trim (S : String) return String;
+   --  remove leading and trailing spaces
 end MyStrings;

@@ -20,6 +20,9 @@ package SDMemory.Driver is
    procedure Write_Log (Data : FAT_Filesystem.Directories.Files.File_Data);
    --  @summary write bytes to logfile
 
+   procedure Flush_Log;
+   --  @summary force writing logfile to disk. Not recommended when time is critical!
+
    function To_File_Data (S : String) return FAT_Filesystem.Directories.Files.File_Data;
 
 end SDMemory.Driver;

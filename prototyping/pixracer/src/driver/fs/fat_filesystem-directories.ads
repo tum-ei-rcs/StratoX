@@ -126,23 +126,21 @@ private
 --        Current_Cluster : Unsigned_32;
 --     end record;
 
+   --  FIXME: encapsulate this, and provide function "move_forward" or something.
    type Directory_Handle_Pointer is record
       Index   : Unsigned_16;
       Cluster : Unsigned_32;
       Block   : Unsigned_32;
    end record;
 
+   procedure Invalidate_Handle_Pointer (h : in out Directory_Handle_Pointer);
+   function  Valid_Handle_Pointer (h : Directory_Handle_Pointer) return Boolean;
+
    type Directory_Handle is record
-      FS               : FAT_Filesystem_Access;
-
-      Dir_Begin   : Directory_Handle_Pointer;
-      Dir_Current : Directory_Handle_Pointer;
-      Dir_End     : Directory_Handle_Pointer;
-
---        Current_Index    : Unsigned_16; -- current entry in the directory
---        Start_Cluster    : Unsigned_32; -- first cluster of the direcory
---        Current_Cluster  : Unsigned_32; -- cluster belonging to current_index
---        Current_Block    : Unsigned_32; -- block belonging to current index
+      FS          : FAT_Filesystem_Access;
+      Dir_Begin   : Directory_Handle_Pointer; -- points to the first entry of the directory
+      Dir_Current : Directory_Handle_Pointer; -- points to the current, valid entry
+      Dir_End     : Directory_Handle_Pointer; -- points past the last valid entry
    end record;
    --  used to read directories
 
