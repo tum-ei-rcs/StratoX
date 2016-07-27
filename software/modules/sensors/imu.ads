@@ -3,6 +3,7 @@
 with Generic_Sensor;
 with Interfaces; use Interfaces;
 
+with Units; use Units;
 with Units.Vectors; use Units.Vectors;
 with Units.Navigation; use Units.Navigation;
 with MPU6000.Driver; use MPU6000;
@@ -44,8 +45,6 @@ package IMU with SPARK_Mode is
    function get_Orientation(Self : IMU_Tag) return Orientation_Type;
 
    function Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; Angular_Rate : Angular_Velocity_Vector) return Orientation_Type;
-
-
 
    procedure check_Freefall(Self : in out IMU_Tag; isFreefall : out Boolean);
 

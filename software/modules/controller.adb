@@ -3,6 +3,7 @@ with PX4IO.Driver;
 with Servo;
 with Generic_PID_Controller;
 with Logger;
+with Profiler;
 with Config.Software;
 with Units.Numerics; use Units.Numerics;
 
@@ -19,6 +20,7 @@ package body Controller with SPARK_Mode is
 
    type State_Type is record
       logger_calls : Logger_Call_Type;
+      control_profiler : Profiler.Profile_Tag;
    end record;
 
    package Pitch_PID_Controller is new Generic_PID_Controller(Angle_Type,
@@ -71,6 +73,7 @@ package body Controller with SPARK_Mode is
    G_Plane_Control : Plane_Control_Type := (others => 0.0 * Degree);
    G_Elevon_Angles : Elevon_Angle_Array := (others => 0.0 * Degree);
 
+
    -- init
    procedure initialize is
    begin
@@ -91,6 +94,7 @@ package body Controller with SPARK_Mode is
                                       Unit_Type( Config.Software.CFG_PID_YAW_D ));
 
 
+      G_state.control_profiler.init("Control");
    end initialize;
 
 
@@ -145,6 +149,8 @@ package body Controller with SPARK_Mode is
 
    procedure runOneCycle is
    begin
+      G_state.control_profiler.start;
+
       -- control
       control_Pitch;
       control_Yaw;
@@ -169,8 +175,11 @@ package body Controller with SPARK_Mode is
 --           detach;
 --        end if;
 
-
+      -- Output
       PX4IO.Driver.sync_Outputs;
+
+
+      G_state.control_profiler.stop;
    end runOneCycle;
 
    procedure set_hold is

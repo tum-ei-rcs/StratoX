@@ -60,6 +60,8 @@ package Units.Vectors with SPARK_Mode is
    type Tait_Bryan_Angle_Type is (ROLL, PITCH, YAW);
    type Euler_Angle_Type is (X1, Z2, X3);
 
+   type Angular_Vector is array(Tait_Bryan_Angle_Type) of Unit_Type;
+
    type Unit_Vector is array(Tait_Bryan_Angle_Type) of Angle_Type;
 
    type Angle_Vector is array(Tait_Bryan_Angle_Type) of Angle_Type;
@@ -102,6 +104,8 @@ package Units.Vectors with SPARK_Mode is
    procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);
 
    function "abs" (vector : Cartesian_Vector_Type) return Unit_Type;
+
+   function "abs" (vector : Angular_Vector) return Unit_Type;
 
 
    -- Matrices

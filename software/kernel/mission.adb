@@ -253,10 +253,20 @@ package body Mission is
 
    procedure control_Descend is
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      
+      procedure deactivate is
+      begin
+         Controller.deactivate;
+         next_State;  
+         -- beep ever 10 seconds for one second at 1kHz.
+         -- Buzzer_Manager.Set_Freq (1000.0 * Hertz);
+         -- Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
+         -- Buzzer_Manager.Enable;  
+      end deactivate;
+      
    begin
       -- Estimator
       Estimator.update;
-
       G_state.body_info.orientation := Estimator.get_Orientation;
       G_state.body_info.position := Estimator.get_Position;
 
@@ -266,17 +276,16 @@ package body Mission is
       Controller.runOneCycle; 
       
       
+      -- Check stable position
+      if Estimator.get_Stable_Time > 20.0 * Second then
+         Logger.log(Logger.INFO, "Landed.");
+         deactivate;
+      end if;    
+      
       -- Timeout for Landing
       if now > G_state.last_state_change + Seconds(90) then
          Logger.log(Logger.INFO, "Timeout. Landed");
-         Controller.deactivate;
-             
-         -- beep ever 10 seconds for one second at 1kHz.
-         -- Buzzer_Manager.Set_Freq (1000.0 * Hertz);
-         -- Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
-         -- Buzzer_Manager.Enable;          
-         
-         next_State;
+         deactivate;
       end if;
       
       

@@ -37,7 +37,7 @@ package Estimator with SPARK_Mode is
   
    function get_max_Height return Altitude_Type;
    
-   
+   function get_Stable_Time return Time_Type;  
    
 
 
@@ -47,6 +47,8 @@ private
      (gravity_vector : Linear_Acceleration_Vector) return Orientation_Type;
    
    procedure update_Max_Height;
+   
+   procedure check_stable_Time;
 
    G_Object_Orientation : Orientation_Type   := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
    G_Object_Position    : GPS_Loacation_Type := (0.0 * Degree, 0.0 * Degree, 0.0 * Meter);

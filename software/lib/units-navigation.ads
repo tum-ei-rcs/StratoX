@@ -44,7 +44,7 @@ package Units.Navigation with SPARK_Mode is
 
    -- Orientation
    subtype Roll_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree;
-   subtype Pitch_Type is Units.Angle_Type range -90.0 * Degree .. 90.0 * Degree; -- FIXME: -90 .. 90 ?
+   subtype Pitch_Type is Units.Angle_Type range -90.0 * Degree .. 90.0 * Degree;
    subtype Yaw_Type is Units.Angle_Type range 0.0 * Degree .. 360.0 * Degree;
 
    type Orientation_Type is record
@@ -64,6 +64,8 @@ package Units.Navigation with SPARK_Mode is
    SOUTH : constant Heading_Type := 180.0 * Degree;
    WEST  : constant Heading_Type := 270.0 * Degree;
 
+   EARTH_RADIUS : constant Length_Type := 6378.137 * Kilo * Meter;
+
 
    type Body_Type is record
       mass        : Mass_Type;
@@ -76,11 +78,15 @@ package Units.Navigation with SPARK_Mode is
 
    function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type;
 
+
+   -- function Distance( source : GPS_Loacation_Type, destination : GPS_Loacation_Type ) return Length_Type is ()
+
+
+
    function To_Orientation( rotation : Rotation_Vector ) return Orientation_Type is
    (  wrap_Angle( rotation(Roll), Roll_Type'First, Roll_Type'Last ),
       wrap_Angle( rotation(Pitch), Pitch_Type'First, Pitch_Type'Last ),
       wrap_Angle( rotation(Yaw), Yaw_Type'First, Yaw_Type'Last ) );
-
 
    function "+" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
    ( wrap_Angle( Angle_Type( Left.Roll ) + Right(Roll), Roll_Type'First, Roll_Type'Last ),

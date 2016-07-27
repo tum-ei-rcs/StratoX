@@ -125,8 +125,10 @@ is
             
             if head(3) = UBX_CLASS_NAV and head(4) = UBX_ID_NAV_PVT and head(5) = UBX_LENGTH_NAV_PVT then 
                
-               message := data_rx(Integer(pointer + 7) .. Integer(pointer + 98));  -- EXCEPTION: mögliches 0 Array
-               check := data_rx(Integer(pointer + 99) .. Integer(pointer + 100));         
+               if (pointer + 7) < (pointer + 100) then
+                  message := data_rx(Integer(pointer + 7) .. Integer(pointer + 98));  -- EXCEPTION: mögliches 0 Array
+                  check := data_rx(Integer(pointer + 99) .. Integer(pointer + 100));         
+               end if;
             
                cks := Fletcher16_Byte.Checksum( head & message );
                if check(1) = cks.ck_a and check(2) = cks.ck_b then

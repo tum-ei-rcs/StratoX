@@ -30,4 +30,9 @@ package body Units.Vectors is
       return Unit_Type (Sqrt (vector (X)**2 + vector (Y)**2 + vector (Z)**2));
    end "abs";
 
+   function "abs" (vector : Angular_Vector) return Unit_Type is
+   begin
+      return Unit_Type (Sqrt (vector (Roll)**2 + vector (Pitch)**2 + vector (Yaw)**2));
+   end "abs";
+
 end Units.Vectors;

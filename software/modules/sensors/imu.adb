@@ -1,8 +1,13 @@
 
-with Units; use Units;
+
 with Ada.Real_Time; use Ada.Real_Time;
 
+with Generic_Queue;
+with Units; use Units;
+
+
 package body IMU is
+
 
    type State_Type is record
       filterAngle : Rotation_Vector;
@@ -16,15 +21,14 @@ package body IMU is
       kmS         : Unit_Type := 0.0;  -- Estimate Error
       kmK : Unit_Vector2D := (0.0, 0.0);
       kmy : Rotation_Vector := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);  -- Angle difference
-      kmLastCall : Ada.Real_Time.Time;
+      kmLastCall : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    end record;
    
-   G_state : State_Type;
+   G_state  : State_Type;
 
    KM_ACC_VARIANCE : constant Unit_Type := 0.001;
    KM_GYRO_BIAS_VARIANCE : constant Unit_Type := 0.003;
    KM_MEASUREMENT_VARIANCE : constant Unit_Type := 0.03;
-
 
 
    function MPU_To_PX4Frame(vector : Linear_Acceleration_Vector) return Linear_Acceleration_Vector is
@@ -96,8 +100,6 @@ package body IMU is
                               2 => G_state.kmP(2, 2) - G_state.kmK(2) * G_state.kmP(1, 2) ) );
       
       
-      
-      
    end perform_Kalman_Filtering;
    
    
@@ -125,11 +127,12 @@ package body IMU is
       return result;
    end get_Angular_Velocity;
 
-
    function get_Orientation(Self : IMU_Tag) return Orientation_Type is
    begin
       return G_state.kmAngle;
    end get_Orientation;
+
+
 
    -- Complementary Filter: angle = 0.98 *(angle+gyro*dt) + 0.02*acc
    function Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; Angular_Rate : Angular_Velocity_Vector) return Orientation_Type is
@@ -161,7 +164,6 @@ package body IMU is
       end if;
       isFreefall := (Self.Freefall_Counter >= 5);
    end check_Freefall;
-
 
 
 

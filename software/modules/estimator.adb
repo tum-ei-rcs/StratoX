@@ -3,6 +3,8 @@ with Generic_Signal;
 --with Generic_Sensor;
 with Generic_Queue;
 
+with Ada.Real_Time; use Ada.Real_Time;
+
 with IMU;
 with GPS;
 with Barometer;
@@ -12,12 +14,15 @@ with Units.Numerics; use Units.Numerics;
 with Units.Navigation; use Units.Navigation;
 
 with Logger;
+with Profiler;
+
 with Config.Software;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 package body Estimator with SPARK_Mode is
 
    type Height_Index_Type is mod 10;
+   type IMU_Index_Type is mod 10;
    type Baro_Call_Type is mod 2;
    type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP;
 
@@ -25,11 +30,15 @@ package body Estimator with SPARK_Mode is
    use Height_Buffer_Pack;
    package GPS_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => GPS_Loacation_Type);
    use GPS_Buffer_Pack;
+   package IMU_Buffer_Pack is new Generic_Queue(Index_Type => IMU_Index_Type, Element_Type => Orientation_Type);
+   use IMU_Buffer_Pack;
 
    G_height_buffer : Height_Buffer_Pack.Buffer_Tag;
    G_pos_buffer : GPS_Buffer_Pack.Buffer_Tag;
 
+   G_orientation_buffer : IMU_Buffer_Pack.Buffer_Tag;
 
+   G_Profiler : Profiler.Profile_Tag;
 
 
    type State_Type is record
@@ -40,6 +49,8 @@ package body Estimator with SPARK_Mode is
       max_baro_height : Altitude_Type := 0.0 * Meter;
       baro_calls : Baro_Call_Type := 0;
       logger_calls : Logger_Call_Type := 0;
+      stable_Time     : Time_Type := 0.0 * Second;
+      last_stable_check : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    end record;
 
    type Sensor_Record is record
@@ -68,6 +79,9 @@ package body Estimator with SPARK_Mode is
       Barometer.Sensor.initialize;
       GPS.Sensor.initialize;
 
+      -- Profiler
+      G_Profiler.init("Estimator");
+
       Logger.log(Logger.INFO, "Estimator initialized");
    end initialize;
 
@@ -81,6 +95,8 @@ package body Estimator with SPARK_Mode is
       GFixS : String := "NO";
 
    begin
+      G_Profiler.start;
+
       -- Estimate Object Orientation
       IMU.Sensor.read_Measurement;
       Acc := IMU.Sensor.get_Linear_Acceleration;
@@ -95,7 +111,8 @@ package body Estimator with SPARK_Mode is
       IMU.perform_Kalman_Filtering( IMU.Sensor, Acc_Orientation );
       G_Object_Orientation := IMU.Sensor.get_Orientation;
 
-      Logger.log(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", " & AImage( Acc_Orientation.Pitch ) & ", " & AImage( Acc_Orientation.Yaw ) );
+
+      -- Logger.log(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", " & AImage( Acc_Orientation.Pitch ) & ", " & AImage( Acc_Orientation.Yaw ) );
       -- Logger.log(Logger.INFO, "CF : " & AImage( CF_Orientation.Roll ) & ", " & AImage( CF_Orientation.Pitch ) & ", " & AImage( CF_Orientation.Yaw ) );
       -- Logger.log(Logger.INFO, "KM : " & AImage( G_Object_Orientation.Roll ) & ", " & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
 
@@ -125,18 +142,27 @@ package body Estimator with SPARK_Mode is
          GFixS := "2D";
          G_Object_Position := GPS.Sensor.get_Position;
          G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;  -- Overwrite Alt
+
       else
          GFixS := "NO";
          G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
       end if;
-      GPS_Buffer_Pack.push_back( G_pos_buffer, GPS.Sensor.get_Position );
+
+
+
+      -- update stable measurements
+      check_stable_Time;
 
       -- Outputs
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
          log_Info;
+         G_pos_buffer.push_back( GPS.Sensor.get_Position );
+         G_orientation_buffer.push_back( G_Object_Orientation );
       end if;
 
+
+      G_Profiler.stop;
    end update;
 
 
@@ -287,5 +313,48 @@ package body Estimator with SPARK_Mode is
       end if;
 
    end update_Max_Height;
+
+
+   procedure check_stable_Time is
+      or_values : IMU_Buffer_Pack.Element_Array(1 .. G_orientation_buffer.Length);
+      or_ref : Orientation_Type;
+      pos_values : GPS_Buffer_Pack.Element_Array(1 .. G_pos_buffer.Length);
+      pos_ref : GPS_Loacation_Type;
+
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      stable : Boolean := True;
+   begin
+      if G_orientation_buffer.Length > 1 and G_pos_buffer.Length > 1 then
+         G_state.stable_Time := G_state.stable_Time + Units.To_Time( Ada.Real_Time.Time_Span( now - G_state.last_stable_check ) );
+         G_orientation_buffer.get_all(or_values);
+         or_ref := or_values(1);
+         for index in Integer range 1 .. or_values'Length loop
+            if or_values(index).Roll - or_ref.Roll > 1.5 * Degree  or
+            or_values(index).Pitch - or_ref.Pitch > 1.5 * Degree then
+               G_state.stable_Time := 0.0 * Second;
+            end if;
+         end loop;
+
+         G_pos_buffer.get_all(pos_values);
+         pos_ref := pos_values(1);
+         for index in Integer range 1 .. pos_values'Length loop
+            if pos_values(index).Longitude - pos_ref.Longitude > 0.002 * Degree or   -- 0.002° ≈ 111 Meter
+            pos_values(index).Latitude - pos_ref.Latitude > 0.002 * Degree or
+            pos_values(index).Altitude - pos_ref.Altitude > 10.0 * Meter then
+               G_state.stable_Time := 0.0 * Second;
+            end if;
+         end loop;
+
+      else
+         G_state.stable_Time := 0.0 * Second;
+      end if;
+      G_state.last_stable_check := now;
+
+   end check_stable_Time;
+
+   function get_Stable_Time return Time_Type is
+   begin
+      return G_state.stable_Time;
+   end get_Stable_Time;
 
 end Estimator;

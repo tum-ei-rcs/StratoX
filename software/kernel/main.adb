@@ -22,6 +22,7 @@ with Estimator;
 with Controller;
 with LED_Manager;
 with Buzzer_Manager;
+with Profiler; use Profiler;
 
 with Interfaces; use Interfaces;
 
@@ -109,11 +110,14 @@ package body Main is
 
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
+      
+      Main_Profile : Profile_Tag;
 
       body_info : Body_Type;
 
       command : Console.User_Command_Type;
    begin
+      Main_Profile.init(name => "Main");
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
       Logger.log (Logger.INFO, msg);
@@ -130,6 +134,7 @@ package body Main is
 
       loop
          loop_time_start := Clock;
+         Main_Profile.start;
 
 
          -- LED alive
@@ -168,20 +173,22 @@ package body Main is
                Estimator.log_Info;
                Controller.log_Info;
 
-               Logger.log (Logger.INFO, "Profile:" & Integer'Image (loop_duration_max / Time_Span_Unit));
+               Logger.log (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
 
             when Console.ARM => Controller.activate;
 
             when Console.DISARM => Controller.deactivate;
 
             when Console.PROFILE =>
-               Logger.log (Logger.INFO, "Profile:" & Integer'Image (loop_duration_max / Time_Span_Unit));
+               Logger.log (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+               Main_Profile.log;
 
             when others =>
                null;
          end case;
 
          -- Profile
+         Main_Profile.stop;
          if loop_duration_max < (Clock - loop_time_start) then
             loop_duration_max := Clock - loop_time_start;
          end if;
