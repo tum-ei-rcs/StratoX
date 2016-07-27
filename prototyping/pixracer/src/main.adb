@@ -82,7 +82,12 @@ package body Main is
          else
             Logger.log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
             SDMemory.Driver.Write_Log (SDMemory.Driver.To_File_Data ("Hello World"));
+            SDMemory.Driver.Write_Log (SDMemory.Driver.To_File_Data ("Build Stamp:" &
+                                         Buildinfo.Compilation_Date & " "
+                                       & Buildinfo.Compilation_Time));
+            SDMemory.Driver.Flush_Log;
          end if;
+         null;
       end;
       Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
@@ -118,7 +123,7 @@ package body Main is
          --  LED heartbeat
          LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
          LED_Manager.LED_sync;
-         Buzzer_Manager.Tick;
+         --  Buzzer_Manager.Tick;
 
 --           --  UART Test
 --           --  HIL.UART.write(HIL.UART.Console, (70, 65) );

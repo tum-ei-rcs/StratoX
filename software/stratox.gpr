@@ -108,6 +108,13 @@ project StratoX is
       end case;
    end Ide;
 
+   package Linker is
+                for Default_Switches ("Ada") use
+                  ("-Wl,--defsym=__stack_size=16384",
+                  "-Wl,--gc-sections",
+                  "-Wl,--print-memory-usage");
+   end Linker;
+
    package Prove is
       -- switches for gnat2why et. al.
 

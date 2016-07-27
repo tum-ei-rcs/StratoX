@@ -202,14 +202,16 @@ package STM32.SDMMC is
       Addr       : Unsigned_64;
       DMA        : STM32.DMA.DMA_Controller;
       Stream     : STM32.DMA.DMA_Stream_Selector;
-      Data       : out SD_Data) return SD_Error;
+      Data       : out SD_Data) return SD_Error
+     with Pre => Data'Length <= 65535;
 
    function Write_Blocks_DMA
      (Controller : in out SDMMC_Controller;
       Addr       : Unsigned_64;
       DMA        : STM32.DMA.DMA_Controller;
       Stream     : STM32.DMA.DMA_Stream_Selector;
-      Data       : SD_Data) return SD_Error;
+      Data       : SD_Data) return SD_Error
+     with Pre => Data'Length <= 65535;
 
    function Stop_Transfer
      (Controller : in out SDMMC_Controller) return SD_Error;

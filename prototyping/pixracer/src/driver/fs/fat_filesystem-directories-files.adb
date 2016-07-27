@@ -8,6 +8,10 @@ with FAT_Filesystem; use FAT_Filesystem;
 --  @summary File handling for FAT FS
 package body FAT_Filesystem.Directories.Files is
 
+   -------------------
+   --  File_Create
+   -------------------
+
    function File_Create
      (Parent  : in out Directory_Handle;
       newname : String;
@@ -35,7 +39,7 @@ package body FAT_Filesystem.Directories.Files is
          return Status;
       end if;
 
-      --  find free cluster
+      --  find free cluster or data
       new_cluster := Parent.FS.Get_Free_Cluster;
       if new_cluster = INVALID_CLUSTER then
          return Device_Full;
@@ -59,18 +63,14 @@ package body FAT_Filesystem.Directories.Files is
       File.D_Entry.FS := Parent.FS;
       File.D_Entry.Attributes.Read_Only := False;
       File.D_Entry.Attributes.Hidden := False;
-      File.D_Entry.Attributes.Archive := False;
-      File.D_Entry.Attributes.System_File := True;
+      File.D_Entry.Attributes.Archive := True; -- for backup: mark new files with archive flag
+      File.D_Entry.Attributes.System_File := False;
       File.D_Entry.Attributes.Volume_Label := False;
       File.D_Entry.Attributes.Subdirectory := False;
       File.D_Entry.Start_Cluster := new_cluster;
+      File.D_Entry.Entry_Address := Ent_Addr;
       File.D_Entry.Size := 0; -- file is empty, yet
-
-      --  FIXME: 8+3 scheme
-      StrCpySpace (instring => newname, outstring => File.D_Entry.Short_Name);
-
-      File.D_Entry.Short_Name_Last := File.D_Entry.Short_Name'Length;
-      File.D_Entry.Long_Name_First := File.D_Entry.Long_Name'Last + 1;
+      Set_Name (newname, File.D_Entry);
 
       --  encode into FAT entry
       Status := Directory_To_FAT_Entry (File.D_Entry, F_Entry);
@@ -99,6 +99,11 @@ package body FAT_Filesystem.Directories.Files is
       File.Is_Open := True;
       return OK;
    end File_Create;
+
+
+   -------------------
+   --  File_Write
+   -------------------
 
    function File_Write
      (File : in out File_Handle;
@@ -179,6 +184,10 @@ package body FAT_Filesystem.Directories.Files is
       return n_processed;
    end File_Write;
 
+   ------------------------
+   --  File_Open_Readonly
+   ------------------------
+
    function File_Open_Readonly
      (Ent  : in out Directory_Entry;
       File : in out File_Data) return Status_Code
@@ -188,6 +197,10 @@ package body FAT_Filesystem.Directories.Files is
       --  TODO: not yet implemented
       return Internal_Error;
    end File_Open_Readonly;
+
+   ---------------
+   --  File_Read
+   ---------------
 
    function File_Read
      (File : in out File_Handle;
@@ -203,6 +216,10 @@ package body FAT_Filesystem.Directories.Files is
       File.Bytes_Total := File.Bytes_Total + 0;
       return -1;
    end File_Read;
+
+   ----------------
+   --  File_Close
+   ----------------
 
    procedure File_Close (File : in out File_Handle) is
    begin
@@ -223,5 +240,23 @@ package body FAT_Filesystem.Directories.Files is
       end if;
       File.Is_Open := False;
    end File_Close;
+
+   ----------------
+   --  File_Flush
+   ----------------
+
+   function File_Flush (File : in out File_Handle) return Status_Code is
+      Status : Status_Code;
+   begin
+      if not File.Is_Open then
+         return Invalid_Object_Entry;
+      end if;
+
+      if File.Mode = Write_Mode and then File.Buffer_Level > 0 then
+         File.FS.Window := File.Buffer;
+         Status := File.FS.Write_Window (File.Current_Block);
+      end if;
+   end File_Flush;
+
 
 end FAT_Filesystem.Directories.Files;

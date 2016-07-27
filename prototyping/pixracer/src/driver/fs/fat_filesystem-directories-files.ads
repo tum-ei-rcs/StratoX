@@ -27,6 +27,10 @@ package FAT_Filesystem.Directories.Files with SPARK_Mode is
       Data : File_Data) return Integer;
    --  @return number of bytes written (at most Data'Length), or -1 on error.
 
+   function File_Flush
+     (File : in out File_Handle) return Status_Code;
+   --  force writing file to disk at this very moment (slow!)
+
    function File_Open_Readonly
      (Ent  : in out Directory_Entry;
       File : in out File_Data) return Status_Code
