@@ -19,6 +19,8 @@ with Profiler;
 with Config.Software;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
+pragma Elaborate_All(generic_queue);
+
 package body Estimator with SPARK_Mode is
 
    type Height_Index_Type is mod 10;
@@ -102,8 +104,9 @@ package body Estimator with SPARK_Mode is
       Acc := IMU.Sensor.get_Linear_Acceleration;
       Gyro := IMU.Sensor.get_Angular_Velocity;
 
-      -- Logger.log(Logger.DEBUG,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
+     -- Logger.log(Logger.DEBUG,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
       -- Logger.log(Logger.DEBUG,"Gyro: " & AImage(Gyro(Roll)*Second) & ", " & AImage(Gyro(Pitch)*Second) & ", " & AImage(Gyro(YAW)*Second) );
+      -- Logger.log(Logger.DEBUG,"Gyro: " & RImage(Gyro(Roll)*Second) & ", " & RImage(Gyro(Pitch)*Second) & ", " & RImage(Gyro(YAW)*Second) );
 
 
       Acc_Orientation := Orientation( Acc );
@@ -155,7 +158,7 @@ package body Estimator with SPARK_Mode is
       -- update stable measurements
       check_stable_Time;
 
-G_Profiler.start;
+
       -- Outputs
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
@@ -163,9 +166,8 @@ G_Profiler.start;
          G_pos_buffer.push_back( GPS.Sensor.get_Position );
          G_orientation_buffer.push_back( G_Object_Orientation );
       end if;
-G_Profiler.stop;
 
-
+      G_Profiler.stop;
    end update;
 
 

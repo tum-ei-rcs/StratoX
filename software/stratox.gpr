@@ -8,19 +8,7 @@ project StratoX is
 
    -- Specify Directories
    -----------------------------
-   for Source_Dirs use (
-      "boot",
-      "config",
-      "driver",
-      "driver/fs",
-      "kernel",
-      "modules",
-      "modules/sensors",
-      "modules/actuators",
-      "lib",
-      "lib/ulog"
-   );
-
+   for Source_Dirs use ("boot", "config", "driver", "driver/fs", "kernel", "modules", "modules/sensors", "modules/actuators", "lib", "lib/ulog");
    for Object_Dir use "../obj";
    for Exec_Dir use "../obj";
    type Build_Modes is
@@ -28,34 +16,28 @@ project StratoX is
    Build_Mode : Build_Modes := external ("Build_Mode", "debug");
 
    case Build_Mode is
+
+      when "debug" =>
+         for Runtime ("ada") use Pixhawk'Runtime ("Ada");
+         for Target use "arm-eabi";
+
+      when "release" =>
+         for Runtime ("ada") use Pixhawk'Runtime ("Ada");
+         for Target use "arm-eabi";
+
       when "analyze" =>
          for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
          for Excluded_Source_Files use ("generic_vector3d.ads", "genereic_quaternions.ads", "generic_quaternions.adb");
-      when others => null;
+         for Runtime ("ada") use Pixhawk'Runtime ("Ada");
+         for Target use "arm-eabi";
    end case;
 
-   for Runtime ("Ada") use Pixhawk'Runtime ("Ada");
-   for Target use "arm-eabi";
-
    package Compiler is
-
-      --for Local_Configuration_Pragmas use "spark.adc";
 
       case Build_Mode is
 
          when "debug" =>
-            for Default_Switches ("ada") use (
-               "-O0", "-gnatwa.Xh.k.o",
-               "-gnatVaimrsd",
-               "-gnatQ",
-               "-g", "-gnato",
-               "-gnatyak",
-               "-gnat12",
-               "-gnata",
-               Style.STYLE_SWITCHES,
-                                             "-gnatet=../target-gen.atp");
-
-            --for Switches ("ada") use ("-gnatec=" & project'Project_Dir & "spark.adc");
+            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", Style.Style_Switches, "-gnatet=../target-gen.atp");
 
          when "release" =>
             for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.Xh.k.o", "-gnatVaimrs", "-gnato", "-gnat12");
@@ -66,9 +48,7 @@ project StratoX is
    end Compiler;
 
    package Binder is
-      for Default_Switches ("ada") use ("-r",
-         "-E" -- Backtrace for exceptions
-         );
+      for Default_Switches ("ada") use ("-r", "-E");
    end Binder;
 
    package Builder is
@@ -102,34 +82,20 @@ project StratoX is
          when "release" =>
 
          when "analyze" =>
-            for Gnat use "arm-eabi-gnat";
-            for Gnatlist use "arm-eabi-gnatls";
-            for Debugger_Command use "arm-eabi-gdb";
+
       end case;
    end Ide;
 
    package Linker is
-                for Default_Switches ("Ada") use
-                  ("-Wl,--defsym=__stack_size=16384",
-                  "-Wl,--gc-sections",
-                  "-Wl,--print-memory-usage");
+      for Default_Switches ("ada") use ("-Wl,--defsym=__stack_size=16384", "-Wl,--gc-sections", "-Wl,--print-memory-usage");
    end Linker;
 
    package Prove is
       -- switches for gnat2why et. al.
 
-
       for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "-d"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
       -- for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "--assumptions", "-d");
 
-      case Build_Mode is
-
-         when "debug" =>
-
-         when "release" =>
-
-         when "analyze" =>
-      end case;
    end Prove;
 
    package Check is
@@ -137,9 +103,7 @@ project StratoX is
    end Check;
 
    package Requirements is
-      for ReqFile use "requirements.db";
    end Requirements;
-
 
    -- pretty printer
    package Pretty_Printer renames Style.Pretty_Printer;

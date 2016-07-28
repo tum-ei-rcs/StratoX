@@ -256,7 +256,7 @@ package Units with
 
    -- Angular Units
    Radian    : constant Angle_Type := Angle_Type (1.0);
-   Degree    : constant Angle_Type := Angle_Type (1.0 / 360.0 * 2.0 * Ada.Numerics.Pi);
+   Degree    : constant Angle_Type := Angle_Type (2.0 * Ada.Numerics.Pi / 360.0);
    Evolution : constant Angle_Type := Angle_Type (2.0 * Ada.Numerics.Pi);
 
    -- Derived Units
@@ -341,5 +341,6 @@ package Units with
    function Image (unit : Unit_Type) return String;
 
    function AImage (unit : Angle_Type) return String;
+   function RImage (unit : Angle_Type) return String;
 
 end Units;

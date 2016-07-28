@@ -4,6 +4,7 @@ with Ada.Real_Time; use Ada.Real_Time;
 
 with Generic_Queue;
 with Units; use Units;
+with Logger;
 
 
 package body IMU is
@@ -26,9 +27,9 @@ package body IMU is
    
    G_state  : State_Type;
 
-   KM_ACC_VARIANCE : constant Unit_Type := 0.001;
-   KM_GYRO_BIAS_VARIANCE : constant Unit_Type := 0.003;
-   KM_MEASUREMENT_VARIANCE : constant Unit_Type := 0.03;
+   KM_ACC_VARIANCE : constant Unit_Type := 0.00005;  -- old: 0.001;
+   KM_GYRO_BIAS_VARIANCE : constant Unit_Type := 8.0e-6; -- old: 0.003;
+   KM_MEASUREMENT_VARIANCE : constant Unit_Type := 0.003; -- old: 0.03;
 
 
    function MPU_To_PX4Frame(vector : Linear_Acceleration_Vector) return Linear_Acceleration_Vector is
@@ -47,7 +48,7 @@ package body IMU is
       if MPU6000.Driver.Test_Connection then
          Driver.Init;
          Driver.Set_Full_Scale_Gyro_Range( FS_Range => Driver.MPU6000_Gyro_FS_2000 );
-         Driver.Set_Full_Scale_Accel_Range( FS_Range => Driver.MPU6000_Accel_FS_16 );
+         Driver.Set_Full_Scale_Accel_Range( FS_Range => Driver.MPU6000_Accel_FS_8 );
          Self.state := READY;
       else
          Self.state := ERROR;
@@ -67,39 +68,89 @@ package body IMU is
    
    
    procedure perform_Kalman_Filtering(Self : IMU_Tag; newAngle : Orientation_Type) is
-      rate : Angular_Velocity_Vector;
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
       dt : Time_Type := Units.To_Time( now - G_state.kmLastCall ); 
+      newRate : Angular_Velocity_Vector := get_Angular_Velocity(Self);
+      BIAS_LIMIT : constant Angular_Velocity_Type := 200.0*Degree/Second;
+      predAngle : Angle_Vector;
    begin
-   
-      -- 1. Predict
-      ------------------
-      G_state.kmRate := get_Angular_Velocity(Self) - G_state.kmBias;
-      G_state.kmAngle := G_state.kmAngle + G_state.kmRate * dt;
+         -- Logger.log(Logger.INFO, "real time dt: " & Float'Image( Float(dt) ) );
+         
+         
+--        if (newAngle.Roll < -90.0*Degree and G_state.kmAngle.Roll > 90.0*Degree) or (newAngle.Roll > 90.0*Degree and G_state.kmAngle.Roll < -90.0*Degree) then
+--           G_state.kmAngle.Roll := newAngle.Roll;
+--        end if;
+--     
+--        if abs( Unit_Type( newAngle.Roll )) > Unit_Type( 90.0 * Degree ) then
+--           newRate(PITCH) := - newRate(PITCH);
+--        end if;
+
+ 
       
-      -- Calc Covariance
-      G_state.kmP := ( 1 => ( 1 => G_state.kmP(2, 2) + Unit_Type(dt) * ( Unit_Type(dt) * G_state.kmP(2, 2) - G_state.kmP(1, 2) - G_state.kmP(2, 1) + KM_ACC_VARIANCE),
+
+
+   
+      -- 1. Predict   F sys matrix is 
+      ------------------
+      G_state.kmRate := newRate - G_state.kmBias;  -- Bias bei Pitch hoch: 6.2
+      -- G_state.kmAngle := G_state.kmAngle + G_state.kmRate * dt;   -- Hier muss verbessert werden!!! 80 + 15 = 85!
+      
+     -- G_state.kmAngle.Roll := wrap_Angle( Angle_Type( G_state.kmAngle.Roll ) + G_state.kmRate(ROLL) * dt,
+       --                                   Roll_Type'First, Roll_Type'Last);
+      
+      predAngle(Roll) := Angle_Type( G_state.kmAngle.Roll ) + Angle_Type( G_state.kmRate(ROLL) * dt );
+      predAngle(PITCH) := Angle_Type( G_state.kmAngle.Pitch ) + Angle_Type( G_state.kmRate(PITCH) * dt );
+      if predAngle(PITCH) > 90.0*Degree then
+         G_state.kmAngle.Pitch := 180.0*Degree - predAngle(PITCH);
+      elsif predAngle(PITCH) < -90.0*Degree then
+         G_state.kmAngle.Pitch := -180.0*Degree - predAngle(PITCH);
+      else
+         G_state.kmAngle.Pitch := predAngle(PITCH);
+      end if;
+      
+      
+     
+      
+      
+      -- Calc Covariance, bleibt klein
+      G_state.kmP := ( 1 => ( 1 => G_state.kmP(1, 1) + Unit_Type(dt) * ( Unit_Type(dt) * G_state.kmP(2, 2) - G_state.kmP(1, 2) - G_state.kmP(2, 1) + KM_ACC_VARIANCE),
                               2 => G_state.kmP(1, 2) - Unit_Type(dt) * G_state.kmP(2, 2) ),
                        2 => ( 1 => G_state.kmP(2, 1) - Unit_Type(dt) * G_state.kmP(2, 2),
-                              2 => G_state.kmP(2, 2) + KM_GYRO_BIAS_VARIANCE ) );
+                              2 => G_state.kmP(2, 2) + Unit_Type(dt) * KM_GYRO_BIAS_VARIANCE ) );
                               
       -- 2. Update
       -------------------
       G_state.kmS := G_state.kmP(1, 1) + KM_MEASUREMENT_VARIANCE;
-      G_state.kmK(1) := G_state.kmP(1, 1) / G_state.kmS;
+      G_state.kmK(1) := G_state.kmP(1, 1) / G_state.kmS;   -- gains: 1 => 0.2 – 0.9 , 2 => < 0.1
       G_state.kmK(2) := G_state.kmP(2, 1) / G_state.kmS;
       
       
-      G_state.kmy := newAngle - G_state.kmAngle;
+      -- final correction
+      G_state.kmy := ( ROLL => newAngle.Roll - predAngle(ROLL),
+                       PITCH => newAngle.Pitch - predAngle(PITCH),
+                       YAW => newAngle.Yaw - predAngle(YAW) );  -- groß
       G_state.kmAngle := G_state.kmAngle + G_state.kmK(1) * G_state.kmy;
       G_state.kmBias := G_state.kmBias + Angular_Velocity_Vector( G_state.kmK(2) * G_state.kmy );
       
+      if G_state.kmBias(PITCH) < -BIAS_LIMIT then
+         G_state.kmBias(PITCH) := -BIAS_LIMIT;
+      elsif G_state.kmBias(PITCH) > BIAS_LIMIT then
+         G_state.kmBias(PITCH) := BIAS_LIMIT;
+      end if;
+      
+      if G_state.kmBias(ROLL) < -BIAS_LIMIT then
+         G_state.kmBias(ROLL) := -BIAS_LIMIT;
+      elsif G_state.kmBias(ROLL) > BIAS_LIMIT then
+         G_state.kmBias(ROLL) := BIAS_LIMIT;
+      end if;    
       
       G_state.kmP := ( 1 => ( 1 => G_state.kmP(1, 1) - G_state.kmK(1) * G_state.kmP(1, 1),
                               2 => G_state.kmP(1, 2) - G_state.kmK(1) * G_state.kmP(1, 2) ),
                        2 => ( 1 => G_state.kmP(2, 1) - G_state.kmK(2) * G_state.kmP(1, 1),
                               2 => G_state.kmP(2, 2) - G_state.kmK(2) * G_state.kmP(1, 2) ) );
       
+      
+      G_state.kmLastCall := now;
       
    end perform_Kalman_Filtering;
    
@@ -108,7 +159,7 @@ package body IMU is
    function get_Linear_Acceleration(Self : IMU_Tag) return Linear_Acceleration_Vector is
       result : Linear_Acceleration_Vector;
       sensitivity : constant Float := Driver.MPU6000_G_PER_LSB_8;
-      -- Arduplane: 4G
+      -- Arduplane: +- 8G
    begin
       result := ( X => Unit_Type( Float( Self.sample.data.Acc_X ) * sensitivity ) * GRAVITY,
                   Y => Unit_Type( Float( Self.sample.data.Acc_Y ) * sensitivity ) * GRAVITY,

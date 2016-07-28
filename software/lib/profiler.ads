@@ -20,6 +20,8 @@ package Profiler is
 
    procedure init(Self : in out Profile_Tag; name : String);
 
+   procedure reset(Self : in out Profile_Tag);
+
    procedure start(Self : in out Profile_Tag);
 
    procedure stop(Self : in out Profile_Tag);
@@ -48,5 +50,9 @@ private
       stop_Time    : Time := Clock;
    end record;
 
+
+   procedure Read_From_Memory(Self : in out Profile_Tag);
+
+   procedure Write_To_Memory(Self : in out Profile_Tag);
 
 end Profiler;

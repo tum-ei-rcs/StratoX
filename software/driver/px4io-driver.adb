@@ -9,6 +9,9 @@ with HIL.Devices;
 package body PX4IO.Driver 
 with SPARK_Mode
 is
+   type Check_Status_Mod_Type is mod 2**5;
+   G_check_counter : Check_Status_Mod_Type := 0;
+
 
    G_Servo_Angle_Left  : Servo_Angle_Type := Angle_Type (0.0);
    G_Servo_Angle_Right : Servo_Angle_Type := Angle_Type (0.0);
@@ -37,13 +40,12 @@ is
       
          valid := valid_Package( Data_RX ) and Data_RX(1) = PKT_CODE_SUCCESS;
          
-         exit Transmit_Loop when valid or retries >= 3;
+         exit Transmit_Loop when valid or retries >= 2;
          retries := retries + 1;
       end loop Transmit_Loop;
       
-      if retries >= 3 then
+      if retries >= 2 then
          Logger.log(Logger.WARN, "PX4IO write failed");
-         null;
       end if;
       
    end write;
@@ -70,7 +72,7 @@ is
          
          valid := valid_Package( Data_RX );
          
-         exit Transmit_Loop when valid or retries >= 3;
+         exit Transmit_Loop when valid or retries >= 2;
          retries := retries + 1;
       end loop Transmit_Loop;
       
@@ -307,10 +309,12 @@ is
       write(PX4IO_PAGE_DIRECT_PWM, 2, Speed);
       
       -- check state
-      read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
-      if HIL.isSet( HIL.toUnsigned_16( Status ), PX4IO_P_STATUS_FLAGS_FAILSAFE ) then
-         Logger.log(Logger.WARN, "PX4IO Failsafe");
-         null;
+      G_check_counter := Check_Status_Mod_Type'Succ( G_check_counter );
+      if G_check_counter = 0 then
+         read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
+         if HIL.isSet( HIL.toUnsigned_16( Status ), PX4IO_P_STATUS_FLAGS_FAILSAFE ) then
+            Logger.log(Logger.WARN, "PX4IO Failsafe");
+         end if;
       end if;
       
    end sync_Outputs;

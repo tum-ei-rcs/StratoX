@@ -77,6 +77,9 @@ is
       -- Interrupts
       -- Enable GPS Interrupt
       STM32.USARTs.Enable_Interrupts( STM32.Device.UART_4, STM32.USARTs.Received_Data_Not_Empty );
+      
+      -- Logger Interrupt
+      
   
      
 
@@ -105,6 +108,21 @@ is
    end UART_Interrupt_Handler;
 
 
+   protected Logger_UART_Interrupt_Handler is
+      pragma Interrupt_Priority (249);
+      
+      procedure push_Buffer(data : Data_Type);
+   private
+      buffer_pointer : Buffer_Index_Type := 0;
+      Queue : Byte_Buffer_Pack.Buffer_Tag;
+      Buffer : Buffer_Type := (others => Byte(0));
+   
+      procedure Handle_Interrupt
+        with Attach_Handler => Ada.Interrupts.Names.USART3_Interrupt,
+             Unreferenced;
+
+   end Logger_UART_Interrupt_Handler;
+
 
 
    procedure write (Device : in Device_ID_Type; Data : in Data_Type) is
@@ -115,9 +133,11 @@ is
             STM32.USARTs.Transmit( STM32.Device.UART_4, HAL.UInt9( Data(i) ) );
          end loop;
       when HIL.Devices.Console =>
-         for i in Data'Range loop
-            STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9( Data(i) ) );
-         end loop;
+         Logger_UART_Interrupt_Handler.push_Buffer(data);
+         STM32.USARTs.Enable_Interrupts( STM32.Device.USART_3, STM32.USARTs.Transmit_Data_Register_Empty );
+--           for i in Data'Range loop
+--              STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9( Data(i) ) );
+--           end loop;
       when HIL.Devices.PX4IO =>
          for i in Data'Range loop
             STM32.USARTs.Transmit( STM32.Device.USART_6, HAL.UInt9( Data(i) ) );
@@ -194,7 +214,7 @@ is
            STM32.USARTs.Interrupt_Enabled (STM32.Device.UART_4, STM32.USARTs.Received_Data_Not_Empty)
          then
             STM32.USARTs.Receive( STM32.Device.UART_4, data);
-            STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9(65) );
+            -- STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9(65) );
             Queue.push_back( Byte( data ) );
             STM32.USARTs.Clear_Status (STM32.Device.UART_4, STM32.USARTs.Read_Data_Register_Not_Empty);
          end if;
@@ -203,6 +223,34 @@ is
     
    end UART_Interrupt_Handler;
    
-     
+   protected body Logger_UART_Interrupt_Handler is
+      
+
+      procedure push_Buffer(data : Data_Type) is
+      begin
+         for index in data'Range loop
+            Queue.push_back( Byte( data(index) ) );
+         end loop;
+      end push_Buffer;
+
+      procedure Handle_Interrupt is
+         data : Byte;
+      begin
+          --  check for data arrival
+         if STM32.USARTs.Status (STM32.Device.USART_3, STM32.USARTs.Transmit_Data_Register_Empty) and
+           STM32.USARTs.Interrupt_Enabled (STM32.Device.USART_3, STM32.USARTs.Transmit_Data_Register_Empty)
+         then
+            if not Queue.Empty then
+               Queue.pop_front( data );
+               STM32.USARTs.Transmit( STM32.Device.USART_3, HAL.UInt9( data ));
+            else 
+               STM32.USARTs.Disable_Interrupts( STM32.Device.USART_3, STM32.USARTs.Transmit_Data_Register_Empty );
+            end if;
+            STM32.USARTs.Clear_Status (STM32.Device.USART_3, STM32.USARTs.Transmit_Data_Register_Empty);
+         end if;
+         
+      end Handle_Interrupt;
+    
+   end Logger_UART_Interrupt_Handler;     
         
 end HIL.UART;

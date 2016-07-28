@@ -29,17 +29,19 @@ is
     Gyro_X : out Integer_16;
     Gyro_Y : out Integer_16;
     Gyro_Z : out Integer_16) is
-      SCALE_ACC : constant := 410.0; --  Acc: map -16g...+16g => -2^15-1 .. 2^15
-      SCALE_GYR : constant := 936.0; --  Gyr: map +/- 35 rad/s => -2^15-1 .. 2^15
+      SCALE_ACC : constant := (2.0**15-1.0)/(8.0 * 9.819); --  Acc: map -8g...+8g => -2^15-1 .. 2^15
+      SCALE_GYR : constant := (1.0/3.1416*180.0)/2000.0 * (2.0**15-1.0); --  Gyr: map +/- 35 rad/s => -2^15-1 .. 2^15
    begin
 
 
-      Acc_X := Integer_16 (Simulation.CSV_here.Get_Column ("AccX") * SCALE_ACC);
-      Acc_Y := Integer_16 (Simulation.CSV_here.Get_Column ("AccY") * SCALE_ACC);
+      Acc_X := Integer_16 (Simulation.CSV_here.Get_Column ("AccY") * (-SCALE_ACC));
+      Acc_Y := Integer_16 (Simulation.CSV_here.Get_Column ("AccX") * SCALE_ACC);
       Acc_Z := Integer_16 (Simulation.CSV_here.Get_Column ("AccZ") * SCALE_ACC);
-      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("GyrX") * SCALE_GYR);
-      Gyro_Y := Integer_16 (Simulation.CSV_here.Get_Column ("GyrY") * SCALE_GYR);
+      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("GyrY") * (-SCALE_GYR));
+      Gyro_Y := Integer_16 (Simulation.CSV_here.Get_Column ("GyrX") * SCALE_GYR);
       Gyro_Z := Integer_16 (Simulation.CSV_here.Get_Column ("GyrZ") * SCALE_GYR);
+
+      -- Gyro_Y = 17.9
    end Get_Motion_6;
 
    --  Set clock source setting.

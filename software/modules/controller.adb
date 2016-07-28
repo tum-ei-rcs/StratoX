@@ -158,6 +158,8 @@ package body Controller with SPARK_Mode is
       -- G_Target_Orientation.Roll := 10.0 * Degree;  -- TEST: Omakurve
       control_Roll;
 
+      G_state.control_profiler.start;
+
       -- mix
       G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron);
 
@@ -168,15 +170,15 @@ package body Controller with SPARK_Mode is
       -- Output
       PX4IO.Driver.sync_Outputs;
 
+      G_state.control_profiler.stop;
 
-      G_state.control_profiler.start;
       -- log
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
          log_Info;
       end if;
 
-      G_state.control_profiler.stop;
+
 
 
    end runOneCycle;

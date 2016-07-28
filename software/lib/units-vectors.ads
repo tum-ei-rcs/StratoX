@@ -78,6 +78,9 @@ package Units.Vectors with SPARK_Mode is
            Left(3) + Right(3)
            ) );
 
+   function "+" (Left, Right : Angle_Vector) return Angle_Vector is
+      ( Left(Roll) + Right(Roll), Left(Pitch) + Right(Pitch), Left(Yaw) + Right(Yaw) );
+
    function "+" (Left, Right : Rotation_Vector) return Rotation_Vector is
       ( Left(Roll) + Right(Roll), Left(Pitch) + Right(Pitch), Left(Yaw) + Right(Yaw) );
 

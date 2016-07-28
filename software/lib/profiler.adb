@@ -12,6 +12,14 @@ package body Profiler is
       Self.start_Time := now;
    end init;
 
+   procedure reset(Self : in out Profile_Tag) is
+      now : Time := Clock;
+   begin
+      Self.max_duration := Milliseconds( 0 );
+      Self.stop_Time := now;
+      Self.start_Time := now;
+   end reset;
+
    procedure start(Self : in out Profile_Tag) is
    begin
       Self.start_Time := Clock;
@@ -27,7 +35,7 @@ package body Profiler is
 
    procedure log(Self : in Profile_Tag) is
    begin
-      Logger.log (Logger.INFO, Self.name & " Profile: " & Integer'Image ( Integer( Float( Units.To_Time(Self.max_duration) ) * 1000.0 ) ) & " ms" );
+      Logger.log (Logger.INFO, Self.name & " Profile: " & Integer'Image ( Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
    end log;
 
    function get_Name(Self : in Profile_Tag) return String is
@@ -61,6 +69,17 @@ package body Profiler is
       return Self.max_duration;
    end get_Max;
 
+
+   procedure Read_From_Memory(Self : in out Profile_Tag) is
+   begin
+      null;
+   end Read_From_Memory;
+
+
+   procedure Write_To_Memory(Self : in out Profile_Tag) is
+   begin
+      null;
+   end Write_To_Memory;
 
 
 end Profiler;
