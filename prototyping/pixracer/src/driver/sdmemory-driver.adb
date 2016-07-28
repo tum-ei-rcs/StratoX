@@ -228,15 +228,28 @@ package body SDMemory.Driver is
       end;
    end Write_Log;
 
+   procedure Write_Log (S : String) is
+      d : File_Data renames To_File_Data (S);
+   begin
+      Write_Log (d);
+   end Write_Log;
+
+   ------------------
+   --  To_File_Data
+   ------------------
+
    function To_File_Data (S : String) return FAT_Filesystem.Directories.Files.File_Data is
       d   : File_Data (1 .. S'Length);
       idx : Unsigned_16 := d'First;
    begin
+      --  FIXME: inefficient
       for k in S'Range loop
          d (idx) := Character'Pos (S (k));
          idx := idx + 1;
       end loop;
       return d; -- this throws an exception.
    end To_File_Data;
+
+   function Logsize return Unsigned_32 is (File_Size (fh_log));
 
 end SDMemory.Driver;

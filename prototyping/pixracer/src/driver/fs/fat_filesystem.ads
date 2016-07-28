@@ -1,3 +1,4 @@
+--  XXX! Nothing here is thread-safe!
 with Interfaces;   use Interfaces;
 with Media_Reader; use Media_Reader;
 with MyStrings;    use MyStrings;
@@ -129,7 +130,7 @@ package FAT_Filesystem with SPARK_Mode is
 private
    pragma SPARK_Mode (Off);
 
-   type FAT_Disk_Parameter (Version : FAT_Version := FAT16) is record
+   type FAT_Disk_Parameter (F_Version : FAT_Version := FAT16) is record
       OEM_Name                : String (1 .. 8);
       Block_Size_In_Bytes     : Unsigned_16; -- also called sector
       Blocks_Per_Cluster      : Unsigned_8;
@@ -144,7 +145,7 @@ private
       Hidden_Blocks           : Unsigned_32;
       Number_Of_Blocks_Fat32  : Unsigned_32;
 
-      case Version is
+      case F_Version is
          when FAT32 =>
             Table_Size_Fat32        : Unsigned_32;
             Fat_Mirroring_Flags     : Unsigned_16;

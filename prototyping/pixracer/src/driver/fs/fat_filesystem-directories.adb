@@ -2,6 +2,7 @@
 --  System:  Stratosphere Balloon Flight Controller
 --  Author: Martin Becker (becker@rcs.ei.tum.de)
 --  based on AdaCore's Ada_Driver_Library
+--  XXX! Nothing here is thread-safe!
 
 with Ada.Unchecked_Conversion;
 
@@ -583,7 +584,10 @@ package body FAT_Filesystem.Directories is
       E_Name  : String;
       Ent     : out Directory_Entry;
       Deleted : out Boolean) return Boolean
-   is FAT_Approx_Name : String renames Trim (E_Name);
+   is
+      FAT_Approx_Name : String renames Trim (E_Name);
+      --  FIXME: this isn't completely right, since ent_name
+      --  went through FAT name compression, but E_Name not.
    begin
       Rewind (Parent); Deleted := False;
       while Read (Parent, Ent, True) = OK loop
@@ -592,11 +596,9 @@ package body FAT_Filesystem.Directories is
             return True;
          else
             declare
-               ent_name : constant String := Get_Name (Ent);
+               Ent_Name : constant String := Get_Name (Ent);
             begin
-               --  FIXME: this isn't completely right, since ent_name
-               --  went through FAT name compression, but New_Name not.
-               if ent_name = E_Name then
+               if Ent_Name = FAT_Approx_Name then
                   return True;
                end if;
             end;

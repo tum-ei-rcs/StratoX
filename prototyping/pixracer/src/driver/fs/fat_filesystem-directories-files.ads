@@ -1,6 +1,7 @@
 --  Institution: Technische Universitaet Muenchen
 --  Department:  Realtime Computer Systems (RCS)
 --  Project:     StratoX
+--  XXX! Nothing here is thread-safe!
 --
 --  Authors: Martin Becker (becker@rcs.ei.tum.de)
 with FAT_Filesystem;
@@ -30,6 +31,8 @@ package FAT_Filesystem.Directories.Files with SPARK_Mode is
    function File_Flush
      (File : in out File_Handle) return Status_Code;
    --  force writing file to disk at this very moment (slow!)
+
+   function File_Size (File : File_Handle) return Unsigned_32;
 
    function File_Open_Readonly
      (Ent  : in out Directory_Entry;
@@ -63,4 +66,8 @@ private
       D_Entry             : Directory_Entry; -- the associated directory entry
    end record;
    --  used to access files
+
+   function Update_Entry (File : in out File_Handle) return Status_Code;
+   --  maintain the directory entry (file size)
+
 end FAT_Filesystem.Directories.Files;

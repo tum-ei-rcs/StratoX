@@ -14,8 +14,13 @@ with Buzzer_Manager;
 with SDMemory;
 with SDMemory.Driver;
 with Buildinfo;
+with FAT_Filesystem.Directories.Files; -- actually not necessary
 
 package body Main is
+
+   ENDL : constant String := (Character'Val (13), Character'Val (10));
+
+   procedure Perf_Test ( megabytes : Unsigned_32);
 
    procedure Initialize is
       success : Boolean := False;
@@ -81,16 +86,66 @@ package body Main is
             Logger.log (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
          else
             Logger.log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
-            SDMemory.Driver.Write_Log (SDMemory.Driver.To_File_Data ("Hello World"));
-            SDMemory.Driver.Write_Log (SDMemory.Driver.To_File_Data ("Build Stamp:" &
-                                         Buildinfo.Compilation_Date & " "
-                                       & Buildinfo.Compilation_Time));
+            SDMemory.Driver.Write_Log ("Build Stamp: "
+                                       & Buildinfo.Compilation_Date & " "
+                                       & Buildinfo.Compilation_Time & ENDL);
             SDMemory.Driver.Flush_Log;
          end if;
          null;
       end;
+      --  Perf_Test (20); --> crash
       Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
+
+   procedure Perf_Test (megabytes : Unsigned_32) is
+      time_start : constant Time := Clock;
+      dummydata  : FAT_Filesystem.Directories.Files.File_Data (1 .. 512);
+      TARGETSIZE : constant Unsigned_32 := megabytes * 1024 * 1024;
+      filesize   : Unsigned_32;
+      filesize_pre : Unsigned_32 := SDMemory.Driver.Logsize;
+
+      s0         : Seconds_Count;
+      ts         : Time_Span;
+
+      procedure Show_Stats;
+      procedure Show_Stats is
+         s          : Seconds_Count;
+         lapsed     : Seconds_Count;
+         bps        : Integer;
+         time_now   : constant Time := Clock;
+      begin
+         Split (T => time_now, SC => s, TS => ts);
+         lapsed := s0 - s;
+         if lapsed > 0 then
+            bps := Integer (Float (filesize - filesize_pre) / Float (lapsed));
+            Logger.log (Logger.INFO, "Time=" & lapsed'Img & ", xfer="
+                        & filesize'Img & "=>" & bps'Img & " B/s");
+            filesize_pre := filesize;
+         end if;
+      end Show_Stats;
+
+      type prescaler is mod 1000;
+      ctr : prescaler := 0;
+   begin
+      Logger.log (Logger.INFO, "Write performance test with " & megabytes'Img & " MB" & ENDL);
+      Split (T => time_start, SC => s0, TS => ts);
+
+      Write_Loop :
+      loop
+         filesize := SDMemory.Driver.Logsize;
+
+         SDMemory.Driver.Write_Log (dummydata);
+
+         if ctr = 0 then
+            Show_Stats;
+         end if;
+         ctr := ctr + 1;
+
+         exit Write_Loop when filesize >= TARGETSIZE;
+      end loop Write_Loop;
+      Show_Stats;
+
+   end Perf_Test;
 
    procedure Run_Loop is
       --  data    : HIL.SPI.Data_Type (1 .. 3)  := (others => 0);
@@ -119,6 +174,18 @@ package body Main is
 
       loop
          loop_time_start := Clock;
+
+         declare
+            s  : Seconds_Count;
+            ts : Time_Span;
+            ticks : Integer;
+            si : constant Unsigned_32 := SDMemory.Driver.Logsize;
+         begin
+            Split (T => loop_time_start, SC => s, TS => ts);
+            ticks := ts / Ada.Real_Time.Tick;
+            SDMemory.Driver.Write_Log ("Time:" & s'Img & "/" & ticks'Img
+                                       & ", size:" & si'Img & ENDL);
+         end;
 
          --  LED heartbeat
          LED_Manager.LED_tick (MAIN_TICK_RATE_MS);

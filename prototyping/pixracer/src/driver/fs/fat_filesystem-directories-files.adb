@@ -1,6 +1,7 @@
 --  Project: StratoX
 --  System:  Stratosphere Balloon Flight Controller
 --  Author: Martin Becker (becker@rcs.ei.tum.de)
+--  XXX! Nothing here is thread-safe!
 
 with Ada.Unchecked_Conversion;
 with FAT_Filesystem; use FAT_Filesystem;
@@ -58,8 +59,6 @@ package body FAT_Filesystem.Directories.Files is
       end if;
 
       --  fill entry attrs to make it a directory
-      File.D_Entry.Entry_Address := (Block_LBA => Ent_Addr.Block_LBA,
-                                     Block_Off => Ent_Addr.Block_Off);
       File.D_Entry.FS := Parent.FS;
       File.D_Entry.Attributes.Read_Only := False;
       File.D_Entry.Attributes.Hidden := False;
@@ -100,6 +99,34 @@ package body FAT_Filesystem.Directories.Files is
       return OK;
    end File_Create;
 
+   -------------------
+   --  Update_Entry
+   -------------------
+
+   function Update_Entry (File : in out File_Handle) return Status_Code is
+      Status : Status_Code;
+   begin
+      Status := File.FS.Ensure_Block (File.D_Entry.Entry_Address.Block_LBA);
+      if Status /= OK then
+         return Status;
+      end if;
+
+      --  a bit of a hack, to save us from the work of re-generating the entire entry
+      declare
+         Size_Off : constant Unsigned_16 := 28;
+         subtype Entry_Data is Block (1 .. 4);
+         function Bytes_From_Size is new Ada.Unchecked_Conversion
+           (Unsigned_32, Entry_Data);
+
+         win_lo : constant Unsigned_16 := File.D_Entry.Entry_Address.Block_Off + Size_Off;
+         win_hi : constant Unsigned_16 := win_lo + 3;
+      begin
+         File.FS.Window (win_lo .. win_hi) := Bytes_From_Size (File.D_Entry.Size);
+      end;
+
+      Status := File.FS.Write_Window (File.D_Entry.Entry_Address.Block_LBA);
+      return Status;
+   end Update_Entry;
 
    -------------------
    --  File_Write
@@ -117,6 +144,10 @@ package body FAT_Filesystem.Directories.Files is
          return -1;
       end if;
 
+      if Data'Length < 1 then
+         return 0;
+      end if;
+
       --  if buffer is full, write to disk
       Write_Loop : loop
          --  determine how much the buffer can take
@@ -125,14 +156,23 @@ package body FAT_Filesystem.Directories.Files is
             cap      : Natural;
          begin
             cap := File.Buffer'Length - File.Buffer_Level;
-            this_chunk := (if cap > n_remain then n_remain else cap);
+            this_chunk := (if cap >= n_remain then n_remain else cap);
             newlevel := File.Buffer_Level + this_chunk;
          end;
 
-         --  copy max amount to buffer
-         File.Buffer (File.Buffer'First + Unsigned_16 (File.Buffer_Level) .. File.Buffer'First +
-                        Unsigned_16 (newlevel)) :=  Data (Data'First + Unsigned_16 (n_processed) ..
-                                                            Data'First + Unsigned_16 (this_chunk));
+         --  copy max amount to buffer.
+         declare
+            buf_lo : constant Unsigned_16 := File.Buffer'First + Unsigned_16 (File.Buffer_Level);
+            buf_hi : constant Unsigned_16 := File.Buffer'First + Unsigned_16 (newlevel) - 1;
+            cnk_lo : constant Unsigned_16 := Data'First + Unsigned_16 (n_processed);
+            cnk_hi : constant Unsigned_16 := cnk_lo + Unsigned_16 (this_chunk) - 1;
+         begin
+            File.Buffer (buf_lo .. buf_hi) := Data (cnk_lo .. cnk_hi);
+         end;
+
+         --  book keeping
+         File.Bytes_Total := File.Bytes_Total + Unsigned_32 (this_chunk);
+         File.D_Entry.Size := File.Bytes_Total;
 
          --  write buffer to disk only if full
          if File.Buffer_Level = File.Buffer'Length then
@@ -148,7 +188,7 @@ package body FAT_Filesystem.Directories.Files is
             --  now check whether the next block fits in the cluster.
             --  Otherwise alloc next cluster and update FAT.
             File.Current_Block := File.Current_Block + 1;
-            if  File.Current_Block - File.FS.Cluster_To_Block (File.Current_Cluster) =
+            if File.Current_Block - File.FS.Cluster_To_Block (File.Current_Cluster) =
               Unsigned_32 (File.FS.Number_Of_Blocks_Per_Cluster)
             then
                --  require another cluster
@@ -167,6 +207,14 @@ package body FAT_Filesystem.Directories.Files is
                end;
             end if;
             File.Buffer_Level := 0; -- now it is empty
+
+            --  update directory entry on disk (size has changed)
+            declare
+               Status : Status_Code := Update_Entry (File);
+               pragma Unreferenced (Status); -- don't care, that size is optional for us
+            begin
+               null;
+            end;
          else
             File.Buffer_Level := newlevel;
          end if;
@@ -174,12 +222,6 @@ package body FAT_Filesystem.Directories.Files is
          n_processed := n_processed + this_chunk;
          exit Write_Loop when n_processed = Data'Length;
       end loop Write_Loop;
-
-      --  book keeping
-      File.Bytes_Total := File.Bytes_Total + Data'Length;
-      File.D_Entry.Size := File.Bytes_Total;
-
-      --  update directory entry on disk (size has changed)
 
       return n_processed;
    end File_Write;
@@ -253,10 +295,26 @@ package body FAT_Filesystem.Directories.Files is
       end if;
 
       if File.Mode = Write_Mode and then File.Buffer_Level > 0 then
+         --  flush data block, even if not full
          File.FS.Window := File.Buffer;
          Status := File.FS.Write_Window (File.Current_Block);
+
+         --  force-update directory entry on disk
+         declare
+            Status_Up : Status_Code := Update_Entry (File);
+            pragma Unreferenced (Status_Up); -- don't care, that size is optional for us
+         begin
+            null;
+         end;
       end if;
+
+      return Status;
    end File_Flush;
 
+   ----------------
+   --  File_Size
+   ----------------
+
+   function File_Size (File : File_Handle) return Unsigned_32 is (File.Bytes_Total);
 
 end FAT_Filesystem.Directories.Files;
