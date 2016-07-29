@@ -19,6 +19,8 @@ with Profiler;
 with Config.Software;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
+pragma Elaborate_All(generic_queue);
+
 package body Estimator with SPARK_Mode is
 
    type Height_Index_Type is mod 10;
@@ -102,8 +104,9 @@ package body Estimator with SPARK_Mode is
       Acc := IMU.Sensor.get_Linear_Acceleration;
       Gyro := IMU.Sensor.get_Angular_Velocity;
 
-      -- Logger.log(Logger.DEBUG,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
+     -- Logger.log(Logger.DEBUG,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
       -- Logger.log(Logger.DEBUG,"Gyro: " & AImage(Gyro(Roll)*Second) & ", " & AImage(Gyro(Pitch)*Second) & ", " & AImage(Gyro(YAW)*Second) );
+      -- Logger.log(Logger.DEBUG,"Gyro: " & RImage(Gyro(Roll)*Second) & ", " & RImage(Gyro(Pitch)*Second) & ", " & RImage(Gyro(YAW)*Second) );
 
 
       Acc_Orientation := Orientation( Acc );
@@ -144,7 +147,6 @@ package body Estimator with SPARK_Mode is
          GFixS := "2D";
          G_Object_Position := GPS.Sensor.get_Position;
          G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;  -- Overwrite Alt
-
       else
          GFixS := "NO";
          G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
@@ -155,17 +157,18 @@ package body Estimator with SPARK_Mode is
       -- update stable measurements
       check_stable_Time;
 
-G_Profiler.start;
+
       -- Outputs
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
          log_Info;
-         G_pos_buffer.push_back( GPS.Sensor.get_Position );
+         if G_state.fix = FIX_2D or G_state.fix = FIX_3D then
+            G_pos_buffer.push_back( GPS.Sensor.get_Position );
+         end if;
          G_orientation_buffer.push_back( G_Object_Orientation );
       end if;
-G_Profiler.stop;
 
-
+      G_Profiler.stop;
    end update;
 
 
@@ -267,12 +270,10 @@ G_Profiler.stop;
       function gps_average( signal : GPS_Buffer_Pack.Element_Array ) return Altitude_Type is
          avg : Altitude_Type;
       begin
-         avg := signal( signal'First ).Altitude / Unit_Type( signal'Length );
-         if signal'Length > 1 then
-            for index in GPS_Buffer_Pack.Length_Type range 2 .. signal'Length loop
-               avg := avg + signal( index ).Altitude / Unit_Type( signal'Length );
-            end loop;
-         end if;
+         avg := signal( signal'First ).Altitude / Unit_Type( 2.0 );
+         for index in GPS_Buffer_Pack.Length_Type range 1 .. 2 loop
+            avg := avg + signal( index ).Altitude / Unit_Type( 2.0 );
+         end loop;
          return avg;
       end gps_average;
 
@@ -294,7 +295,7 @@ G_Profiler.stop;
          buf : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length(G_pos_buffer) );
       begin
          get_all( G_pos_buffer, buf );
-         if Length(G_pos_buffer) > 0 then
+         if Length(G_pos_buffer) > 1 then
             G_state.avg_gps_height := gps_average( buf );
          end if;
       end;
@@ -308,7 +309,7 @@ G_Profiler.stop;
          buf : Height_Buffer_Pack.Element_Array(1 .. Length(G_height_buffer));
       begin
          get_all( G_height_buffer, buf );
-         if Length(G_height_buffer) > 0 then
+         if Length(G_height_buffer) > 1 then
             G_state.avg_baro_height := baro_average( buf );
          end if;
       end;

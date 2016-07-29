@@ -2,7 +2,7 @@
 with Ada.Real_Time; use Ada.Real_Time;
 
 with Units.Navigation; use Units.Navigation;
-with Config;
+with Config.Software;
 with HIL;
 
 with Units; use Units;
@@ -23,6 +23,7 @@ package body Mission is
       mission_state  : Mission_State_Type := UNKNOWN;
       mission_event  : Mission_Event_Type := NONE;
       last_call_time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      gps_lock_threshold_time : Time_Type := 0.0 * Second;
       delta_threshold_time : Time_Type := 0.0 * Second;
       target_threshold_time : Time_Type := 0.0 * Second;
       home           : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE * Degree, 
@@ -166,13 +167,19 @@ package body Mission is
 
       -- check GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
-         lock_Home;
-         Logger.log(Logger.INFO, "Mission Ready");
-         next_State;
+         G_state.gps_lock_threshold_time := G_state.gps_lock_threshold_time + To_Time(now - G_state.last_call); 
+         
+         if G_state.gps_lock_threshold_time > 10.0 * Second then
+            lock_Home;
+            Logger.log(Logger.INFO, "Mission Ready");
+            next_State;
+         end if;
+      else
+         G_state.gps_lock_threshold_time := 0.0 * Second;
       end if;
 
       -- FOR TEST
-      if now > G_state.last_state_change + Ada.Real_Time.Seconds( 20 ) then
+      if now > G_state.last_state_change + Config.Software.CFG_GPS_LOCK_TIMEOUT then
          lock_Home;
          next_State;
       end if;
@@ -227,7 +234,7 @@ package body Mission is
       end if;
    
       -- Check Timeout
-      if now > G_state.last_state_change + Seconds(20) then   -- 600
+      if now > G_state.last_state_change + Units.To_Time_Span( Config.Software.CFG_ASCEND_TIMEOUT ) then   -- 600
          Logger.log(Logger.INFO, "Timeout Ascend");
          Logger.log(Logger.INFO, "Timeout Ascend");
          next_State;
@@ -283,7 +290,7 @@ package body Mission is
       end if;    
       
       -- Timeout for Landing
-      if now > G_state.last_state_change + Seconds(90) then
+      if now > G_state.last_state_change + Config.Software.CFG_DESCEND_TIMEOUT then
          Logger.log(Logger.INFO, "Timeout. Landed");
          deactivate;
       end if;

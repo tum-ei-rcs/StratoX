@@ -213,16 +213,15 @@ package body STM32.USARTs is
    ---------
 
    procedure Receive (This : USART;  Data : out UInt9) is
-      Timeout : constant Natural := 10;
+      Timeout : constant Natural := 800;
       Start   : constant Time    := Clock;
    begin
       --  Wait until RXNE flag is set to read data
       while not Rx_Ready (This) loop
-         if Clock - Start > Milliseconds (Timeout) then
+         if Clock - Start > Microseconds (Timeout) then
             Data := Uint9(42);
             return;
          end if;
-         null;
       end loop;
 
       Data := Current_Input (This);

@@ -9,11 +9,22 @@ with HIL.Devices;
 package body PX4IO.Driver 
 with SPARK_Mode
 is
+   type Check_Status_Mod_Type is mod 2**5;
+   G_check_counter : Check_Status_Mod_Type := 0;
+
+   type State_Type is record
+      Left_Servo_Offset  : Servo_Angle_Type := CFG_LEFT_SERVO_OFFSET;
+      Right_Servo_Offset : Servo_Angle_Type := CFG_RIGHT_SERVO_OFFSET;
+   end record;
+   
+
 
    G_Servo_Angle_Left  : Servo_Angle_Type := Angle_Type (0.0);
    G_Servo_Angle_Right : Servo_Angle_Type := Angle_Type (0.0);
   
    G_Motor_Speed : Motor_Speed_Type := Angular_Velocity_Type (0.0);
+   
+   G_state : State_Type;
    
    
    procedure write(page : Page_Type; offset : Offset_Type; data : Data_Type) 
@@ -37,13 +48,12 @@ is
       
          valid := valid_Package( Data_RX ) and Data_RX(1) = PKT_CODE_SUCCESS;
          
-         exit Transmit_Loop when valid or retries >= 3;
+         exit Transmit_Loop when valid or retries >= 2;
          retries := retries + 1;
       end loop Transmit_Loop;
       
-      if retries >= 3 then
+      if retries >= 2 then
          Logger.log(Logger.WARN, "PX4IO write failed");
-         null;
       end if;
       
    end write;
@@ -70,7 +80,7 @@ is
          
          valid := valid_Package( Data_RX );
          
-         exit Transmit_Loop when valid or retries >= 3;
+         exit Transmit_Loop when valid or retries >= 2;
          retries := retries + 1;
       end loop Transmit_Loop;
       
@@ -240,10 +250,22 @@ is
 
 
    procedure set_Servo_Angle(servo : Servo_Type; angle : Servo_Angle_Type) is
+      function saturate( angle : Angle_Type ) return Servo_Angle_Type is
+         result : Servo_Angle_Type := 0.0 * Degree;
+      begin
+         if Angle_Type(angle) > Servo_Angle_Type'Last then
+            result := Servo_Angle_Type'Last;
+         elsif Angle_Type(angle) < Servo_Angle_Type'First then
+            result := Servo_Angle_Type'First;
+         else
+            result := Angle_Type(angle);
+         end if;
+         return result;
+      end saturate;
    begin
       case(servo) is
-            when LEFT_ELEVON  => G_Servo_Angle_Left  := angle;
-            when RIGHT_ELEVON => G_Servo_Angle_Right := angle;
+            when LEFT_ELEVON  => G_Servo_Angle_Left  := saturate( Angle_Type(angle) - Angle_Type(G_state.Left_Servo_Offset) );
+            when RIGHT_ELEVON => G_Servo_Angle_Right := saturate( Angle_Type(angle) - Angle_Type(G_state.Right_Servo_Offset) );
       end case;
       Logger.log(Logger.TRACE, "Servo Angle " & AImage(angle) );
    end set_Servo_Angle;
@@ -307,10 +329,12 @@ is
       write(PX4IO_PAGE_DIRECT_PWM, 2, Speed);
       
       -- check state
-      read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
-      if HIL.isSet( HIL.toUnsigned_16( Status ), PX4IO_P_STATUS_FLAGS_FAILSAFE ) then
-         Logger.log(Logger.WARN, "PX4IO Failsafe");
-         null;
+      G_check_counter := Check_Status_Mod_Type'Succ( G_check_counter );
+      if G_check_counter = 0 then
+         read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
+         if HIL.isSet( HIL.toUnsigned_16( Status ), PX4IO_P_STATUS_FLAGS_FAILSAFE ) then
+            Logger.log(Logger.WARN, "PX4IO Failsafe");
+         end if;
       end if;
       
    end sync_Outputs;

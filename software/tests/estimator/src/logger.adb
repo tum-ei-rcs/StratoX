@@ -18,7 +18,9 @@ is
 
    procedure log(level : Log_Level; message : Message_Type) is
    begin
-      Ada.Text_IO.Put_Line (Image (level) & message);
+      if level = WARN or level = INFO or level = DEBUG then
+         Ada.Text_IO.Put_Line (Image (level) & message);
+      end if;
    end log;
 
    procedure log_ulog(level : Log_Level; msg : ULog.Message'Class) is null;

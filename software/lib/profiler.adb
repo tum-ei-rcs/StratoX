@@ -3,6 +3,17 @@ with Units;
 
 package body Profiler is
 
+
+   procedure enableProfiling is
+   begin
+      G_state.isEnabled := True;
+   end enableProfiling;
+
+   procedure disableProfiling is
+   begin
+      G_state.isEnabled := False;
+   end disableProfiling;
+
    procedure init(Self : in out Profile_Tag; name : String) is
       now : Time := Clock;
    begin
@@ -12,6 +23,14 @@ package body Profiler is
       Self.start_Time := now;
    end init;
 
+   procedure reset(Self : in out Profile_Tag) is
+      now : Time := Clock;
+   begin
+      Self.max_duration := Milliseconds( 0 );
+      Self.stop_Time := now;
+      Self.start_Time := now;
+   end reset;
+
    procedure start(Self : in out Profile_Tag) is
    begin
       Self.start_Time := Clock;
@@ -19,15 +38,19 @@ package body Profiler is
 
    procedure stop(Self : in out Profile_Tag) is
    begin
-      Self.stop_Time := Clock;
-      if Self.stop_Time - Self.start_Time > Self.max_duration then
-         Self.max_duration := Self.stop_Time - Self.start_Time;
+      if CFG_PROFILER_PROFILING then
+         Self.stop_Time := Clock;
+         if Self.stop_Time - Self.start_Time > Self.max_duration then
+            Self.max_duration := Self.stop_Time - Self.start_Time;
+         end if;
       end if;
    end stop;
 
    procedure log(Self : in Profile_Tag) is
    begin
-      Logger.log (Logger.INFO, Self.name & " Profile: " & Integer'Image ( Integer( Float( Units.To_Time(Self.max_duration) ) * 1000.0 ) ) & " ms" );
+      if CFG_PROFILER_PROFILING and CFG_PROFILER_LOGGING then
+         Logger.log (Logger.INFO, Self.name & " Profile: " & Integer'Image ( Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
+      end if;
    end log;
 
    function get_Name(Self : in Profile_Tag) return String is
@@ -61,6 +84,17 @@ package body Profiler is
       return Self.max_duration;
    end get_Max;
 
+
+   procedure Read_From_Memory(Self : in out Profile_Tag) is
+   begin
+      null;
+   end Read_From_Memory;
+
+
+   procedure Write_To_Memory(Self : in out Profile_Tag) is
+   begin
+      null;
+   end Write_To_Memory;
 
 
 end Profiler;

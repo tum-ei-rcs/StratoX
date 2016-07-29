@@ -29,12 +29,22 @@ package body Units is
       first : constant Float  := Float'Truncation (Float (unit));
       rest  : constant String := Integer'Image (Integer ((Float (unit) - first) * Float(10.0)));
    begin
-      return Integer'Image (Integer (first)) & "." & rest (rest'Length);
+      if Float ( unit ) <  0.0 and -1.0 < Float ( unit ) then
+         return "-" & Integer'Image (Integer (first)) & "." & rest (rest'Length);
+      else
+         return Integer'Image (Integer (first)) & "." & rest (rest'Length);
+      end if;
+
    end Image;
 
    function AImage (unit : Angle_Type) return String is
    begin
       return Integer'Image (Integer (Float (unit) / Ada.Numerics.Pi * Float(180.0))) & "°";
    end AImage;
+
+   function RImage (unit : Angle_Type) return String is
+   begin
+      return Image(Unit_Type(unit)) & "rad";
+   end RImage;
 
 end Units;

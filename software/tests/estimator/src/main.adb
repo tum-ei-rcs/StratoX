@@ -29,7 +29,7 @@ begin
    Simulation.init;
    Estimator.initialize;
 
-   Create (File => outfile, Mode => Out_File, Name => "estimate.csv");
+   Create (File => outfile, Mode => Out_File, Name => "../estimate.csv");
    if not Is_Open (outfile) then
       Put_Line ("Error creating output file");
       return;

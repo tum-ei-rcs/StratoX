@@ -30,6 +30,14 @@ package Config is
    CFG_DELTA_ALTITUDE_THRESH_TIME : constant := 2.0 * Second;
 
 
+   -- Servos
+   -- -------------------------------
+
+   CFG_LEFT_SERVO_OFFSET  : constant := 8.0 * Degree;
+   CFG_RIGHT_SERVO_OFFSET : constant := 4.0 * Degree;
+
+
+
    -- Limits
    CFG_SERVO_ANGLE_LIMIT_MIN : constant := -45.0 * Degree;
    CFG_SERVO_ANGLE_LIMIT_MAX : constant :=  45.0 * Degree;

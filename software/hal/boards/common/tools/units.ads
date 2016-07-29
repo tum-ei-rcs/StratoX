@@ -256,7 +256,7 @@ package Units with
 
    -- Angular Units
    Radian    : constant Angle_Type := Angle_Type (1.0);
-   Degree    : constant Angle_Type := Angle_Type (1.0 / 360.0 * 2.0 * Ada.Numerics.Pi);
+   Degree    : constant Angle_Type := Angle_Type (2.0 * Ada.Numerics.Pi / 360.0);
    Evolution : constant Angle_Type := Angle_Type (2.0 * Ada.Numerics.Pi);
 
    -- Derived Units
@@ -319,6 +319,14 @@ package Units with
      (Time_Type
         (Float ((rtime) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
 
+    function To_Time_Span(time : Time_Type) return Ada.Real_Time.Time_Span is
+     ( Ada.Real_Time.Microseconds ( Integer( Float(time)/Float(1.0e-6) ) ) );
+
+
+   function "+"( Left : Ada.Real_Time.Time; Right : Time_Type ) return Ada.Real_Time.Time is
+   ( Left + Ada.Real_Time.Microseconds ( Integer( Float(Right)/Float(1.0e-6) ) ) );
+
+
    -- wrap angle between two values
    -- idea: shift range to 0 .. X, wrap with mod, shift back
    function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
@@ -341,5 +349,6 @@ package Units with
    function Image (unit : Unit_Type) return String;
 
    function AImage (unit : Angle_Type) return String;
+   function RImage (unit : Angle_Type) return String;
 
 end Units;

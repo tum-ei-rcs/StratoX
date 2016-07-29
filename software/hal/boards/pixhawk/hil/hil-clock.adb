@@ -35,6 +35,20 @@ is
       -- Timers
       -- STM32.Device.Enable_Clock (STM32.Device.Timer_2);
       -- STM32.Device.Reset (STM32.Device.Timer_2); -- wiithout this not reliable
+      
+      STM32.Device.Reset( STM32.Device.GPIO_A );
+      STM32.Device.Reset( STM32.Device.GPIO_B );
+      STM32.Device.Reset( STM32.Device.GPIO_C );
+      STM32.Device.Reset( STM32.Device.GPIO_D );
+      STM32.Device.Reset( STM32.Device.GPIO_E );
+      
+      STM32.Device.Reset( STM32.Device.SPI_1 );
+      
+      STM32.Device.Reset( STM32.Device.USART_3 );
+      STM32.Device.Reset( STM32.Device.UART_4 );
+      STM32.Device.Reset( STM32.Device.USART_6 );
+      STM32.Device.Reset( STM32.Device.USART_7 );
+      
  
    end configure;
    
