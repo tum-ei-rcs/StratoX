@@ -12,7 +12,7 @@ with Ada.Interrupts;       use Ada.Interrupts;
 with Ada.Interrupts.Names; use Ada.Interrupts.Names;
 
 with Generic_Queue; 
-
+with HIL.Devices;
 
 --  @summary
 --  Target-specific mapping for HIL of UART
@@ -93,7 +93,7 @@ is
       
       
    protected UART_Interrupt_Handler is
-      pragma Interrupt_Priority (250);
+      pragma Interrupt_Priority (HIL.Devices.IRQ_PRIO_UART4);
       
       procedure get_Buffer(data : out Data_Type);
    private
@@ -109,7 +109,7 @@ is
 
 
    protected Logger_UART_Interrupt_Handler is
-      pragma Interrupt_Priority (249);
+      pragma Interrupt_Priority (HIL.Devices.IRQ_PRIO_UART_LOG);
       
       procedure push_Buffer(data : Data_Type);
    private

@@ -14,6 +14,7 @@ with STM32.SDMMC;             use STM32.SDMMC;
 with Cortex_M.Cache;
 
 with HAL;
+with HIL.Devices;
 with Ada.Unchecked_Conversion;
 
 with Media_Reader.SDCard.Config; use Media_Reader.SDCard.Config;
@@ -38,7 +39,7 @@ package body Media_Reader.SDCard is
    ------------
    -- on-chip DMA facility signals end of DMA transfer
    protected DMA_Interrupt_Handler is
-      pragma Interrupt_Priority (254);
+      pragma Interrupt_Priority (HIL.Devices.IRQ_PRIO_SDIO);
 
       procedure Set_Transfer_State;
       --  Informes the DMA Int handler that a transfer is about to start
@@ -67,7 +68,7 @@ package body Media_Reader.SDCard is
    ------------------
    -- on-chip SD controller signals 'data end' and flags
    protected SDMMC_Interrupt_Handler is
-      pragma Interrupt_Priority (250);
+      pragma Interrupt_Priority (HIL.Devices.IRQ_PRIO_SDIO - 1);
 
       procedure Set_Transfer_State (Controller : SDCard_Controller);
       procedure Clear_Transfer_State;

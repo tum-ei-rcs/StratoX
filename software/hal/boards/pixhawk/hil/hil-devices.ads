@@ -20,4 +20,11 @@ package HIL.Devices with SPARK_Mode is
                             SPI_CS_FRAM,
                             SPI_CS_EXT
                             );
+
+   -- INTERRUPT PRIOS, ALL AT ONE PLACE. Must decide who wins here.
+   IRQ_PRIO_UART4    : constant := 251; -- must be higher, because too low could result in loss of data
+   IRQ_PRIO_UART_LOG : constant := 249;
+   IRQ_PRIO_SDIO     : constant := 250; -- sdcard: can be lower. only affects throughput, not data integrity.
+
+
 end HIL.Devices;

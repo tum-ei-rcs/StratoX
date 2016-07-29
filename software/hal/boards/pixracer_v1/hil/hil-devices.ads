@@ -20,4 +20,7 @@ package HIL.Devices with SPARK_Mode is
                              SPI_CS_BARO,
                              SPI_CS_FRAM);
 
+   -- INTERRUPT PRIOS, ALL AT ONE PLACE. Must decide who wins here.
+   --IRQ_PRIO_UART_LOG : constant := 251; -- if this is too low, we lose input/output
+   IRQ_PRIO_SDIO     : constant := 250; -- sdcard: only affects performance (=DMA finish/Start signaling)
 end HIL.Devices;
