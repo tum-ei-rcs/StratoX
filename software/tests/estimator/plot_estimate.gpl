@@ -7,7 +7,7 @@ plot 'reference.csv' using 1:($2*2.0) with lines lt 2 lc rgb 'orange' title colu
 	 'reference.csv' using 1:($3*2.0) with lines lt 2 lc rgb 'cyan' title columnhead, \
      'estimate.csv' using 1:2 with lines lt 2 lc rgb 'red' title columnhead, \
      'estimate.csv' using 1:3 with lines lt 2 lc rgb 'blue' title columnhead, \
-     'estimate.csv' using 1:5 with lines axes x1y2 lt 1 lc rgb 'black' title 'altitude'
+     'estimate.csv' using 1:($5-400.0) with lines axes x1y2 lt 1 lc rgb 'black' title 'altitude'
 #     'estimate.csv' using 1:4 with lines lt 1 lc rgb 'green' title columnhead, \   
 #     'reference.csv' using 1:4 with lines lt 3 lc rgb 'green' title columnhead
 

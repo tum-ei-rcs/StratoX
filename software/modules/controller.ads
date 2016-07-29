@@ -41,13 +41,14 @@ package Controller with SPARK_Mode is
 
 private
 
-   subtype Elevator_Angle_Type is Angle_Type range -22.0 * Degree .. 22.0 * Degree;
-   subtype Aileron_Angle_Type  is Angle_Type range -22.0 * Degree .. 22.0 * Degree;   
+   subtype Elevator_Angle_Type is Angle_Type range -43.0 * Degree .. 43.0 * Degree;
+   subtype Aileron_Angle_Type  is Angle_Type range -43.0 * Degree .. 43.0 * Degree;   
    subtype Elevon_Angle_Type   is Angle_Type range -45.0 * Degree .. 45.0 * Degree;
+   
+   type Control_Priority_Type is (EQUAL, PITCH_FIRST, ROLL_FIRST);
 
    type Elevon_Index_Type is (LEFT, RIGHT);
-   
-   
+
    
    type Elevon_Angle_Array is array(Elevon_Index_Type) of Elevon_Angle_Type;
 
@@ -62,7 +63,7 @@ private
    
    procedure control_Yaw;
 
-   function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type ) return Elevon_Angle_Array;
+   function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type; priority : Control_Priority_Type ) return Elevon_Angle_Array;
 
    function Heading(source_location : GPS_Loacation_Type;
                     target_location  : GPS_Loacation_Type)

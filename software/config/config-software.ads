@@ -16,6 +16,15 @@ package Config.Software is
    DEBUG_MODE_IS_ACTIVE : constant Boolean := True;
    
    CFG_IN_AIR_RESTART : constant Boolean := False;
+   
+   
+   
+   -- Misison
+   CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 30.0 * Second;
+   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 20.0 * Second;
+   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 90.0 * Second;
+   
+   
 
    -- CFG_GPS_BAUDRATE : constant Frequency_Type := 9600.0 * Hertz;
 

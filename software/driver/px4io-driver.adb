@@ -12,11 +12,19 @@ is
    type Check_Status_Mod_Type is mod 2**5;
    G_check_counter : Check_Status_Mod_Type := 0;
 
+   type State_Type is record
+      Left_Servo_Offset  : Servo_Angle_Type := CFG_LEFT_SERVO_OFFSET;
+      Right_Servo_Offset : Servo_Angle_Type := CFG_RIGHT_SERVO_OFFSET;
+   end record;
+   
+
 
    G_Servo_Angle_Left  : Servo_Angle_Type := Angle_Type (0.0);
    G_Servo_Angle_Right : Servo_Angle_Type := Angle_Type (0.0);
   
    G_Motor_Speed : Motor_Speed_Type := Angular_Velocity_Type (0.0);
+   
+   G_state : State_Type;
    
    
    procedure write(page : Page_Type; offset : Offset_Type; data : Data_Type) 
@@ -242,10 +250,22 @@ is
 
 
    procedure set_Servo_Angle(servo : Servo_Type; angle : Servo_Angle_Type) is
+      function saturate( angle : Angle_Type ) return Servo_Angle_Type is
+         result : Servo_Angle_Type := 0.0 * Degree;
+      begin
+         if Angle_Type(angle) > Servo_Angle_Type'Last then
+            result := Servo_Angle_Type'Last;
+         elsif Angle_Type(angle) < Servo_Angle_Type'First then
+            result := Servo_Angle_Type'First;
+         else
+            result := Angle_Type(angle);
+         end if;
+         return result;
+      end saturate;
    begin
       case(servo) is
-            when LEFT_ELEVON  => G_Servo_Angle_Left  := angle;
-            when RIGHT_ELEVON => G_Servo_Angle_Right := angle;
+            when LEFT_ELEVON  => G_Servo_Angle_Left  := saturate( Angle_Type(angle) - Angle_Type(G_state.Left_Servo_Offset) );
+            when RIGHT_ELEVON => G_Servo_Angle_Right := saturate( Angle_Type(angle) - Angle_Type(G_state.Right_Servo_Offset) );
       end case;
       Logger.log(Logger.TRACE, "Servo Angle " & AImage(angle) );
    end set_Servo_Angle;

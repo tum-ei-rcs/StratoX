@@ -147,7 +147,6 @@ package body Estimator with SPARK_Mode is
          GFixS := "2D";
          G_Object_Position := GPS.Sensor.get_Position;
          G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;  -- Overwrite Alt
-
       else
          GFixS := "NO";
          G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
@@ -163,7 +162,9 @@ package body Estimator with SPARK_Mode is
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
          log_Info;
-         G_pos_buffer.push_back( GPS.Sensor.get_Position );
+         if G_state.fix = FIX_2D or G_state.fix = FIX_3D then
+            G_pos_buffer.push_back( GPS.Sensor.get_Position );
+         end if;
          G_orientation_buffer.push_back( G_Object_Orientation );
       end if;
 
@@ -269,12 +270,10 @@ package body Estimator with SPARK_Mode is
       function gps_average( signal : GPS_Buffer_Pack.Element_Array ) return Altitude_Type is
          avg : Altitude_Type;
       begin
-         avg := signal( signal'First ).Altitude / Unit_Type( signal'Length );
-         if signal'Length > 1 then
-            for index in GPS_Buffer_Pack.Length_Type range 2 .. signal'Length loop
-               avg := avg + signal( index ).Altitude / Unit_Type( signal'Length );
-            end loop;
-         end if;
+         avg := signal( signal'First ).Altitude / Unit_Type( 2.0 );
+         for index in GPS_Buffer_Pack.Length_Type range 1 .. 2 loop
+            avg := avg + signal( index ).Altitude / Unit_Type( 2.0 );
+         end loop;
          return avg;
       end gps_average;
 
@@ -296,7 +295,7 @@ package body Estimator with SPARK_Mode is
          buf : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length(G_pos_buffer) );
       begin
          get_all( G_pos_buffer, buf );
-         if Length(G_pos_buffer) > 0 then
+         if Length(G_pos_buffer) > 1 then
             G_state.avg_gps_height := gps_average( buf );
          end if;
       end;
@@ -310,7 +309,7 @@ package body Estimator with SPARK_Mode is
          buf : Height_Buffer_Pack.Element_Array(1 .. Length(G_height_buffer));
       begin
          get_all( G_height_buffer, buf );
-         if Length(G_height_buffer) > 0 then
+         if Length(G_height_buffer) > 1 then
             G_state.avg_baro_height := baro_average( buf );
          end if;
       end;

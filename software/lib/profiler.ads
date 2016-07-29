@@ -15,8 +15,14 @@ with Ada.Real_Time; use Ada.Real_Time;
 package Profiler is
 
 
-
    type Profile_Tag is tagged private;
+
+   CFG_PROFILER_PROFILING : constant Boolean := True;
+   CFG_PROFILER_LOGGING   : constant Boolean := False;
+
+   procedure enableProfiling;
+
+   procedure disableProfiling;
 
    procedure init(Self : in out Profile_Tag; name : String);
 
@@ -50,6 +56,11 @@ private
       stop_Time    : Time := Clock;
    end record;
 
+   type State_Type is record
+      isEnabled : Boolean;
+   end record;
+
+   G_state : State_Type;
 
    procedure Read_From_Memory(Self : in out Profile_Tag);
 

@@ -149,6 +149,7 @@ package body Controller with SPARK_Mode is
 
 
    procedure runOneCycle is
+    Control_Priority : Control_Priority_Type := EQUAL;
    begin
 
 
@@ -161,7 +162,14 @@ package body Controller with SPARK_Mode is
       G_state.control_profiler.start;
 
       -- mix
-      G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron);
+      if abs( G_Object_Orientation.Roll ) > 90.0 * Degree then
+         Control_Priority := ROLL_FIRST;
+      end if;
+      if abs( G_Object_Orientation.Pitch ) > 40.0 *Degree then
+        Control_Priority := PITCH_FIRST;
+      end if;
+      G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron, Control_Priority);
+
 
       -- set servos
       Servo.set_Angle(Servo.LEFT_ELEVON, G_Elevon_Angles(LEFT) );
@@ -194,19 +202,23 @@ package body Controller with SPARK_Mode is
 
    procedure detach is
    begin
-      for i in Integer range 1 .. 2 loop
-         Servo.set_Angle(Servo.LEFT_ELEVON, -40.0 * Degree);
-         Servo.set_Angle(Servo.RIGHT_ELEVON, -40.0 * Degree);
-         for k in Integer range 1 .. 100 loop
-            PX4IO.Driver.sync_Outputs;
-            Helper.delay_ms( 10 );
-         end loop;
-         Servo.set_Angle(Servo.LEFT_ELEVON, 20.0 *Degree );
-         Servo.set_Angle(Servo.RIGHT_ELEVON, 20.0 *Degree );
-         for k in Integer range 1 .. 30 loop
-            PX4IO.Driver.sync_Outputs;
-            Helper.delay_ms( 10 );
-         end loop;
+      Servo.set_Angle(Servo.LEFT_ELEVON, -40.0 * Degree);
+      Servo.set_Angle(Servo.RIGHT_ELEVON, -40.0 * Degree);
+      for k in Integer range 1 .. 80 loop
+         PX4IO.Driver.sync_Outputs;
+         Helper.delay_ms( 10 );
+      end loop;
+      Servo.set_Angle(Servo.LEFT_ELEVON, 20.0 *Degree );
+      Servo.set_Angle(Servo.RIGHT_ELEVON, 20.0 *Degree );
+      for k in Integer range 1 .. 30 loop
+         PX4IO.Driver.sync_Outputs;
+         Helper.delay_ms( 10 );
+      end loop;
+      Servo.set_Angle(Servo.LEFT_ELEVON, -40.0 * Degree);
+      Servo.set_Angle(Servo.RIGHT_ELEVON, -40.0 * Degree);
+      for k in Integer range 1 .. 30 loop
+         PX4IO.Driver.sync_Outputs;
+         Helper.delay_ms( 10 );
       end loop;
    end detach;
 
@@ -245,11 +257,31 @@ package body Controller with SPARK_Mode is
    end control_Yaw;
 
 
-   function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type ) return Elevon_Angle_Array is
-      scale : constant Unit_Type := (Elevator_Angle_Type'Last + Aileron_Angle_Type'Last) / Elevon_Angle_Type'Last;
+   function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type; priority : Control_Priority_Type ) return Elevon_Angle_Array is
+      balance : Float range 0.0 .. 2.0 := 1.0;
+      scale : Float range 0.0 .. 1.0 := 1.0;
+      balanced_elevator : Elevator_Angle_Type;
+      balanced_aileron  : Aileron_Angle_Type;
+
    begin
-      return (LEFT => (elevator + aileron) / scale,
-              RIGHT => (elevator - aileron) / scale);
+      -- dynamic balancing
+      case (priority) is
+        when EQUAL => balance := 1.0;
+        when PITCH_FIRST => balance := 1.3;
+        when ROLL_FIRST => balance := 0.7;
+      end case;
+      balanced_elevator := Elevator_Angle_Type( Helper.Saturate( Float(elevator) * balance, Float(Elevator_Angle_Type'First), Float(Elevator_Angle_Type'Last)) );
+      balanced_aileron  := Aileron_Angle_Type( Helper.Saturate( Float(aileron) * (2.0 - balance), Float(Aileron_Angle_Type'First), Float(Aileron_Angle_Type'Last)) );
+
+      -- scaling (only if necessary)
+      if abs(balanced_elevator) + abs(balanced_aileron) > Elevon_Angle_Type'Last then
+         scale := 0.95 * Float(Elevon_Angle_Type'Last) / ( abs(Float(balanced_elevator)) + abs(Float(balanced_aileron)) );
+      end if;
+
+      -- mixing
+      return (LEFT  => (balanced_elevator - balanced_aileron) * Unit_Type(scale),
+              RIGHT => (balanced_elevator + balanced_aileron) * Unit_Type(scale)
+              );
    end Elevon_Angles;
 
 
@@ -258,7 +290,7 @@ package body Controller with SPARK_Mode is
       result : Angle_Type := To - From;
    begin
       if result > 180.0 * Degree then
-         result := 360.0 * Degree - result;
+         result := result - 360.0 * Degree;
       elsif result < -180.0 * Degree then
          result := result + 360.0 * Degree;
       end if;

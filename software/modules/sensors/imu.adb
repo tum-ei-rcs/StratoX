@@ -10,19 +10,24 @@ with Logger;
 package body IMU is
 
 
+   type Kalman_Type is record
+      Angle : Angle_Type := 0.0 * Degree;
+      Bias : Angular_Velocity_Type := 0.0 * Degree/Second;
+      Rate : Angular_Velocity_Type := 0.0 * Degree/Second;
+      P    : Unit_Matrix2D := (1 => (0.0, 0.0), 2 => (0.0, 0.0) );
+      K    : Unit_Vector2D := (0.0, 0.0); -- Kalman Gain
+      S    : Unit_Type := 0.0;  -- Estimate Error
+      y    : Angle_Type := 0.0 * Degree;  -- Angle difference 
+   end record;
+
+
    type State_Type is record
       filterAngle : Rotation_Vector;
       lastFuse    : Ada.Real_Time.Time;
       kmState : Orientation_Type :=  (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
-      kmAngle : Orientation_Type := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
-      kmBias : Angular_Velocity_Vector := (0.0 * Degree/Second, 0.0 * Degree/Second, 0.0 * Degree/Second);
-      kmRate : Angular_Velocity_Vector := (0.0 * Degree/Second, 0.0 * Degree/Second, 0.0 * Degree/Second);
-      kmP : Unit_Matrix2D := (1 => (0.0, 0.0), 
-                              2 => (0.0, 0.0) );
-      kmS         : Unit_Type := 0.0;  -- Estimate Error
-      kmK : Unit_Vector2D := (0.0, 0.0);
-      kmy : Rotation_Vector := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);  -- Angle difference
       kmLastCall : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      kmRoll  : Kalman_Type;
+      kmPitch : Kalman_Type;
    end record;
    
    G_state  : State_Type;
@@ -71,83 +76,144 @@ package body IMU is
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
       dt : Time_Type := Units.To_Time( now - G_state.kmLastCall ); 
       newRate : Angular_Velocity_Vector := get_Angular_Velocity(Self);
-      BIAS_LIMIT : constant Angular_Velocity_Type := 200.0*Degree/Second;
+      BIAS_LIMIT : constant Angular_Velocity_Type := 500.0*Degree/Second;
       predAngle : Angle_Vector;
+
+
+      procedure update( KM : in out Kalman_Type; newAngle : Angle_Type; newRate : Angular_Velocity_Type; dt : Time_Type) is
+      begin
+         -- 1. Predict
+         ------------------
+         KM.Rate := newRate - KM.Bias;   
+      
+      
+      end update;
+
+
    begin
          -- Logger.log(Logger.INFO, "real time dt: " & Float'Image( Float(dt) ) );
          
          
---        if (newAngle.Roll < -90.0*Degree and G_state.kmAngle.Roll > 90.0*Degree) or (newAngle.Roll > 90.0*Degree and G_state.kmAngle.Roll < -90.0*Degree) then
---           G_state.kmAngle.Roll := newAngle.Roll;
---        end if;
---     
---        if abs( Unit_Type( newAngle.Roll )) > Unit_Type( 90.0 * Degree ) then
---           newRate(PITCH) := - newRate(PITCH);
---        end if;
+
 
  
+      -- Vermutung: Bei Roll arbeiten Acc und Gyro gegeneinander.
+
+
+      -- Preprocessing
+      -- =======================================================================
+
+
+
+      -- looping: if |pitch| exceeds 90°, the roll flips by 180°? => no, flight dynamic prevents this
       
 
-
+      -- rollover: switch from -180 to 180°
+      if (newAngle.Roll < -90.0*Degree and G_state.kmRoll.Angle > 90.0*Degree) or (newAngle.Roll > 90.0*Degree and G_state.kmRoll.Angle < -90.0*Degree) then
+         G_state.kmRoll.Angle := newAngle.Roll;
+      end if;
    
-      -- 1. Predict   F sys matrix is 
-      ------------------
-      G_state.kmRate := newRate - G_state.kmBias;  -- Bias bei Pitch hoch: 6.2
-      -- G_state.kmAngle := G_state.kmAngle + G_state.kmRate * dt;   -- Hier muss verbessert werden!!! 80 + 15 = 85!
-      
-     -- G_state.kmAngle.Roll := wrap_Angle( Angle_Type( G_state.kmAngle.Roll ) + G_state.kmRate(ROLL) * dt,
-       --                                   Roll_Type'First, Roll_Type'Last);
-      
-      predAngle(Roll) := Angle_Type( G_state.kmAngle.Roll ) + Angle_Type( G_state.kmRate(ROLL) * dt );
-      predAngle(PITCH) := Angle_Type( G_state.kmAngle.Pitch ) + Angle_Type( G_state.kmRate(PITCH) * dt );
-      if predAngle(PITCH) > 90.0*Degree then
-         G_state.kmAngle.Pitch := 180.0*Degree - predAngle(PITCH);
-      elsif predAngle(PITCH) < -90.0*Degree then
-         G_state.kmAngle.Pitch := -180.0*Degree - predAngle(PITCH);
-      else
-         G_state.kmAngle.Pitch := predAngle(PITCH);
+   
+      -- if roll > 90° then gyro pitch rate is inverse.
+      if abs( Unit_Type( G_state.kmRoll.Angle  )) > Unit_Type( 90.0 * Degree ) then
+         newRate(PITCH) := - newRate(PITCH);
       end if;
       
-      
-     
-      
-      
+
+      -- ROLL
+      -- =======================================================================
+
+   
+      -- 1. Predict
+      ------------------
+      G_state.kmRoll.Rate := newRate(ROLL) - G_state.kmRoll.Bias;  -- Bias bei Pitch hoch: 6.2    
+      predAngle(Roll) := wrap_Angle( Angle_Type( G_state.kmRoll.Angle ) + Angle_Type( G_state.kmRoll.Rate * dt ),
+                                     Roll_Type'First, Roll_Type'Last);
+                                    
+      G_state.kmRoll.Angle := predAngle(ROLL);
+ 
+ 
+
+    
       -- Calc Covariance, bleibt klein
-      G_state.kmP := ( 1 => ( 1 => G_state.kmP(1, 1) + Unit_Type(dt) * ( Unit_Type(dt) * G_state.kmP(2, 2) - G_state.kmP(1, 2) - G_state.kmP(2, 1) + KM_ACC_VARIANCE),
-                              2 => G_state.kmP(1, 2) - Unit_Type(dt) * G_state.kmP(2, 2) ),
-                       2 => ( 1 => G_state.kmP(2, 1) - Unit_Type(dt) * G_state.kmP(2, 2),
-                              2 => G_state.kmP(2, 2) + Unit_Type(dt) * KM_GYRO_BIAS_VARIANCE ) );
+      G_state.kmRoll.P := ( 1 => ( 1 => G_state.kmRoll.P(1, 1) + Unit_Type(dt) * ( Unit_Type(dt) * G_state.kmRoll.P(2, 2) - G_state.kmRoll.P(1, 2) - G_state.kmRoll.P(2, 1) + KM_ACC_VARIANCE),
+                              2 => G_state.kmRoll.P(1, 2) - Unit_Type(dt) * G_state.kmRoll.P(2, 2) ),
+                       2 => ( 1 => G_state.kmRoll.P(2, 1) - Unit_Type(dt) * G_state.kmRoll.P(2, 2),
+                              2 => G_state.kmRoll.P(2, 2) + Unit_Type(dt) * KM_GYRO_BIAS_VARIANCE ) );
                               
       -- 2. Update
       -------------------
-      G_state.kmS := G_state.kmP(1, 1) + KM_MEASUREMENT_VARIANCE;
-      G_state.kmK(1) := G_state.kmP(1, 1) / G_state.kmS;   -- gains: 1 => 0.2 – 0.9 , 2 => < 0.1
-      G_state.kmK(2) := G_state.kmP(2, 1) / G_state.kmS;
-      
+      G_state.kmRoll.S    := G_state.kmRoll.P(1, 1) + KM_MEASUREMENT_VARIANCE;
+      G_state.kmRoll.K(1) := G_state.kmRoll.P(1, 1) / G_state.kmRoll.S;   -- gains: 1 => 0.2 – 0.9 , 2 => < 0.1
+      G_state.kmRoll.K(2) := G_state.kmRoll.P(2, 1) / G_state.kmRoll.S;
       
       -- final correction
-      G_state.kmy := ( ROLL => newAngle.Roll - predAngle(ROLL),
-                       PITCH => newAngle.Pitch - predAngle(PITCH),
-                       YAW => newAngle.Yaw - predAngle(YAW) );  -- groß
-      G_state.kmAngle := G_state.kmAngle + G_state.kmK(1) * G_state.kmy;
-      G_state.kmBias := G_state.kmBias + Angular_Velocity_Vector( G_state.kmK(2) * G_state.kmy );
+      G_state.kmRoll.y := newAngle.Roll - G_state.kmRoll.Angle;
+      G_state.kmRoll.Angle := wrap_Angle( G_state.kmRoll.Angle + G_state.kmRoll.K(1) * G_state.kmRoll.y,
+                                           Roll_Type'First, Roll_Type'Last);
+      G_state.kmRoll.Bias  := G_state.kmRoll.Bias + Angular_Velocity_Type( G_state.kmRoll.K(2) * G_state.kmRoll.y );
       
-      if G_state.kmBias(PITCH) < -BIAS_LIMIT then
-         G_state.kmBias(PITCH) := -BIAS_LIMIT;
-      elsif G_state.kmBias(PITCH) > BIAS_LIMIT then
-         G_state.kmBias(PITCH) := BIAS_LIMIT;
+      if G_state.kmRoll.Bias < -BIAS_LIMIT then
+         G_state.kmRoll.Bias := -BIAS_LIMIT;
+      elsif G_state.kmRoll.Bias > BIAS_LIMIT then
+         G_state.kmRoll.Bias := BIAS_LIMIT;
       end if;
       
-      if G_state.kmBias(ROLL) < -BIAS_LIMIT then
-         G_state.kmBias(ROLL) := -BIAS_LIMIT;
-      elsif G_state.kmBias(ROLL) > BIAS_LIMIT then
-         G_state.kmBias(ROLL) := BIAS_LIMIT;
-      end if;    
+      G_state.kmRoll.P := ( 1 => ( 1 => G_state.kmRoll.P(1, 1) - G_state.kmRoll.K(1) * G_state.kmRoll.P(1, 1),
+                              2 => G_state.kmRoll.P(1, 2) - G_state.kmRoll.K(1) * G_state.kmRoll.P(1, 2) ),
+                       2 => ( 1 => G_state.kmRoll.P(2, 1) - G_state.kmRoll.K(2) * G_state.kmRoll.P(1, 1),
+                              2 => G_state.kmRoll.P(2, 2) - G_state.kmRoll.K(2) * G_state.kmRoll.P(1, 2) ) );
       
-      G_state.kmP := ( 1 => ( 1 => G_state.kmP(1, 1) - G_state.kmK(1) * G_state.kmP(1, 1),
-                              2 => G_state.kmP(1, 2) - G_state.kmK(1) * G_state.kmP(1, 2) ),
-                       2 => ( 1 => G_state.kmP(2, 1) - G_state.kmK(2) * G_state.kmP(1, 1),
-                              2 => G_state.kmP(2, 2) - G_state.kmK(2) * G_state.kmP(1, 2) ) );
+
+
+
+
+      -- PITCH
+      -- =======================================================================
+    
+      -- 1. Predict
+      G_state.kmPitch.Rate := newRate(PITCH) - G_state.kmPitch.Bias;   
+      
+      predAngle(PITCH) := Angle_Type( G_state.kmPitch.Angle ) + Angle_Type( G_state.kmPitch.Rate * dt );
+      
+      -- if pitch prediction exceeds |90°|, the remainder has to be inverted: 80° + 15° = 85°!
+      if predAngle(PITCH) > 90.0*Degree then
+         G_state.kmPitch.Angle := 180.0*Degree - predAngle(PITCH);
+      elsif predAngle(PITCH) < -90.0*Degree then
+         G_state.kmPitch.Angle := -180.0*Degree - predAngle(PITCH);
+      else
+         G_state.kmPitch.Angle := predAngle(PITCH);
+      end if;
+            
+      -- Calc Covariance, bleibt klein
+      G_state.kmPitch.P := ( 1 => ( 1 => G_state.kmPitch.P(1, 1) + Unit_Type(dt) * ( Unit_Type(dt) * G_state.kmPitch.P(2, 2) - G_state.kmPitch.P(1, 2) - G_state.kmPitch.P(2, 1) + KM_ACC_VARIANCE),
+                              2 => G_state.kmPitch.P(1, 2) - Unit_Type(dt) * G_state.kmPitch.P(2, 2) ),
+                       2 => ( 1 => G_state.kmPitch.P(2, 1) - Unit_Type(dt) * G_state.kmPitch.P(2, 2),
+                              2 => G_state.kmPitch.P(2, 2) + Unit_Type(dt) * KM_GYRO_BIAS_VARIANCE ) );
+                              
+      -- 2. Update
+      -------------------
+      G_state.kmPitch.S    := G_state.kmPitch.P(1, 1) + KM_MEASUREMENT_VARIANCE;
+      G_state.kmPitch.K(1) := G_state.kmPitch.P(1, 1) / G_state.kmPitch.S;   -- gains: 1 => 0.2 – 0.9 , 2 => < 0.1
+      G_state.kmPitch.K(2) := G_state.kmPitch.P(2, 1) / G_state.kmPitch.S;
+      
+      -- final correction
+      G_state.kmPitch.y := newAngle.Pitch - G_state.kmPitch.Angle;
+      G_state.kmPitch.Angle := wrap_Angle( G_state.kmPitch.Angle + G_state.kmPitch.K(1) * G_state.kmPitch.y,
+                                           Pitch_Type'First, Pitch_Type'Last);
+      
+      G_state.kmPitch.Bias  := G_state.kmPitch.Bias + Angular_Velocity_Type( G_state.kmPitch.K(2) * G_state.kmPitch.y );
+      
+      if G_state.kmPitch.Bias < -BIAS_LIMIT then
+         G_state.kmPitch.Bias := -BIAS_LIMIT;
+      elsif G_state.kmPitch.Bias > BIAS_LIMIT then
+         G_state.kmPitch.Bias := BIAS_LIMIT;
+      end if;
+      
+      G_state.kmPitch.P := ( 1 => ( 1 => G_state.kmPitch.P(1, 1) - G_state.kmPitch.K(1) * G_state.kmPitch.P(1, 1),
+                              2 => G_state.kmPitch.P(1, 2) - G_state.kmPitch.K(1) * G_state.kmPitch.P(1, 2) ),
+                       2 => ( 1 => G_state.kmPitch.P(2, 1) - G_state.kmPitch.K(2) * G_state.kmPitch.P(1, 1),
+                              2 => G_state.kmPitch.P(2, 2) - G_state.kmPitch.K(2) * G_state.kmPitch.P(1, 2) ) );
       
       
       G_state.kmLastCall := now;
@@ -182,7 +248,7 @@ package body IMU is
 
    function get_Orientation(Self : IMU_Tag) return Orientation_Type is
    begin
-      return G_state.kmAngle;
+      return ( ROLL => G_state.kmRoll.Angle, PITCH => G_state.kmPitch.Angle, YAW => 0.0 * Degree);
    end get_Orientation;
 
 
