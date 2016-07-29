@@ -1,16 +1,17 @@
 --  Project: StratoX
 --  System:  Stratosphere Balloon Flight Controller
---  Author: Martin Becker (becker@rcs.ei.tum.de)
+--  Author:  Martin Becker (becker@rcs.ei.tum.de)
 with FAT_Filesystem.Directories.Files;
 with Interfaces; use Interfaces;
 
---  @summary read/write SD card using a file system
-package SDMemory.Driver is
-   procedure Init_Filesys;
-   --  initialize the interface
+--  @summary top-level package for reading/writing logfiles to SD card
+package SDLog with SPARK_Mode => Off is
 
-   procedure Close_Filesys;
-   --  closes the interface
+   procedure Init;
+   --  initialize the SD log
+
+   procedure Close;
+   --  closes the SD log
 
    procedure List_Rootdir;
    --  example copied from AdaCore/Ada_Drivers_Library
@@ -31,5 +32,4 @@ package SDMemory.Driver is
    --  return log size in bytes
 
    function To_File_Data (S : String) return FAT_Filesystem.Directories.Files.File_Data;
-
-end SDMemory.Driver;
+end SDLog;

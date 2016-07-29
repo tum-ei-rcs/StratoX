@@ -3,7 +3,7 @@ with Interfaces;   use Interfaces;
 with Media_Reader; use Media_Reader;
 with MyStrings;    use MyStrings;
 
-package FAT_Filesystem with SPARK_Mode is
+package FAT_Filesystem with SPARK_Mode => Off is
 
    MAX_VOLUMES           : constant := 1;
    --  Maximum number of mounted volumes

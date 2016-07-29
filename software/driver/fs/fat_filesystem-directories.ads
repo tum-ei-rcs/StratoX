@@ -5,7 +5,7 @@
 --  XXX! Nothing here is thread-safe!
 
 --  @summary Directory (end directory entries) handling for FAT FS
-package FAT_Filesystem.Directories with SPARK_Mode is
+package FAT_Filesystem.Directories with SPARK_Mode => Off is
 
    type Directory_Handle is private; -- used to read directories
 

@@ -47,6 +47,9 @@ package body HIL.Timers with SPARK_Mode => Off is
    begin
       --  1. select clk source (internal is default)
 
+      -- 4. disable preload
+      STM32.Timers.Set_Autoreload_Preload (This, False);
+
       --  2. write ARR and CCRx to set event period. Counter decrements
       --  until zero, then starts at value=Period again.
       Calculate_Prescaler_and_Period (Frequency, Prescaler, Period);
@@ -59,16 +62,15 @@ package body HIL.Timers with SPARK_Mode => Off is
 
       --  3. configure output mode: toggle channel output every time we reach zero
       declare
-         Value : Word := Period / 2; -- TODO: might be wrong...check with datasheet.
+         Value : Word := Period / 2;
       begin
          STM32.Timers.Configure_Channel_Output (This, Channel, Toggle, Enable, Value, High);
       end ;
-
-      -- 4. disable preload
-      STM32.Timers.Set_Autoreload_Preload (This, False);
 
       -- 5. finally enable channel
       STM32.Timers.Enable_Channel (This, Channel);
    end Configure_OC_Toggle;
 
+   --  procedure Set_Counter (This : in out HIL_Timer;  Value : Word) renames STM32.Timers.Set_Counter;
+   --  procedure Set_Autoreload (This : in out HIL_Timer;  Value : Word) renames STM32.Timers.Set_Autoreload;
 end HIL.Timers;

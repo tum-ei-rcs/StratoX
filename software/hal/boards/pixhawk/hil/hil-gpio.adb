@@ -8,7 +8,7 @@ with STM32.Device;
 with STM32.Board;
 
 --  @summary
---  Target-specific mapping for HIL of GPIO
+--  Target-specific mapping for HIL of GPIO in Pixhawk board
 package body HIL.GPIO with
    SPARK_Mode => Off
 is

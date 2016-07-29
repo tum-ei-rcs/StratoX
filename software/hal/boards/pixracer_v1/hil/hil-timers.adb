@@ -5,7 +5,6 @@
 -- Authors: Martin Becker (becker@rcs.ei.tum.de>
 with STM32.Timers; use STM32.Timers;
 with System.OS_Interface;
-with HIL.UART;
 
 --  @summary
 --  Target-specific implementation of HIL for Timers. Pixracer.

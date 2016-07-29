@@ -7,7 +7,7 @@
 with Ada.Unchecked_Conversion;
 
 --  @summary Directory (end directory entries) handling for FAT FS
-package body FAT_Filesystem.Directories is
+package body FAT_Filesystem.Directories with SPARK_Mode => Off is
 
    -------------------------
    -- Open_Root_Directory --
@@ -343,9 +343,10 @@ package body FAT_Filesystem.Directories is
             declare
                Current_CRC : Unsigned_8 := 0;
                C           : Unsigned_8 := 0;
+               shortname   : constant String := F_Entry.Filename & F_Entry.Extension;
             begin
                Last_Seq := 0;
-               for Ch of String'(F_Entry.Filename & F_Entry.Extension) loop
+               for Ch of shortname loop
                   C := Character'Enum_Rep (Ch);
                   Current_CRC := Shift_Right (Current_CRC and 16#FE#, 1)
                     or Shift_Left (Current_CRC and 16#01#, 7);

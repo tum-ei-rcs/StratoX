@@ -8,7 +8,7 @@ with STM32.Device;
 with STM32.Board;
 
 --  @summary
---  target-specific mapping of HIL for GPIO
+--  target-specific mapping of HIL for GPIO in Pixracer v1 board
 package body HIL.GPIO with
    SPARK_Mode => Off
 is

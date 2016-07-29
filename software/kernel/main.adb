@@ -14,7 +14,6 @@ with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
 
-
 with Crash;
 with Mission;
 with Console;
@@ -22,8 +21,9 @@ with Estimator;
 with Controller;
 with LED_Manager;
 with Buzzer_Manager;
+with SDLog;
+with Buildinfo;
 with Profiler; use Profiler;
-
 with Interfaces; use Interfaces;
 
 package body Main is
@@ -37,7 +37,7 @@ package body Main is
       --        Test             : Float       := Sin (100.0);
       --        Foo              : Real_Vector := (10.0, 10.0, 10.0);
       --        A, B, C, D, E, F : Integer_16  := 0;
-
+      num_boots : HIL.Byte;
    begin
 
 --        Test := abs (Foo);
@@ -51,11 +51,14 @@ package body Main is
       --MS5611.Driver.reset;
       -- MPU6000.Driver.Reset;
 
-      NVRAM.Init;
-
       -- wait to satisfy some timing
       delay until Clock + Milliseconds (50);
 
+      Logger.log (Logger.INFO, "Initializing SDLog...");
+      SDLog.Init;
+
+      Logger.log (Logger.INFO, "Initializing NVRAM...");
+      NVRAM.Init;
 
       Estimator.initialize;
       Controller.initialize;
@@ -65,7 +68,6 @@ package body Main is
 
       -- Illustration how to use NVRAM
       declare
-         num_boots : HIL.Byte;
          exception_line : HIL.Byte_Array_2;
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots);
@@ -74,10 +76,29 @@ package body Main is
             NVRAM.Store (NVRAM.VAR_BOOTCOUNTER, num_boots);
          end if;
          Logger.log (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
-         
+
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_H, exception_line(2));
-         
+      end;
+
+      --  Illustration of logging to SD card
+      -- SDLog.List_Rootdir; -- that is nice to look at, but highly unsafe
+      Logger.log (Logger.INFO, "Starting SDLog...");
+      declare
+         buildstring : constant String := Buildinfo.Short_Datetime;
+         fname       : constant String := num_boots'Img & ".log";
+         ENDL        : constant String := (Character'Val (13), Character'Val (10));
+      begin
+         if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
+         then
+            Logger.log (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
+         else
+            Logger.log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
+            SDLog.Write_Log ("Build Stamp: "
+                                       & Buildinfo.Compilation_Date & " "
+                                       & Buildinfo.Compilation_Time & ENDL);
+            SDLog.Flush_Log; -- force to write to SD card right now (slow! Only do this in case of emergency!)
+         end if;
       end;
 
       -- TODO: pick up last mission state from NVRAM and continue where
@@ -110,7 +131,7 @@ package body Main is
 
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
-      
+
       Main_Profile : Profile_Tag;
 
       body_info : Body_Type;
@@ -128,7 +149,7 @@ package body Main is
       --Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
       --Buzzer_Manager.Set_Song( "The Final Countdown" );
       --Buzzer_Manager.Enable;
-      
+
       -- arm PX4IO
       Controller.activate;
 

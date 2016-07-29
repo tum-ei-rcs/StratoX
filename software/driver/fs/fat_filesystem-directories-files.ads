@@ -8,7 +8,7 @@ with FAT_Filesystem;
 with FAT_Filesystem.Directories; use FAT_Filesystem.Directories;
 
 --  @summary File handling for FAT FS
-package FAT_Filesystem.Directories.Files with SPARK_Mode is
+package FAT_Filesystem.Directories.Files with SPARK_Mode => Off is
 
    type File_Handle is private;
 

@@ -1,4 +1,4 @@
---  Description:
+--  Description: PIXRACER PROTOTYPING MAIN FILE
 --  Main System File
 --  todo: better unit name
 
@@ -11,8 +11,7 @@ with NVRAM;
 with Logger;
 with LED_Manager;
 with Buzzer_Manager;
-with SDMemory;
-with SDMemory.Driver;
+with SDLog;
 with Buildinfo;
 with FAT_Filesystem.Directories.Files; -- actually not necessary
 
@@ -20,7 +19,7 @@ package body Main is
 
    ENDL : constant String := (Character'Val (13), Character'Val (10));
 
-   procedure Perf_Test ( megabytes : Unsigned_32);
+   procedure Perf_Test (megabytes : Unsigned_32);
 
    procedure Initialize is
       success : Boolean := False;
@@ -40,8 +39,8 @@ package body Main is
       LED_Manager.Set_Color ((1 => HIL.Devices.RED_LED));
       LED_Manager.LED_switchOn;
 
-      Logger.log (Logger.INFO, "Initializing SD Memory...");
-      SDMemory.Init;
+      Logger.log (Logger.INFO, "Initializing SDIO...");
+      SDLog.Init;
 
       Logger.log (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;
@@ -76,20 +75,20 @@ package body Main is
       NVRAM.Store (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
 
       Logger.log (Logger.INFO, "SD Card check...");
-      SDMemory.Driver.List_Rootdir;
+      SDLog.List_Rootdir;
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
          fname : constant String := bootcounter'Img & ".log";
       begin
-         if not SDMemory.Driver.Start_Logfile (dirname => buildstring, filename => fname)
+         if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
          then
             Logger.log (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
          else
             Logger.log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
-            SDMemory.Driver.Write_Log ("Build Stamp: "
+            SDLog.Write_Log ("Build Stamp: "
                                        & Buildinfo.Compilation_Date & " "
                                        & Buildinfo.Compilation_Time & ENDL);
-            SDMemory.Driver.Flush_Log;
+            SDLog.Flush_Log;
          end if;
          null;
       end;
@@ -102,7 +101,7 @@ package body Main is
       dummydata  : FAT_Filesystem.Directories.Files.File_Data (1 .. 512);
       TARGETSIZE : constant Unsigned_32 := megabytes * 1024 * 1024;
       filesize   : Unsigned_32;
-      filesize_pre : Unsigned_32 := SDMemory.Driver.Logsize;
+      filesize_pre : Unsigned_32 := SDLog.Logsize;
 
       s0         : Seconds_Count;
       ts         : Time_Span;
@@ -132,9 +131,9 @@ package body Main is
 
       Write_Loop :
       loop
-         filesize := SDMemory.Driver.Logsize;
+         filesize := SDLog.Logsize;
 
-         SDMemory.Driver.Write_Log (dummydata);
+         SDLog.Write_Log (dummydata);
 
          if ctr = 0 then
             Show_Stats;
@@ -152,8 +151,10 @@ package body Main is
       --  data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);
       loop_time_start   : Time      := Clock;
 
---      gleich : Ada.Real_Time.Time;
---      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6));
+      --      gleich : Ada.Real_Time.Time;
+      --      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6));
+      type prescaler is mod 100;
+      p : prescaler := 0;
    begin
       LED_Manager.Set_Color ((1 => HIL.Devices.GRN_LED));
       LED_Manager.LED_blink (LED_Manager.SLOW);
@@ -175,15 +176,20 @@ package body Main is
       loop
          loop_time_start := Clock;
 
+         p := p + 1;
+         if p = 0 then
+            Logger.log (Logger.INFO, "Logfile size " & SDLog.Logsize'Img & " B");
+         end if;
+
          declare
             s  : Seconds_Count;
             ts : Time_Span;
             ticks : Integer;
-            si : constant Unsigned_32 := SDMemory.Driver.Logsize;
+            si : constant Unsigned_32 := SDLog.Logsize;
          begin
             Split (T => loop_time_start, SC => s, TS => ts);
             ticks := ts / Ada.Real_Time.Tick;
-            SDMemory.Driver.Write_Log ("Time:" & s'Img & "/" & ticks'Img
+            SDLog.Write_Log ("Time:" & s'Img & "/" & ticks'Img
                                        & ", size:" & si'Img & ENDL);
          end;
 

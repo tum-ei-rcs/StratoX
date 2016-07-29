@@ -1,3 +1,13 @@
+--  Based on AdaCore's Ada Drivers Library,
+--  see https://github.com/AdaCore/Ada_Drivers_Library,
+--  checkout 93b5f269341f970698af18f9182fac82a0be66c3.
+--  Copyright (C) Adacore
+--
+--  Institution: Technische Universität München
+--  Department:  Real-Time Computer Systems (RCS)
+--  Project:     StratoX
+--  Authors:     Martin Becker (becker@rcs.ei.tum.de)
+
 with Ada.Interrupts.Names;
 
 with STM32.GPIO;
@@ -10,7 +20,7 @@ with STM32_SVD.SDIO;
 -- setup the on-chip SD controller, clock and irq.
 --
 --  based on https://raw.githubusercontent.com/AdaCore/Ada_Drivers_Library/
---  master/examples/sdcard/src/stm32f7/device_sd_configuration.ads, checked for STM32F427.
+--  master/examples/sdcard/src/stm32f7/device_sd_configuration.ads.
 
 package Media_Reader.SDCard.Config is
 

@@ -12,7 +12,6 @@
 
 with System;
 with HIL.UART;
-with SDMemory;
 with ULog.GPS;
 with HIL.Devices;
 
@@ -155,7 +154,6 @@ is
    procedure init(status : out Init_Error_Code) is
    begin
       Adapter.init(status);
-      SDMemory.Init;
    end init;
    
    function Image (level : Log_Level) return String is 

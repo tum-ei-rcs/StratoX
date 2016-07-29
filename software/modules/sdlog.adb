@@ -1,21 +1,21 @@
---  with Ada.Unchecked_Conversion;
-with Interfaces;                 use Interfaces;
-
+--  Project: StratoX
+--  System:  Stratosphere Balloon Flight Controller
+--  Author:  Martin Becker (becker@rcs.ei.tum.de)
 with STM32.SDMMC;                      use STM32.SDMMC;
-
 with FAT_Filesystem;                   use FAT_Filesystem;
 with FAT_Filesystem.Directories;       use FAT_Filesystem.Directories;
 with FAT_Filesystem.Directories.Files; use FAT_Filesystem.Directories.Files;
 with Media_Reader.SDCard;              use Media_Reader.SDCard;
 with Logger;
 
-package body SDMemory.Driver is
+--  @summary top-level package for reading/writing to SD card
+package body SDLog with SPARK_Mode => Off is
 
-   SD_Controller : aliased SDCard_Controller;
-   SD_Card_Info  : Card_Information;
-   Error_State   : Boolean := False;
-   FS            : FAT_Filesystem_Access;
-   SD_Initialized   : Boolean := False;
+   SD_Controller   : aliased SDCard_Controller;
+   SD_Card_Info    : Card_Information;
+   Error_State     : Boolean := False;
+   FS              : FAT_Filesystem_Access;
+   SD_Initialized  : Boolean := False;
 
    fh_log   : File_Handle;
    log_open : Boolean := False;
@@ -24,20 +24,20 @@ package body SDMemory.Driver is
    --  Close_Filesys
    -------------------
 
-   procedure Close_Filesys is
+   procedure Close is
    begin
       if not SD_Initialized then
          return;
       end if;
 
       Close (FS);
-   end Close_Filesys;
+   end Close;
 
    -------------------
    --  Init_Filesys
    -------------------
 
-   procedure Init_Filesys is
+   procedure Init is
       Units    : constant array (Natural range <>) of Character :=
         (' ', 'k', 'M', 'G', 'T');
       Capacity : Unsigned_64;
@@ -90,7 +90,7 @@ package body SDMemory.Driver is
          Logger.log (Logger.DEBUG, "SD Card: found FAT FS");
       end if;
       SD_Initialized := True;
-   end Init_Filesys;
+   end Init;
 
    -------------------
    --  Start_Logfile
@@ -252,4 +252,4 @@ package body SDMemory.Driver is
 
    function Logsize return Unsigned_32 is (File_Size (fh_log));
 
-end SDMemory.Driver;
+end SDLog;
