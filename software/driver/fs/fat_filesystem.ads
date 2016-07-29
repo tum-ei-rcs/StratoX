@@ -1,10 +1,15 @@
+--  XXX! Nothing here is thread-safe!
 with Interfaces;   use Interfaces;
 with Media_Reader; use Media_Reader;
+with MyStrings;    use MyStrings;
 
-package FAT_Filesystem with SPARK_Mode => Off is
+package FAT_Filesystem with SPARK_Mode is
 
    MAX_VOLUMES           : constant := 1;
    --  Maximum number of mounted volumes
+
+   INVALID_CLUSTER : constant := 16#01#;
+   FIRST_CLUSTER : constant := 16#02#; -- FAT starts counting at 2
 
    Max_Handles_Reached   : exception;
 
@@ -27,6 +32,9 @@ package FAT_Filesystem with SPARK_Mode => Off is
       Too_Many_Open_Files, --  Number of opened files > Max
       Invalid_Parameter,
       No_MBR_Found,
+      Device_Full,
+      Allocation_Error,
+      Too_Many_Entries,
       No_Partition_Found);
 
    type FAT_Filesystem is limited private;
@@ -122,22 +130,22 @@ package FAT_Filesystem with SPARK_Mode => Off is
 private
    pragma SPARK_Mode (Off);
 
-   type FAT_Disk_Parameter (Version : FAT_Version := FAT16) is record
+   type FAT_Disk_Parameter (F_Version : FAT_Version := FAT16) is record
       OEM_Name                : String (1 .. 8);
-      Block_Size_In_Bytes     : Unsigned_16;
+      Block_Size_In_Bytes     : Unsigned_16; -- also called sector
       Blocks_Per_Cluster      : Unsigned_8;
       Reserved_Blocks         : Unsigned_16;
-      Number_Of_FATs          : Unsigned_8;
-      Root_Dir_Entries_Fat16  : Unsigned_16;
+      Number_Of_FATs          : Unsigned_8; -- how many copies of the FAT are maintained
+      Root_Dir_Entries_Fat16  : Unsigned_16; -- FAT32: 0
       Number_Of_Blocks_Fat16  : Unsigned_16;
       Removable_Drive         : Boolean;
-      Table_Size_Fat16        : Unsigned_16;
+      Table_Size_Fat16        : Unsigned_16; -- FAT32: 0
       Blocks_Per_Cylinder     : Unsigned_16;
       Number_Of_Heads         : Unsigned_16;
       Hidden_Blocks           : Unsigned_32;
       Number_Of_Blocks_Fat32  : Unsigned_32;
 
-      case Version is
+      case F_Version is
          when FAT32 =>
             Table_Size_Fat32        : Unsigned_32;
             Fat_Mirroring_Flags     : Unsigned_16;
@@ -195,8 +203,6 @@ private
       FS_Type_Fat16           at 16#36# range 0 .. 63;
    end record;
 
-   function Trim (S : String) return String;
-
    type FAT_FS_Info is record
       Signature              : String (1 .. 4);
       Free_Clusters          : Unsigned_32;
@@ -218,30 +224,91 @@ private
       Data_Area       : Unsigned_32;
       FAT_Addr        : Unsigned_32;
       Num_Clusters    : Unsigned_32;
-      Window_Block    : Unsigned_32 := 16#FFFF_FFFF#;
+      Window_Block    : Unsigned_32 := 16#FFFF_FFFF#; -- current block/sector that we have read
       Window          : Block (0 .. 511);
+   end record;
+   for FAT_Filesystem'Alignment use 32; -- might be necessary, because Window is a DMA address
+
+   type FAT_Address is record
+      --  Cluster   : Unsigned_32; -- cluster number into which Block_LBA falls
+      Block_LBA : Unsigned_32; -- block address, absolute
+      Block_Off : Unsigned_16; -- offset within block in bytes
    end record;
 
    function Ensure_Block
-     (FS    : in out FAT_Filesystem;
-      Block : Unsigned_32) return Status_Code;
+     (FS        : in out FAT_Filesystem;
+      Block_Arg : Unsigned_32) return Status_Code;
+
+   function Write_Window
+     (FS        : in out FAT_Filesystem;
+      Block_Arg : Unsigned_32) return Status_Code;
+
+   procedure Writeback_FsInfo (FS : in out FAT_Filesystem)
+     with Pre => Version (FS) = FAT32;
 
    function Cluster_To_Block
      (FS      : FAT_Filesystem;
       Cluster : Unsigned_32) return Unsigned_32
    is (FS.Data_Area +
-       (Cluster - 2) * Unsigned_32 (FS.Number_Of_Blocks_Per_Cluster));
+       (Cluster - FIRST_CLUSTER) * Unsigned_32 (FS.Number_Of_Blocks_Per_Cluster));
+   --  note: FAT starts counting clusters with 2. Thus, to get the LBA,
+   --  subtract FIRST_CLUSTER
+   --  cluster size is within 8 .. 64 blocks
+   --  B := Data_Area + (Cluster - FIRST_CLUSTER) * BPC
+
+   function Block_To_Cluster
+     (FS        : FAT_Filesystem;
+      Block_LBA : Unsigned_32) return Unsigned_32
+   is ((Block_LBA - FS.Data_Area) /
+       (Unsigned_32 (FS.Number_Of_Blocks_Per_Cluster)) + FIRST_CLUSTER);
+   --  => Cluster = Block/BPC - Data_Area + FIRST_CLUSTER
+
+   subtype FAT_Entry is Unsigned_32;
 
    function Get_FAT
      (FS      : in out FAT_Filesystem;
-      Cluster : Unsigned_32) return Unsigned_32;
+      Cluster : Unsigned_32) return FAT_Entry;
+   --  @summary look in FAT whether given cluster has successors
+   --  @return 1 if there are no successors, else the cluster number
 
-   function EOC
-     (FS : FAT_Filesystem;
-      Cluster : Unsigned_32) return Boolean
+   function Set_FAT
+     (FS      : in out FAT_Filesystem;
+      Cluster : Unsigned_32;
+      Value   : Unsigned_32) return Boolean
+     with Pre => Cluster >= FIRST_CLUSTER and then Cluster <= FS.Num_Clusters;
+   --  @summary write FAT entry for given cluster
+
+   function Is_Last_Cluster
+     (FS  : FAT_Filesystem;
+      ent : FAT_Entry) return Boolean
    is (case Version (FS) is
-          when FAT16 => (Cluster and 16#FFF8#) = 16#FFF8#,
-          when FAT32 => (Cluster and 16#0FFF_FFF8#) = 16#0FFF_FFF8#);
+          when FAT16 => (ent and 16#FFF8#) = 16#FFF8#,
+          when FAT32 => (ent and 16#0FFF_FFF8#) = 16#0FFF_FFF8#);
+   --  return true if this is the last cluster for an entry
+
+   function Is_Free_Cluster
+     (FS  : FAT_Filesystem;
+      ent : FAT_Entry) return Boolean
+   is ((ent and 16#0FFF_FFFF#) = 16#0#);
+   --  return true if the FAT entry indicates the cluster being unused
+
+   function Append_Cluster
+     (FS : in out FAT_Filesystem;
+      Last_Cluster : Unsigned_32;
+      New_Cluster  : out Unsigned_32) return Status_Code
+     with Pre => Version (FS) = FAT32 and then FS.FSInfo.Free_Clusters > 0;
+   --  @summary convenience function. Combines Get_Free_Cluster,
+   --  Allocate_Cluster and Set_FAT (to chain New_Cluster to Last_Cluster).
+
+   function Allocate_Cluster
+     (FS : in out FAT_Filesystem;
+      cluster : Unsigned_32) return Boolean
+     with Pre => Version (FS) = FAT32 and then FS.FSInfo.Free_Clusters > 0;
+   --  mark the given cluster in the FAT as "used", and update FS Info
+
+   function Get_Free_Cluster (FS : in out FAT_Filesystem) return Unsigned_32;
+   --  @summary scan for a free cluster and return its number
+   --  @return number or INVALID_CLUSTER if no free space in FS.
 
    function Version
      (FS : FAT_Filesystem) return FAT_Version
@@ -315,8 +382,8 @@ private
        then "UNKNOWN"
        else
          (case Version (FS) is
-             when FAT16 => Trim (FS.Disk_Parameters.Volume_Label_Fat16),
-             when FAT32 => Trim (FS.Disk_Parameters.Volume_Label_Fat32)));
+             when FAT16 => RTrim (FS.Disk_Parameters.Volume_Label_Fat16),
+             when FAT32 => RTrim (FS.Disk_Parameters.Volume_Label_Fat32)));
 
    function File_System_Type
      (FS : FAT_Filesystem) return String
@@ -324,8 +391,8 @@ private
        then "FAT16"
        else
          (case Version (FS) is
-             when FAT16 => Trim (FS.Disk_Parameters.FS_Type_Fat16),
-             when FAT32 => Trim (FS.Disk_Parameters.FS_Type_Fat32)));
+             when FAT16 => RTrim (FS.Disk_Parameters.FS_Type_Fat16),
+             when FAT32 => RTrim (FS.Disk_Parameters.FS_Type_Fat32)));
 
    function Number_Of_Entries_In_Root_Dir
      (FS : FAT_Filesystem) return Unsigned_16
