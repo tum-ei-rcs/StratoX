@@ -133,8 +133,9 @@ package body FAT_Filesystem.Directories.Files is
    -------------------
 
    function File_Write
-     (File : in out File_Handle;
-      Data : File_Data) return Integer
+     (File   : in out File_Handle;
+      Data   : File_Data;
+      Status : out Status_Code) return Integer
    is
       newlevel    : Natural := 0;
       n_processed : Natural := 0;
@@ -177,13 +178,10 @@ package body FAT_Filesystem.Directories.Files is
          --  write buffer to disk only if full
          if File.Buffer_Level = File.Buffer'Length then
             File.FS.Window := File.Buffer;
-            declare
-               Status : constant Status_Code := File.FS.Write_Window (File.Current_Block);
-            begin
-               if Status /= OK then
-                  return n_processed;
-               end if;
-            end;
+            Status := File.FS.Write_Window (File.Current_Block);
+            if Status /= OK then
+               return n_processed;
+            end if;
 
             --  now check whether the next block fits in the cluster.
             --  Otherwise alloc next cluster and update FAT.
@@ -194,7 +192,6 @@ package body FAT_Filesystem.Directories.Files is
                --  require another cluster
                declare
                   New_Cluster : Unsigned_32;
-                  Status      : Status_Code;
                begin
                   Status := File.FS.Append_Cluster
                     (Last_Cluster => File.Current_Cluster,
@@ -210,8 +207,8 @@ package body FAT_Filesystem.Directories.Files is
 
             --  update directory entry on disk (size has changed)
             declare
-               Status : Status_Code := Update_Entry (File);
-               pragma Unreferenced (Status); -- don't care, that size is optional for us
+               Status_Up : Status_Code := Update_Entry (File);
+               pragma Unreferenced (Status_Up); -- don't care, that size is optional for us
             begin
                null;
             end;

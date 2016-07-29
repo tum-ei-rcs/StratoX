@@ -490,6 +490,7 @@ package body Media_Reader.SDCard is
          DMA_Interrupt_Handler.Wait_Transfer (DMA_Err); -- this unblocks
          SDMMC_Interrupt_Handler.Wait_Transfer (Ret); -- TX underrun!
 
+         -- this seems slow. Do we have to wait?
          loop
             -- FIXME: some people claim, that this goes wrong with multiblock, see
             -- http://blog.frankvh.com/2011/09/04/stm32f2xx-sdio-sd-card-interface/

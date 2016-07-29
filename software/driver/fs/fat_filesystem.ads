@@ -37,6 +37,9 @@ package FAT_Filesystem with SPARK_Mode => Off is
       Too_Many_Entries,
       No_Partition_Found);
 
+   function Image (s : Status_Code) return String;
+   --  SFP Runtime cannot stringify enums. Workaround.
+
    type FAT_Filesystem is limited private;
    type FAT_Filesystem_Access is access all FAT_Filesystem;
 

@@ -31,5 +31,8 @@ package SDLog with SPARK_Mode => Off is
    function Logsize return Unsigned_32;
    --  return log size in bytes
 
+   function Is_Open return Boolean;
+   --  return true if logfile is opened
+
    function To_File_Data (S : String) return FAT_Filesystem.Directories.Files.File_Data;
 end SDLog;

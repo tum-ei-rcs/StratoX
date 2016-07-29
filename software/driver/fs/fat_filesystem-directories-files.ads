@@ -24,8 +24,9 @@ package FAT_Filesystem.Directories.Files with SPARK_Mode => Off is
    --  handle for write access
 
    function File_Write
-     (File : in out File_Handle;
-      Data : File_Data) return Integer;
+     (File   : in out File_Handle;
+      Data   : File_Data;
+      Status : out Status_Code) return Integer;
    --  @return number of bytes written (at most Data'Length), or -1 on error.
 
    function File_Flush

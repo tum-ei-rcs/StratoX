@@ -103,6 +103,9 @@ package body SDLog with SPARK_Mode => Off is
       Status   : Status_Code;
       Log_Dir  : Directory_Entry;
       Log_Hnd  : Directory_Handle;
+
+
+
    begin
       if (not SD_Initialized) or Error_State then
          return False;
@@ -121,7 +124,7 @@ package body SDLog with SPARK_Mode => Off is
       then
          Logger.log (Logger.ERROR,
                      "SD Card: Error creating directory in root:" &
-                       Status'Img);
+                       Image (Status));
          return False;
       end if;
       Close (Hnd_Root);
@@ -130,7 +133,7 @@ package body SDLog with SPARK_Mode => Off is
       if Status /= OK then
          Logger.log (Logger.ERROR,
                      "SD Card: Error opening log dir in root:" &
-                       Status'Img);
+                       Image (Status));
          return False;
       end if;
 
@@ -141,7 +144,7 @@ package body SDLog with SPARK_Mode => Off is
       if Status /= OK then
          Logger.log (Logger.ERROR,
                      "SD Card: Error creating log file:" &
-                       Status_Code'Image (Status));
+                       Image (Status));
          return False;
       end if;
       log_open := True;
@@ -215,14 +218,16 @@ package body SDLog with SPARK_Mode => Off is
          return;
       end if;
       declare
-         n_written : constant Integer := File_Write (File => fh_log, Data => Data);
+         Status : Status_Code;
+         n_written : constant Integer := File_Write (File => fh_log, Data => Data, Status => Status);
       begin
          if n_written < Data'Length then
             if n_written < 0 then
-               Logger.log (Logger.ERROR, "Logfile write error");
+               Logger.log (Logger.ERROR, "Logfile write error" & Image (Status));
             else
-               Logger.log (Logger.ERROR, "Logfile wrote only " & n_written'Img &
-                             " bytes instead of " & Data'Length'Img);
+               Logger.log (Logger.ERROR, "Logfile wrote only " & n_written'Img
+                           & " bytes instead of " & Data'Length'Img
+                           & "(" & Image (Status) & ")");
             end if;
          end if;
       end;
@@ -249,6 +254,8 @@ package body SDLog with SPARK_Mode => Off is
       end loop;
       return d; -- this throws an exception.
    end To_File_Data;
+
+   function Is_Open return Boolean is (log_open);
 
    function Logsize return Unsigned_32 is (File_Size (fh_log));
 

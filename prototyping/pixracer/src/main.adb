@@ -13,7 +13,9 @@ with LED_Manager;
 with Buzzer_Manager;
 with SDLog;
 with Buildinfo;
+with Profiler;
 with FAT_Filesystem.Directories.Files; -- actually not necessary
+with Units;
 
 package body Main is
 
@@ -92,47 +94,52 @@ package body Main is
          end if;
          null;
       end;
-      --  Perf_Test (20); --> crash
+      Perf_Test (20);
       Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
 
    procedure Perf_Test (megabytes : Unsigned_32) is
-      time_start : constant Time := Clock;
       dummydata  : FAT_Filesystem.Directories.Files.File_Data (1 .. 512);
       TARGETSIZE : constant Unsigned_32 := megabytes * 1024 * 1024;
       filesize   : Unsigned_32;
       filesize_pre : Unsigned_32 := SDLog.Logsize;
+      lapsed_pre : Float := 0.0;
 
-      s0         : Seconds_Count;
-      ts         : Time_Span;
+      prof : Profiler.Profile_Tag;
 
       procedure Show_Stats;
       procedure Show_Stats is
-         s          : Seconds_Count;
-         lapsed     : Seconds_Count;
-         bps        : Integer;
-         time_now   : constant Time := Clock;
+         ts     : constant Time_Span := prof.get_Elapsed;
+         lapsed : constant Float := Float (Units.To_Time (ts));
+         diff   : constant Float := lapsed - lapsed_pre;
+         bps    : Integer;
       begin
-         Split (T => time_now, SC => s, TS => ts);
-         lapsed := s0 - s;
-         if lapsed > 0 then
-            bps := Integer (Float (filesize - filesize_pre) / Float (lapsed));
-            Logger.log (Logger.INFO, "Time=" & lapsed'Img & ", xfer="
+
+         if diff > 0.0 then
+            bps := Integer (Float (filesize - filesize_pre) / diff);
+            Logger.log (Logger.INFO, "Time=" & Integer (lapsed)'Img & ", xfer="
                         & filesize'Img & "=>" & bps'Img & " B/s");
             filesize_pre := filesize;
+            lapsed_pre := lapsed;
          end if;
       end Show_Stats;
 
       type prescaler is mod 1000;
       ctr : prescaler := 0;
    begin
+      prof.init ("perf");
       Logger.log (Logger.INFO, "Write performance test with " & megabytes'Img & " MB" & ENDL);
-      Split (T => time_start, SC => s0, TS => ts);
+
+      if not SDLog.Is_Open then
+         Logger.log (Logger.ERROR, "Logfile is not open, skipping test " & ENDL);
+         return;
+      end if;
+
+      prof.start;
 
       Write_Loop :
       loop
          filesize := SDLog.Logsize;
-
          SDLog.Write_Log (dummydata);
 
          if ctr = 0 then
@@ -142,6 +149,7 @@ package body Main is
 
          exit Write_Loop when filesize >= TARGETSIZE;
       end loop Write_Loop;
+      prof.stop;
       Show_Stats;
 
    end Perf_Test;

@@ -57,7 +57,7 @@ private
    end record;
 
    type State_Type is record
-      isEnabled : Boolean;
+      isEnabled : Boolean := True;
    end record;
 
    G_state : State_Type;

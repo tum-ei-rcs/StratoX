@@ -474,4 +474,22 @@ package body FAT_Filesystem is
       end case;
    end Get_FAT;
 
+   function Image (s : Status_Code) return String is
+      begin
+      case s is
+      when OK => return "OK";
+      when Disk_Error => return "DiskErr";
+      when Internal_Error => return "IntErr";
+      when No_Such_File => return "NoSuchFile";
+      when Invalid_Name => return "InvName";
+      when Already_Exists => return "Exists";
+      when Invalid_Object_Entry => return "InvEnt";
+      when No_MBR_Found => return "NoMBR";
+      when Device_Full => return "DevFull";
+      when Allocation_Error => return "AllocErr";
+      when No_Partition_Found => return "NoPart";
+      when others => return "unknown";
+      end case;
+   end Image;
+
 end FAT_Filesystem;

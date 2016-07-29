@@ -10,7 +10,7 @@
 
 package Config is
 
-   MAIN_TICK_RATE_MS : constant := 40;   -- Tickrate in Milliseconds
+   MAIN_TICK_RATE_MS : constant := 10;   -- Tickrate in Milliseconds
 
 
 end Config;
