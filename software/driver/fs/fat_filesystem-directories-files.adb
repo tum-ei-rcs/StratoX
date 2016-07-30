@@ -137,7 +137,6 @@ package body FAT_Filesystem.Directories.Files is
       Data   : File_Data;
       Status : out Status_Code) return Integer
    is
-      newlevel    : Natural := 0;
       n_processed : Natural := 0;
       this_chunk  : Natural := 0;
    begin
@@ -158,17 +157,19 @@ package body FAT_Filesystem.Directories.Files is
          begin
             cap := File.Buffer'Length - File.Buffer_Level;
             this_chunk := (if cap >= n_remain then n_remain else cap);
-            newlevel := File.Buffer_Level + this_chunk;
          end;
 
          --  copy max amount to buffer.
          declare
-            buf_lo : constant Unsigned_16 := File.Buffer'First + Unsigned_16 (File.Buffer_Level);
-            buf_hi : constant Unsigned_16 := File.Buffer'First + Unsigned_16 (newlevel) - 1;
-            cnk_lo : constant Unsigned_16 := Data'First + Unsigned_16 (n_processed);
-            cnk_hi : constant Unsigned_16 := cnk_lo + Unsigned_16 (this_chunk) - 1;
+            newlevel : constant Natural     := File.Buffer_Level + this_chunk;
+            buf_lo   : constant Unsigned_16 := File.Buffer'First + Unsigned_16 (File.Buffer_Level);
+            buf_hi   : constant Unsigned_16 := File.Buffer'First + Unsigned_16 (newlevel) - 1;
+            cnk_lo   : constant Unsigned_16 := Data'First + Unsigned_16 (n_processed);
+            cnk_hi   : constant Unsigned_16 := cnk_lo + Unsigned_16 (this_chunk) - 1;
          begin
+            --  FIXME: save this copy if we have a full buffer. takes ~16usec
             File.Buffer (buf_lo .. buf_hi) := Data (cnk_lo .. cnk_hi);
+            File.Buffer_Level := newlevel;
          end;
 
          --  book keeping
@@ -178,7 +179,7 @@ package body FAT_Filesystem.Directories.Files is
          --  write buffer to disk only if full
          if File.Buffer_Level = File.Buffer'Length then
             File.FS.Window := File.Buffer;
-            Status := File.FS.Write_Window (File.Current_Block);
+            Status := File.FS.Write_Window (File.Current_Block); -- ~2.7msec (too slow!)
             if Status /= OK then
                return n_processed;
             end if;
@@ -212,8 +213,6 @@ package body FAT_Filesystem.Directories.Files is
             begin
                null;
             end;
-         else
-            File.Buffer_Level := newlevel;
          end if;
 
          n_processed := n_processed + this_chunk;

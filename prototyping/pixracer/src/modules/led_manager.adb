@@ -15,7 +15,9 @@ package body LED_Manager is
    LED_mode : LED_Mode_Type := FIXED;
    LED_state : LED_State_Type := OFF;
    time_counter : Time_Type := 0;
-   current_color : Color_Type := (1 => HIL.Devices.BLU_LED);
+   current_color : Color_Type := (HIL.Devices.BLU_LED => True,
+                                  HIL.Devices.RED_LED => False,
+                                  HIL.Devices.GRN_LED => False);
 
    type Pulse_Type is
        record
@@ -29,13 +31,18 @@ package body LED_Manager is
                                                    SLOW => BLINK_TIME * 3
                                                   );
 
+   procedure LED_set (state : LED_State_Type);
    procedure LED_set (state : LED_State_Type) is
    begin
       LED_state := state;
       case state is
       when ON =>
          for c in current_color'Range  loop
-            write (GPIO_Point_Type (current_color (c)), LOW); -- FIXME: pixracer drives LEDS with low
+            if current_color (c) then
+               write (GPIO_Point_Type (c), LOW);
+            else
+               write (GPIO_Point_Type (c), HIGH);
+            end if;
          end loop;
       when OFF =>
          HIL.GPIO.All_LEDs_Off;

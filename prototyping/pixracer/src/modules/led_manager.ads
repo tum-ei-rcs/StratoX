@@ -26,7 +26,8 @@ package LED_Manager is
    type LED_Blink_Type is (FLASH, FAST, SLOW);
    type LED_Blink_Speed_Type is array (LED_Blink_Type) of Time_Type;
 
-   type Color_Type is Array (Positive range <> ) of HIL.Devices.Device_Type_GPIO;
+   --type Color_Type is Array (Positive range <> ) of HIL.Devices.Device_Type_GPIO;
+   type Color_Type is array (HIL.Devices.Device_Type_LED) of Boolean;
 
    procedure Set_Color (col : Color_Type);
    --  for all of the subsequent methods, select color to use

@@ -38,7 +38,7 @@ package body Main is
       Buzzer_Manager.Initialize;
 
       LED_Manager.LED_switchOff;
-      LED_Manager.Set_Color ((1 => HIL.Devices.RED_LED));
+      LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => False, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
 
       Logger.log (Logger.INFO, "Initializing SDIO...");
@@ -53,7 +53,6 @@ package body Main is
 
       --  hang here if self-checks failed
       if not success then
-         LED_Manager.Set_Color ((1 => HIL.Devices.RED_LED));
          LED_Manager.LED_blink (LED_Manager.FAST);
          Logger.log (Logger.ERROR, "Self checks failed");
          t_next := Clock;
@@ -94,12 +93,14 @@ package body Main is
          end if;
          null;
       end;
-      Perf_Test (20);
+      LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
+      LED_Manager.LED_switchOn;
+      Perf_Test (10);
       Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
 
    procedure Perf_Test (megabytes : Unsigned_32) is
-      dummydata  : FAT_Filesystem.Directories.Files.File_Data (1 .. 512);
+      dummydata  : FAT_Filesystem.Directories.Files.File_Data (1 .. 1024);
       TARGETSIZE : constant Unsigned_32 := megabytes * 1024 * 1024;
       filesize   : Unsigned_32;
       filesize_pre : Unsigned_32 := SDLog.Logsize;
@@ -113,12 +114,14 @@ package body Main is
          lapsed : constant Float := Float (Units.To_Time (ts));
          diff   : constant Float := lapsed - lapsed_pre;
          bps    : Integer;
+         cps    : Integer;
       begin
 
          if diff > 0.0 then
+            cps := Integer (1000.0 / diff);
             bps := Integer (Float (filesize - filesize_pre) / diff);
             Logger.log (Logger.INFO, "Time=" & Integer (lapsed)'Img & ", xfer="
-                        & filesize'Img & "=>" & bps'Img & " B/s");
+                        & filesize'Img & "=>" & bps'Img & " B/s " & cps'Img & " calls/s");
             filesize_pre := filesize;
             lapsed_pre := lapsed;
          end if;
@@ -126,6 +129,7 @@ package body Main is
 
       type prescaler is mod 1000;
       ctr : prescaler := 0;
+
    begin
       prof.init ("perf");
       Logger.log (Logger.INFO, "Write performance test with " & megabytes'Img & " MB" & ENDL);
@@ -164,7 +168,7 @@ package body Main is
       type prescaler is mod 100;
       p : prescaler := 0;
    begin
-      LED_Manager.Set_Color ((1 => HIL.Devices.GRN_LED));
+      LED_Manager.Set_Color ((HIL.Devices.RED_LED => False, HIL.Devices.GRN_LED => False, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
 --        Buzzer_Manager.Set_Timing (period => 0.5 * Second, length => 0.1 * Second); -- gapless
