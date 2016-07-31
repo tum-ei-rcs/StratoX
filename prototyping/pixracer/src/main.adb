@@ -65,7 +65,7 @@ package body Main is
 
       LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
-      SDLog.Perf_Test (10);
+      --  SDLog.Perf_Test (10);
       Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
 
@@ -80,7 +80,7 @@ package body Main is
       type prescaler is mod 100;
       p : prescaler := 0;
    begin
-      LED_Manager.Set_Color ((HIL.Devices.RED_LED => False, HIL.Devices.GRN_LED => False, HIL.Devices.BLU_LED => False));
+      LED_Manager.Set_Color ((HIL.Devices.RED_LED => False, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
 --        Buzzer_Manager.Set_Timing (period => 0.5 * Second, length => 0.1 * Second); -- gapless
