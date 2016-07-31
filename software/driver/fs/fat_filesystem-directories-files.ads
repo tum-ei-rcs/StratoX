@@ -17,9 +17,10 @@ package FAT_Filesystem.Directories.Files with SPARK_Mode => Off is
    subtype File_Data is Media_Reader.Block;
 
    function File_Create
-     (Parent  : in out Directory_Handle;
-      newname : String;
-      File    : out File_Handle) return Status_Code;
+     (Parent    : in out Directory_Handle;
+      newname   : String;
+      Overwrite : Boolean := False;
+      File      : out File_Handle) return Status_Code;
    --  create a new file in the given directory, and return
    --  handle for write access
 

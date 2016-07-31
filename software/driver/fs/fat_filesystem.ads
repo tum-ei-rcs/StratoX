@@ -8,8 +8,12 @@ package FAT_Filesystem with SPARK_Mode => Off is
    MAX_VOLUMES           : constant := 1;
    --  Maximum number of mounted volumes
 
-   INVALID_CLUSTER : constant := 16#01#;
-   FIRST_CLUSTER : constant := 16#02#; -- FAT starts counting at 2
+   --  FIXME: forbid the use of these in comparison ops
+   INVALID_CLUSTER    : constant := 16#01#;
+   FIRST_CLUSTER      : constant := 16#02#; -- FAT starts counting at 2
+   FREE_CLUSTER_VALUE : constant := 16#0000_0000#;
+   LAST_CLUSTER_VALUE : constant := 16#0FFF_FFFF#;
+   BAD_CLUSTER_VALUE  : constant := 16#FFFF_FFF7#;
 
    Max_Handles_Reached   : exception;
 
@@ -209,7 +213,11 @@ private
    type FAT_FS_Info is record
       Signature              : String (1 .. 4);
       Free_Clusters          : Unsigned_32;
-      Last_Allocated_Cluster : Unsigned_32;
+      Last_Allocated_Cluster : Unsigned_32; -- this is slightly different:
+                                            -- actually this is the first known
+                                            -- free cluster. But, it must be
+                                            -- validated by every FS driver,
+                                            -- so we use it differently
    end record;
 
    for FAT_FS_Info use record
@@ -289,10 +297,23 @@ private
           when FAT32 => (ent and 16#0FFF_FFF8#) = 16#0FFF_FFF8#);
    --  return true if this is the last cluster for an entry
 
+   function Is_Reserved_Cluster
+     (FS  : FAT_Filesystem;
+      ent : FAT_Entry) return Boolean;
+   --  return true if this is the last cluster for an entry
+
+   function Is_Bad_Cluster
+     (FS  : FAT_Filesystem;
+      ent : FAT_Entry) return Boolean
+   is (case Version (FS) is
+          when FAT16 => (ent and 16#FFF7#) = 16#FFF7#,
+          when FAT32 => (ent and 16#FFFF_FFF7#) = 16#FFFF_FFF7#);
+   --  return true if this cluster is defective
+
    function Is_Free_Cluster
      (FS  : FAT_Filesystem;
       ent : FAT_Entry) return Boolean
-   is ((ent and 16#0FFF_FFFF#) = 16#0#);
+   is ((ent and 16#0FFF_FFFF#) = FREE_CLUSTER_VALUE);
    --  return true if the FAT entry indicates the cluster being unused
 
    function Append_Cluster

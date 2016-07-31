@@ -35,4 +35,8 @@ package SDLog with SPARK_Mode => Off is
    --  return true if logfile is opened
 
    function To_File_Data (S : String) return FAT_Filesystem.Directories.Files.File_Data;
+
+   procedure Perf_Test (megabytes : Unsigned_32);
+   --  Write performance test. Creates a file with the given length
+   --  dumps throughput.
 end SDLog;

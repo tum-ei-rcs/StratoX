@@ -21,4 +21,15 @@ is
    procedure log (msg_level : Log_Level; message : Message_Type);
 
    procedure set_Log_Level (level : Log_Level);
+
+   procedure Start_SDLog;
+   --  start a new logfile on the SD card
+
+private
+   --  FIXME: documentation required
+   package Adapter is
+      procedure init (status : out Init_Error_Code);
+      procedure write (message : Message_Type);
+   end Adapter;
+
 end Logger;

@@ -21,10 +21,8 @@ with Estimator;
 with Controller;
 with LED_Manager;
 with Buzzer_Manager;
-with SDLog;
 with Buildinfo;
 with Profiler; use Profiler;
-with Interfaces; use Interfaces;
 
 package body Main is
 
@@ -33,72 +31,54 @@ package body Main is
 
 
    procedure initialize is
-
-      --        Test             : Float       := Sin (100.0);
-      --        Foo              : Real_Vector := (10.0, 10.0, 10.0);
-      --        A, B, C, D, E, F : Integer_16  := 0;
       num_boots : HIL.Byte;
    begin
-
---        Test := abs (Foo);
-
       CPU.initialize;
 
-      Buzzer_Manager.Initialize;
+      --  start logger first
+      declare
+         ret : Logger.Init_Error_Code;
+      begin
+         Logger.init (ret);
+         pragma Unreferenced (ret);
+      end;
       Logger.set_Log_Level (CFG_LOGGER_LEVEL_UART);
+
       --perform_Self_Test;
 
       --MS5611.Driver.reset;
       -- MPU6000.Driver.Reset;
 
-      -- wait to satisfy some timing
+      -- wait to satisfy some (?) timing
       delay until Clock + Milliseconds (50);
 
-      Logger.log (Logger.INFO, "Initializing SDLog...");
-      SDLog.Init;
-
+      --  start NVRAM (bootcounter...)
       Logger.log (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;
 
+      --  from now on, log everything to SDcard
+      Logger.log (Logger.INFO, "Starting SDLog...");
+      Logger.Start_SDLog; -- should be called after NVRAM.Init
+
+      Buzzer_Manager.Initialize;
       Estimator.initialize;
       Controller.initialize;
 
-      -- wait to satisfy some timing
+      --  wait to satisfy some timing
+      --  TODO XXX FIXME: why? This is too slow for in-air reset.
       delay until Clock + Milliseconds (1500);
 
-      -- Illustration how to use NVRAM
+      --  Illustration how to use NVRAM
       declare
          exception_line : HIL.Byte_Array_2;
       begin
-         NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots);
-         if num_boots < HIL.Byte'Last then
-            num_boots := num_boots + 1;
-            NVRAM.Store (NVRAM.VAR_BOOTCOUNTER, num_boots);
-         end if;
+         NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots); -- is maintained by the NVRAM itself
          Logger.log (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
+         Logger.log (Logger.INFO, "Build date: " & Buildinfo.Compilation_Date
+                     & " " & Buildinfo.Compilation_Time);
 
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_H, exception_line(2));
-      end;
-
-      --  Illustration of logging to SD card
-      -- SDLog.List_Rootdir; -- that is nice to look at, but highly unsafe
-      Logger.log (Logger.INFO, "Starting SDLog...");
-      declare
-         buildstring : constant String := Buildinfo.Short_Datetime;
-         fname       : constant String := num_boots'Img & ".log";
-         ENDL        : constant String := (Character'Val (13), Character'Val (10));
-      begin
-         if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
-         then
-            Logger.log (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
-         else
-            Logger.log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
-            SDLog.Write_Log ("Build Stamp: "
-                                       & Buildinfo.Compilation_Date & " "
-                                       & Buildinfo.Compilation_Time & ENDL);
-            SDLog.Flush_Log; -- force to write to SD card right now (slow! Only do this in case of emergency!)
-         end if;
       end;
 
       -- TODO: pick up last mission state from NVRAM and continue where

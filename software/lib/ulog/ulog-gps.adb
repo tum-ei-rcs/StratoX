@@ -9,7 +9,7 @@ with Ada.Text_IO; -- TODO: remove
 package body ULog.GPS with SPARK_Mode is
 
    overriding
-   procedure Get_Serialization (msg : in Message; bytes : out HIL.Byte_Array) is
+   procedure Get_Serialization (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array) is
    begin
       --  TODO: serialize the extensions in GPS message
       null;

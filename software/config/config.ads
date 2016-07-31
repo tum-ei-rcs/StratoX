@@ -9,6 +9,7 @@
 -- Hardware Configuration of the board.
 
 with Units; use Units;
+with Units.Navigation; use Units.Navigation;
 
 package Config is
 
@@ -23,10 +24,10 @@ package Config is
    OPTIMAL_PITCH : constant := -6.0;
 
    -- Thresholds
-   CFG_TARGET_ALTITUDE_THRESHOLD : constant := 70.0 * Meter;
+   CFG_TARGET_ALTITUDE_THRESHOLD : constant Altitude_Type := 70.0 * Meter;
    CFG_TARGET_ALTITUDE_THRESHOLD_TIME : constant := 6.0 * Second;
 
-   CFG_DELTA_ALTITUDE_THRESH : constant := 8.0 * Meter;  -- Diff
+   CFG_DELTA_ALTITUDE_THRESH : constant Altitude_Type := 8.0 * Meter;  -- Diff
    CFG_DELTA_ALTITUDE_THRESH_TIME : constant := 2.0 * Second;
 
 

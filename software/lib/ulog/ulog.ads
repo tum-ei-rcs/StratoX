@@ -26,7 +26,7 @@ package ULog with SPARK_Mode is
    --  (not inherited; available for all members of class-wide type)  --
    ---------------------------------------------------------------------
 
-   procedure Serialize (msg : in Message'Class; bytes : out HIL.Byte_Array);
+   procedure Serialize (msg : in Message'Class; len : out Natural; bytes : out HIL.Byte_Array);
    --  turn object into ULOG byte array
    --  indefinite argument (class-wide type)
    --  FIXME: maybe overload attribute Output?
@@ -66,7 +66,7 @@ private
    --  (inherited by types in Message'Class) --
    --------------------------------------------
 
-   procedure Get_Serialization (msg : in Message; bytes : out HIL.Byte_Array);
+   procedure Get_Serialization (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array);
    --  the actual serialization
 
    function Get_Size (msg : in Message) return Interfaces.Unsigned_16;

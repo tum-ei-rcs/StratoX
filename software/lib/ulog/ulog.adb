@@ -15,20 +15,20 @@ with ULog.Identifiers;
 --  e.g., ULog.GPS.
 package body ULog with SPARK_Mode => Off is
 
-   procedure Get_Serialization (msg : in Message; bytes : out HIL.Byte_Array) is
+   procedure Get_Serialization (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array) is
    begin
       --  TODO: serialize things from root type
       null;
    end Get_Serialization;
 
-   procedure Serialize (msg : in Message'Class; bytes : out HIL.Byte_Array) is
+   procedure Serialize (msg : in Message'Class; len : out Natural; bytes : out HIL.Byte_Array) is
       thistag : constant Ada.Tags.Tag := msg'Tag; -- private type -> 'Tag not permitted in SPARK
       --  this_ID : constant ULog.Identifiers.ID := ULog.Identifiers.Make_ID (thistag);
    begin
       --  TODO: serialize common fields
       --  TODO: then serialize the message ID (use 'this_ID' as ID)
       --  finally, dispatch to serialize the specific message body
-      Get_Serialization (msg, bytes); -- dispatch to msg's specific type
+      Get_Serialization (msg, len, bytes); -- dispatch to msg's specific type
    end Serialize;
 
    procedure Format (msg : in Message'Class; bytes : out HIL.Byte_Array) is

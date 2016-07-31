@@ -9,7 +9,6 @@ with HIL.SPI;
 with HIL.Clock;
 with HIL.UART;
 with HIL.I2C;
-with Logger;
 with Ada.Real_Time; use Ada.Real_Time;
 
 
@@ -23,16 +22,11 @@ package body CPU is
       --  Configure GPIO
       HIL.Clock.configure;
       HIL.UART.configure;
-      Logger.log(Logger.DEBUG, "Startup...");
-
       HIL.GPIO.configure;
       HIL.SPI.configure;
 
       delay until startup_time + Ada.Real_Time.Milliseconds (200);
       HIL.I2C.initialize;
-
-
-      Logger.log(Logger.DEBUG, "Hardware initialized.");
 
    end initialize;
 

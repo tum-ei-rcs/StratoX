@@ -94,10 +94,10 @@ package body FAT_Filesystem is
          c : Unsigned_32 := FIRST_CLUSTER;
       begin
          Scan_Loop : loop
-            exit Scan_Loop when FS.Is_Free_Cluster (FS.Get_FAT (c));
-            if c = FS.Num_Clusters then
-               return INVALID_CLUSTER;
+            if FS.Is_Free_Cluster (FS.Get_FAT (c)) then
+               return c;
             end if;
+            exit Scan_Loop when c = FS.Num_Clusters;
             c := c + 1;
          end loop Scan_Loop;
       end;
@@ -475,7 +475,7 @@ package body FAT_Filesystem is
    end Get_FAT;
 
    function Image (s : Status_Code) return String is
-      begin
+   begin
       case s is
       when OK => return "OK";
       when Disk_Error => return "DiskErr";
@@ -491,5 +491,17 @@ package body FAT_Filesystem is
       when others => return "unknown";
       end case;
    end Image;
+
+   function Is_Reserved_Cluster
+     (FS  : FAT_Filesystem;
+      ent : FAT_Entry) return Boolean is
+   begin
+      case Version (FS) is
+         when FAT16 =>
+            return ent > FS.Num_Clusters and ent <= 16#FFF6#;
+         when FAT32 =>
+            return ent > FS.Num_Clusters and ent <= 16#FFFF_FFF6#;
+      end case;
+   end Is_Reserved_Cluster;
 
 end FAT_Filesystem;

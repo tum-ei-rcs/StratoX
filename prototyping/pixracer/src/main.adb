@@ -12,22 +12,15 @@ with Logger;
 with LED_Manager;
 with Buzzer_Manager;
 with SDLog;
-with Buildinfo;
-with Profiler;
-with FAT_Filesystem.Directories.Files; -- actually not necessary
-with Units;
 
 package body Main is
 
    ENDL : constant String := (Character'Val (13), Character'Val (10));
 
-   procedure Perf_Test (megabytes : Unsigned_32);
-
    procedure Initialize is
       success : Boolean := False;
       t_next  : Ada.Real_Time.Time;
       logret  : Logger.Init_Error_Code;
-      bootcounter : HIL.Byte;
    begin
       CPU.initialize;
 
@@ -42,10 +35,12 @@ package body Main is
       LED_Manager.LED_switchOn;
 
       Logger.log (Logger.INFO, "Initializing SDIO...");
-      SDLog.Init;
 
       Logger.log (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;
+
+      Logger.log (Logger.INFO, "Start SD Logging...");
+      Logger.Start_SDLog;
 
       --  self checks
       Logger.log (Logger.INFO, "Self-Check NVRAM...");
@@ -68,95 +63,12 @@ package body Main is
          delay until Clock + Milliseconds (50);
       end if;
 
-      NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
-      bootcounter := bootcounter + 1;
-      Logger.log (Logger.INFO, "Build Date: " & Buildinfo.Compilation_Date &
-                    " " & Buildinfo.Compilation_Time);
-      Logger.log (Logger.INFO, "Bootcount:  " & HIL.Byte'Image (bootcounter));
-      NVRAM.Store (variable => NVRAM.VAR_BOOTCOUNTER, data => bootcounter);
-
-      Logger.log (Logger.INFO, "SD Card check...");
-      SDLog.List_Rootdir;
-      declare
-         buildstring : constant String := Buildinfo.Short_Datetime;
-         fname : constant String := bootcounter'Img & ".log";
-      begin
-         if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
-         then
-            Logger.log (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
-         else
-            Logger.log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
-            SDLog.Write_Log ("Build Stamp: "
-                                       & Buildinfo.Compilation_Date & " "
-                                       & Buildinfo.Compilation_Time & ENDL);
-            SDLog.Flush_Log;
-         end if;
-         null;
-      end;
       LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
-      Perf_Test (10);
+      SDLog.Perf_Test (10);
       Logger.log (Logger.INFO, "SD Card check done");
    end Initialize;
 
-   procedure Perf_Test (megabytes : Unsigned_32) is
-      dummydata  : FAT_Filesystem.Directories.Files.File_Data (1 .. 1024);
-      TARGETSIZE : constant Unsigned_32 := megabytes * 1024 * 1024;
-      filesize   : Unsigned_32;
-      filesize_pre : Unsigned_32 := SDLog.Logsize;
-      lapsed_pre : Float := 0.0;
-
-      prof : Profiler.Profile_Tag;
-
-      procedure Show_Stats;
-      procedure Show_Stats is
-         ts     : constant Time_Span := prof.get_Elapsed;
-         lapsed : constant Float := Float (Units.To_Time (ts));
-         diff   : constant Float := lapsed - lapsed_pre;
-         bps    : Integer;
-         cps    : Integer;
-      begin
-
-         if diff > 0.0 then
-            cps := Integer (1000.0 / diff);
-            bps := Integer (Float (filesize - filesize_pre) / diff);
-            Logger.log (Logger.INFO, "Time=" & Integer (lapsed)'Img & ", xfer="
-                        & filesize'Img & "=>" & bps'Img & " B/s " & cps'Img & " calls/s");
-            filesize_pre := filesize;
-            lapsed_pre := lapsed;
-         end if;
-      end Show_Stats;
-
-      type prescaler is mod 1000;
-      ctr : prescaler := 0;
-
-   begin
-      prof.init ("perf");
-      Logger.log (Logger.INFO, "Write performance test with " & megabytes'Img & " MB" & ENDL);
-
-      if not SDLog.Is_Open then
-         Logger.log (Logger.ERROR, "Logfile is not open, skipping test " & ENDL);
-         return;
-      end if;
-
-      prof.start;
-
-      Write_Loop :
-      loop
-         filesize := SDLog.Logsize;
-         SDLog.Write_Log (dummydata);
-
-         if ctr = 0 then
-            Show_Stats;
-         end if;
-         ctr := ctr + 1;
-
-         exit Write_Loop when filesize >= TARGETSIZE;
-      end loop Write_Loop;
-      prof.stop;
-      Show_Stats;
-
-   end Perf_Test;
 
    procedure Run_Loop is
       --  data    : HIL.SPI.Data_Type (1 .. 3)  := (others => 0);

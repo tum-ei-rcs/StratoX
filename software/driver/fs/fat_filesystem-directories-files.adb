@@ -14,9 +14,10 @@ package body FAT_Filesystem.Directories.Files is
    -------------------
 
    function File_Create
-     (Parent  : in out Directory_Handle;
-      newname : String;
-      File    : out File_Handle) return Status_Code
+     (Parent    : in out Directory_Handle;
+      newname   : String;
+      Overwrite : Boolean := False;
+      File      : out File_Handle) return Status_Code
    is
       subtype Entry_Data is Block (1 .. 32);
       function From_Entry is new Ada.Unchecked_Conversion
@@ -25,7 +26,6 @@ package body FAT_Filesystem.Directories.Files is
       F_Entry  : FAT_Directory_Entry;
       Ent_Addr : FAT_Address;
       Status   : Status_Code;
-      new_cluster : Unsigned_32;
    begin
 
       File.Is_Open := False;
@@ -37,61 +37,116 @@ package body FAT_Filesystem.Directories.Files is
       --  find a place for another entry and return it
       Status := Allocate_Entry (Parent, newname, Ent_Addr);
       if Status /= OK then
-         return Status;
-      end if;
+         if Status = Already_Exists and Overwrite then
+            ---------------
+            --  Overwrite
+            ---------------
+            if not Get_Entry (Parent => Parent, E_Name => newname, Ent => File.D_Entry) then
+               return Internal_Error;
+            end if;
+            if File.D_Entry.Attributes.Subdirectory then
+               return Already_Exists; -- overwrite subdirectory with file -> no!
+            end if;
 
-      --  find free cluster or data
-      new_cluster := Parent.FS.Get_Free_Cluster;
-      if new_cluster = INVALID_CLUSTER then
-         return Device_Full;
-      end if;
+            --  wipe cluster chain in FAT..just keep first cluster
+            declare
+               cluster_cur  : Unsigned_32 := File.D_Entry.Start_Cluster;
+               cluster_info : Unsigned_32;
+               FAT_updated  : Boolean;
+            begin
+               Wipe_Chain_Loop :
+               loop
+                  cluster_info := Parent.FS.Get_FAT (cluster_cur);
+                  --  either points to next cluster, or indicates that
+                  --  current cluster is bad (FIXME) or free
 
-      --  allocate first cluster for data
-      if not Parent.FS.Allocate_Cluster (new_cluster)
-      then
-         return Allocation_Error;
-      end if;
+                  if cluster_cur = File.D_Entry.Start_Cluster then
+                     --  mark as tail
+                     FAT_updated := Parent.FS.Set_FAT (cluster_cur, LAST_CLUSTER_VALUE);
+                  else
+                     --  mark unused
+                     FAT_updated := Parent.FS.Set_FAT (cluster_cur, FREE_CLUSTER_VALUE);
+                  end if;
+                  if not FAT_updated then
+                     return Internal_Error;
+                  end if;
 
-      --  read complete block to write the entry
-      Status := Parent.FS.Ensure_Block (Ent_Addr.Block_LBA);
-      if Status /= OK then
-         return Status;
-      end if;
+                  --  check FAT entry for successor cluster
+                  if Parent.FS.Is_Last_Cluster (cluster_info) or
+                    Parent.FS.Is_Free_Cluster (cluster_info) -- for robustness
+                  then
+                     exit Wipe_Chain_Loop;
+                  end if;
 
-      --  fill entry attrs to make it a directory
-      File.D_Entry.FS := Parent.FS;
-      File.D_Entry.Attributes.Read_Only := False;
-      File.D_Entry.Attributes.Hidden := False;
-      File.D_Entry.Attributes.Archive := True; -- for backup: mark new files with archive flag
-      File.D_Entry.Attributes.System_File := False;
-      File.D_Entry.Attributes.Volume_Label := False;
-      File.D_Entry.Attributes.Subdirectory := False;
-      File.D_Entry.Start_Cluster := new_cluster;
-      File.D_Entry.Entry_Address := Ent_Addr;
-      File.D_Entry.Size := 0; -- file is empty, yet
-      Set_Name (newname, File.D_Entry);
+                  cluster_cur := cluster_info;
+               end loop Wipe_Chain_Loop;
+            end;
 
-      --  encode into FAT entry
-      Status := Directory_To_FAT_Entry (File.D_Entry, F_Entry);
-      if Status /= OK then
-         return Status;
-      end if;
+            File.D_Entry.Size := 0;
+            File.D_Entry.Attributes.Archive := True; -- for backup
+            --  no need to write the FAT entry, yet.
+         else
+            return Status;
+         end if;
+      else
+         --------------
+         --  new file
+         --------------
+         declare
+            new_cluster : constant Unsigned_32 := Parent.FS.Get_Free_Cluster;
+         begin
+            if new_cluster = INVALID_CLUSTER then
+               return Device_Full;
+            end if;
 
-      --  copy FAT entry to window
-      Parent.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off +
-                          ENTRY_SIZE - 1) := From_Entry (F_Entry);
+            --  allocate first cluster for data
+            if not Parent.FS.Allocate_Cluster (new_cluster)
+            then
+               return Allocation_Error;
+            end if;
 
-      --  write back the window to disk
-      Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);
-      if Status /= OK then
-         return Status;
+            --  read complete block to write the entry
+            Status := Parent.FS.Ensure_Block (Ent_Addr.Block_LBA);
+            if Status /= OK then
+               return Status;
+            end if;
+
+            --  fill entry attrs to make it a directory
+            File.D_Entry.FS := Parent.FS;
+            File.D_Entry.Attributes.Read_Only := False;
+            File.D_Entry.Attributes.Hidden := False;
+            File.D_Entry.Attributes.Archive := True; -- for backup: mark new files with archive flag
+            File.D_Entry.Attributes.System_File := False;
+            File.D_Entry.Attributes.Volume_Label := False;
+            File.D_Entry.Attributes.Subdirectory := False;
+            File.D_Entry.Start_Cluster := new_cluster;
+            File.D_Entry.Entry_Address := Ent_Addr;
+            File.D_Entry.Size := 0; -- file is empty, yet
+            Set_Name (newname, File.D_Entry);
+
+            --  encode into FAT entry
+            Status := Directory_To_FAT_Entry (File.D_Entry, F_Entry);
+            if Status /= OK then
+               return Status;
+            end if;
+
+            --  copy FAT entry to window
+            Parent.FS.Window (Ent_Addr.Block_Off .. Ent_Addr.Block_Off +
+                                ENTRY_SIZE - 1) := From_Entry (F_Entry);
+
+            --  write back the window to disk
+            Status := Parent.FS.Write_Window (Ent_Addr.Block_LBA);
+            if Status /= OK then
+               return Status;
+            end if;
+         end;
       end if;
 
       --  set up file handle
       File.FS := Parent.FS;
-      File.Start_Cluster := new_cluster;
-      File.Current_Cluster := new_cluster;
-      File.Current_Block := Parent.FS.Cluster_To_Block (new_cluster);
+      File.Start_Cluster := File.D_Entry.Start_Cluster;
+      File.Current_Cluster := File.D_Entry.Start_Cluster;
+      File.Current_Block := Parent.FS.Cluster_To_Block (File.D_Entry.Start_Cluster);
       File.Buffer_Level := 0;
       File.Mode := Write_Mode;
       File.Bytes_Total := 0;

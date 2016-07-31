@@ -27,7 +27,7 @@ private
    function Self (msg : in Message) return ULog.Message'Class;
 
    overriding
-   procedure Get_Serialization (msg : in Message; bytes : out HIL.Byte_Array);
+   procedure Get_Serialization (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array);
 
    overriding
    function Get_Size (msg : in Message) return Interfaces.Unsigned_16;

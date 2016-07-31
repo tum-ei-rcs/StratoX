@@ -147,9 +147,17 @@ is
        + Variable_Name'Pos (var));
 
    procedure Init is
+      num_boots : HIL.Byte;
    begin
       HIL.NVRAM.Init;
       Validate_Contents;
+
+      --  maintain boot counter
+      Load (VAR_BOOTCOUNTER, num_boots);
+      if num_boots < HIL.Byte'Last then
+         num_boots := num_boots + 1;
+         Store (VAR_BOOTCOUNTER, num_boots);
+      end if;
    end Init;
 
    procedure Self_Check (Status : out Boolean) is
@@ -177,7 +185,7 @@ is
    end Store;
 
    procedure Store (variable : in Variable_Name; data : in Float) is
-      bytes : Byte_Array_4 := HIL.toBytes( data );
+      bytes : constant Byte_Array_4 := HIL.toBytes( data );
 --        index : Positive := 1;
    begin
       for index in Natural range 1 .. 4 loop

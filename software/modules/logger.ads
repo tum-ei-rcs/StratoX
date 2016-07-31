@@ -40,6 +40,9 @@ is
    -- adjust the minimum level that is kept. messages below that
    -- level are discarded silently.
    procedure set_Log_Level(level : Log_Level);
+   
+   procedure Start_SDLog;
+   --  start a new logfile on the SD card
            
 private
    -- FIXME: documentation required

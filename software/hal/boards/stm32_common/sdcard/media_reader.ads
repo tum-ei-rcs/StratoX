@@ -1,4 +1,5 @@
 with Interfaces; use Interfaces;
+with HIL;
 
 package Media_Reader is
 
@@ -6,6 +7,7 @@ package Media_Reader is
    type Media_Controller_Access is access all Media_Controller'Class;
 
    type Block is array (Unsigned_16 range <>) of Unsigned_8;
+   --subtype Block is HIL.Byte_Array;
 
    function Block_Size
      (Controller : in out Media_Controller) return Unsigned_32 is abstract;
