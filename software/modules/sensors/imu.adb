@@ -7,7 +7,7 @@ with Units; use Units;
 with Logger;
 
 
-package body IMU is
+package body IMU with SPARK_Mode is
 
 
    type Kalman_Type is record

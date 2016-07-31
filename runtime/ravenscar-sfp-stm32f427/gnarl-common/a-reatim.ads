@@ -72,9 +72,9 @@ is
      Volatile_Function,
      Global => Clock_Time;
 
-   function "+"  (Left : Time; Right : Time_Span) return Time;
-   function "-"  (Left : Time; Right : Time_Span) return Time;
-   function "-"  (Left : Time; Right : Time)      return Time_Span;
+   function "+"  (Left : Time; Right : Time_Span) return Time with Global => null;
+   function "-"  (Left : Time; Right : Time_Span) return Time with Global => null;
+   function "-"  (Left : Time; Right : Time)      return Time_Span with Global => null;
 
    function "+" (Left : Time_Span; Right : Time) return Time is
      (Right + Left);
@@ -84,13 +84,13 @@ is
    function ">"  (Left, Right : Time) return Boolean;
    function ">=" (Left, Right : Time) return Boolean;
 
-   function "+"  (Left, Right : Time_Span)             return Time_Span;
-   function "-"  (Left, Right : Time_Span)             return Time_Span;
-   function "-"  (Right : Time_Span)                   return Time_Span;
-   function "*"  (Left : Time_Span; Right : Integer)   return Time_Span;
-   function "*"  (Left : Integer;   Right : Time_Span) return Time_Span;
-   function "/"  (Left, Right : Time_Span)             return Integer;
-   function "/"  (Left : Time_Span; Right : Integer)   return Time_Span;
+   function "+"  (Left, Right : Time_Span)             return Time_Span with Global => null;
+   function "-"  (Left, Right : Time_Span)             return Time_Span with Global => null;
+   function "-"  (Right : Time_Span)                   return Time_Span with Global => null;
+   function "*"  (Left : Time_Span; Right : Integer)   return Time_Span with Global => null;
+   function "*"  (Left : Integer;   Right : Time_Span) return Time_Span with Global => null;
+   function "/"  (Left, Right : Time_Span)             return Integer with Global => null;
+   function "/"  (Left : Time_Span; Right : Integer)   return Time_Span with Global => null;
 
    function "abs" (Right : Time_Span) return Time_Span;
 
@@ -102,9 +102,9 @@ is
    function To_Duration  (TS : Time_Span) return Duration;
    function To_Time_Span (D : Duration)   return Time_Span;
 
-   function Nanoseconds  (NS : Integer) return Time_Span;
-   function Microseconds (US : Integer) return Time_Span;
-   function Milliseconds (MS : Integer) return Time_Span;
+   function Nanoseconds  (NS : Integer) return Time_Span with Global => null;
+   function Microseconds (US : Integer) return Time_Span with Global => null;
+   function Milliseconds (MS : Integer) return Time_Span with Global => null;
 
    function Seconds (S : Integer) return Time_Span;
    pragma Ada_05 (Seconds);

@@ -34,7 +34,7 @@ is
                      OSR_1024,
                      OSR_2048,
                      OSR_4096 -- 0.002degC/0.012mbar, <9.04ms
-   );
+   ) with Default_Value => OSR_256;
 
    procedure reset;
    -- send a soft-reset to the device.

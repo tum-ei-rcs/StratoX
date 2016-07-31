@@ -14,13 +14,13 @@ package Units.Navigation with SPARK_Mode is
 
 
    -- Date
-   subtype Month_Type is Integer range 1 .. 12;
-   subtype Day_Of_Month_Type is Integer range 1 .. 31;
-   subtype Year_Type is Integer;
+   type Month_Type is range 1 .. 12 with Default_Value => 1;
+   type Day_Of_Month_Type is range 1 .. 31 with Default_Value => 1;
+   type Year_Type is new Integer with Default_Value => 1970;
 
-   type Hour_Type is mod 24;
-   type Minute_Type is mod 60;
-   type Second_Type is mod 60;
+   type Hour_Type is mod 24 with Default_Value => 0;
+   type Minute_Type is mod 60 with Default_Value => 0;
+   type Second_Type is mod 60 with Default_Value => 0;
 
 
 
@@ -30,9 +30,9 @@ package Units.Navigation with SPARK_Mode is
    subtype Altitude_Type is Units.Length_Type range -10.0 * Meter .. 10_000.0 * Meter;
 
    type GPS_Loacation_Type is record
-      Longitude : Longitude_Type;
-      Latitude  : Latitude_Type;
-      Altitude  : Altitude_Type;
+      Longitude : Longitude_Type := 0.0 * Degree;
+      Latitude  : Latitude_Type := 0.0 * Degree;
+      Altitude  : Altitude_Type := 0.0 * Meter;
    end record;
 
    type Longitude_Array is array (Natural range <>) of Longitude_Type;
@@ -89,9 +89,12 @@ package Units.Navigation with SPARK_Mode is
       wrap_Angle( rotation(Yaw), Yaw_Type'First, Yaw_Type'Last ) );
 
    function "+" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
-   ( wrap_Angle( Angle_Type( Left.Roll ) + Right(Roll), Roll_Type'First, Roll_Type'Last ),
-         wrap_Angle( Angle_Type( Left.Pitch) + Right(Pitch), Pitch_Type'First, Pitch_Type'Last ),
-         wrap_Angle( Angle_Type( Left.Yaw) + Right(Yaw), Yaw_Type'First, Yaw_Type'Last ) );
+     ( wrap_Angle( Angle_Type( Left.Roll ) + Right(Roll), Roll_Type'First, Roll_Type'Last ),
+      wrap_Angle( Angle_Type( Left.Pitch) + Right(Pitch), Pitch_Type'First, Pitch_Type'Last ),
+      wrap_Angle( Angle_Type( Left.Yaw) + Right(Yaw), Yaw_Type'First, Yaw_Type'Last ) ) with
+   pre => Angle_Type( Left.Roll ) + Right(Roll) < Angle_Type'Last and
+     Angle_Type( Left.Pitch) + Right(Pitch) <  Angle_Type'Last and
+     Angle_Type( Left.Yaw) + Right(Yaw) <  Angle_Type'Last;
 
    function "-" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
    ( wrap_Angle( Left.Roll - Right(Roll), Roll_Type'First, Roll_Type'Last ),

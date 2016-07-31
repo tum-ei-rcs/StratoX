@@ -8,15 +8,14 @@ with Config.Software;
 with Units.Numerics; use Units.Numerics;
 
 
-with Ada.Real_Time;
-use type Ada.Real_Time.Time;
-use type Ada.Real_Time.Time_Span;
+with Ada.Real_Time; use Ada.Real_Time;
+pragma Elaborate_All(Ada.Real_Time);
 
 with Helper;
 
 package body Controller with SPARK_Mode is
 
-   type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP;
+   type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP with Default_Value => 0;
 
    type State_Type is record
       logger_calls : Logger_Call_Type;
@@ -229,7 +228,7 @@ package body Controller with SPARK_Mode is
       dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Roll_Control) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
       G_Last_Roll_Control := now;
-      G_Plane_Control.Aileron := Roll_PID_Controller.step(PID_Roll, error, dt);
+      Roll_PID_Controller.step(PID_Roll, error, dt, G_Plane_Control.Aileron);
    end control_Roll;
 
 
@@ -239,7 +238,7 @@ package body Controller with SPARK_Mode is
       dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
       G_Last_Call_Time := now;
-      G_Plane_Control.Elevator := Pitch_PID_Controller.step(PID_Pitch, error, dt);
+      Pitch_PID_Controller.step(PID_Pitch, error, dt, G_Plane_Control.Elevator);
    end control_Pitch;
 
    procedure control_Yaw is
@@ -253,7 +252,7 @@ package body Controller with SPARK_Mode is
 
       error := delta_Angle( G_Object_Orientation.Yaw, G_Target_Orientation.Yaw );
 
-      G_Target_Orientation.Roll := Yaw_PID_Controller.step(PID_Yaw, error, dt);
+      Yaw_PID_Controller.step(PID_Yaw, error, dt, G_Target_Orientation.Roll);
    end control_Yaw;
 
 
@@ -305,15 +304,15 @@ package body Controller with SPARK_Mode is
       result : Angle_Type := 0.0 * Degree;
    begin
       if source_location.Longitude /= target_location.Longitude or source_location.Latitude /= target_location.Latitude then
-         Logger.log(Logger.TRACE, "Calculating Heading: ");
-         Logger.log(Logger.TRACE,
-                    "Source LLA" & AImage( source_location.Longitude ) &
-                 ", " & AImage( source_location.Latitude ) &
-                 ", " & Image( source_location.Altitude ) );
-                  Logger.log(Logger.TRACE,
-                    "Target LLA" & AImage( target_location.Longitude ) &
-                 ", " & AImage( target_location.Latitude ) &
-                 ", " & Image( target_location.Altitude ) );
+--           Logger.log(Logger.TRACE, "Calculating Heading: ");
+--           Logger.log(Logger.TRACE,
+--                      "Source LLA" & AImage( source_location.Longitude ) &
+--                   ", " & AImage( source_location.Latitude ) &
+--                   ", " & Image( source_location.Altitude ) );
+--                    Logger.log(Logger.TRACE,
+--                      "Target LLA" & AImage( target_location.Longitude ) &
+--                   ", " & AImage( target_location.Latitude ) &
+--                   ", " & Image( target_location.Altitude ) );
          result := Arctan( Sin( delta_Angle( source_location.Longitude,
                                            target_location.Longitude ) ) *
                          Cos( target_location.Latitude ),

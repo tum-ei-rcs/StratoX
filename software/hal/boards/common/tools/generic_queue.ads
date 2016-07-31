@@ -56,10 +56,10 @@ package Generic_Queue with SPARK_Mode is
 
       --function get_at( index : Index_Type ) return Element_Type;
 
-      function get_nth_first( Self : in out Buffer_Tag; nth : Index_Type ) return Element_Type;
+      procedure get_nth_first( Self : in out Buffer_Tag; nth : Index_Type; element : out Element_Type);
       -- read nth element, nth = 0 is front
 
-      function get_nth_last( Self : in out Buffer_Tag; nth : Index_Type ) return Element_Type;
+      procedure get_nth_last( Self : in out Buffer_Tag; nth : Index_Type; element : out Element_Type);
       -- read nth element, nth = 0 is back
 
       function Length( Self : in Buffer_Tag) return Length_Type;
@@ -84,7 +84,7 @@ private
 
    type Buffer_Tag is tagged record
       mode        : Mode_Type := RING;
-      buffer      : Buffer_Element_Array;
+      buffer      : Buffer_Element_Array; -- := (others => Element_Type'First);
       index_head  : Index_Type := 0;
       index_tail  : Index_Type := 0;
       hasElements : Boolean := False;

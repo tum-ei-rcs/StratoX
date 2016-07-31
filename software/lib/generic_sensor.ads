@@ -22,7 +22,7 @@ package Generic_Sensor with SPARK_Mode is
    package Sensor_Signal is new Generic_Signal( Data_Type );
    subtype Sample_Type is Sensor_Signal.Sample_Type;
 
-   type Sensor_State_Type is (UNINITIALIZED, OFF, READY, MEASURING, NEW_DATA, ERROR);
+   type Sensor_State_Type is (UNINITIALIZED, OFF, READY, MEASURING, NEW_DATA, ERROR) with Default_Value => UNINITIALIZED;
    
    type State_Type is record
       Initialized : Boolean := False;

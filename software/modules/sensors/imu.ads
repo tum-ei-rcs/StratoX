@@ -12,12 +12,12 @@ with MPU6000.Driver; use MPU6000;
 package IMU with SPARK_Mode is
 
    type IMU_Data_Type is record
-      Acc_X : Integer_16;
-      Acc_Y : Integer_16;
-      Acc_Z : Integer_16;
-      Gyro_X : Integer_16;
-      Gyro_Y : Integer_16;
-      Gyro_Z : Integer_16;
+      Acc_X : Integer_16 := 0;
+      Acc_Y : Integer_16 := 0;
+      Acc_Z : Integer_16 := 0;
+      Gyro_X : Integer_16 := 0;
+      Gyro_Y : Integer_16 := 0;
+      Gyro_Z : Integer_16 := 0;
    end record;
 
    --package IMU_Signal is new Gneric_Signal( IMU_Data_Type );

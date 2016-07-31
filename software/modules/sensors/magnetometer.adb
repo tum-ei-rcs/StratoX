@@ -5,7 +5,7 @@ with HMC5883L.Driver; use HMC5883L;
 with Units.Numerics; use Units.Numerics;
 with Logger;
 
-package body Magnetometer is
+package body Magnetometer with SPARK_Mode is
 
 
    overriding procedure initialize (Self : in out Magnetometer_Tag) is

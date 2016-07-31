@@ -52,7 +52,7 @@ package body Estimator with SPARK_Mode is
       baro_calls : Baro_Call_Type := 0;
       logger_calls : Logger_Call_Type := 0;
       stable_Time     : Time_Type := 0.0 * Second;
-      last_stable_check : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      last_stable_check : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
    end record;
 
    type Sensor_Record is record
@@ -64,7 +64,7 @@ package body Estimator with SPARK_Mode is
 
 
    G_state  : State_Type;
-   G_Sensor : Sensor_Record;
+   -- G_Sensor : Sensor_Record;
 
 
    -- init
@@ -292,7 +292,7 @@ package body Estimator with SPARK_Mode is
    begin
       -- GPS
       declare
-         buf : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length(G_pos_buffer) );
+         buf : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length_Type'Last );    -- Buffer
       begin
          get_all( G_pos_buffer, buf );
          if Length(G_pos_buffer) > 1 then
@@ -306,7 +306,7 @@ package body Estimator with SPARK_Mode is
 
       -- Baro
       declare
-         buf : Height_Buffer_Pack.Element_Array(1 .. Length(G_height_buffer));
+         buf : Height_Buffer_Pack.Element_Array(1 .. Height_Buffer_Pack.Length_Type'Last);
       begin
          get_all( G_height_buffer, buf );
          if Length(G_height_buffer) > 1 then
@@ -322,9 +322,9 @@ package body Estimator with SPARK_Mode is
 
 
    procedure check_stable_Time is
-      or_values : IMU_Buffer_Pack.Element_Array(1 .. G_orientation_buffer.Length);
+      or_values : IMU_Buffer_Pack.Element_Array(1 .. IMU_Buffer_Pack.Length_Type'Last);
       or_ref : Orientation_Type;
-      pos_values : GPS_Buffer_Pack.Element_Array(1 .. G_pos_buffer.Length);
+      pos_values : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length_Type'Last);
       pos_ref : GPS_Loacation_Type;
 
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
@@ -334,7 +334,7 @@ package body Estimator with SPARK_Mode is
          G_state.stable_Time := G_state.stable_Time + Units.To_Time( Ada.Real_Time.Time_Span( now - G_state.last_stable_check ) );
          G_orientation_buffer.get_all(or_values);
          or_ref := or_values(1);
-         for index in Integer range 1 .. or_values'Length loop
+         for index in Integer range 1 .. G_orientation_buffer.Length loop
             if or_values(index).Roll - or_ref.Roll > 1.5 * Degree  or
             or_values(index).Pitch - or_ref.Pitch > 1.5 * Degree then
                G_state.stable_Time := 0.0 * Second;
@@ -343,7 +343,7 @@ package body Estimator with SPARK_Mode is
 
          G_pos_buffer.get_all(pos_values);
          pos_ref := pos_values(1);
-         for index in Integer range 1 .. pos_values'Length loop
+         for index in Integer range 1 .. G_pos_buffer.Length loop
             if pos_values(index).Longitude - pos_ref.Longitude > 0.002 * Degree or   -- 0.002° ≈ 111 Meter
             pos_values(index).Latitude - pos_ref.Latitude > 0.002 * Degree or
             pos_values(index).Altitude - pos_ref.Altitude > 10.0 * Meter then

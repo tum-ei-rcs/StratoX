@@ -12,7 +12,7 @@
 
 with Ada.Real_Time; use Ada.Real_Time;
 
-package Profiler is
+package Profiler with SPARK_Mode is
 
 
    type Profile_Tag is tagged private;
@@ -49,11 +49,11 @@ private
    subtype Name_Type is String(1 .. 30);
 
    type Profile_Tag is tagged record
-      name         : Name_Type;
+      name         : Name_Type := (others => ' ');
       name_length  : Natural := 0;
       max_duration : Time_Span := Milliseconds( 0 );
-      start_Time   : Time := Clock;
-      stop_Time    : Time := Clock;
+      start_Time   : Time := Time_First;
+      stop_Time    : Time := Time_First;
    end record;
 
    type State_Type is record

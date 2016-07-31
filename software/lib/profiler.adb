@@ -1,7 +1,7 @@
 with Logger;
 with Units;
 
-package body Profiler is
+package body Profiler with SPARK_Mode is
 
 
    procedure enableProfiling is
