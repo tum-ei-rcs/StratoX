@@ -17,7 +17,7 @@ is
 
    -- baro device states
    type Baro_FSM_Type is
-     (NOT_INITIALIZED, READY, TEMPERATURE_CONVERSION, PRESSURE_CONVERSION);
+     (NOT_INITIALIZED, READY, TEMPERATURE_CONVERSION, PRESSURE_CONVERSION) with Default_Value => NOT_INITIALIZED;
 
    type Conversion_Info_Type is record
       OSR   : OSR_Type;

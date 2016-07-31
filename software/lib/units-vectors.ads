@@ -10,11 +10,11 @@
 
 
 
-with Ada.Numerics.Generic_Real_Arrays;
+--with Ada.Numerics.Generic_Real_Arrays;
 
 package Units.Vectors with SPARK_Mode is
 
-   package Unit_Arrays_Pack is new Ada.Numerics.Generic_Real_Arrays(Unit_Type);
+   --package Unit_Arrays_Pack is new Ada.Numerics.Generic_Real_Arrays(Unit_Type);
 
    subtype Scalar is Unit_Type;
    type Vector3D_Type is array(1 .. 3) of Unit_Type;
@@ -112,12 +112,22 @@ package Units.Vectors with SPARK_Mode is
 
 
    -- Matrices
-   subtype Unit_Vector2D is Unit_Arrays_Pack.Real_Vector(1..2);
-   subtype Unit_Matrix2D is Unit_Arrays_Pack.Real_Matrix(1..2, 1..2);
+   type Unit_Vector2D is array(1..2) of Unit_Type;
+   type Unit_Matrix2D is array(1..2, 1..2) of Unit_Type;
 
 
-   subtype Unit_Vector3D is Unit_Arrays_Pack.Real_Vector(1..3);
-   subtype Unit_Matrix3D is Unit_Arrays_Pack.Real_Matrix(1..3, 1..3);
+   -- subtype Unit_Vector2D is Unit_Arrays_Pack.Real_Vector(1..2);
+   --subtype Unit_Vector3D is Unit_Arrays_Pack.Real_Vector(1..3);
+   --subtype Unit_Matrix3D is Unit_Arrays_Pack.Real_Matrix(1..3, 1..3);
+
+
+
+   function "+" (Left, Right : Unit_Vector2D) return Unit_Vector2D is
+     ( Left(1) + Right(1), Left(2) + Right(2) );
+
+   function "-" (Left, Right : Unit_Vector2D) return Unit_Vector2D is
+      ( Left(1) - Right(1), Left(2) - Right(2) );
+
 
 
 

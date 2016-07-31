@@ -26,7 +26,8 @@ package Units with
          (Unit_Name => Second, Unit_Symbol => 's', Dim_Symbol => 'T'),
          (Unit_Name => Ampere, Unit_Symbol => 'A', Dim_Symbol => 'I'),
          (Unit_Name => Kelvin, Unit_Symbol => 'K', Dim_Symbol => "Theta"),
-         (Unit_Name => Radian, Unit_Symbol => "Rad", Dim_Symbol => "A"));
+         (Unit_Name => Radian, Unit_Symbol => "Rad", Dim_Symbol => "A")),
+   Default_Value => 0.0;
 
    type Unit_Array is array (Natural range <>) of Unit_Type;
 
@@ -41,7 +42,7 @@ package Units with
         Dimension => (Symbol => 's', Second => 1, others => 0);
 
    subtype Current_Type is Unit_Type with
-        Dimension => (Symbol => 'A', Ampere => 1, others => 0);
+     Dimension => (Symbol => 'A', Ampere => 1, others => 0);
 
    subtype Temperature_Type is Unit_Type with
         Dimension => (Symbol => 'K', Kelvin => 1, others => 0);
@@ -330,7 +331,9 @@ package Units with
    -- wrap angle between two values
    -- idea: shift range to 0 .. X, wrap with mod, shift back
    function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
-   ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
+   -- ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
+   -- FIXME: Spark error: unbound symbol 'Floating.remainder_'
+   ( if angle > max then max elsif angle < min then min else angle );
 --     with
 --     pre => max > min,
 --     post => wrap_Angle'Result in min .. max;

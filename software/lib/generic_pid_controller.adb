@@ -1,5 +1,5 @@
 
-package body Generic_PID_Controller with SPARK_Mode is
+package body Generic_PID_Controller with SPARK_Mode => Off is
 
 
    procedure initialize( Pid : out Pid_Object; 
@@ -40,10 +40,10 @@ package body Generic_PID_Controller with SPARK_Mode is
 
 
    -- step
-   function step ( Pid   : in out Pid_Object; 
-                   error : PID_Data_Type; 
-                   dt    : Time_Type )
-                  return PID_Output_Type 
+   procedure step ( Pid   : in out Pid_Object; 
+                    error : PID_Data_Type; 
+                    dt    : Time_Type;
+                    result : out PID_Output_Type) 
    is
       derivate     : Unit_Type := 0.0;
       output       : Unit_Type := Unit_Type( 0.0 );
@@ -80,7 +80,7 @@ package body Generic_PID_Controller with SPARK_Mode is
          output := Unit_Type( Pid.Output_Limit_High );
       end if;
 
-      return PID_Output_Type( output );
+      result := PID_Output_Type( output );
    end step;
 
 end Generic_PID_Controller;

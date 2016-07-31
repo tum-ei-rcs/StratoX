@@ -1,6 +1,6 @@
 
 
-package body Generic_Queue with SPARK_Mode is
+package body Generic_Queue with SPARK_Mode => Off is
 
    --  Buffer Structure:
    --  | 0:X | 1:– | 2:– | 3:– |
@@ -129,22 +129,22 @@ package body Generic_Queue with SPARK_Mode is
    end get_back;
 
    -- FIXME: remove this function?
-   function get_at( Self : in out Buffer_Tag; index : Index_Type ) return Element_Type is
-   begin
-      pragma Assert ( Self.index_head <= index and index < Self.index_tail );
-      return Self.Buffer(  index );
-   end get_at;
+--     function get_at( Self : in out Buffer_Tag; index : Index_Type ) return Element_Type is
+--     begin
+--        pragma Assert ( Self.index_head <= index and index < Self.index_tail );
+--        return Self.Buffer(  index );
+--     end get_at;
 
-   function get_nth_first( Self : in out Buffer_Tag; nth : Index_Type ) return Element_Type is
+   procedure get_nth_first( Self : in out Buffer_Tag; nth : Index_Type; element : out Element_Type) is
    begin
       pragma Assert ( Self.index_head <= Self.index_tail-1 - nth );
-      return Self.Buffer(  Self.index_tail-1 - nth );
+      element := Self.Buffer(  Self.index_tail-1 - nth );
    end get_nth_first;
 
-   function get_nth_last( Self : in out Buffer_Tag; nth : Index_Type ) return Element_Type is
+   procedure get_nth_last( Self : in out Buffer_Tag; nth : Index_Type; element : out Element_Type) is
    begin
       pragma Assert ( Self.index_head + nth <= Self.index_tail-1 );
-      return Self.Buffer(  Self.index_head + nth );
+      element := Self.Buffer(  Self.index_head + nth );
    end get_nth_last;
 
    function Length( Self : in Buffer_Tag ) return Length_Type is

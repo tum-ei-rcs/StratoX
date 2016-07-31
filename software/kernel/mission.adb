@@ -17,12 +17,12 @@ with NVRAM; use NVRAM;
 with Interfaces; use Interfaces;
 
 
-package body Mission is
+package body Mission with SPARK_Mode is
 
    type State_Type is record 
       mission_state  : Mission_State_Type := UNKNOWN;
       mission_event  : Mission_Event_Type := NONE;
-      last_call_time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      last_call_time : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
       gps_lock_threshold_time : Time_Type := 0.0 * Second;
       delta_threshold_time : Time_Type := 0.0 * Second;
       target_threshold_time : Time_Type := 0.0 * Second;
@@ -30,8 +30,8 @@ package body Mission is
                                              Config.DEFAULT_LATITUDE * Degree, 
                                              0.0 * Meter);
       body_info     : Body_Type;
-      last_call     : Ada.Real_Time.Time;
-      last_state_change : Ada.Real_Time.Time;
+      last_call     : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
+      last_state_change : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
    end record;
 
    G_state : State_Type;

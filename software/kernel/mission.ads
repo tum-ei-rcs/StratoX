@@ -1,6 +1,6 @@
 
 
-package Mission is
+package Mission with SPARK_Mode is
 
    -- the mission can only go forward
    type Mission_State_Type is (

@@ -22,7 +22,7 @@ generic
    PID_OUTPUT_LIMIT_LOW : PID_Output_Type := PID_Output_Type'First;
    PID_OUTPUT_LIMIT_HIGH : PID_Output_Type := PID_Output_Type'Last;   
 package Generic_PID_Controller
-   with SPARK_Mode
+   with SPARK_Mode => On
 is
 
    type Pid_Object is private;
@@ -43,7 +43,7 @@ is
 
    procedure reset (Pid : out Pid_Object);
 
-   function step(Pid : in out Pid_Object; error : PID_Data_Type; dt : Time_Type) return PID_Output_Type;
+   procedure step(Pid : in out Pid_Object; error : PID_Data_Type; dt : Time_Type; result : out PID_Output_Type);
 
 private
 

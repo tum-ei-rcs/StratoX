@@ -28,7 +28,7 @@ is
    -- Architecture Independent
    
    type Unsigned_8_Mask is new Unsigned_8;
-   subtype Unsigned_8_Bit_Index is Natural range 0 .. 7;  
+   subtype Unsigned_8_Bit_Index is Natural range 0 .. 7;
    
    type Unsigned_16_Mask is new Unsigned_16;
    type Unsigned_16_Bit_Index is new Natural range 0 .. 15;

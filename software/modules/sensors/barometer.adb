@@ -1,7 +1,7 @@
 
 with Units.Numerics; use Units.Numerics;
 
-package body Barometer is
+package body Barometer with SPARK_Mode is
 
    -- Barometer_Sensor.Sensor_Signal(
 

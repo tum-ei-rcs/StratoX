@@ -1,6 +1,6 @@
 with ublox8.Driver; use ublox8;
 
-package body GPS
+package body GPS with SPARK_Mode
 is
 
 
