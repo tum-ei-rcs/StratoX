@@ -174,6 +174,7 @@ package body ULog with SPARK_Mode => On is
    begin
       if All_Defs then
          valid := False;
+         return;
       end if;
 
       if not Hdr_Def then

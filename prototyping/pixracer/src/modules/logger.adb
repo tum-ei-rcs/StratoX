@@ -82,7 +82,7 @@ is
    function Image (level : Log_Level) return Img_String;
 
    procedure Write_Bytes_To_SD (len : Natural; buf : HIL.Byte_Array)
-     with Pre => buf'Last >= buf'First and 
+     with Pre => buf'Last >= buf'First and
      then len <= Natural (Unsigned_16'Last) and
      then buf'Length >= len;
 
@@ -290,7 +290,7 @@ is
          With_SDLog := False;
          if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
          then
-            log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname); 
+            log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
             return;
          else
             log_console (Logger.INFO, "Log name: " & buildstring & "/" & fname);
