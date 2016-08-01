@@ -15,6 +15,9 @@ with Buildinfo;
 with HIL.Devices;
 with HIL.UART;
 with System;
+with Interfaces; use Interfaces;
+with Ada.Unchecked_Conversion;
+with Ada.Real_Time;
 
 --  @summary Simultaneously writes to UART, and SD card.
 package body Logger with SPARK_Mode,
@@ -28,6 +31,10 @@ is
    --  if GNATprove crashes with reference to that file,
    --  then you have run into bug KP-160-P601-005.
    --  workaround: move decl of protected type to package spec.
+
+   ---------------------
+   --  LOG QUEUE TYPE
+   ---------------------
 
    --  protected type to implement the ULog queue
    protected type Ulog_Queue_T is
@@ -71,8 +78,10 @@ is
    ----------------------------
    --  PROTOTYPES
    ----------------------------
-
-   function Image (level : Log_Level) return String;
+   subtype Img_String is String (1..3);
+   function Image (level : Log_Level) return Img_String;
+   
+   procedure Write_Bytes_To_SD (len : Natural; buf : HIL.Byte_Array);
 
    ----------------------------
    --  INTERNAL STATES
@@ -82,19 +91,57 @@ is
    logger_level : Log_Level := DEBUG;
    With_SDLog   : Boolean := False;
 
+   -----------------------
+   --  Write_Bytes_To_SD
+   -----------------------
+
+   --  slow procedure! Takes Byte_Array, converts to SD data type and writes
+   procedure Write_Bytes_To_SD (len : Natural; buf : HIL.Byte_Array) is
+   begin
+      if len > 0 then
+         declare
+            subtype Bytes_ULog is HIL.Byte_Array (1 .. len);
+            subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. Unsigned_16 (len));
+            function To_FileData is new Ada.Unchecked_Conversion (Source => Bytes_ULog,
+                                                                  Target => SD_Data_ULog);
+         begin
+            SDLog.Write_Log (To_FileData (buf));
+         end;
+      end if;
+   end Write_Bytes_To_SD;
+
+   --------------
+   --  LOG TASK
+   --------------
+
    --  the task which logs to SD card in the background
    task body Logging_Task is
       msg : ULog.Message;
       BUFLEN : constant := 1024;
       bytes : HIL.Byte_Array (1 .. BUFLEN);
       len : Natural;
+
+      type loginfo_ratio is mod 100;
+      r : loginfo_ratio := 0;
    begin
       loop
-         queue_ulog.Get_Msg (msg); -- under mutex
+         queue_ulog.Get_Msg (msg); -- under mutex, must be fast
          ULog.Serialize_Ulog (msg, len, bytes); -- this can be slow again
-         --  TODO: translate into FileBytes with length=len
-         --  SDLog.Write_Log (Data => bytes);
-         --  TODO: occasionally log queue state (overflows, num_queued).
+         Write_Bytes_To_SD (len => len, buf => bytes);
+
+         --  occasionally log queue state (overflows, num_queued).
+         r := r + 1;
+         if r = 0 then
+            declare
+               m : ULog.Message (ULog.LOG_QUEUE);
+            begin
+               m.t := Ada.Real_Time.Clock;
+               m.n_overflows := Unsigned_16 (queue_ulog.Get_Num_Overflows);
+               m.n_queued := Unsigned_8 (queue_ulog.Get_Length);
+               ULog.Serialize_Ulog (m, len, bytes);
+               Write_Bytes_To_SD (len => len, buf => bytes);
+            end;
+         end if;
       end loop;
    end Logging_Task;
 
@@ -154,13 +201,21 @@ is
       end write;
    end Adapter;
 
-   procedure init (status : out Init_Error_Code) is
+
+   --------------
+   --  Init
+   --------------
+
+   procedure Init (status : out Init_Error_Code) is
    begin
       SDLog.Init;
       Adapter.init (status);
-   end init;
+   end Init;
 
-   function Image (level : Log_Level) return String is
+   -----------
+   --  Image
+   -----------
+   function Image (level : Log_Level) return Img_String is
    begin
       return (case level is
                  when SENSOR => "S: ",
@@ -172,12 +227,20 @@ is
              );
    end Image;
 
-   procedure log_console (msg_level : Log_Level; message : Message_Type) is
+   -----------------
+   --  log_console
+   -----------------
+
+   procedure log_console (msg_level : Log_Level; message : Message_Type) with SPARK_Mode => Off is
    begin
       if Log_Level'Pos (msg_level) <= Log_Level'Pos (logger_level) then
          Adapter.write (Image (msg_level) & message);
       end if;
    end log_console;
+
+   ----------------
+   --  log_sd
+   ----------------
 
    procedure log_sd (msg_level : Log_Level; message : ULog.Message) is
    begin
@@ -186,11 +249,18 @@ is
       end if;
    end log_sd;
 
-   procedure set_Log_Level (level : Log_Level) is
+   -------------------
+   --  set_log_level
+   -------------------
+
+   procedure Set_Log_Level (level : Log_Level) is
    begin
       logger_level := level;
-   end set_Log_Level;
-   pragma Unreferenced (set_Log_Level);
+   end Set_Log_Level;
+
+   -------------------
+   --  Start_SDLog
+   -------------------
 
    procedure Start_SDLog is
       num_boots : HIL.Byte;
@@ -198,11 +268,11 @@ is
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => num_boots);
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
-         fname       : constant String := num_boots'Img & ".log";
+         fname       : constant String := HIL.Byte'Image (num_boots) & ".log";
          BUFLEN      : constant := 1024;
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
          len         : Natural;
-         valid       : Boolean := True;
+         valid       : Boolean;
       begin
          With_SDLog := False;
          if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
@@ -219,9 +289,7 @@ is
          loop
             ULog.Get_Header_Ulog (bytes, len, valid);
             exit Get_Ulog_Defs_Loop when not valid;
-            --  TODO: convert to FileData and write to SD card
-            --  SDLog.Write_Log (Data => bytes);
-            null;
+            Write_Bytes_To_SD (len => len, buf => bytes);
          end loop Get_Ulog_Defs_Loop;
       end;
    end Start_SDLog;

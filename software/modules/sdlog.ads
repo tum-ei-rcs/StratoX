@@ -5,7 +5,9 @@ with FAT_Filesystem.Directories.Files;
 with Interfaces; use Interfaces;
 
 --  @summary top-level package for reading/writing logfiles to SD card
-package SDLog with SPARK_Mode => Off is
+package SDLog with SPARK_Mode is
+
+   subtype SDLog_Data is FAT_Filesystem.Directories.Files.File_Data;
 
    procedure Init;
    --  initialize the SD log
@@ -19,7 +21,7 @@ package SDLog with SPARK_Mode => Off is
    function Start_Logfile (dirname : String; filename : String) return Boolean;
    --  @summary create new logfile
 
-   procedure Write_Log (Data : FAT_Filesystem.Directories.Files.File_Data);
+   procedure Write_Log (Data : SDLog_Data);
    --  @summary write bytes to logfile
 
    procedure Write_Log (S : String);
@@ -34,7 +36,7 @@ package SDLog with SPARK_Mode => Off is
    function Is_Open return Boolean;
    --  return true if logfile is opened
 
-   function To_File_Data (S : String) return FAT_Filesystem.Directories.Files.File_Data;
+   function To_File_Data (S : String) return SDLog_Data;
 
    procedure Perf_Test (megabytes : Unsigned_32);
    --  Write performance test. Creates a file with the given length

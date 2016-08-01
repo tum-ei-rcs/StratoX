@@ -68,6 +68,13 @@ package body ULog with SPARK_Mode => On is
       Append_Int16 ("wk", buf, msg.gps_week);
    end Serialize_Ulog_GPS;
 
+   procedure Serialize_Ulog_LogQ (msg : in Message; buf : out HIL.Byte_Array) is
+   begin
+      Set_Name ("LogQ");
+      Append_Uint16 ("ovf", buf, msg.n_overflows);
+      Append_Uint8 ("q", buf, msg.n_queued);
+   end Serialize_Ulog_LogQ;
+
    -------------------------
    --  Serialize_Ulog_Text
    -------------------------
@@ -136,6 +143,8 @@ package body ULog with SPARK_Mode => On is
             Serialize_Ulog_GPS (msg, bytes);
          when TEXT =>
             Serialize_Ulog_Text (msg, bytes);
+         when LOG_QUEUE =>
+            Serialize_Ulog_LogQ (msg, bytes);
       end case;
 
       --  read back the length

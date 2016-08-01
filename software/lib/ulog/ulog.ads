@@ -23,7 +23,7 @@ with HIL;
 package ULog with SPARK_Mode is
 
    --  types of log messages. Add new ones when needed.
-   type Message_Type is (NONE, TEXT, GPS);
+   type Message_Type is (NONE, TEXT, GPS, LOG_QUEUE);
 
    type GPS_fixtype is (NOFIX, DEADR, FIX2D, FIX3D, FIX3DDEADR, FIXTIME);
 
@@ -45,6 +45,10 @@ package ULog with SPARK_Mode is
          lat      : Float                  := 0.0;
          lon      : Float                  := 0.0;
          alt      : Float                  := 0.0;
+      when LOG_QUEUE =>
+         --  logging queue info
+         n_overflows : Interfaces.Unsigned_16 := 0;
+         n_queued    : Interfaces.Unsigned_8  := 0;
       end case;
    end record;
 
@@ -73,10 +77,12 @@ private
 
    --  add one Serialize_Ulog_* for each new message:
 
-   procedure Serialize_Ulog_GPS (msg : in Message;
-                                 buf : out HIL.Byte_Array);
-   procedure Serialize_Ulog_Text (msg : in Message;
-                                  buf : out HIL.Byte_Array);
+   procedure Serialize_Ulog_GPS (msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = GPS;
+   procedure Serialize_Ulog_Text (msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = TEXT;
+   procedure Serialize_Ulog_LogQ (msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = LOG_QUEUE;
 
    subtype ULog_Label  is HIL.Byte_Array (1 .. 64);
    subtype ULog_Format is HIL.Byte_Array (1 .. 16);
