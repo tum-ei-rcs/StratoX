@@ -110,8 +110,6 @@ package body SDLog with SPARK_Mode => Off is
       Log_Dir  : Directory_Entry;
       Log_Hnd  : Directory_Handle;
 
-
-
    begin
       if (not SD_Initialized) or Error_State then
          return False;

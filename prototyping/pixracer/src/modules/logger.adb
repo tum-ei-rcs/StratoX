@@ -78,10 +78,13 @@ is
    ----------------------------
    --  PROTOTYPES
    ----------------------------
-   subtype Img_String is String (1..3);
+   subtype Img_String is String (1 .. 3);
    function Image (level : Log_Level) return Img_String;
-   
-   procedure Write_Bytes_To_SD (len : Natural; buf : HIL.Byte_Array);
+
+   procedure Write_Bytes_To_SD (len : Natural; buf : HIL.Byte_Array)
+     with Pre => buf'Last >= buf'First and 
+     then len <= Natural (Unsigned_16'Last) and
+     then buf'Length >= len;
 
    ----------------------------
    --  INTERNAL STATES
@@ -102,10 +105,10 @@ is
          declare
             subtype Bytes_ULog is HIL.Byte_Array (1 .. len);
             subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. Unsigned_16 (len));
-            function To_FileData is new Ada.Unchecked_Conversion (Source => Bytes_ULog,
-                                                                  Target => SD_Data_ULog);
+            function To_FileData is new Ada.Unchecked_Conversion (Bytes_ULog, SD_Data_ULog);
+            buf_last : constant Integer := buf'First + len - 1;
          begin
-            SDLog.Write_Log (To_FileData (buf));
+            SDLog.Write_Log (To_FileData (buf (buf'First .. buf_last)));
          end;
       end if;
    end Write_Bytes_To_SD;
@@ -117,7 +120,7 @@ is
    --  the task which logs to SD card in the background
    task body Logging_Task is
       msg : ULog.Message;
-      BUFLEN : constant := 1024;
+      BUFLEN : constant := 512;
       bytes : HIL.Byte_Array (1 .. BUFLEN);
       len : Natural;
 
@@ -134,10 +137,20 @@ is
          if r = 0 then
             declare
                m : ULog.Message (ULog.LOG_QUEUE);
+               n_ovf : constant Natural := queue_ulog.Get_Num_Overflows;
+               n_que : constant Natural := queue_ulog.Get_Length;
             begin
                m.t := Ada.Real_Time.Clock;
-               m.n_overflows := Unsigned_16 (queue_ulog.Get_Num_Overflows);
-               m.n_queued := Unsigned_8 (queue_ulog.Get_Length);
+               if n_ovf > Natural (Unsigned_16'Last) then
+                  m.n_overflows := Unsigned_16'Last;
+               else
+                  m.n_overflows := Unsigned_16 (n_ovf);
+               end if;
+               if n_que > Natural (Unsigned_8'Last) then
+                  m.n_queued := Unsigned_8'Last;
+               else
+                  m.n_queued := Unsigned_8 (n_que);
+               end if;
                ULog.Serialize_Ulog (m, len, bytes);
                Write_Bytes_To_SD (len => len, buf => bytes);
             end;
@@ -269,7 +282,7 @@ is
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
          fname       : constant String := HIL.Byte'Image (num_boots) & ".log";
-         BUFLEN      : constant := 1024;
+         BUFLEN      : constant := 128; -- header is around 90 bytes long
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
          len         : Natural;
          valid       : Boolean;
@@ -277,7 +290,8 @@ is
          With_SDLog := False;
          if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
          then
-            log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
+            log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname); 
+            return;
          else
             log_console (Logger.INFO, "Log name: " & buildstring & "/" & fname);
             With_SDLog := True;

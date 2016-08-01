@@ -56,7 +56,9 @@ package ULog with SPARK_Mode is
    --  Primitive operations
    --------------------------
 
-   procedure Serialize_Ulog (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array);
+   procedure Serialize_Ulog (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array)
+     with Post => len < 256 and --  ulog messages cannot be longer
+     then len <= bytes'Length;
    --  turn object into ULOG byte array
    --  @return len=number of bytes written in 'bytes'
 
@@ -64,7 +66,8 @@ package ULog with SPARK_Mode is
    --  turn object into CSV string/byte array
 
    procedure Get_Header_Ulog (bytes : in out HIL.Byte_Array;
-                              len : out Natural; valid : out Boolean);
+                              len : out Natural; valid : out Boolean)
+     with Post => len <= bytes'Length;
    --  every ULOG file starts with a header, which is generated here
    --  for all known message types
    --  @return If true, you must keep calling this. If false, then all message defs have been

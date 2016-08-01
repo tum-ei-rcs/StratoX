@@ -57,7 +57,8 @@ package body ULog.Conversions with SPARK_Mode is
    procedure Add_Labeled (label  : String;
                           format : Character;
                           buf    : in out HIL.Byte_Array;
-                          tail   : HIL.Byte_Array);
+                          tail   : HIL.Byte_Array)
+     with Pre => label'Length > 0 and then label'First <= label'Last;
 
    procedure Copy_To_Buffer (buf : in out HIL.Byte_Array;
                              tail : HIL.Byte_Array);
@@ -66,12 +67,22 @@ package body ULog.Conversions with SPARK_Mode is
    --  Reset
    -----------
 
-   procedure New_Conversion is begin
+   procedure New_Conversion is
+   begin
       Total_Size     := 0;
       Name           := (others => HIL.Byte (0));
       Label_Collect  := (Labels => (others => HIL.Byte (0)), Length => 0);
       Format_Collect := (Format => (others => HIL.Byte (0)), Length => 0);
    end New_Conversion;
+
+   -----------
+   --  Init
+   -----------
+
+   procedure Init is
+   begin
+      New_Conversion;
+   end Init;
 
    --------------
    --  Get_Size
@@ -108,7 +119,7 @@ package body ULog.Conversions with SPARK_Mode is
       slen : constant Integer := (if s'Length > tmp'Length then tmp'Length else s'Length);
    begin
       if slen > 0 then
-         tmp (tmp'First .. tmp'First + slen - 1) := s (s'First .. s'First + slen - 1);
+         tmp (tmp'First .. tmp'First - 1 + slen) := s (s'First .. s'First - 1 + slen);
       end if;
       Name := To_Name (tmp);
    end Set_Name;
@@ -126,11 +137,18 @@ package body ULog.Conversions with SPARK_Mode is
    --  add as much as we can to the buffer, without overflowing
    procedure Copy_To_Buffer (buf : in out HIL.Byte_Array; tail : HIL.Byte_Array) is
    begin
-      if tail'Length <= Buffer_Capacity (buf) then
-         buf (buf'First + Total_Size .. buf'First + Total_Size + tail'Length) := tail;
+      if tail'Length > 0 then
+         if tail'Length <= Buffer_Capacity (buf) then
+            pragma Assert (Buffer_Capacity (buf) > 0);
+            buf (buf'First + Total_Size .. buf'First + Total_Size - 1 + tail'Length) := tail;
+         end if;
+         --  keep counting, so caller can see potential overflow
+         if Natural'Last - Total_Size >= tail'Length then
+            Total_Size := Total_Size + tail'Length;
+         else
+            Total_Size := Natural'Last;
+         end if;
       end if;
-      --  keep counting, so caller can see potential overflow
-      Total_Size := Total_Size + tail'Length;
    end Copy_To_Buffer;
 
    ------------------------
@@ -138,34 +156,46 @@ package body ULog.Conversions with SPARK_Mode is
    ------------------------
 
    procedure Add_Labeled (label  : String;
-                             format : Character;
-                             buf    : in out HIL.Byte_Array;
-                             tail   : HIL.Byte_Array)
+                          format : Character;
+                          buf    : in out HIL.Byte_Array;
+                          tail   : HIL.Byte_Array)
    is
       lbl_cap : constant Integer := Label_Collect.Labels'Length - Label_Collect.Length;
       fmt_cap : constant Integer := Format_Collect.Format'Length - Format_Collect.Length;
    begin
       if Buffer_Capacity (buf) >= tail'Length and
-      then lbl_cap > label'Length and  -- not >=, because of ','
-      then fmt_cap > 0
+      then lbl_cap > label'Length  -- not >=, because of ','
+      and then fmt_cap > 0
       then
          Copy_To_Buffer (buf => buf, tail => tail);
+         if Label_Collect.Length > 0 then
+            Label_Collect.Length := Label_Collect.Length + 1;
+            Label_Collect.Labels (Label_Collect.Length) := HIL.Byte (Character'Pos (','));
+         end if;
          declare
             idx_lbl_lo : constant Integer := Label_Collect.Labels'First + Label_Collect.Length;
-            idx_lbl_hi : constant Integer := idx_lbl_lo + label'Length; -- not '-1', because of ','
+            idx_lbl_hi : constant Integer := idx_lbl_lo + label'Length - 1;
             idx_fmt    : constant Integer := Format_Collect.Format'First + Format_Collect.Length;
             subtype VarString is String (1 .. label'Length);
-            subtype VarBytes is HIL.Byte_Array (1 .. VarString'Length);
+            subtype VarBytes is HIL.Byte_Array (1 .. label'Length);
             function To_Bytes is new Ada.Unchecked_Conversion (VarString, VarBytes);
+            d : constant VarBytes := To_Bytes (label);
          begin
-            Label_Collect.Labels (idx_lbl_lo .. idx_lbl_hi) := HIL.Byte (Character'Pos (','))
-              & To_Bytes (label);
+            Label_Collect.Labels (idx_lbl_lo .. idx_lbl_hi) := d;
             Format_Collect.Format (idx_fmt) := HIL.Byte (Character'Pos (format));
          end;
       end if;
       --  keep counting, so caller can see potential overflow
-      Label_Collect.Length := Label_Collect.Length + label'Length + 1;
-      Format_Collect.Length := Format_Collect.Length + 1;
+      if Natural'Last - Label_Collect.Length > label'Length then
+         Label_Collect.Length := Label_Collect.Length + label'Length - 1;
+      else
+         Label_Collect.Length := Natural'Last;
+      end if;
+      if Natural'Last - Format_Collect.Length > 0 then
+         Format_Collect.Length := Format_Collect.Length + 1;
+      else
+         Format_Collect.Length := Natural'Last;
+      end if;
    end Add_Labeled;
 
    ----------------------------
@@ -206,9 +236,10 @@ package body ULog.Conversions with SPARK_Mode is
    ------------------
 
    procedure Append_Int8 (label : String; buf : in out HIL.Byte_Array; tail : Integer_8) is
-      barr : constant Byte_Array := (1 => HIL.Byte (tail));
+      subtype Byte1 is Byte_Array (1 .. 1);
+      function To_Bytes is new Ada.Unchecked_Conversion (Integer_8, Byte1);
    begin
-      Add_Labeled (label, 'b', buf, barr);
+      Add_Labeled (label, 'b', buf, To_Bytes (tail));
    end Append_Int8;
 
    ------------------
@@ -293,7 +324,7 @@ package body ULog.Conversions with SPARK_Mode is
       len : constant Integer := (if slen > tmp'Length then tmp'Length else slen);
    begin
       if len > 0 then
-         tmp (tmp'First .. tmp'First + len - 1) := tail (tail'First .. tail'First + len - 1);
+         tmp (tmp'First .. tmp'First - 1 + len) := tail (tail'First .. tail'First - 1 + len);
       end if;
       Add_Labeled (label, 'Z', buf, To_Byte64 (tmp));
    end Append_String64;
