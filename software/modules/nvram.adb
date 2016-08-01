@@ -174,9 +174,9 @@ is
       bytes : Byte_Array_4;
    begin
       for index in Natural range 1 .. 4 loop
-         HIL.NVRAM.Read_Byte (addr => Var_To_Address (Variable_Name'Val( Variable_Name'Pos( variable ) -1 + index )), byte => bytes(index));
+         HIL.NVRAM.Read_Byte (addr => Var_To_Address (Variable_Name'Val (Variable_Name'Pos( variable ) -1 + index )), byte => bytes(index));
       end loop;
-      data := HIL.toFloat( bytes );
+      data := HIL.toFloat (bytes );
    end Load;
 
    procedure Store (variable : Variable_Name; data : in HIL.Byte) is
@@ -185,12 +185,12 @@ is
    end Store;
 
    procedure Store (variable : in Variable_Name; data : in Float) is
-      bytes : constant Byte_Array_4 := HIL.toBytes( data );
+      bytes : constant Byte_Array_4 := HIL.toBytes (data );
 --        index : Positive := 1;
    begin
       for index in Natural range 1 .. 4 loop
-      --for var in Variable_Name range variable .. Variable_Name'Val( Variable_Name'Pos( variable ) -1 + index ) loop
-         HIL.NVRAM.Write_Byte (addr => Var_To_Address (Variable_Name'Val( Variable_Name'Pos( variable ) -1 + index )), byte => bytes(index));
+      --  for var in Variable_Name range variable .. Variable_Name'Val( Variable_Name'Pos( variable ) -1 + index ) loop
+         HIL.NVRAM.Write_Byte (addr => Var_To_Address (Variable_Name'Val (Variable_Name'Pos( variable ) -1 + index )), byte => bytes(index));
       end loop;
    end Store;
 

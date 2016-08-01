@@ -51,7 +51,7 @@ package body SDLog with SPARK_Mode => Off is
       SD_Controller.Initialize;
 
       if not SD_Controller.Card_Present then
-         Logger.log (Logger.ERROR, "Please insert SD card");
+         Logger.log_console (Logger.ERROR, "Please insert SD card");
          Error_State := True;
          return;
       else
@@ -66,7 +66,7 @@ package body SDLog with SPARK_Mode => Off is
       --  human-readable units
       for Unit of Size_Units loop
          if Capacity < 1000 or else Unit = 'T' then
-            Logger.log (Logger.INFO, "SD card size:" & Capacity'Img & " " & Unit & "B");
+            Logger.log_console (Logger.INFO, "SD card size:" & Capacity'Img & " " & Unit & "B");
             exit;
          end if;
 
@@ -77,23 +77,23 @@ package body SDLog with SPARK_Mode => Off is
          end if;
       end loop;
 
-      Logger.log (Logger.DEBUG, "Opening SD Filesys...");
+      Logger.log_console (Logger.DEBUG, "Opening SD Filesys...");
       FS := Open (SD_Controller'Unchecked_Access, Status);
 
       if Status /= OK then
          Error_State := True;
 
          if Status = No_MBR_Found then
-            Logger.log (Logger.ERROR, "SD Card: No MBR found");
+            Logger.log_console (Logger.ERROR, "SD Card: No MBR found");
          elsif Status = No_Partition_Found then
-            Logger.log (Logger.ERROR, "SD Card: No Partition found");
+            Logger.log_console (Logger.ERROR, "SD Card: No Partition found");
          else
-            Logger.log (Logger.ERROR, "SD Card: Error reading card");
+            Logger.log_console (Logger.ERROR, "SD Card: Error reading card");
             --  Error reading the card: & Status'Img
             null;
          end if;
       else
-         Logger.log (Logger.DEBUG, "SD Card: found FAT FS");
+         Logger.log_console (Logger.DEBUG, "SD Card: found FAT FS");
       end if;
       SD_Initialized := True;
    end Init;
@@ -128,7 +128,7 @@ package body SDLog with SPARK_Mode => Off is
                                 D_Entry => Log_Dir);
       if Status /= OK and then Status /= Already_Exists
       then
-         Logger.log (Logger.ERROR,
+         Logger.log_console (Logger.ERROR,
                      "SD Card: Error creating directory in root:" &
                        Image (Status));
          return False;
@@ -137,7 +137,7 @@ package body SDLog with SPARK_Mode => Off is
 
       Status := Open (E => Log_Dir, Dir => Log_Hnd);
       if Status /= OK then
-         Logger.log (Logger.ERROR,
+         Logger.log_console (Logger.ERROR,
                      "SD Card: Error opening log dir in root:" &
                        Image (Status));
          return False;
@@ -148,7 +148,7 @@ package body SDLog with SPARK_Mode => Off is
                              newname => filename,
                              File => fh_log);
       if Status /= OK then
-         Logger.log (Logger.ERROR,
+         Logger.log_console (Logger.ERROR,
                      "SD Card: Error creating log file:" &
                        Image (Status));
          return False;
@@ -170,26 +170,26 @@ package body SDLog with SPARK_Mode => Off is
          return;
       end if;
 
-      Logger.log (Logger.INFO, "SD Card: " & Volume_Label (FS.all) &
+      Logger.log_console (Logger.INFO, "SD Card: " & Volume_Label (FS.all) &
                     " (" & File_System_Type (FS.all) & ")");
 
       if Open_Root_Directory (FS, Dir) /= OK then
-         Logger.log (Logger.ERROR, "SD Card: Error reading root");
+         Logger.log_console (Logger.ERROR, "SD Card: Error reading root");
          Error_State := True;
          return;
       end if;
 
-      Logger.log (Logger.INFO, "SD Card listing:");
+      Logger.log_console (Logger.INFO, "SD Card listing:");
       while Read (Dir, Ent) = OK loop
          if Is_System_File (Ent) then
             declare
                Contents : String (1 .. 16);
                pragma Unreferenced (Contents); -- later, when File_Read works.
             begin
-               Logger.log (Logger.INFO, " +- " & Get_Name (Ent));
+               Logger.log_console (Logger.INFO, " +- " & Get_Name (Ent));
             end;
          else
-            Logger.log (Logger.INFO, " +- " & Get_Name (Ent) &
+            Logger.log_console (Logger.INFO, " +- " & Get_Name (Ent) &
                         (if Is_Subdirectory (Ent) then "/" else ""));
          end if;
       end loop;
@@ -229,9 +229,9 @@ package body SDLog with SPARK_Mode => Off is
       begin
          if n_written < Data'Length then
             if n_written < 0 then
-               Logger.log (Logger.ERROR, "Logfile write error" & Image (Status));
+               Logger.log_console (Logger.ERROR, "Logfile write error" & Image (Status));
             else
-               Logger.log (Logger.ERROR, "Logfile wrote only " & n_written'Img
+               Logger.log_console (Logger.ERROR, "Logfile wrote only " & n_written'Img
                            & " bytes instead of " & Data'Length'Img
                            & "(" & Image (Status) & ")");
             end if;
@@ -288,7 +288,7 @@ package body SDLog with SPARK_Mode => Off is
          if diff > 0.0 then
             cps := Integer (1000.0 / diff);
             bps := Integer (Float (filesize - filesize_pre) / diff);
-            Logger.log (Logger.INFO, "Time=" & Integer (lapsed)'Img & ", xfer="
+            Logger.log_console (Logger.INFO, "Time=" & Integer (lapsed)'Img & ", xfer="
                         & filesize'Img & "=>" & bps'Img & " B/s " & cps'Img & " calls/s");
             filesize_pre := filesize;
             lapsed_pre := lapsed;
@@ -301,15 +301,15 @@ package body SDLog with SPARK_Mode => Off is
       Hnd_Root : Directory_Handle;
       Status   : Status_Code;
    begin
-      Logger.log (Logger.INFO, "Write performance test with " & megabytes'Img & " MB" & ENDL);
+      Logger.log_console (Logger.INFO, "Write performance test with " & megabytes'Img & " MB" & ENDL);
 
       if (not SD_Initialized) or Error_State then
-         Logger.log (Logger.ERROR, "SD Card not initialized" & ENDL);
+         Logger.log_console (Logger.ERROR, "SD Card not initialized" & ENDL);
          return;
       end if;
 
       if Open_Root_Directory (FS, Hnd_Root) /= OK then
-         Logger.log (Logger.INFO, "Error opening root dir" & ENDL);
+         Logger.log_console (Logger.INFO, "Error opening root dir" & ENDL);
          return;
       end if;
 
@@ -321,7 +321,7 @@ package body SDLog with SPARK_Mode => Off is
                              Overwrite => True,
                              File => fh_perf);
       if Status /= OK then
-         Logger.log (Logger.ERROR,
+         Logger.log_console (Logger.ERROR,
                      "SD Card: Error creating file:" & Image (Status));
          return;
       end if;
@@ -336,9 +336,9 @@ package body SDLog with SPARK_Mode => Off is
          begin
             if n_written < dummydata'Length then
                if n_written < 0 then
-                  Logger.log (Logger.ERROR, "Perf write error" & Image (Status));
+                  Logger.log_console (Logger.ERROR, "Perf write error" & Image (Status));
                else
-                  Logger.log (Logger.ERROR, "Perf wrote only " & n_written'Img
+                  Logger.log_console (Logger.ERROR, "Perf wrote only " & n_written'Img
                               & " bytes instead of " & dummydata'Length'Img
                               & "(" & Image (Status) & ")");
                end if;

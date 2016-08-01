@@ -25,8 +25,8 @@ package body Main is
       CPU.initialize;
 
       Logger.init (logret);
-      Logger.log (Logger.INFO, "---------------");
-      Logger.log (Logger.INFO, "CPU initialized");
+      Logger.log_console (Logger.INFO, "---------------");
+      Logger.log_console (Logger.INFO, "CPU initialized");
 
       Buzzer_Manager.Initialize;
 
@@ -34,22 +34,22 @@ package body Main is
       LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => False, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
 
-      Logger.log (Logger.INFO, "Initializing SDIO...");
+      Logger.log_console (Logger.INFO, "Initializing SDIO...");
 
-      Logger.log (Logger.INFO, "Initializing NVRAM...");
+      Logger.log_console (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;
 
-      Logger.log (Logger.INFO, "Start SD Logging...");
+      Logger.log_console (Logger.INFO, "Start SD Logging...");
       Logger.Start_SDLog;
 
       --  self checks
-      Logger.log (Logger.INFO, "Self-Check NVRAM...");
+      Logger.log_console (Logger.INFO, "Self-Check NVRAM...");
       NVRAM.Self_Check (Status => success);
 
       --  hang here if self-checks failed
       if not success then
          LED_Manager.LED_blink (LED_Manager.FAST);
-         Logger.log (Logger.ERROR, "Self checks failed");
+         Logger.log_console (Logger.ERROR, "Self checks failed");
          t_next := Clock;
          loop
             LED_Manager.LED_tick (Config.MAIN_TICK_RATE_MS);
@@ -59,14 +59,14 @@ package body Main is
             t_next := t_next + Milliseconds (Config.MAIN_TICK_RATE_MS);
          end loop;
       else
-         Logger.log (Logger.INFO, "Self checks passed");
+         Logger.log_console (Logger.INFO, "Self checks passed");
          delay until Clock + Milliseconds (50);
       end if;
 
       LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
       --  SDLog.Perf_Test (10);
-      Logger.log (Logger.INFO, "SD Card check done");
+      Logger.log_console (Logger.INFO, "SD Card check done");
    end Initialize;
 
 
@@ -102,7 +102,7 @@ package body Main is
 
          p := p + 1;
          if p = 0 then
-            Logger.log (Logger.INFO, "Logfile size " & SDLog.Logsize'Img & " B");
+            Logger.log_console (Logger.INFO, "Logfile size " & SDLog.Logsize'Img & " B");
          end if;
 
          declare
