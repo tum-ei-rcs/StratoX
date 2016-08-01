@@ -1,207 +1,191 @@
--- Project: StratoX
--- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--  Project: StratoX
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 --          Martin Becker (becker@rcs.ei.tum.de)
--- 
--- Description: 
---     allows logging of structured messages at several logging levels. 
---     Simultaneously writes to UART, and SD card.
 --
--- Usage: 
+--  Description:
+--     allows logging of structured messages at several logging levels.
+--
+--  Usage:
 --     Logger.init  -- initializes the Logger
---     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
-
-with System;
-with HIL.UART;
-with ULog.GPS;
-with ULog.Txt;
-with HIL.Devices;
+--     Logger.log_console (Logger.INFO, "Program started.")  -- writes log on info level to console
+--     Logger.log_sd (Logger.INFO, gps_msg) -- writes GPS record to SD card
 with SDLog;
 with NVRAM;
 with Buildinfo;
+with HIL.Devices;
+with HIL.UART;
+with System;
 
+--  @summary Simultaneously writes to UART, and SD card.
 package body Logger with SPARK_Mode,
-  Refined_State => (LogState => (queue_ulog, Logging_Task, logger_level, msg_gps,
-                                 With_SDLog))
-is        
-      
-   -- the type for the queue buffer
-   type Buffer_Ulog is array (Natural range <>) of ULog.Message;
-   type bufpos is mod QUEUE_LENGTH;
-   
-   -- if GNATprove crashes with reference to that file,
-   -- then you have run into bug KP-160-P601-005.
-   -- workaround: move decl of protected type to package spec.
-     
-   -- protected type to implement the ULog queue
-   protected type Ulog_Queue_T is  
-      procedure New_Msg (msg : in ULog.Message'Class);      
-      -- enqueue new message. this is not blocking, except to ensure mutex.
-      -- can silently fail if buffer is full
-      -- FIXME: how can we specify a precondition on the private variable?
-      -- for now we put an assertion in the body     
-      
-      entry Get_Msg (msg : out ULog.Message);
-      -- try to get new message from buffer. if empty, this is blocking 
-      -- until buffer has data, and then returns it.
-      -- FIXME: how can we specify a precondition on the private variable?
-      -- for now we put an assertion in the body
-      
-      function Get_Num_Overflows return Natural;
-      -- query how often the buffer overflowed. If this happens, either increase
-      -- the buffer QUEUE_LENGTH, or increase priority of the logger task.
-      
-      function Get_Length return Natural;
-      -- query number of messages waiting in the logging queue.
-   private
-      Buffer : Buffer_Ulog (0 .. QUEUE_LENGTH - 1); 
-      -- cannot use a discriminant for this (would violate No_Implicit_Heap_Allocations)
+  Refined_State => (LogState => (queue_ulog, Logging_Task, logger_level, With_SDLog))
+is
 
-      Num_Queued : Natural := 0;
-      Not_Empty : Boolean := False; -- simple barrier (Ravenscar)
-      Pos_Read : bufpos := 0;
-      Pos_Write : bufpos := 0;
+   --  the type for the queue buffer
+   type Buffer_Ulog is array (Natural range <>) of ULog.Message;
+   type bufpos is mod LOG_QUEUE_LENGTH;
+
+   --  if GNATprove crashes with reference to that file,
+   --  then you have run into bug KP-160-P601-005.
+   --  workaround: move decl of protected type to package spec.
+
+   --  protected type to implement the ULog queue
+   protected type Ulog_Queue_T is
+      procedure New_Msg (msg : in ULog.Message);
+      --  enqueue new message. this is not blocking, except to ensure mutex.
+      --  it is fast (only memcpy), but it can silently fail if buffer is full.
+      --  FIXME: how can we specify a precondition on the private variable?
+      --  for now we put an assertion in the body
+
+      entry Get_Msg (msg : out ULog.Message);
+      --  try to get new message from buffer. if empty, this is blocking
+      --  until buffer has data, and then returns it.
+      --  FIXME: how can we specify a precondition on the private variable?
+      --  for now we put an assertion in the body
+
+      function Get_Num_Overflows return Natural;
+      --  query how often the buffer overflowed. If this happens, either increase
+      --  the buffer QUEUE_LENGTH, or increase priority of the logger task.
+
+      function Get_Length return Natural;
+      --  query number of messages waiting in the logging queue.
+   private
+      Buffer : Buffer_Ulog (0 .. LOG_QUEUE_LENGTH - 1);
+      --  cannot use a discriminant for this (would violate No_Implicit_Heap_Allocations)
+
+      Num_Queued    : Natural := 0;
+      Not_Empty     : Boolean := False; -- simple barrier (Ravenscar)
+      Pos_Read      : bufpos := 0;
+      Pos_Write     : bufpos := 0;
       Num_Overflows : Natural := 0;
-      -- cannot use a dynamic predicate to etablish relationship, because this requires
-      -- a record. But we cannot have a record, since this would make Not_Empty a
-      -- non-simple barrier (=> Ravenscar violation).
-   end Ulog_Queue_T; 
-      
-   -- sporadic logging task waking up when message is enqueued
+      --  cannot use a dynamic predicate to etablish relationship, because this requires
+      --  a record. But we cannot have a record, since this would make Not_Empty a
+      --  non-simple barrier (=> Ravenscar violation).
+   end Ulog_Queue_T;
+
+   --  sporadic logging task waking up when message is enqueued
    task Logging_Task is
       pragma Priority (System.Priority'First); -- lowest prio for logging
    end Logging_Task;
-   
+
    ----------------------------
-   --  Instantiation / Body   --
+   --  PROTOTYPES
    ----------------------------
-   
-   -- internal states
-   queue_ulog   : Ulog_Queue_T;  
+
+   function Image (level : Log_Level) return String;
+
+   ----------------------------
+   --  INTERNAL STATES
+   ----------------------------
+
+   queue_ulog   : Ulog_Queue_T;
    logger_level : Log_Level := DEBUG;
    With_SDLog   : Boolean := False;
-   
-   -- test (remove...just for sake of "with"ing ULog.GPS and keeping SPARK happy
-   msg_gps : ULog.GPS.Message;
 
-   -- the task which logs to SD card in the background
-   task body Logging_Task is 
+   --  the task which logs to SD card in the background
+   task body Logging_Task is
       msg : ULog.Message;
       BUFLEN : constant := 1024;
       bytes : HIL.Byte_Array (1 .. BUFLEN);
       len : Natural;
-   begin          
+   begin
       loop
-         queue_ulog.Get_Msg (msg);
-         
-         -- serialize and write to SD card (must happen here, because could be slow)
-         ULog.Serialize (msg, len, bytes);
-         -- TODO: translate into FileBytes with length=len
-         --SDLog.Write_Log (Data => bytes);        
-
-         -- TODO: occasionally log queue state (overflows, num_queued).
+         queue_ulog.Get_Msg (msg); -- under mutex
+         ULog.Serialize_Ulog (msg, len, bytes); -- this can be slow again
+         --  TODO: translate into FileBytes with length=len
+         --  SDLog.Write_Log (Data => bytes);
+         --  TODO: occasionally log queue state (overflows, num_queued).
       end loop;
-   end Logging_Task;   
-      
-   -- implementation of the message queue
-   protected body Ulog_Queue_T is       
-      procedure New_Msg (msg : in ULog.Message'Class) is 
-      begin
+   end Logging_Task;
 
-         --  1. serialize ULog to byte array
-         -- TODO : don't know yet how, but store the specific instance here
-         --  2. enqueue byte array
-         --Buffer ( Integer (Pos_Write)) := msg;
+   --  implementation of the message queue
+   protected body Ulog_Queue_T is
+      procedure New_Msg (msg : in ULog.Message) is
+      begin
+         Buffer (Integer (Pos_Write)) := msg;
          Pos_Write := Pos_Write + 1;
-         if Num_Queued < Buffer'Last then               
-            Num_Queued := Num_Queued + 1;    
+         if Num_Queued < Buffer'Last then
+            Num_Queued := Num_Queued + 1;
          else -- =Buffer'Last
             Pos_Read := Pos_Read + 1; -- overwrite oldest
             if Num_Overflows < Natural'Last then
                Num_Overflows := Num_Overflows + 1;
             end if;
          end if;
-         
+
          Not_Empty := (Num_Queued > 0);
-         pragma Assert ( (Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)) );
+         pragma Assert ((Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)));
       end New_Msg;
-      
-      entry Get_Msg (msg : out ULog.Message) when Not_Empty is      
+
+      entry Get_Msg (msg : out ULog.Message) when Not_Empty is
       begin
-         pragma Assume ( Num_Queued > 0); -- via barrier and assert in New_Msg
-                  
+         pragma Assume (Num_Queued > 0); -- via barrier and assert in New_Msg
+
          msg := Buffer (Integer (Pos_Read));
          Pos_Read := Pos_Read + 1;
          Num_Queued := Num_Queued - 1;
 
          Not_Empty := Num_Queued > 0;
-         pragma Assert ( (Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)) );
-      end Get_Msg;      
-      
-      function Get_Num_Overflows return Natural is (Num_Overflows);      
+         pragma Assert ((Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)));
+      end Get_Msg;
+
+      function Get_Num_Overflows return Natural is (Num_Overflows);
       function Get_Length return Natural is (Num_Queued);
    end Ulog_Queue_T;
-      
-   
-   -- HAL, only change Adapter to port Code
+
+   ----------------------------
+   --  Instantiation / Body   --
+   ----------------------------
+
+   --  HAL, only change Adapter to port Code
    package body Adapter is
-      procedure init(status : out Init_Error_Code) is
+      procedure init (status : out Init_Error_Code) is
       begin
-         -- HIL.UART.configure; already done in CPU.initialize
+         --  HIL.UART.configure; already done in CPU.initialize
          status := SUCCESS;
       end init;
 
-      procedure write(message : Message_Type) is
-         --LF : Character := Character'Val(10);
-         CR : constant Character := Character'Val(13);  -- ASCII
+      procedure write (message : Message_Type) is
+         CR : constant Character := Character'Val (13); -- ASCII
+         --  LF : constant Character := Character'Val (10);
       begin
          HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message & CR ) );
       end write;	
    end Adapter;
 
-   procedure init(status : out Init_Error_Code) is
-   begin      
+   procedure init (status : out Init_Error_Code) is
+   begin
       SDLog.Init;
-      Adapter.init(status);
+      Adapter.init (status);
    end init;
-   
-   function Image (level : Log_Level) return String is 
+
+   function Image (level : Log_Level) return String is
    begin
       return (case level is
                  when SENSOR => "S: ",
-                 when ERROR => "E: ",		
-                 when WARN  => "W: ",		
-                 when INFO  => "I: ",	
+                 when ERROR => "E: ",
+                 when WARN  => "W: ",
+                 when INFO  => "I: ",
                  when DEBUG => "D: ",
                  when TRACE => "T: "
              );
    end Image;
-          
-   procedure log_ulog(level : Log_Level; msg : ULog.Message'Class) is
-   begin
-      if With_SDLog then
-         if Log_Level'Pos(level) <= Log_Level'Pos(logger_level) then
-            queue_ulog.New_Msg (ULog.Message (msg)); -- view conversion
-         end if;
-      end if;
-   end log_ulog;
-   
-   procedure log(level : Log_Level; message : Message_Type) 
-   is      
-   begin
-      if Log_Level'Pos(level) <= Log_Level'Pos(logger_level) then
-         Adapter.write(Log_Level'Image (level) & message);
-         if With_SDLog then
-            declare
-               msg : ULog.Txt.Message;
-            begin
-               msg.Set_Text (message);
-               queue_ulog.New_Msg (msg);
-            end;
-         end if;
-      end if;      
-   end log;
 
-   procedure set_Log_Level(level : Log_Level) is
+   procedure log_console (msg_level : Log_Level; message : Message_Type) is
+   begin
+      if Log_Level'Pos (msg_level) <= Log_Level'Pos (logger_level) then
+         Adapter.write (Image (msg_level) & message);
+      end if;
+   end log_console;
+
+   procedure log_sd (level : Log_Level; message : ULog.Message) is
+   begin
+      if Log_Level'Pos (level) <= Log_Level'Pos (logger_level) then
+         queue_ulog.New_Msg (message);
+      end if;
+   end log_sd;
+
+   procedure set_Log_Level (level : Log_Level) is
    begin
       logger_level := level;
    end set_Log_Level;
@@ -213,26 +197,31 @@ is
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
          fname       : constant String := num_boots'Img & ".log";
-         ENDL        : constant String := (Character'Val (13), Character'Val (10));
          BUFLEN      : constant := 1024;
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
+         len         : Natural;
+         valid       : Boolean := True;
       begin
          With_SDLog := False;
          if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
          then
-            log (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
+            log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
          else
-            log (Logger.INFO, "Log name: " & buildstring & "/" & fname);
+            log_console (Logger.INFO, "Log name: " & buildstring & "/" & fname);
             With_SDLog := True;
          end if;
-         
+
          --  write file header (ULog message definitions)
-         --  TODO: in chunks, because it's describing all messages
-         ULog.Get_Header (bytes); 
-         
-         -- TODO: convert to FileData and write to SD card
-         -- SDLog.Write_Log (Data => bytes);
+         ULog.Init;
+         Get_Ulog_Defs_Loop :
+         loop
+            ULog.Get_Header_Ulog (bytes, len, valid);
+            exit Get_Ulog_Defs_Loop when not valid;
+            --  TODO: convert to FileData and write to SD card
+            --  SDLog.Write_Log (Data => bytes);
+            null;
+         end loop Get_Ulog_Defs_Loop;
       end;
    end Start_SDLog;
-   
+
 end Logger;

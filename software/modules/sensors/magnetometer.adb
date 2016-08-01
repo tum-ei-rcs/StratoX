@@ -20,7 +20,7 @@ package body Magnetometer with SPARK_Mode is
       --Driver.update_val;
       Driver.getHeading(mag_x, mag_y, mag_z);   -- are These Micro*Tesla?
 
-      Logger.log(Logger.TRACE, "Mag: " & Integer'Image(Integer(mag_x)) & ", "
+      Logger.log_console(Logger.TRACE, "Mag: " & Integer'Image(Integer(mag_x)) & ", "
                  & Integer'Image(Integer(mag_y)) & ", "
                  & Integer'Image(Integer(mag_z)) );
 

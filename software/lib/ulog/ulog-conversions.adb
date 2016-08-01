@@ -33,12 +33,14 @@ package body ULog.Conversions with SPARK_Mode is
    --    f   : float
    --    Z   : char[64]
    --    B   : uint8_t
-   --  TODO:
    --    b   : int8_t
-   --    h   : int16_t
    --    H   : uint16_t
+   --    h   : int16_t
    --    i   : int32_t
    --    I   : uint32_t
+   --    q   : int64_t
+   --    Q   : uint64_t
+   --  TODO:
    --    n   : char[4]
    --    N   : char[16]
    --    c   : int16_t * 100
@@ -47,8 +49,6 @@ package body ULog.Conversions with SPARK_Mode is
    --    E   : uint32_t * 100
    --    L   : int32_t latitude/longitude
    --    M   : uint8_t flight mode
-   --    q   : int64_t
-   --    Q   : uint64_t
 
    ----------------
    --  PROTOTYPES
@@ -67,8 +67,8 @@ package body ULog.Conversions with SPARK_Mode is
    -----------
 
    procedure New_Conversion is begin
-      Total_Size := 0;
-      Name   := (others => HIL.Byte (0));
+      Total_Size     := 0;
+      Name           := (others => HIL.Byte (0));
       Label_Collect  := (Labels => (others => HIL.Byte (0)), Length => 0);
       Format_Collect := (Format => (others => HIL.Byte (0)), Length => 0);
    end New_Conversion;
@@ -200,11 +200,89 @@ package body ULog.Conversions with SPARK_Mode is
       Add_Labeled (label, 'B', buf, barr);
    end Append_Uint8;
 
+
+   ------------------
+   --  Append_Int8
+   ------------------
+
+   procedure Append_Int8 (label : String; buf : in out HIL.Byte_Array; tail : Integer_8) is
+      barr : constant Byte_Array := (1 => HIL.Byte (tail));
+   begin
+      Add_Labeled (label, 'b', buf, barr);
+   end Append_Int8;
+
+   ------------------
+   --  Append_Uint16
+   ------------------
+
+   procedure Append_Uint16 (label : String; buf : in out HIL.Byte_Array; tail : Unsigned_16) is
+      subtype Byte2 is Byte_Array (1 .. 2);
+      function To_Bytes is new Ada.Unchecked_Conversion (Unsigned_16, Byte2);
+   begin
+      Add_Labeled (label, 'H', buf, To_Bytes (tail));
+   end Append_Uint16;
+
+   ------------------
+   --  Append_Int16
+   ------------------
+
+   procedure Append_Int16 (label : String; buf : in out HIL.Byte_Array; tail : Integer_16) is
+      subtype Byte2 is Byte_Array (1 .. 2);
+      function To_Bytes is new Ada.Unchecked_Conversion (Integer_16, Byte2);
+   begin
+      Add_Labeled (label, 'h', buf, To_Bytes (tail));
+   end Append_Int16;
+
+
+   ------------------
+   --  Append_UInt32
+   ------------------
+
+   procedure Append_Uint32 (label : String; buf : in out HIL.Byte_Array; tail : Unsigned_32) is
+      subtype Byte4 is Byte_Array (1 .. 4);
+      function To_Bytes is new Ada.Unchecked_Conversion (Unsigned_32, Byte4);
+   begin
+      Add_Labeled (label, 'I', buf, To_Bytes (tail));
+   end Append_Uint32;
+
+   ------------------
+   --  Append_Int32
+   ------------------
+
+   procedure Append_Int32 (label : String; buf : in out HIL.Byte_Array; tail : Integer_32) is
+      subtype Byte4 is Byte_Array (1 .. 4);
+      function To_Bytes is new Ada.Unchecked_Conversion (Integer_32, Byte4);
+   begin
+      Add_Labeled (label, 'i', buf, To_Bytes (tail));
+   end Append_Int32;
+
+   ------------------
+   --  Append_UInt64
+   ------------------
+
+   procedure Append_Uint64 (label : String; buf : in out HIL.Byte_Array; tail : Unsigned_64) is
+      subtype Byte8 is Byte_Array (1 .. 8);
+      function To_Bytes is new Ada.Unchecked_Conversion (Unsigned_64, Byte8);
+   begin
+      Add_Labeled (label, 'Q', buf, To_Bytes (tail));
+   end Append_Uint64;
+
+   ------------------
+   --  Append_Int64
+   ------------------
+
+   procedure Append_Int64 (label : String; buf : in out HIL.Byte_Array; tail : Integer_64) is
+      subtype Byte8 is Byte_Array (1 .. 8);
+      function To_Bytes is new Ada.Unchecked_Conversion (Integer_64, Byte8);
+   begin
+      Add_Labeled (label, 'q', buf, To_Bytes (tail));
+   end Append_Int64;
+
    -------------------
    --  Append_String
    -------------------
 
-   procedure Append_String (label : String; buf : in out HIL.Byte_Array;
+   procedure Append_String64 (label : String; buf : in out HIL.Byte_Array;
                             tail : String; slen : Natural)
    is
       subtype String64 is String (1 .. 64);
@@ -218,6 +296,6 @@ package body ULog.Conversions with SPARK_Mode is
          tmp (tmp'First .. tmp'First + len - 1) := tail (tail'First .. tail'First + len - 1);
       end if;
       Add_Labeled (label, 'Z', buf, To_Byte64 (tmp));
-   end Append_String;
+   end Append_String64;
 
 end ULog.Conversions;

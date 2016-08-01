@@ -1,85 +1,84 @@
 --  Institution: Technische Universitaet Muenchen
 --  Department:  Realtime Computer Systems (RCS)
 --  Project:     StratoX
---  Author: Martin Becker (becker@rcs.ei.tum.de)
+--  Author:      Martin Becker (becker@rcs.ei.tum.de)
+with Ada.Real_Time;
 with Interfaces;
 with HIL;
 
 --  @summary
---  Implements a serialization of log objects (records,
---  string messages, etc.) according to the self-describing
---  ULOG file format used in PX4.
+--  Implements the structure andserialization of log objects
+--  according to the self-describing ULOG file format used
+--  in PX4.
 --  The serialized byte array is returned.
 --
---  We cannot make this abstract, because it would require
---  access types to use polymorphism, and that's not SPARK.
+--  Polymorphism with tagged type fails, because we cannot
+--  copy a polymorphic object in SPARK.
+--  TODO: offer a project-wide Ulog.Register_Parameter() function.
+--
+--  How to add a new message 'FOO':
+--  1. add another enum value 'FOO' to Message_Type
+--  2. extend record 'Message' with the case 'FOO'
+--  3. add procedure  'Serialize_Ulog_FOO' and only handle the components for your new type
 package ULog with SPARK_Mode is
 
-   --  root type/base class for polymorphism. all visible to clients.
-   type Message is tagged record
-      Timestamp : Interfaces.Unsigned_64 := 0;
-      Length    : Interfaces.Unsigned_16 := 0;
+   --  types of log messages. Add new ones when needed.
+   type Message_Type is (NONE, TEXT, GPS);
+
+   type GPS_fixtype is (NOFIX, DEADR, FIX2D, FIX3D, FIX3DDEADR, FIXTIME);
+
+   --  polymorphism via variant record. Everything must be initialized
+   type Message (Typ : Message_Type := NONE) is record
+      t : Ada.Real_Time.Time := Ada.Real_Time.Time_First; --  time of data capture set by caller
+      case Typ is
+      when NONE => null;
+      when TEXT =>
+         --  text message with up to 128 characters
+         txt : String (1 .. 128) := (others => Character'Val (0));
+         txt_last : Integer := 0; -- points to last valid char
+      when GPS =>
+         --  GPS message
+         gps_week : Interfaces.Integer_16  := 0;
+         gps_msec : Interfaces.Unsigned_64 := 0;
+         fix      : GPS_fixtype            := NOFIX;
+         nsat     : Interfaces.Unsigned_8  := 0;
+         lat      : Float                  := 0.0;
+         lon      : Float                  := 0.0;
+         alt      : Float                  := 0.0;
+      end case;
    end record;
 
-   ---------------------------------------------------------------------
-   --                   Non-Primitive operations                      --
-   --  (not inherited; available for all members of class-wide type)  --
-   ---------------------------------------------------------------------
+   --------------------------
+   --  Primitive operations
+   --------------------------
 
-   procedure Serialize (msg : in Message'Class; len : out Natural; bytes : out HIL.Byte_Array);
+   procedure Serialize_Ulog (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array);
    --  turn object into ULOG byte array
-   --  indefinite argument (class-wide type)
-   --  FIXME: maybe overload attribute Output?
+   --  @return len=number of bytes written in 'bytes'
 
-   procedure Format (msg : in Message'Class; bytes : out HIL.Byte_Array);
-   --  turn object's format description into ULOG byte array
+   --  procedure Serialize_CSV (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array);
+   --  turn object into CSV string/byte array
 
-   procedure Get_Header (bytes : out HIL.Byte_Array);
+   procedure Get_Header_Ulog (bytes : in out HIL.Byte_Array;
+                              len : out Natural; valid : out Boolean);
    --  every ULOG file starts with a header, which is generated here
    --  for all known message types
+   --  @return If true, you must keep calling this. If false, then all message defs have been
+   --  delivered
 
-   procedure Describe (msg : in Message'Class; namestring : out String); -- is abstract
-   --  return a readable string identifying message type
-
-   function Describe_Func (msg : in Message'Class) return String;
-   --  same as above, but as function. REquired because of string.
-
-   function Size (msg : in Message'Class)
-                  return Interfaces.Unsigned_16; -- is abstract;
-   --  return length of serialized object in bytes
-   --  Note that this has nothing to do with the size of the struct, since
-   --  the representation in ULOG format may be different.
-
-   ------------------------------------
-   --      Primitive operations      --
-   --  (inherited in Message'Class)  --
-   ------------------------------------
-   --  those are NOT dispatched
+   procedure Init;
+   --  initialize this package before use
 
 private
 
-   function Self (msg : in Message) return ULog.Message'Class;
-   --  factory function to convert to specific child view
+   --  add one Serialize_Ulog_* for each new message:
 
-   --------------------------------------------
-   --          Primitive operations          --
-   --  (inherited by types in Message'Class) --
-   --------------------------------------------
+   procedure Serialize_Ulog_GPS (msg : in Message;
+                                 buf : out HIL.Byte_Array);
+   procedure Serialize_Ulog_Text (msg : in Message;
+                                  buf : out HIL.Byte_Array);
 
-   procedure Get_Serialization (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array);
-   --  the actual serialization
-
-   function Get_Size (msg : in Message) return Interfaces.Unsigned_16;
-
-   procedure Get_Format
-     (msg   : in  Message;
-      bytes : out HIL.Byte_Array); -- is abstract
-   --  for a specific message type, generate the FMT header.
-   --
-   --  FIXME: we actually don't need an instance of the message.
-   --  Actually we want the equivalent to a static member function
-   --  in C++. Maybe a type attribute?
-   --
-   --  FIXME: we want it private, but abstract does not support this.
-
+   subtype ULog_Label  is HIL.Byte_Array (1 .. 64);
+   subtype ULog_Format is HIL.Byte_Array (1 .. 16);
+   subtype ULog_Name   is HIL.Byte_Array (1 .. 4);
 end ULog;

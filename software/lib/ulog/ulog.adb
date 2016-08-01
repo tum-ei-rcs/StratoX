@@ -2,78 +2,252 @@
 --  Department:  Realtime Computer Systems (RCS)
 --  Project:     StratoX
 --  Author:      Martin Becker (becker@rcs.ei.tum.de)
-with Ada.Tags;
-with Ada.Text_IO; -- TODO: remove
-with ULog.Identifiers;
+with HIL; use HIL;
+with Ada.Unchecked_Conversion;
+with Ada.Real_Time;    use Ada.Real_Time;
+with ULog.Conversions; use ULog.Conversions;
+with Interfaces;       use Interfaces;
 
 --  @summary
---  Implements a serialization of log objects (records,
---  string messages, etc.) according to the self-describing
---  ULOG file format used in PX4.
+--  Implements the structure andserialization of log objects
+--  according to the self-describing ULOG file format used
+--  in PX4.
 --  The serialized byte array is returned.
---  this package tries to dispatch to the specific decendants,
---  e.g., ULog.GPS.
-package body ULog with SPARK_Mode => Off is
+package body ULog with SPARK_Mode => On is
 
-   procedure Get_Serialization (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array) is
+   All_Defs : Boolean := False;
+   Hdr_Def  : Boolean := False;
+   Next_Def : Message_Type := Message_Type'First;
+
+   ULOG_VERSION : constant HIL.Byte_Array := (1 => 16#1#);
+   ULOG_MAGIC   : constant HIL.Byte_Array := (16#55#, 16#4c#, 16#6f#, 16#67#,
+                                              16#01#, 16#12#, 16#35#);
+
+   ULOG_MSG_HEAD  : constant HIL.Byte_Array := (16#A3#, 16#95#);
+   ULOG_MTYPE_FMT : constant := 16#80#;
+
+   --  each log message looks like this:
+   --  +------------------+---------+----------------+
+   --  | ULOG_MSG_HEAD(2) | Type(1) | Msg body (var) |
+   --  +------------------+---------+----------------+
+   --
+   --  each body can be different. The header of the log file contains
+   --  the definitions for the body by means of fixed-length
+   --  FMT (0x80) messages, i.e., something like this:
+   --  +------------------+------+--------------------+
+   --  | ULOG_MSG_HEAD(2) | 0x80 | a definition (86B) |
+   --  +------------------+------+--------------------+
+   --  whereas 'definition' is as follows:
+   --
+   --  +---------+-----------+---------+------------+------------+
+   --  | type[1] | length[1] | name[4] | format[16] | labels[64] |
+   --  +---------+-----------+---------+------------+------------+
+   --              ^^ full packet incl.header
+   --
+   --  Such FMT messages define the anatomy of 'msg body' for
+   --  all messages with Type /= 0x80.
+
+   ----------------
+   --  PROTOTYPES
+   ----------------
+   function Time_To_I64 (rtime : Ada.Real_Time.Time) return Integer_64;
+
+   ------------------------
+   --  Serialize_Ulog_GPS
+   ------------------------
+
+   procedure Serialize_Ulog_GPS (msg : in Message; buf : out HIL.Byte_Array) is
    begin
-      --  TODO: serialize things from root type
-      null;
-   end Get_Serialization;
+      Set_Name ("GPS");
+      Append_Float ("lat", buf, msg.lat);
+      Append_Float ("lat", buf, msg.lon);
+      Append_Float ("alt", buf, msg.alt);
+      Append_Uint8 ("sat", buf, msg.nsat);
+      Append_Uint8 ("fix", buf, Unsigned_8 (GPS_fixtype'Pos (msg.fix)));
+      Append_Uint64 ("ms", buf, msg.gps_msec);
+      Append_Int16 ("wk", buf, msg.gps_week);
+   end Serialize_Ulog_GPS;
 
-   procedure Serialize (msg : in Message'Class; len : out Natural; bytes : out HIL.Byte_Array) is
-      thistag : constant Ada.Tags.Tag := msg'Tag; -- private type -> 'Tag not permitted in SPARK
-      --  this_ID : constant ULog.Identifiers.ID := ULog.Identifiers.Make_ID (thistag);
+   -------------------------
+   --  Serialize_Ulog_Text
+   -------------------------
+
+   procedure Serialize_Ulog_Text (msg : in Message; buf : out HIL.Byte_Array) is
    begin
-      --  TODO: serialize common fields
-      --  TODO: then serialize the message ID (use 'this_ID' as ID)
-      --  finally, dispatch to serialize the specific message body
-      Get_Serialization (msg, len, bytes); -- dispatch to msg's specific type
-   end Serialize;
+      Set_Name ("Text");
+      --  we allow 128B, but the longest field is 64B. split over two.
+      declare
+         txt : String renames msg.txt (msg.txt'First .. msg.txt'First + 63);
+         len : Natural;
+      begin
+         if msg.txt_last > txt'Last then
+            len := txt'Length;
+         elsif msg.txt_last >= txt'First and then msg.txt_last <= txt'Last then
+            len := msg.txt_last - txt'First + 1;
+         else
+            len := 0;
+         end if;
+         Append_String64 ("text1", buf, txt, len);
+      end;
+      declare
+         txt : String renames msg.txt (msg.txt'First + 64 .. msg.txt'Last);
+         len : Natural;
+      begin
+         if msg.txt_last > txt'Last then
+            len := txt'Length;
+         elsif msg.txt_last >= txt'First and then msg.txt_last <= txt'Last then
+            len := msg.txt_last - txt'First + 1;
+         else
+            len := 0;
+         end if;
+         Append_String64 ("text2", buf, txt, len);
+      end;
+   end Serialize_Ulog_Text;
 
-   procedure Format (msg : in Message'Class; bytes : out HIL.Byte_Array) is
+   --------------------
+   --  Time_To_U64
+   --------------------
+
+   function Time_To_I64 (rtime : Ada.Real_Time.Time) return Integer_64 is
+      (Integer_64 ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1)));
+
+   --------------------
+   --  Serialize_Ulog
+   --------------------
+
+   procedure Serialize_Ulog (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array) is
    begin
-      Get_Format (msg => msg, bytes => bytes); -- dispatch
-   end Format;
+      New_Conversion;
+      --  write header
+      Append_Unlabeled_Bytes (buf => bytes, tail => ULOG_MSG_HEAD
+                              & HIL.Byte (Message_Type'Pos (msg.Typ)));
 
-   procedure Get_Format
-     (msg : in Message; bytes : out HIL.Byte_Array) is
+      --  serialize the timestamp
+      declare
+         time_usec : constant Integer_64 := Time_To_I64 (msg.t);
+      begin
+         Append_Int64 (label => "t", buf => bytes, tail => time_usec);
+      end;
+
+      --  call the appropriate serializaton procedure for other components
+      case msg.Typ is
+         when NONE => null;
+         when GPS =>
+            Serialize_Ulog_GPS (msg, bytes);
+         when TEXT =>
+            Serialize_Ulog_Text (msg, bytes);
+      end case;
+
+      --  read back the length
+      len := ULog.Conversions.Get_Size;
+      if len > bytes'Length then
+         len := 0; -- buffer overflow
+      end if;
+   end Serialize_Ulog;
+
+   -------------------
+   --  Serialize_CSV
+   -------------------
+
+--     procedure Serialize_CSV (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array) is
+--     begin
+--        null;
+--     end Serialize_CSV;
+
+   ---------------------
+   --  Get_Header_Ulog
+   ---------------------
+
+   procedure Get_Header_Ulog (bytes : in out HIL.Byte_Array;
+                              len   : out Natural;
+                              valid : out Boolean) with SPARK_Mode => Off is
    begin
-      null;
-      --  TODO
-   end Get_Format;
+      if All_Defs then
+         valid := False;
+      end if;
 
-   function Get_Size (msg : in Message) return Interfaces.Unsigned_16 is (0);
+      if not Hdr_Def then
+         --  before everything, return following ULog header:
+         --  (not required by the spec, but it helps to recover the file
+         --  when the SD logging goes wrong):
+         --  +------------+---------+-----------+
+         --  | File magic | version | timestamp |
+         --  +------------+---------+-----------+
+         declare
+            timestamp : constant HIL.Byte_Array := (0, 0, 0, 0);
+            l : constant Integer := ULOG_MAGIC'Length + ULOG_VERSION'Length + timestamp'Length;
+         begin
+            if bytes'Length < l then
+               len := 0;
+               valid := False;
+            end if;
+            bytes (bytes'First .. bytes'First + l - 1) := ULOG_MAGIC & ULOG_VERSION & timestamp;
+            len := l;
+         end;
+         Hdr_Def := True;
+         valid := True;
+      end if;
 
-   function Self (msg : in Message) return ULog.Message'Class is begin
-      Ada.Text_IO.Put_Line ("Self of ulog");
-      return Message'(msg);
-   end Self;
+      --  now return FMT message with definition of current type
+      declare
+         m : Message (typ => Next_Def);
+         FMT_HEAD : constant HIL.Byte_Array := ULOG_MSG_HEAD & ULOG_MTYPE_FMT;
 
-   function Size (msg : in Message'Class) return Interfaces.Unsigned_16 is
-      --  descendant : Message'Class := Self;
-      descendant : Message'Class := Self (msg); -- factory function
+         type FMT_Msg is record
+            HEAD : HIL.Byte_Array (1 .. 3);
+            typ  : HIL.Byte; -- auto: ID of message being described
+            len  : HIL.Byte; -- auto: length of packed message
+            name : ULog_Name; -- auto: short name of message
+            fmt  : ULog_Format; -- format string
+            lbl  : ULog_Label; -- label string
+         end record
+           with Pack;
+
+         FMT_MSGLEN : constant Natural := FMT_Msg'Size / 8;
+
+         subtype foo is HIL.Byte_Array (1 .. FMT_MSGLEN);
+         function To_Buffer is new Ada.Unchecked_Conversion (FMT_Msg, foo);
+
+         fmsg : FMT_Msg;
+      begin
+         if FMT_MSGLEN > bytes'Length then
+            len := 0; -- message too long for buffer...skip it
+            return;
+         end if;
+
+         fmsg.HEAD := FMT_HEAD;
+         fmsg.typ := HIL.Byte (Message_Type'Pos (Next_Def));
+         --  actually serialize a dummy message and read back the properties
+         declare
+            serbuf : HIL.Byte_Array (1 .. 512);
+            pragma Unreferenced (serbuf);
+            serlen : Natural := 0;
+         begin
+            Serialize_Ulog (msg => m, len => serlen, bytes => serbuf);
+            --  after this we can query what we need
+            fmsg.fmt := ULog.Conversions.Get_Format;
+            fmsg.name := ULog.Conversions.Get_Name;
+            fmsg.lbl := ULog.Conversions.Get_Labels;
+            fmsg.len := HIL.Byte (serlen);
+         end;
+
+         --  copy all over to caller
+         bytes (bytes'First .. bytes'First + FMT_MSGLEN - 1) := To_Buffer (fmsg);
+         len := FMT_MSGLEN;
+      end;
+      Next_Def := Message_Type'Succ (Next_Def);
+      valid := True;
+   end Get_Header_Ulog;
+
+   ----------
+   --  Init
+   ----------
+
+   procedure Init is
    begin
-      --Ada.Text_IO.Put_Line ("Size() called for type=" & Describe_Func (descendant));
-      return Get_Size (descendant); -- dispatch
-
-   end Size;
-
-   procedure Get_Header (bytes : out HIL.Byte_Array) is
-   begin
-      --  TODO: iterate (if possible) over all types in Message'Class and
-      --  dump their format in the bytes array
-      null;
-   end Get_Header;
-
-   function Describe_Func (msg : in Message'Class) return String is
-   begin
-      return Ada.Tags.Expanded_Name (msg'Tag);
-   end Describe_Func;
-
-   procedure Describe (msg : in Message'Class; namestring : out String) is
-   begin
-      namestring := Ada.Tags.Expanded_Name (msg'Tag);
-   end Describe;
+      All_Defs := False;
+      Hdr_Def  := False;
+      Next_Def := Message_Type'First;
+   end Init;
 
 end ULog;

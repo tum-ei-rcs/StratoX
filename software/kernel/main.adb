@@ -53,11 +53,11 @@ package body Main is
       delay until Clock + Milliseconds (50);
 
       --  start NVRAM (bootcounter...)
-      Logger.log (Logger.INFO, "Initializing NVRAM...");
+      Logger.log_console (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;
 
       --  from now on, log everything to SDcard
-      Logger.log (Logger.INFO, "Starting SDLog...");
+      Logger.log_console (Logger.INFO, "Starting SDLog...");
       Logger.Start_SDLog; -- should be called after NVRAM.Init
 
       Buzzer_Manager.Initialize;
@@ -73,8 +73,8 @@ package body Main is
          exception_line : HIL.Byte_Array_2;
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots); -- is maintained by the NVRAM itself
-         Logger.log (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
-         Logger.log (Logger.INFO, "Build date: " & Buildinfo.Compilation_Date
+         Logger.log_console (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
+         Logger.log_console (Logger.INFO, "Build date: " & Buildinfo.Compilation_Date
                      & " " & Buildinfo.Compilation_Time);
 
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
@@ -92,16 +92,16 @@ package body Main is
    begin
       LED_Manager.LED_switchOn;
 
-      Logger.log (Logger.INFO, "Starting Self Test");
+      Logger.log_console (Logger.INFO, "Starting Self Test");
 
-      Logger.log (Logger.DEBUG, "Logger: Debug Test Message");
-      Logger.log (Logger.TRACE, "Logger: Trace Test Message");
+      Logger.log_console (Logger.DEBUG, "Logger: Debug Test Message");
+      Logger.log_console (Logger.TRACE, "Logger: Trace Test Message");
 
       NVRAM.Self_Check (success);
       if not success then
-         Logger.log (Logger.ERROR, "NVRAM self-check failed");
+         Logger.log_console (Logger.ERROR, "NVRAM self-check failed");
       else
-         Logger.log (Logger.INFO, "NVRAM self-check passed");
+         Logger.log_console (Logger.INFO, "NVRAM self-check passed");
       end if;
 
    end perform_Self_Test;
@@ -121,7 +121,7 @@ package body Main is
       Main_Profile.init(name => "Main");
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
-      Logger.log (Logger.INFO, msg);
+      Logger.log_console (Logger.INFO, msg);
       Mission.load_Mission;
 
       -- beep ever 10 seconds for one second at 1kHz.
@@ -174,14 +174,14 @@ package body Main is
                Estimator.log_Info;
                Controller.log_Info;
 
-               Logger.log (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
 
             when Console.ARM => Controller.activate;
 
             when Console.DISARM => Controller.deactivate;
 
             when Console.PROFILE =>
-               Logger.log (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
                Main_Profile.log;
 
             when others =>

@@ -1,41 +1,32 @@
--- Project: Strato
--- System:  Stratosphere Ballon Flight Controller
--- Author: Emanuel Regnath (emanuel.regnath@tum.de)
--- 
--- Description: 
---     allows logging of string messages at several logging levels. Easy porting 
---     to different hardware, only change the adapter methods. 
+--  Project: StratoX
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--          Martin Becker (becker@rcs.ei.tum.de)
 --
 -- Usage: 
 --     Logger.init  -- initializes the Logger
---     Logger.log(Logger.INFO, "Program started.")  -- writes log on info level
+--     Logger.log_console (Logger.INFO, "Program started.")  -- writes log on info level to console
+--     Logger.log_sd (Logger.INFO, gps_msg) -- writes GPS record to SD card
 with ULog;
 
--- ToDo: Unconstrained Strings require a secondary stack for each call... can this be optimized?
-package Logger with SPARK_Mode,  
+--  @summary Simultaneously writes to UART, and SD card.
+package Logger with SPARK_Mode,
   Abstract_State => (LogState with External)
-  -- we need a state here because log() needs Global aspect
-  -- since protected object is part of the state, and p.o. is
-  -- by definition synchronous and synchronous objects (?) are
-  -- by definition external, we need to mark it as such
+  --  we need a state here because log() needs Global aspect
+  --  since protected object is part of the state, and p.o. is
+  --  by definition synchronous and synchronous objects are
+  --  by definition external, we need to mark it as such
 is
-   -- parameters of this package
-   QUEUE_LENGTH : constant Positive := 10; -- TODO: show by schedulability analysis that this is enough
-	      
    type Init_Error_Code is (SUCCESS, ERROR);
    subtype Message_Type is String;
    type Log_Level is (SENSOR, ERROR, WARN, INFO, DEBUG, TRACE);
 
-   procedure init(status : out Init_Error_Code);
+   procedure init (status : out Init_Error_Code);
 
-   -- create a new log message
-   procedure log(level : Log_Level; message : Message_Type);
---     Global => State,
-   -- Global => logger_level,
---     Pre => message /= " ";
---pragma Assertion_Policy (Pre => Check);
+   procedure log_console (msg_level : Log_Level; message : Message_Type);
+   --  write a new text log message (shown on console)
 
-   procedure log_ulog(level : Log_Level; msg : ULog.Message'Class);
+   procedure log_sd (level : Log_Level; message : ULog.Message);
+   --  write a new ulog message (not shown on console)
 
    -- adjust the minimum level that is kept. messages below that
    -- level are discarded silently.
@@ -43,7 +34,9 @@ is
    
    procedure Start_SDLog;
    --  start a new logfile on the SD card
-           
+
+   LOG_QUEUE_LENGTH : constant := 20;
+
 private
    -- FIXME: documentation required
    package Adapter is

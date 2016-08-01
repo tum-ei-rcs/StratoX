@@ -84,7 +84,7 @@ package body Estimator with SPARK_Mode is
       -- Profiler
       G_Profiler.init("Estimator");
 
-      Logger.log(Logger.INFO, "Estimator initialized");
+      Logger.log_console(Logger.INFO, "Estimator initialized");
    end initialize;
 
    -- fetch fresh measurement data
@@ -104,9 +104,9 @@ package body Estimator with SPARK_Mode is
       Acc := IMU.Sensor.get_Linear_Acceleration;
       Gyro := IMU.Sensor.get_Angular_Velocity;
 
-     -- Logger.log(Logger.DEBUG,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
-      -- Logger.log(Logger.DEBUG,"Gyro: " & AImage(Gyro(Roll)*Second) & ", " & AImage(Gyro(Pitch)*Second) & ", " & AImage(Gyro(YAW)*Second) );
-      -- Logger.log(Logger.DEBUG,"Gyro: " & RImage(Gyro(Roll)*Second) & ", " & RImage(Gyro(Pitch)*Second) & ", " & RImage(Gyro(YAW)*Second) );
+     -- Logger.log_console(Logger.DEBUG,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
+      -- Logger.log_console(Logger.DEBUG,"Gyro: " & AImage(Gyro(Roll)*Second) & ", " & AImage(Gyro(Pitch)*Second) & ", " & AImage(Gyro(YAW)*Second) );
+      -- Logger.log_console(Logger.DEBUG,"Gyro: " & RImage(Gyro(Roll)*Second) & ", " & RImage(Gyro(Pitch)*Second) & ", " & RImage(Gyro(YAW)*Second) );
 
 
       Acc_Orientation := Orientation( Acc );
@@ -115,14 +115,14 @@ package body Estimator with SPARK_Mode is
       G_Object_Orientation := IMU.Sensor.get_Orientation;
 
 
-      -- Logger.log(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", " & AImage( Acc_Orientation.Pitch ) & ", " & AImage( Acc_Orientation.Yaw ) );
-      -- Logger.log(Logger.INFO, "CF : " & AImage( CF_Orientation.Roll ) & ", " & AImage( CF_Orientation.Pitch ) & ", " & AImage( CF_Orientation.Yaw ) );
-      -- Logger.log(Logger.INFO, "KM : " & AImage( G_Object_Orientation.Roll ) & ", " & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
+      -- Logger.log_console(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", " & AImage( Acc_Orientation.Pitch ) & ", " & AImage( Acc_Orientation.Yaw ) );
+      -- Logger.log_console(Logger.INFO, "CF : " & AImage( CF_Orientation.Roll ) & ", " & AImage( CF_Orientation.Pitch ) & ", " & AImage( CF_Orientation.Yaw ) );
+      -- Logger.log_console(Logger.INFO, "KM : " & AImage( G_Object_Orientation.Roll ) & ", " & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
 
       Magnetometer.Sensor.read_Measurement;
       Mag := Magnetometer.Sensor.get_Sample.data;
 
-      Logger.log(Logger.TRACE, "Mag (uT):" & Image(Mag(X) * 1.0e6) & ", " & Image(Mag(Y) * 1.0e6) & ", " & Image(Mag(Z) * 1.0e6) );
+      Logger.log_console(Logger.TRACE, "Mag (uT):" & Image(Mag(X) * 1.0e6) & ", " & Image(Mag(Y) * 1.0e6) & ", " & Image(Mag(Z) * 1.0e6) );
       G_Object_Orientation.Yaw := Heading(Mag, G_Object_Orientation);
 
 
@@ -179,7 +179,7 @@ package body Estimator with SPARK_Mode is
 
    procedure log_Info is
    begin
-      Logger.log(Logger.DEBUG,
+      Logger.log_console(Logger.DEBUG,
                  "RPY: " & AImage( G_Object_Orientation.Roll ) &
                  ", " & AImage( G_Object_Orientation.Pitch ) &
                  ", " & AImage( G_Object_Orientation.Yaw ) &
