@@ -281,7 +281,7 @@ is
 
       -- logging
       --gpsmsg.lon := G_position.Longitude;
-      Logger.log_sd (level => Logger.SENSOR, message => gpsmsg);
+      Logger.log_sd (msg_level => Logger.SENSOR, message => gpsmsg);
    end update_val;
 
 

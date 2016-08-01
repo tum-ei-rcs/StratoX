@@ -187,7 +187,7 @@ package body ULog.Conversions with SPARK_Mode is
       end if;
       --  keep counting, so caller can see potential overflow
       if Natural'Last - Label_Collect.Length > label'Length then
-         Label_Collect.Length := Label_Collect.Length + label'Length - 1;
+         Label_Collect.Length := Label_Collect.Length + label'Length;
       else
          Label_Collect.Length := Natural'Last;
       end if;

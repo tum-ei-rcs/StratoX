@@ -152,7 +152,7 @@ package body ULog with SPARK_Mode => On is
       if len > bytes'Length or len > 255 then
          len := 0; -- buffer overflow
       end if;
-      pragma Assert (len <= bytes'Length);
+      --  pragma Assert (len <= bytes'Length);
    end Serialize_Ulog;
 
    -------------------
@@ -174,10 +174,8 @@ package body ULog with SPARK_Mode => On is
    begin
       if All_Defs then
          valid := False;
-         return;
-      end if;
 
-      if not Hdr_Def then
+      elsif not Hdr_Def then
          --  before everything, return following ULog header:
          --  (not required by the spec, but it helps to recover the file
          --  when the SD logging goes wrong):
@@ -196,6 +194,7 @@ package body ULog with SPARK_Mode => On is
             len := l;
          end;
          Hdr_Def := True;
+         valid := True;
 
       else
 
@@ -252,9 +251,9 @@ package body ULog with SPARK_Mode => On is
          else
             All_Defs := True;
          end if;
+         valid := True;
       end if;
 
-      valid := True;
    end Get_Header_Ulog;
 
    ----------
