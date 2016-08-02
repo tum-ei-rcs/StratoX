@@ -65,6 +65,7 @@ package ULog with SPARK_Mode is
          --  logging queue info
          n_overflows : Interfaces.Unsigned_16 := 0;
          n_queued    : Interfaces.Unsigned_8  := 0;
+         max_queued  : Interfaces.Unsigned_8  := 0;
       end case;
    end record;
 

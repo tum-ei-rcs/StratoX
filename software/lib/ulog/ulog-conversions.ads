@@ -10,7 +10,8 @@ private package ULog.Conversions with SPARK_Mode is
 
    procedure Init_Conv;
    procedure New_Conversion;
-   procedure Set_Name (s : String);
+   procedure Set_Name (s : String)
+     with Pre => s'Length > 0 and then s'Length <= 4;
    function Get_Size return Natural;
    function Get_Format return ULog_Format;
    function Get_Name return ULog_Name;

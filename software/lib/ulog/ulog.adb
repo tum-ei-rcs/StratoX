@@ -98,7 +98,8 @@ package body ULog with SPARK_Mode => On is
    begin
       Set_Name ("LogQ");
       Append_Uint16 ("ovf", buf, msg.n_overflows);
-      Append_Uint8 ("q", buf, msg.n_queued);
+      Append_Uint8 ("qd", buf, msg.n_queued);
+      Append_Uint8 ("max", buf, msg.max_queued);
    end Serialize_Ulog_LogQ;
 
    -------------------------

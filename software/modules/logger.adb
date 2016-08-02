@@ -54,7 +54,7 @@ is
       --  FIXME: how can we specify a precondition on the private variable?
       --  for now we put an assertion in the body
 
-      entry Get_Msg (msg : out ULog.Message);
+      entry Get_Msg (msg : out ULog.Message; n_queued_before : out Natural);
       --  try to get new message from buffer. if empty, this is blocking
       --  until buffer has data, and then returns it.
       --  FIXME: how can we specify a precondition on the private variable?
@@ -122,25 +122,36 @@ is
 
       type loginfo_ratio is mod 100;
       r : loginfo_ratio := 0;
+      
+      n_que : Natural;
+      max_q : Natural := 0; --  max. queue level between queue logs
    begin
-      loop
-         queue_ulog.Get_Msg (msg); -- under mutex, must be fast
+      loop                  
+         queue_ulog.Get_Msg (msg, n_que); -- under mutex, must be fast
          ULog.Serialize_Ulog (msg, len, bytes); -- this can be slow again
          Write_Bytes_To_SD (len => len, buf => bytes);
 
+         if n_que > max_q then
+            max_q := n_que;
+         end if;
+         
          --  occasionally log queue state (overflows, num_queued). 
          r := r + 1;
          if r = 0 then
             declare
                m : ULog.Message (ULog.LOG_QUEUE);
                n_ovf : constant Natural := queue_ulog.Get_Num_Overflows;
-               n_que : constant Natural := queue_ulog.Get_Length;
             begin
                m.t := Ada.Real_Time.Clock;
                if n_ovf > Natural (Unsigned_16'Last) then
                   m.n_overflows := Unsigned_16'Last;
                else
                   m.n_overflows := Unsigned_16 (n_ovf);
+               end if;               
+               if max_q > Natural (Unsigned_8'Last) then
+                  m.max_queued := Unsigned_8'Last;
+               else
+                  m.max_queued := Unsigned_8 (max_q);
                end if;
                if n_que > Natural (Unsigned_8'Last) then
                   m.n_queued := Unsigned_8'Last;
@@ -149,6 +160,7 @@ is
                end if;
                ULog.Serialize_Ulog (m, len, bytes);
                Write_Bytes_To_SD (len => len, buf => bytes);
+               max_q := 0;
             end;
          end if;
       end loop;
@@ -181,11 +193,12 @@ is
          end if;
       end New_Msg;
 
-      entry Get_Msg (msg : out ULog.Message) when Not_Empty is
+      entry Get_Msg (msg : out ULog.Message; n_queued_before : out Natural) when Not_Empty is
       begin
          pragma Assume (Num_Queued > 0); -- via barrier and assert in New_Msg
 
          msg := Buffer (Integer (Pos_Read));
+         n_queued_before := Num_Queued;
          Pos_Read := Pos_Read + 1;
          Num_Queued := Num_Queued - 1;
 
