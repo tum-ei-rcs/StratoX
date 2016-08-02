@@ -45,6 +45,7 @@ package body Estimator with SPARK_Mode is
       max_baro_height : Altitude_Type := 0.0 * Meter;
       baro_calls : Baro_Call_Type := 0;
       logger_calls : Logger_Call_Type := 0;
+      logger_console_calls : Logger_Call_Type := 0;
       stable_Time     : Time_Type := 0.0 * Second;
       last_stable_check : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
    end record;
@@ -188,15 +189,19 @@ package body Estimator with SPARK_Mode is
       gps_msg : ULog.Message (ULog.GPS);
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
-      Logger.log_console(Logger.DEBUG,
-                 "RPY: " & AImage( G_Object_Orientation.Roll ) &
-                 ", " & AImage( G_Object_Orientation.Pitch ) &
-                 ", " & AImage( G_Object_Orientation.Yaw ) &
-                 "   LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
-                 ", " & AImage( G_Object_Position.Latitude ) &
-                 ", " & Image( get_current_Height ) & "m, Fix: " & Integer'Image( GPS_Fix_Type'Pos( G_state.fix ) ) );
 
-      G_Profiler.log;
+      G_state.logger_console_calls := Logger_Call_Type'Succ( G_state.logger_console_calls );
+      if G_state.logger_console_calls = 0 then
+         Logger.log_console(Logger.DEBUG,
+                            "RPY: " & AImage( G_Object_Orientation.Roll ) &
+                            ", " & AImage( G_Object_Orientation.Pitch ) &
+                            ", " & AImage( G_Object_Orientation.Yaw ) &
+                            "   LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
+                            ", " & AImage( G_Object_Position.Latitude ) &
+                            ", " & Image( get_current_Height ) & "m, Fix: " & Integer'Image( GPS_Fix_Type'Pos( G_state.fix ) ) );
+
+         G_Profiler.log;
+      end if;
 
       -- log to SD
       imu_msg := ( Typ => ULog.IMU,
@@ -218,8 +223,8 @@ package body Estimator with SPARK_Mode is
                    gps_msec => 0,
                    fix      => Unsigned_8 (GPS_Fix_Type'Pos( G_state.fix )),
                    nsat     => 0,
-                   lat      => Float( G_Object_Position.Latitude ),
-                   lon      => Float( G_Object_Position.Longitude ),
+                   lat      => Float( G_Object_Position.Latitude / Degree ),
+                   lon      => Float( G_Object_Position.Longitude / Degree ),
                    alt      => Float( G_Object_Position.Altitude )
       );
 

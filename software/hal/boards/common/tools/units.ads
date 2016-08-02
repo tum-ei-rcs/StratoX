@@ -323,6 +323,9 @@ package Units with
     function To_Time_Span(time : Time_Type) return Ada.Real_Time.Time_Span is
      ( Ada.Real_Time.Microseconds ( Integer( Float(time)/Float(1.0e-6) ) ) );
 
+     function To_Degree(angle : Angle_Type) return Float is
+     ( Float( angle / Degree ) );
+
 
    function "+"( Left : Ada.Real_Time.Time; Right : Time_Type ) return Ada.Real_Time.Time is
    ( Left + Ada.Real_Time.Microseconds ( Integer( Float(Right)/Float(1.0e-6) ) ) );

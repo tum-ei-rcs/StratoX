@@ -28,7 +28,7 @@ package body Mission with SPARK_Mode is
       gps_lock_threshold_time : Time_Type := 0.0 * Second;
       delta_threshold_time : Time_Type := 0.0 * Second;
       target_threshold_time : Time_Type := 0.0 * Second;
-      home           : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE 
+      home           : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE, 
                                              Config.DEFAULT_LATITUDE, 
                                              0.0 * Meter);
       body_info     : Body_Type;

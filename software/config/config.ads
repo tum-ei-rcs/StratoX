@@ -36,7 +36,7 @@ package Config is
    CFG_TARGET_ALTITUDE_THRESHOLD : constant Altitude_Type := 70.0 * Meter;
    CFG_TARGET_ALTITUDE_THRESHOLD_TIME : constant := 6.0 * Second;
 
-   CFG_DELTA_ALTITUDE_THRESH : constant Altitude_Type := 8.0 * Meter;  -- Diff
+   CFG_DELTA_ALTITUDE_THRESH : constant Altitude_Type := 20.0 * Meter;  -- Diff
    CFG_DELTA_ALTITUDE_THRESH_TIME : constant := 2.0 * Second;
 
 

@@ -17,7 +17,7 @@ with HIL.UART;
 with System;
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
-with Ada.Real_Time;
+with Ada.Real_Time; use Ada.Real_Time;
 with ULog;
 
 --  force elaboration of those before the logging task starts
@@ -263,9 +263,11 @@ is
 
    procedure log(msg_level : Log_Level; message : Message_Type) is
       text_msg : ULog.Message( ULog.TEXT );
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       log_console (msg_level, message);
       if Log_Level'Pos (msg_level) >= Log_Level'Pos (INFO) then
+         text_msg.t := now;
          text_msg.txt(1 .. message'Last) := message;
          text_msg.txt_last := message'Last;
          log_sd (msg_level, text_msg);

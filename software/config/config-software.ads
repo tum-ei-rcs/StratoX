@@ -31,7 +31,7 @@ package Config.Software is
 
    
    CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;
-   CFG_LOGGER_CALL_SKIP: constant := 20/5;  
+   CFG_LOGGER_CALL_SKIP: constant := 5;  
    
 
    
@@ -50,6 +50,13 @@ package Config.Software is
          
    
    -- PID Controller
+   -- ----------------------------------------
+   
+   -- Roll Constrains
+   CFG_TARGET_ROLL_LIMIT : constant Roll_Type := 10.0 * Degree; 
+   
+   
+   -- PID Gains
    CFG_PID_PITCH_P : constant := 0.550;
    CFG_PID_PITCH_I : constant := 0.040;
    CFG_PID_PITCH_D : constant := 0.005;

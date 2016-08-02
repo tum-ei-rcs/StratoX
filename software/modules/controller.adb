@@ -20,6 +20,7 @@ package body Controller with SPARK_Mode is
 
    type State_Type is record
       logger_calls : Logger_Call_Type;
+      logger_console_calls : Logger_Call_Type;
       control_profiler : Profiler.Profile_Tag;
    end record;
 
@@ -48,8 +49,8 @@ package body Controller with SPARK_Mode is
                                                              Unit_Type,
                                                              -50.0*Degree,
                                                              50.0*Degree,
-                                                             -15.0*Degree,
-                                                             15.0*Degree);
+                                                             -Config.Software.CFG_TARGET_ROLL_LIMIT,
+                                                             Config.Software.CFG_TARGET_ROLL_LIMIT);
    PID_Yaw : Yaw_PID_Controller.Pid_Object;
 
 
@@ -137,17 +138,19 @@ package body Controller with SPARK_Mode is
       controller_msg : ULog.Message (Typ => ULog.CONTROLLER);
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
-      Logger.log_console(Logger.DEBUG,
-                         "Home L" & AImage( G_Target_Position.Longitude ) &
-                         ", " & AImage( G_Target_Position.Latitude ) &
-                         ", " & Image( G_Target_Position.Altitude ) );
-      Logger.log_console(Logger.DEBUG,
-                         "TY: " & AImage( G_Target_Orientation.Yaw ) &
-                         ", TR: " & AImage( G_Target_Orientation.Roll ) &
-                         "   Elev: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) )
-                        );
-      G_state.control_profiler.log;
-
+      G_state.logger_console_calls := Logger_Call_Type'Succ( G_state.logger_console_calls );
+      if G_state.logger_console_calls = 0 then
+         Logger.log_console(Logger.DEBUG,
+                            "Home L" & AImage( G_Target_Position.Longitude ) &
+                            ", " & AImage( G_Target_Position.Latitude ) &
+                            ", " & Image( G_Target_Position.Altitude ) );
+         Logger.log_console(Logger.DEBUG,
+                            "TY: " & AImage( G_Target_Orientation.Yaw ) &
+                            ", TR: " & AImage( G_Target_Orientation.Roll ) &
+                            "   Elev: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) )
+                           );
+         G_state.control_profiler.log;
+      end if;
 
       -- log to SD
       controller_msg := ( Typ => ULog.CONTROLLER,
