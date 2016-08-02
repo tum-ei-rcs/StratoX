@@ -294,7 +294,7 @@ package body ULog with SPARK_Mode => On is
       All_Defs := False;
       Hdr_Def  := False;
       Next_Def := Message_Type'First;
-      ULog.Conversions.Init;
+      ULog.Conversions.Init_Conv;
    end Init;
 
 end ULog;

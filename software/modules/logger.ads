@@ -43,7 +43,7 @@ is
 private
    -- FIXME: documentation required
    package Adapter is
-      procedure init(status : out Init_Error_Code);
+      procedure init_adapter(status : out Init_Error_Code);
       procedure write(message : Message_Type);
    end Adapter;              
    

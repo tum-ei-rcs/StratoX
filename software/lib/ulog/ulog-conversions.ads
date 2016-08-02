@@ -2,12 +2,13 @@
 --  Department:  Realtime Computer Systems (RCS)
 --  Project:     StratoX
 --  Author:      Martin Becker (becker@rcs.ei.tum.de)
+--  XXX! FIXME not thread safe. only one user at a time.
 with Interfaces; use Interfaces;
 
 --  @summary convert various types to bytearrays
 private package ULog.Conversions with SPARK_Mode is
 
-   procedure Init;
+   procedure Init_Conv;
    procedure New_Conversion;
    procedure Set_Name (s : String);
    function Get_Size return Natural;

@@ -1,9 +1,10 @@
 with Main;
+with System;
 
 -- the entry point after POR
 
 procedure boot is
---pragma Priority (MAIN_TASK_PRIORITY);
+   pragma Priority (System.Priority'First + 50);
 -- Self_Test_Passed : Boolean;
 begin
 
