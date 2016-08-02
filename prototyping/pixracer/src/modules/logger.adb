@@ -18,6 +18,10 @@ with System;
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
 with Ada.Real_Time;
+with ULog;
+
+pragma Elaborate_All (ULog);
+pragma Elaborate_All (SDLog);
 
 --  @summary Simultaneously writes to UART, and SD card.
 package body Logger with SPARK_Mode,
@@ -107,8 +111,9 @@ is
             subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. Unsigned_16 (len));
             function To_FileData is new Ada.Unchecked_Conversion (Bytes_ULog, SD_Data_ULog);
             buf_last : constant Integer := buf'First + len - 1;
+            n_wr : Integer;
          begin
-            SDLog.Write_Log (To_FileData (buf (buf'First .. buf_last)));
+            SDLog.Write_Log (To_FileData (buf (buf'First .. buf_last)), n_wr);
          end;
       end if;
    end Write_Bytes_To_SD;

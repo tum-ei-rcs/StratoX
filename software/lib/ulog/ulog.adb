@@ -50,7 +50,8 @@ package body ULog with SPARK_Mode => On is
    ----------------
    --  PROTOTYPES
    ----------------
-   function Time_To_I64 (rtime : Ada.Real_Time.Time) return Integer_64;
+   function Time_To_U64 (rtime : Ada.Real_Time.Time) return Unsigned_64
+     with Pre => rtime >= Ada.Real_Time.Time_First;
 
    ------------------------
    --  Serialize_Ulog_GPS
@@ -140,8 +141,9 @@ package body ULog with SPARK_Mode => On is
    --  Time_To_U64
    --------------------
 
-   function Time_To_I64 (rtime : Ada.Real_Time.Time) return Integer_64 is
-      (Integer_64 ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1)));
+   function Time_To_U64 (rtime : Ada.Real_Time.Time) return Unsigned_64 is
+     (Unsigned_64 ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1)));
+   --  SPARK: "precondition might a fail". Me: "no (because Time_First is private and SPARK can't know)"
 
    --------------------
    --  Serialize_Ulog
@@ -156,9 +158,9 @@ package body ULog with SPARK_Mode => On is
 
       --  serialize the timestamp
       declare
-         time_usec : constant Integer_64 := Time_To_I64 (msg.t);
+         time_usec : constant Unsigned_64 := Time_To_U64 (msg.t);
       begin
-         Append_Int64 (label => "t", buf => bytes, tail => time_usec);
+         Append_Uint64 (label => "t", buf => bytes, tail => time_usec);
       end;
 
       --  call the appropriate serializaton procedure for other components
@@ -226,54 +228,56 @@ package body ULog with SPARK_Mode => On is
          valid := True;
 
       else
-
-         --  now return FMT message with definition of current type
-         declare
-            m : Message (typ => Next_Def); -- <== this prevents spark mode here.. RM 4.4(2): subtype cons. cannot depend. simply comment for proof.
-            FMT_HEAD : constant HIL.Byte_Array := ULOG_MSG_HEAD & ULOG_MTYPE_FMT;
-
-            type FMT_Msg is record
-               HEAD : HIL.Byte_Array (1 .. 3);
-               typ  : HIL.Byte; -- auto: ID of message being described
-               len  : HIL.Byte; -- auto: length of packed message
-               name : ULog_Name; -- auto: short name of message
-               fmt  : ULog_Format; -- format string
-               lbl  : ULog_Label; -- label string
-            end record
-              with Pack;
-
-            FMT_MSGLEN : constant Natural := (FMT_Msg'Size + 7) / 8; -- ceil
-
-            subtype foo is HIL.Byte_Array (1 .. FMT_MSGLEN);
-            function To_Buffer is new Ada.Unchecked_Conversion (FMT_Msg, foo);
-
-            fmsg : FMT_Msg;
-         begin
-            if FMT_MSGLEN > bytes'Length then
-               len := 0; -- message too long for buffer...skip it
-               return;
-            end if;
-
-            fmsg.HEAD := FMT_HEAD;
-            fmsg.typ := HIL.Byte (Message_Type'Pos (Next_Def));
-            --  actually serialize a dummy message and read back the properties
+         if Next_Def = NONE then
+            len := 0;
+         else
+            --  now return FMT message with definition of current type. Skip type=NONE
             declare
-               serbuf : HIL.Byte_Array (1 .. 512);
-               pragma Unreferenced (serbuf);
-               serlen : Natural;
-            begin
-               Serialize_Ulog (msg => m, len => serlen, bytes => serbuf);
-               --  after this we can query what we need
-               fmsg.fmt := ULog.Conversions.Get_Format;
-               fmsg.name := ULog.Conversions.Get_Name;
-               fmsg.lbl := ULog.Conversions.Get_Labels;
-               fmsg.len := HIL.Byte (serlen);
-            end;
+               m : Message (typ => Next_Def); -- <== this prevents spark mode here.. RM 4.4(2): subtype cons. cannot depend. simply comment for proof.
+               FMT_HEAD : constant HIL.Byte_Array := ULOG_MSG_HEAD & ULOG_MTYPE_FMT;
 
-            --  copy all over to caller
-            bytes (bytes'First .. bytes'First + FMT_MSGLEN - 1) := To_Buffer (fmsg);
-            len := FMT_MSGLEN;
-         end;
+               type FMT_Msg is record
+                  HEAD : HIL.Byte_Array (1 .. 3);
+                  typ  : HIL.Byte; -- auto: ID of message being described
+                  len  : HIL.Byte; -- auto: length of packed message
+                  name : ULog_Name; -- auto: short name of message
+                  fmt  : ULog_Format; -- format string
+                  lbl  : ULog_Label; -- label string
+               end record
+                 with Pack;
+
+               FMT_MSGLEN : constant Natural := (FMT_Msg'Size + 7) / 8; -- ceil
+
+               subtype foo is HIL.Byte_Array (1 .. FMT_MSGLEN);
+               function To_Buffer is new Ada.Unchecked_Conversion (FMT_Msg, foo);
+
+               fmsg : FMT_Msg;
+            begin
+               if FMT_MSGLEN > bytes'Length then
+                  len := 0; -- message too long for buffer...skip it
+                  return;
+               end if;
+
+               fmsg.HEAD := FMT_HEAD;
+               fmsg.typ := HIL.Byte (Message_Type'Pos (Next_Def));
+               --  actually serialize a dummy message and read back the properties
+               declare
+                  serbuf : HIL.Byte_Array (1 .. 512);
+                  pragma Unreferenced (serbuf);
+                  serlen : Natural;
+               begin
+                  Serialize_Ulog (msg => m, len => serlen, bytes => serbuf);
+                  fmsg.fmt := ULog.Conversions.Get_Format;
+                  fmsg.name := ULog.Conversions.Get_Name;
+                  fmsg.lbl := ULog.Conversions.Get_Labels;
+                  fmsg.len := HIL.Byte (serlen);
+               end;
+
+               --  copy all over to caller
+               bytes (bytes'First .. bytes'First + FMT_MSGLEN - 1) := To_Buffer (fmsg);
+               len := FMT_MSGLEN;
+            end;
+         end if;
 
          if Next_Def < Message_Type'Last then
             Next_Def := Message_Type'Succ (Next_Def);
