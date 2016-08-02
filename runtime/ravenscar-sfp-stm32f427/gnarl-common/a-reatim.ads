@@ -72,9 +72,12 @@ is
      Volatile_Function,
      Global => Clock_Time;
 
-   function "+"  (Left : Time; Right : Time_Span) return Time with Global => null;
-   function "-"  (Left : Time; Right : Time_Span) return Time with Global => null;
-   function "-"  (Left : Time; Right : Time)      return Time_Span with Global => null;
+   function "+"  (Left : Time; Right : Time_Span) return Time
+     with Global => null;
+   function "-"  (Left : Time; Right : Time_Span) return Time
+     with Global => null;
+   function "-"  (Left : Time; Right : Time)      return Time_Span
+     with Global => null;
 
    function "+" (Left : Time_Span; Right : Time) return Time is
      (Right + Left);
@@ -84,13 +87,20 @@ is
    function ">"  (Left, Right : Time) return Boolean;
    function ">=" (Left, Right : Time) return Boolean;
 
-   function "+"  (Left, Right : Time_Span)             return Time_Span with Global => null;
-   function "-"  (Left, Right : Time_Span)             return Time_Span with Global => null;
-   function "-"  (Right : Time_Span)                   return Time_Span with Global => null;
-   function "*"  (Left : Time_Span; Right : Integer)   return Time_Span with Global => null;
-   function "*"  (Left : Integer;   Right : Time_Span) return Time_Span with Global => null;
-   function "/"  (Left, Right : Time_Span)             return Integer with Global => null;
-   function "/"  (Left : Time_Span; Right : Integer)   return Time_Span with Global => null;
+   function "+"  (Left, Right : Time_Span)             return Time_Span
+     with Global => null;
+   function "-"  (Left, Right : Time_Span)             return Time_Span
+     with Global => null;
+   function "-"  (Right : Time_Span)                   return Time_Span
+     with Global => null;
+   function "*"  (Left : Time_Span; Right : Integer)   return Time_Span
+     with Global => null;
+   function "*"  (Left : Integer;   Right : Time_Span) return Time_Span
+     with Global => null;
+   function "/"  (Left, Right : Time_Span)             return Integer
+     with Global => null;
+   function "/"  (Left : Time_Span; Right : Integer)   return Time_Span
+     with Global => null;
 
    function "abs" (Right : Time_Span) return Time_Span;
 

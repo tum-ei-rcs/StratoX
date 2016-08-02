@@ -49,7 +49,7 @@ package body Profiler with SPARK_Mode is
    procedure log(Self : in Profile_Tag) is
    begin
       if CFG_PROFILER_PROFILING and CFG_PROFILER_LOGGING then
-         Logger.log (Logger.INFO, Self.name & " Profile: " & Integer'Image ( Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
+         Logger.log_console (Logger.INFO, Self.name & " Profile: " & Integer'Image ( Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
       end if;
    end log;
 

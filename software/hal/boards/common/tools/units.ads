@@ -331,9 +331,9 @@ package Units with
    -- wrap angle between two values
    -- idea: shift range to 0 .. X, wrap with mod, shift back
    function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
-   -- ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
+   ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
    -- FIXME: Spark error: unbound symbol 'Floating.remainder_'
-   ( if angle > max then max elsif angle < min then min else angle );
+   -- ( if angle > max then max elsif angle < min then min else angle );
 --     with
 --     pre => max > min,
 --     post => wrap_Angle'Result in min .. max;

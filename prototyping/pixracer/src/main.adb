@@ -12,6 +12,7 @@ with Logger;
 with LED_Manager;
 with Buzzer_Manager;
 with SDLog;
+with ULog;
 
 package body Main is
 
@@ -25,8 +26,8 @@ package body Main is
       CPU.initialize;
 
       Logger.init (logret);
-      Logger.log (Logger.INFO, "---------------");
-      Logger.log (Logger.INFO, "CPU initialized");
+      Logger.log_console (Logger.INFO, "---------------");
+      Logger.log_console (Logger.INFO, "CPU initialized");
 
       Buzzer_Manager.Initialize;
 
@@ -34,22 +35,22 @@ package body Main is
       LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => False, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
 
-      Logger.log (Logger.INFO, "Initializing SDIO...");
 
-      Logger.log (Logger.INFO, "Initializing NVRAM...");
+
+      Logger.log_console (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;
 
-      Logger.log (Logger.INFO, "Start SD Logging...");
+      Logger.log_console (Logger.INFO, "Start SD Logging...");
       Logger.Start_SDLog;
 
       --  self checks
-      Logger.log (Logger.INFO, "Self-Check NVRAM...");
+      Logger.log_console (Logger.INFO, "Self-Check NVRAM...");
       NVRAM.Self_Check (Status => success);
 
       --  hang here if self-checks failed
       if not success then
          LED_Manager.LED_blink (LED_Manager.FAST);
-         Logger.log (Logger.ERROR, "Self checks failed");
+         Logger.log_console (Logger.ERROR, "Self checks failed");
          t_next := Clock;
          loop
             LED_Manager.LED_tick (Config.MAIN_TICK_RATE_MS);
@@ -59,14 +60,14 @@ package body Main is
             t_next := t_next + Milliseconds (Config.MAIN_TICK_RATE_MS);
          end loop;
       else
-         Logger.log (Logger.INFO, "Self checks passed");
+         Logger.log_console (Logger.INFO, "Self checks passed");
          delay until Clock + Milliseconds (50);
       end if;
 
       LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
-      SDLog.Perf_Test (10);
-      Logger.log (Logger.INFO, "SD Card check done");
+      --  SDLog.Perf_Test (10);
+      Logger.log_console (Logger.INFO, "SD Card check done");
    end Initialize;
 
 
@@ -79,8 +80,12 @@ package body Main is
       --      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6));
       type prescaler is mod 100;
       p : prescaler := 0;
+
+      type prescaler_gps is mod 20;
+      pg : prescaler_gps := 0;
+      mgps : ULog.Message (ULog.GPS);
    begin
-      LED_Manager.Set_Color ((HIL.Devices.RED_LED => False, HIL.Devices.GRN_LED => False, HIL.Devices.BLU_LED => False));
+      LED_Manager.Set_Color ((HIL.Devices.RED_LED => False, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
 --        Buzzer_Manager.Set_Timing (period => 0.5 * Second, length => 0.1 * Second); -- gapless
@@ -96,56 +101,34 @@ package body Main is
 --        end loop;
 --        Buzzer_Manager.Disable;
 
+      --  gps initial
+      mgps.lat := 48.15;
+      mgps.lon := 11.583;
+      mgps.alt := 560.0;
+      mgps.gps_week := 1908;
+      mgps.gps_msec := 0;
+      mgps.fix := ULog.FIX3D;
+      mgps.nsat := 8;
 
       loop
          loop_time_start := Clock;
 
          p := p + 1;
          if p = 0 then
-            Logger.log (Logger.INFO, "Logfile size " & SDLog.Logsize'Img & " B");
+            Logger.log_console (Logger.INFO, "Logfile size " & SDLog.Logsize'Img & " B");
          end if;
 
-         declare
-            s  : Seconds_Count;
-            ts : Time_Span;
-            ticks : Integer;
-            si : constant Unsigned_32 := SDLog.Logsize;
-         begin
-            Split (T => loop_time_start, SC => s, TS => ts);
-            ticks := ts / Ada.Real_Time.Tick;
-            SDLog.Write_Log ("Time:" & s'Img & "/" & ticks'Img
-                                       & ", size:" & si'Img & ENDL);
-         end;
+         pg := pg + 1;
+         if pg = 0 then
+            mgps.t := Ada.Real_Time.Clock;
+            mgps.lat := mgps.lat - 0.1;
+            mgps.gps_msec := mgps.gps_msec + 100;
+            Logger.log_sd (msg_level => Logger.SENSOR, message => mgps);
+         end if;
 
          --  LED heartbeat
          LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
          LED_Manager.LED_sync;
-         --  Buzzer_Manager.Tick;
-
---           --  UART Test
---           --  HIL.UART.write(HIL.UART.Console, (70, 65) );
---           HIL.UART.read (HIL.UART.Console, data_rx);
---
---           case (Character'Val (data_rx (1))) is
---
---              when 'l' =>
---                 LED_Manager.LED_blink (LED_Manager.FAST);
---              when 'd' =>
---                 null;
---                 --  PX4IO.Driver.disarm;
---              when 'p' =>
---                 Logger.log
---                   (Logger.INFO,
---                    Integer'Image (loop_duration_max / Time_Span_Unit));
---              when others =>
---                 null;
---           end case;
-
-
-         --  SPI Test
-         --  HIL.SPI.select_Chip(HIL.SPI.Extern);
-         --  HIL.SPI.transfer(HIL.SPI.Extern, (166, 0, 0), data );
-         --  HIL.SPI.deselect_Chip(HIL.SPI.Extern);
 
          --  wait remaining loop time
          delay until loop_time_start + Milliseconds (MAIN_TICK_RATE_MS);

@@ -7,7 +7,7 @@ project Default is
 
    -- Specify Directories
    -----------------------------
-   for Source_Dirs use ("src", "src/config", "src/driver", "src/driver/fs", "src/modules", "src/lib");
+   for Source_Dirs use ("src", "src/config", "src/driver", "src/driver/fs", "src/modules", "src/lib", "src/lib/ulog");
    for Object_Dir use "obj";
    for Exec_Dir use "obj";
    type Build_Modes is

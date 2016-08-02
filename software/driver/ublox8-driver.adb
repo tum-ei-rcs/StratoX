@@ -10,7 +10,7 @@ with Interfaces; use Interfaces;
 with Config.Software;
 
 with Logger;
-with ULog.GPS;
+with ULog;
 
 with ublox8.Protocol; use ublox8.Protocol;
 with Ada.Real_Time; use Ada.Real_Time;
@@ -76,9 +76,9 @@ is
       if isReceived then
          HIL.UART.read(UBLOX_M8N, head);
          if head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
-            Logger.log(Logger.DEBUG, "UBX Ack");
+            Logger.log_console(Logger.DEBUG, "UBX Ack");
          elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_NAK and head(5) = UBX_LENGTH_ACK_ACK then
-            Logger.log(Logger.DEBUG, "UBX NAK");
+            Logger.log_console(Logger.DEBUG, "UBX NAK");
             isReceived := False;
          end if;
       end if;
@@ -98,7 +98,7 @@ is
          retries := retries - 1;
       end loop;
       if retries = 0 then
-         Logger.log(Logger.DEBUG, "Timeout");
+         Logger.log_console(Logger.DEBUG, "Timeout");
       end if;
    end writeToDevice;
    
@@ -132,18 +132,18 @@ is
             
                cks := Fletcher16_Byte.Checksum( head & message );
                if check(1) = cks.ck_a and check(2) = cks.ck_b then
-                  Logger.log(Logger.TRACE, "UBX valid");
+                  Logger.log_console(Logger.TRACE, "UBX valid");
                   data := message;
                   if message(20) /= 0 then
                      isValid := True;
                   end if;
                else
                   data := (others => Byte( 0 ));
-                  Logger.log(Logger.DEBUG, "UBX invalid");
+                  Logger.log_console(Logger.DEBUG, "UBX invalid");
                end if;
             
             elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
-               Logger.log(Logger.TRACE, "UBX Ack");
+               Logger.log_console(Logger.TRACE, "UBX Ack");
             end if;             
             
 
@@ -152,7 +152,7 @@ is
       end loop;
          
          -- got class 1, id 3, length 16 -> NAV_STATUS
-         Logger.log(Logger.TRACE, "UBX msg class " & Integer'Image(Integer(head(3))) & ", id "
+         Logger.log_console(Logger.TRACE, "UBX msg class " & Integer'Image(Integer(head(3))) & ", id "
                     & Integer'Image(Integer(head(4))));
    end readFromDevice;   
 
@@ -256,7 +256,7 @@ is
    -- read measurements values. Should be called periodically.
    procedure update_val is
       data_rx : Data_Type(0 .. 91) := (others => 0);
-      gpsmsg : ULog.GPS.Message;
+      gpsmsg : ULog.Message (ULog.GPS);
       isValid : Boolean;
    begin
       readFromDevice(data_rx, isValid);
@@ -274,14 +274,14 @@ is
          end case;
          
          
-         Logger.log(Logger.TRACE, "Long: " & AImage( G_GPS_Message.lon ) );
+         Logger.log_console(Logger.TRACE, "Long: " & AImage( G_GPS_Message.lon ) );
       else
          G_GPS_Message.fix := NO_FIX;
       end if;
 
       -- logging
       --gpsmsg.lon := G_position.Longitude;
-      Logger.log_ulog (level => Logger.SENSOR, msg => gpsmsg);
+      Logger.log_sd (msg_level => Logger.SENSOR, message => gpsmsg);
    end update_val;
 
 

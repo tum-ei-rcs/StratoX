@@ -20,7 +20,7 @@ package body Crash is
    procedure Last_Chance_Handler(location : System.Address; line : Integer) is
       now : Time := Clock;
    begin
-      Logger.log(Logger.ERROR, "Exception: Addr: " & Integer'Image( To_Integer( location ) ) & ", line  " & Integer'Image( line ) );
+      Logger.log_console(Logger.ERROR, "Exception: Addr: " & Integer'Image( To_Integer( location ) ) & ", line  " & Integer'Image( line ) );
       NVRAM.Store(NVRAM.VAR_EXCEPTION_LINE_L,  HIL.toBytes( Unsigned_16( line ) )(1) );
       NVRAM.Store(NVRAM.VAR_EXCEPTION_LINE_H,  HIL.toBytes( Unsigned_16( line ) )(2) );
 

@@ -53,7 +53,7 @@ is
       end loop Transmit_Loop;
       
       if retries >= 2 then
-         Logger.log(Logger.WARN, "PX4IO write failed");
+         Logger.log_console(Logger.WARN, "PX4IO write failed");
       end if;
       
    end write;
@@ -113,7 +113,7 @@ is
    
    procedure handle_Error(msg : String) is
    begin
-      Logger.log(Logger.ERROR, msg);
+      Logger.log_console(Logger.ERROR, msg);
       null;
    end handle_Error;
    
@@ -130,11 +130,11 @@ is
    procedure initialize is
       protocol_version : Data_Type(1 .. 2) := (others => 0);     
    begin
-      Logger.log(Logger.DEBUG, "Probe PX4IO");
+      Logger.log_console(Logger.DEBUG, "Probe PX4IO");
       for i in Integer range 1 .. 3 loop
          read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_PROTOCOL_VERSION, protocol_version);
          if protocol_version(1) = 4 then
-            Logger.log(Logger.DEBUG, "PX4IO alive");
+            Logger.log_console(Logger.DEBUG, "PX4IO alive");
             exit;
          elsif i = 3 then
             handle_Error("PX4IO: Wrong Protocol: " & HIL.Byte'Image( protocol_version(1) ) );
@@ -237,14 +237,14 @@ is
       Status : Data_Type(1 .. 2) := (others => 0);
    begin
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
-      Logger.log(Logger.DEBUG, "PX4IO Status: " & 
+      Logger.log_console(Logger.DEBUG, "PX4IO Status: " & 
                  Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );
       
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, Status);
-      Logger.log(Logger.DEBUG, "PX4IO Alarms: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );    
+      Logger.log_console(Logger.DEBUG, "PX4IO Alarms: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );    
       
       read(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, Status);
-      Logger.log(Logger.DEBUG, "PX4IO ArmSetup: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );          
+      Logger.log_console(Logger.DEBUG, "PX4IO ArmSetup: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );          
       
    end read_Status;
 
@@ -267,7 +267,7 @@ is
             when LEFT_ELEVON  => G_Servo_Angle_Left  := saturate( Angle_Type(angle) - Angle_Type(G_state.Left_Servo_Offset) );
             when RIGHT_ELEVON => G_Servo_Angle_Right := saturate( Angle_Type(angle) - Angle_Type(G_state.Right_Servo_Offset) );
       end case;
-      Logger.log(Logger.TRACE, "Servo Angle " & AImage(angle) );
+      Logger.log_console(Logger.TRACE, "Servo Angle " & AImage(angle) );
    end set_Servo_Angle;
    
    
@@ -333,7 +333,7 @@ is
       if G_check_counter = 0 then
          read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
          if HIL.isSet( HIL.toUnsigned_16( Status ), PX4IO_P_STATUS_FLAGS_FAILSAFE ) then
-            Logger.log(Logger.WARN, "PX4IO Failsafe");
+            Logger.log_console(Logger.WARN, "PX4IO Failsafe");
          end if;
       end if;
       

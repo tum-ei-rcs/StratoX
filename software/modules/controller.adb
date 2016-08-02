@@ -6,6 +6,7 @@ with Logger;
 with Profiler;
 with Config.Software;
 with Units.Numerics; use Units.Numerics;
+with Ulog;
 
 
 with Ada.Real_Time; use Ada.Real_Time;
@@ -133,17 +134,32 @@ package body Controller with SPARK_Mode is
 
 
    procedure log_Info is
+      controller_msg : ULog.Message (Typ => ULog.CONTROLLER);
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
-         Logger.log(Logger.DEBUG,
-                    "Home L" & AImage( G_Target_Position.Longitude ) &
-                 ", " & AImage( G_Target_Position.Latitude ) &
-                 ", " & Image( G_Target_Position.Altitude ) );
-         Logger.log(Logger.DEBUG,
-                    "TY: " & AImage( G_Target_Orientation.Yaw ) &
-                    ", TR: " & AImage( G_Target_Orientation.Roll ) &
-                    "   Elev: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) )
-                    );
-         G_state.control_profiler.log;
+      Logger.log_console(Logger.DEBUG,
+                         "Home L" & AImage( G_Target_Position.Longitude ) &
+                         ", " & AImage( G_Target_Position.Latitude ) &
+                         ", " & Image( G_Target_Position.Altitude ) );
+      Logger.log_console(Logger.DEBUG,
+                         "TY: " & AImage( G_Target_Orientation.Yaw ) &
+                         ", TR: " & AImage( G_Target_Orientation.Roll ) &
+                         "   Elev: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) )
+                        );
+      G_state.control_profiler.log;
+
+
+      -- log to SD
+      controller_msg := ( Typ => ULog.CONTROLLER,
+                          t => now,
+                          target_yaw => FLoat( G_Target_Orientation.Yaw ),
+                          target_roll => FLoat( G_Target_Orientation.Roll ),
+                          elevon_left => FLoat( G_Elevon_Angles(LEFT) ),
+                          elevon_right => FLoat( G_Elevon_Angles(RIGHT) ) );
+      Logger.log_sd( Logger.INFO, controller_msg );
+
+
+
    end log_Info;
 
 
@@ -304,12 +320,12 @@ package body Controller with SPARK_Mode is
       result : Angle_Type := 0.0 * Degree;
    begin
       if source_location.Longitude /= target_location.Longitude or source_location.Latitude /= target_location.Latitude then
---           Logger.log(Logger.TRACE, "Calculating Heading: ");
---           Logger.log(Logger.TRACE,
+--           Logger.log_console(Logger.TRACE, "Calculating Heading: ");
+--           Logger.log_console(Logger.TRACE,
 --                      "Source LLA" & AImage( source_location.Longitude ) &
 --                   ", " & AImage( source_location.Latitude ) &
 --                   ", " & Image( source_location.Altitude ) );
---                    Logger.log(Logger.TRACE,
+--                    Logger.log_console(Logger.TRACE,
 --                      "Target LLA" & AImage( target_location.Longitude ) &
 --                   ", " & AImage( target_location.Latitude ) &
 --                   ", " & Image( target_location.Altitude ) );
