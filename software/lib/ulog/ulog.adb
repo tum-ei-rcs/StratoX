@@ -60,10 +60,10 @@ package body ULog with SPARK_Mode => On is
    begin
       Set_Name ("GPS");
       Append_Float ("lat", buf, msg.lat);
-      Append_Float ("lat", buf, msg.lon);
+      Append_Float ("lon", buf, msg.lon);
       Append_Float ("alt", buf, msg.alt);
       Append_Uint8 ("sat", buf, msg.nsat);
-      Append_Uint8 ("fix", buf, Unsigned_8 (GPS_fixtype'Pos (msg.fix)));
+      Append_Uint8 ("fix", buf, msg.fix);
       Append_Uint64 ("ms", buf, msg.gps_msec);
       Append_Int16 ("wk", buf, msg.gps_week);
    end Serialize_Ulog_GPS;

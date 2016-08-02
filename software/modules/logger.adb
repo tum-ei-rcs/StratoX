@@ -260,6 +260,18 @@ is
              );
    end Image;
 
+
+   procedure log(msg_level : Log_Level; message : Message_Type) is
+      text_msg : ULog.Message( ULog.TEXT );
+   begin
+      log_console (msg_level, message);
+      if Log_Level'Pos (msg_level) >= Log_Level'Pos (INFO) then
+         text_msg.txt(1 .. message'Last) := message;
+         text_msg.txt_last := message'Last;
+         log_sd (msg_level, text_msg);
+      end if;
+   end log;
+
    -----------------
    --  log_console
    -----------------

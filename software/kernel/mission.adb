@@ -11,6 +11,8 @@ with Units; use Units;
 with Console; use Console;
 with Buzzer_Manager;
 with Logger;
+with Ulog;
+
 with Estimator;
 with Controller;
 with NVRAM; use NVRAM;
@@ -26,8 +28,8 @@ package body Mission with SPARK_Mode is
       gps_lock_threshold_time : Time_Type := 0.0 * Second;
       delta_threshold_time : Time_Type := 0.0 * Second;
       target_threshold_time : Time_Type := 0.0 * Second;
-      home           : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE * Degree, 
-                                             Config.DEFAULT_LATITUDE * Degree, 
+      home           : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE 
+                                             Config.DEFAULT_LATITUDE, 
                                              0.0 * Meter);
       body_info     : Body_Type;
       last_call     : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
@@ -41,9 +43,9 @@ package body Mission with SPARK_Mode is
       if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
          NVRAM.Reset;
          G_state.mission_state := INITIALIZING;
-         Logger.log_console(Logger.INFO, "New Mission.");
+         Logger.log(Logger.INFO, "New Mission.");
       else
-         Logger.log_console(Logger.WARN, "Mission running, cannot start new Mission!");
+         Logger.log(Logger.WARN, "Mission running, cannot start new Mission!");
       end if;
    end start_New_Mission;
    
@@ -63,9 +65,9 @@ package body Mission with SPARK_Mode is
          NVRAM.Load( VAR_GPS_TARGET_ALT_A,  Float( G_state.home.Altitude ) );
          
          G_state.home.Altitude := Unit_Type( HIL.toUnsigned_16( height ) ) * Meter;
-         Logger.log_console(Logger.DEBUG, "Home Height: " & Image(G_state.home.Altitude) );
+         Logger.log(Logger.DEBUG, "Home Height: " & Image(G_state.home.Altitude) );
          
-         Logger.log_console(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
+         Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
       end if;    
    end load_Mission;
 
@@ -132,7 +134,7 @@ package body Mission with SPARK_Mode is
       -- set hold
       -- Controller.set_hold;
       
-      Logger.log_console(Logger.INFO, "Mission Initialized");
+      Logger.log(Logger.INFO, "Mission Initialized");
       -- beep ever 10 seconds for one second at 1kHz.
       -- Buzzer_Manager.Set_Freq (1000.0 * Hertz);
       -- Buzzer_Manager.Set_Timing (period => 5.0 * Second, length => 1.0 * Second);
@@ -171,7 +173,7 @@ package body Mission with SPARK_Mode is
          
          if G_state.gps_lock_threshold_time > 10.0 * Second then
             lock_Home;
-            Logger.log_console(Logger.INFO, "Mission Ready");
+            Logger.log(Logger.INFO, "Mission Ready");
             next_State;
          end if;
       else
@@ -194,7 +196,7 @@ package body Mission with SPARK_Mode is
 
    procedure wait_For_Release is
    begin
-      Logger.log_console(Logger.INFO, "Start Ascending");
+      Logger.log(Logger.INFO, "Start Ascending");
       next_State;
    end wait_For_Release;
 
@@ -214,8 +216,8 @@ package body Mission with SPARK_Mode is
       if Estimator.get_current_Height >= G_state.home.Altitude + Config.CFG_TARGET_ALTITUDE_THRESHOLD then
          G_state.target_threshold_time := G_state.target_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT     
          if G_state.target_threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
-            Logger.log_console(Logger.INFO, "Target height reached. Detaching...");
-            Logger.log_console(Logger.INFO, "Target height reached. Detaching...");
+            Logger.log(Logger.INFO, "Target height reached. Detaching...");
+            Logger.log(Logger.INFO, "Target height reached. Detaching...");
             next_State;
          end if;
       else
@@ -226,8 +228,8 @@ package body Mission with SPARK_Mode is
       if Estimator.get_current_Height < Estimator.get_max_Height - Config.CFG_DELTA_ALTITUDE_THRESH then
          G_state.delta_threshold_time := G_state.delta_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT
          if G_state.delta_threshold_time >= Config.CFG_DELTA_ALTITUDE_THRESH_TIME then
-            Logger.log_console(Logger.INFO, "Unplanned drop detected...");
-            Logger.log_console(Logger.INFO, "Unplanned drop detected...");
+            Logger.log(Logger.INFO, "Unplanned drop detected...");
+            Logger.log(Logger.INFO, "Unplanned drop detected...");
             next_State;         
          end if;
       else
@@ -236,8 +238,8 @@ package body Mission with SPARK_Mode is
    
       -- Check Timeout
       if now > G_state.last_state_change + Units.To_Time_Span( Config.Software.CFG_ASCEND_TIMEOUT ) then   -- 600
-         Logger.log_console(Logger.INFO, "Timeout Ascend");
-         Logger.log_console(Logger.INFO, "Timeout Ascend");
+         Logger.log(Logger.INFO, "Timeout Ascend");
+         Logger.log(Logger.INFO, "Timeout Ascend");
          next_State;
       end if;
       
@@ -255,7 +257,7 @@ package body Mission with SPARK_Mode is
       
       Controller.set_Target_Position( G_state.home );
       Estimator.reset_log_calls;     
-      Logger.log_console(Logger.INFO, "Detached");
+      Logger.log(Logger.INFO, "Detached");
       next_State;
    end perform_Detach;
 
@@ -286,13 +288,13 @@ package body Mission with SPARK_Mode is
       
       -- Check stable position
       if Estimator.get_Stable_Time > 120.0 * Second then
-         Logger.log_console(Logger.INFO, "Landed.");
+         Logger.log(Logger.INFO, "Landed.");
          deactivate;
       end if;    
       
       -- Timeout for Landing
       if now > G_state.last_state_change + Config.Software.CFG_DESCEND_TIMEOUT then
-         Logger.log_console(Logger.INFO, "Timeout. Landed");
+         Logger.log(Logger.INFO, "Timeout. Landed");
          deactivate;
       end if;
       
@@ -311,7 +313,7 @@ package body Mission with SPARK_Mode is
 
       case ( command ) is
          when Console.DISARM =>
-            Logger.log_console(Logger.INFO, "Mission Finished");
+            Logger.log(Logger.INFO, "Mission Finished");
             next_State;
             
          when others =>

@@ -13,17 +13,26 @@ with Units.Navigation; use Units.Navigation;
 
 package Config is
 
+   -- Board
+   -- -------------------------------
    LED_PIN : constant := 12;
 
    BARO_I2C_ADDRESS : constant := 0;
 
+   -- Estimator
+   -- -------------------------------
+   DEFAULT_LONGITUDE : constant Longitude_Type := 11.60555 * Degree;     -- Englischer Garten
+   DEFAULT_LATITUDE  : constant Latitude_Type := 48.16423 * Degree;
 
-   DEFAULT_LONGITUDE : constant := 11.60555;     -- Englischer Garten
-   DEFAULT_LATITUDE  : constant := 48.16423;
 
-   OPTIMAL_PITCH : constant := -6.0;
+   -- Flight
+   -- -------------------------------
+   OPTIMAL_PITCH : constant Pitch_Type := -5.0 * Degree;
 
-   -- Thresholds
+
+
+   -- Mission
+   -- -------------------------------
    CFG_TARGET_ALTITUDE_THRESHOLD : constant Altitude_Type := 70.0 * Meter;
    CFG_TARGET_ALTITUDE_THRESHOLD_TIME : constant := 6.0 * Second;
 
@@ -36,8 +45,6 @@ package Config is
 
    CFG_LEFT_SERVO_OFFSET  : constant := 8.0 * Degree;
    CFG_RIGHT_SERVO_OFFSET : constant := 4.0 * Degree;
-
-
 
    -- Limits
    CFG_SERVO_ANGLE_LIMIT_MIN : constant := -45.0 * Degree;

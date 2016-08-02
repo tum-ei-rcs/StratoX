@@ -10,7 +10,6 @@ with Interfaces; use Interfaces;
 with Config.Software;
 
 with Logger;
-with ULog;
 
 with ublox8.Protocol; use ublox8.Protocol;
 with Ada.Real_Time; use Ada.Real_Time;
@@ -256,7 +255,6 @@ is
    -- read measurements values. Should be called periodically.
    procedure update_val is
       data_rx : Data_Type(0 .. 91) := (others => 0);
-      gpsmsg : ULog.Message (ULog.GPS);
       isValid : Boolean;
    begin
       readFromDevice(data_rx, isValid);
@@ -279,9 +277,6 @@ is
          G_GPS_Message.fix := NO_FIX;
       end if;
 
-      -- logging
-      --gpsmsg.lon := G_position.Longitude;
-      Logger.log_sd (msg_level => Logger.SENSOR, message => gpsmsg);
    end update_val;
 
 

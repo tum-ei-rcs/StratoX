@@ -40,7 +40,7 @@ package ULog with SPARK_Mode is
          --  GPS message
          gps_week : Interfaces.Integer_16  := 0;
          gps_msec : Interfaces.Unsigned_64 := 0;
-         fix      : GPS_fixtype            := NOFIX;
+         fix      : Interfaces.Unsigned_8  := 0;
          nsat     : Interfaces.Unsigned_8  := 0;
          lat      : Float                  := 0.0;
          lon      : Float                  := 0.0;

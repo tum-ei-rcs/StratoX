@@ -17,6 +17,7 @@ package Config.Software is
    
    CFG_IN_AIR_RESTART : constant Boolean := False;
    
+   MAIN_TICK_RATE_MS : constant := 20;   -- Tickrate in Milliseconds
    
    
    -- Misison
@@ -28,12 +29,12 @@ package Config.Software is
 
    -- CFG_GPS_BAUDRATE : constant Frequency_Type := 9600.0 * Hertz;
 
-
+   
    CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;
-   CFG_LOGGER_CALL_SKIP: constant := 20;
+   CFG_LOGGER_CALL_SKIP: constant := 20/5;  
    
 
-   MAIN_TICK_RATE_MS : constant := 20;   -- Tickrate in Milliseconds
+   
 
    -- PX4IO Timeout RC  : 2000ms
    -- PX4IO Timeout FMU (no controls) : 500ms

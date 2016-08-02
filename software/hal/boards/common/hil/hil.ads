@@ -117,15 +117,15 @@ is
                          start_index : Unsigned_8_Bit_Index; 
                          length : Natural; 
                          value : Integer) with 
-                         pre => length > 0 and 
-                         length <= Natural( Unsigned_8_Bit_Index'Last ) + 1 - Natural( start_index ) and
+                         pre => length > 0 and then
+                         length <= Natural( Unsigned_8_Bit_Index'Last ) + 1 - Natural( start_index ) and then
                          value < 2**length;
                          
    
    function read_Bits( register : in Unsigned_8; 
                         start_index : Unsigned_8_Bit_Index; 
                         length      : Natural) return Unsigned_8
-   with pre => length > 0 and 
+   with pre => length > 0 and then
    length <= Natural(Unsigned_8_Bit_Index'Last) + 1 - Natural( start_index ),
    post => read_Bits'Result < 2**length;
 

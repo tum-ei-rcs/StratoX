@@ -27,6 +27,9 @@ is
 
    procedure Init (status : out Init_Error_Code);
 
+   procedure log(msg_level : Log_Level; message : Message_Type);
+   -- wrapper for log_console
+
    procedure log_console (msg_level : Log_Level; message : Message_Type);
    --  write a new text log message (shown on console, logged to SD)
 

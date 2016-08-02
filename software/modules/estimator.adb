@@ -14,12 +14,14 @@ with Units.Numerics; use Units.Numerics;
 with Units.Navigation; use Units.Navigation;
 
 with Logger;
+with Ulog;
 with Profiler;
 
 with Config.Software;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 pragma Elaborate_All(generic_queue);
+with Interfaces; use Interfaces;
 
 package body Estimator with SPARK_Mode is
 
@@ -34,14 +36,6 @@ package body Estimator with SPARK_Mode is
    use GPS_Buffer_Pack;
    package IMU_Buffer_Pack is new Generic_Queue(Index_Type => IMU_Index_Type, Element_Type => Orientation_Type);
    use IMU_Buffer_Pack;
-
-   G_height_buffer : Height_Buffer_Pack.Buffer_Tag;
-   G_pos_buffer : GPS_Buffer_Pack.Buffer_Tag;
-
-   G_orientation_buffer : IMU_Buffer_Pack.Buffer_Tag;
-
-   G_Profiler : Profiler.Profile_Tag;
-
 
    type State_Type is record
       fix : GPS_Fix_Type := NO_FIX;
@@ -62,9 +56,23 @@ package body Estimator with SPARK_Mode is
       Mag1  : Magnetometer.Magnetometer_Tag;
    end record;
 
+   type IMU_Data_Type is record
+      Acc  : Linear_Acceleration_Vector;
+      Gyro : Angular_Velocity_Vector;
+   end record;
+
 
    G_state  : State_Type;
+   G_imu    : IMU_Data_Type;
    -- G_Sensor : Sensor_Record;
+
+   G_height_buffer : Height_Buffer_Pack.Buffer_Tag;
+   G_pos_buffer : GPS_Buffer_Pack.Buffer_Tag;
+
+   G_orientation_buffer : IMU_Buffer_Pack.Buffer_Tag;
+
+   G_Profiler : Profiler.Profile_Tag;
+
 
 
    -- init
@@ -89,8 +97,6 @@ package body Estimator with SPARK_Mode is
 
    -- fetch fresh measurement data
    procedure update is
-      Acc : Linear_Acceleration_Vector;
-      Gyro : Angular_Velocity_Vector;
       Acc_Orientation : Orientation_Type;
       CF_Orientation : Orientation_Type;
       Mag : Magnetic_Flux_Density_Vector;
@@ -101,15 +107,15 @@ package body Estimator with SPARK_Mode is
 
       -- Estimate Object Orientation
       IMU.Sensor.read_Measurement;
-      Acc := IMU.Sensor.get_Linear_Acceleration;
-      Gyro := IMU.Sensor.get_Angular_Velocity;
+      G_imu.Acc := IMU.Sensor.get_Linear_Acceleration;
+      G_imu.Gyro := IMU.Sensor.get_Angular_Velocity;
 
-     -- Logger.log_console(Logger.DEBUG,"Acc: " & Image(Acc(X)) & ", " & Image(Acc(Y)) & ", " & Image(Acc(Z)) );
-      -- Logger.log_console(Logger.DEBUG,"Gyro: " & AImage(Gyro(Roll)*Second) & ", " & AImage(Gyro(Pitch)*Second) & ", " & AImage(Gyro(YAW)*Second) );
-      -- Logger.log_console(Logger.DEBUG,"Gyro: " & RImage(Gyro(Roll)*Second) & ", " & RImage(Gyro(Pitch)*Second) & ", " & RImage(Gyro(YAW)*Second) );
+     -- Logger.log_console(Logger.DEBUG,"Acc: " & Image(G_imu.Acc(X)) & ", " & Image(G_imu.Acc(Y)) & ", " & Image(G_imu.Acc(Z)) );
+      -- Logger.log_console(Logger.DEBUG,"Gyro: " & AImage(G_imu.Gyro(Roll)*Second) & ", " & AImage(G_imu.Gyro(Pitch)*Second) & ", " & AImage(G_imu.Gyro(YAW)*Second) );
+      -- Logger.log_console(Logger.DEBUG,"Gyro: " & RImage(G_imu.Gyro(Roll)*Second) & ", " & RImage(G_imu.Gyro(Pitch)*Second) & ", " & RImage(G_imu.Gyro(YAW)*Second) );
 
 
-      Acc_Orientation := Orientation( Acc );
+      Acc_Orientation := Orientation( G_imu.Acc );
       -- CF_Orientation := IMU.Fused_Orientation( IMU.Sensor, Acc_Orientation, Gyro);
       IMU.perform_Kalman_Filtering( IMU.Sensor, Acc_Orientation );
       G_Object_Orientation := IMU.Sensor.get_Orientation;
@@ -178,6 +184,9 @@ package body Estimator with SPARK_Mode is
    end reset_log_calls;
 
    procedure log_Info is
+      imu_msg : ULog.Message (ULog.IMU);
+      gps_msg : ULog.Message (ULog.GPS);
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       Logger.log_console(Logger.DEBUG,
                  "RPY: " & AImage( G_Object_Orientation.Roll ) &
@@ -188,6 +197,36 @@ package body Estimator with SPARK_Mode is
                  ", " & Image( get_current_Height ) & "m, Fix: " & Integer'Image( GPS_Fix_Type'Pos( G_state.fix ) ) );
 
       G_Profiler.log;
+
+      -- log to SD
+      imu_msg := ( Typ => ULog.IMU,
+                          t => now,
+                          accX  => Float( G_imu.Acc(X) ),
+                          accY  => Float( G_imu.Acc(Y) ),
+                          accZ  => Float( G_imu.Acc(Z) ),
+                          gyroX => Float( G_imu.Gyro(Roll) ),
+                          gyroY => Float( G_imu.Gyro(Pitch) ),
+                          gyroZ => Float( G_imu.Gyro(Yaw) ),
+                          roll  => Float( G_Object_Orientation.Roll ),
+                          pitch => Float( G_Object_Orientation.Pitch ),
+                          yaw   => Float( G_Object_Orientation.Yaw )
+      );
+
+      gps_msg := ( Typ => ULog.GPS,
+                   t => now,
+                   gps_week => 0,
+                   gps_msec => 0,
+                   fix      => Unsigned_8 (GPS_Fix_Type'Pos( G_state.fix )),
+                   nsat     => 0,
+                   lat      => Float( G_Object_Position.Latitude ),
+                   lon      => Float( G_Object_Position.Longitude ),
+                   alt      => Float( G_Object_Position.Altitude )
+      );
+
+      Logger.log_sd( Logger.INFO, imu_msg );
+      Logger.log_sd( Logger.INFO, gps_msg );
+
+
    end log_Info;
 
 
