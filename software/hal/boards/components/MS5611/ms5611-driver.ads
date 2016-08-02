@@ -39,11 +39,10 @@ is
    procedure reset;
    -- send a soft-reset to the device.
 
-   procedure init;
-   -- with Global => (IN_Out => (State, Coefficients));
+   procedure init with Global => (IN_Out => (State, Coefficients));
    -- initialize the device, get chip-specific compensation values
 
-   procedure update_val;
+   procedure update_val with Global => (Input => Coefficients, IN_Out => State);
    -- trigger measurement update. Should be called periodically.
 
    function get_temperature return Temperature_Type;

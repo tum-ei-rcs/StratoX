@@ -26,10 +26,10 @@ package Barometer with SPARK_Mode is
    end record;
 
    overriding procedure initialize (Self : in out Barometer_Tag) with
-   Global => (In_Out => (MS5611.Driver.State));
+   Global => (Output => MS5611.Driver.Coefficients, In_Out => (MS5611.Driver.State));
 
    overriding procedure read_Measurement(Self : in out Barometer_Tag)
-   with Global => (In_Out => (MS5611.Driver.State, MS5611.Driver.Coefficients));
+   with Global => (Input => MS5611.Driver.State, In_Out => (MS5611.Driver.Coefficients));
 
    function get_Pressure(Self : Barometer_Tag) return Pressure_Type;
 

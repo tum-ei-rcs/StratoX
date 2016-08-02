@@ -1,13 +1,17 @@
 
 
 with Ada.Real_Time; use Ada.Real_Time;
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 with Generic_Queue;
 with Units; use Units;
 with Logger;
 
 
-package body IMU with SPARK_Mode is
+package body IMU with
+-- SPARK_Mode,
+Refined_State => (State => (G_state))
+is
 
 
    type Kalman_Type is record
@@ -23,9 +27,9 @@ package body IMU with SPARK_Mode is
 
    type State_Type is record
       filterAngle : Rotation_Vector;
-      lastFuse    : Ada.Real_Time.Time;
+      lastFuse    : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
       kmState : Orientation_Type :=  (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
-      kmLastCall : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      kmLastCall : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
       kmRoll  : Kalman_Type;
       kmPitch : Kalman_Type;
    end record;
@@ -46,9 +50,10 @@ package body IMU with SPARK_Mode is
 
    overriding
    procedure initialize (Self : in out IMU_Tag) is
+      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin 
-      G_state.lastFuse := Ada.Real_Time.Clock;
-      G_state.kmLastCall := Ada.Real_Time.Clock;
+      G_state.lastFuse := now;
+      G_state.kmLastCall := now;
       
       if MPU6000.Driver.Test_Connection then
          Driver.Init;
@@ -78,16 +83,6 @@ package body IMU with SPARK_Mode is
       newRate : Angular_Velocity_Vector := get_Angular_Velocity(Self);
       BIAS_LIMIT : constant Angular_Velocity_Type := 500.0*Degree/Second;
       predAngle : Angle_Vector;
-
-
-      procedure update( KM : in out Kalman_Type; newAngle : Angle_Type; newRate : Angular_Velocity_Type; dt : Time_Type) is
-      begin
-         -- 1. Predict
-         ------------------
-         KM.Rate := newRate - KM.Bias;   
-      
-      
-      end update;
 
 
    begin
@@ -275,8 +270,10 @@ package body IMU with SPARK_Mode is
 
 
    procedure check_Freefall(Self : in out IMU_Tag; isFreefall : out Boolean) is
+      function "abs" (value : Linear_Acceleration_Vector) return Linear_Acceleration_Type is
+      ( Linear_Acceleration_Type( Sqrt( Float( value(X) )**2 + Float( value(Y) )**2 + Float( value(Z) )**2 ) ) );
    begin
-      if abs ( Units.Vectors.Cartesian_Vector_Type( get_Linear_Acceleration(Self) ) ) < Unit_Type( 0.5 ) then
+      if abs ( get_Linear_Acceleration(Self) ) < 0.5 * Meter/(Second**2) then
          Self.Freefall_Counter := Self.Freefall_Counter + 1;
       else 
          Self.Freefall_Counter := 0;

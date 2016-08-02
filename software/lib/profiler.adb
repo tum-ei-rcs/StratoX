@@ -70,7 +70,7 @@ package body Profiler with SPARK_Mode is
    end get_Stop;
 
    -- elapsed time before stop or last measurement time after stop
-   function get_Elapsed(Self : in Profile_Tag) return Time_Span is
+   function get_Elapsed(Self : in Profile_Tag) return Time_Span with SPARK_Mode => Off is
       now : Time := Clock;
    begin
       return (if Self.stop_Time > Self.start_Time then

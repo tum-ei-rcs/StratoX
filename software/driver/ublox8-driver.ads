@@ -41,9 +41,9 @@ is
 
    procedure reset;
 
-   procedure init;
+   procedure init with Global => (In_Out => State);
 
-   procedure update_val;
+   procedure update_val with Global => (In_Out => State);
    -- read measurements values. Should be called periodically.
 
    function get_Position return GPS_Loacation_Type;

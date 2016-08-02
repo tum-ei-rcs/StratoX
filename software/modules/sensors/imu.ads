@@ -1,4 +1,5 @@
 
+with Ada.Real_Time;
 
 with Generic_Sensor;
 with Interfaces; use Interfaces;
@@ -9,7 +10,11 @@ with Units.Navigation; use Units.Navigation;
 with MPU6000.Driver; use MPU6000;
 
 
-package IMU with SPARK_Mode is
+
+package IMU with
+SPARK_Mode,
+Abstract_State => State
+is
 
    type IMU_Data_Type is record
       Acc_X : Integer_16 := 0;
@@ -31,7 +36,8 @@ package IMU with SPARK_Mode is
    end record;
 
    overriding procedure initialize (Self : in out IMU_Tag) with
-   Global => (MPU6000.Driver.State);
+   Global => (Input => (MPU6000.Driver.State, Ada.Real_Time.Clock_Time),
+              In_Out => IMU.State);
 
    overriding procedure read_Measurement(Self : in out IMU_Tag) with
    Global => (MPU6000.Driver.State);

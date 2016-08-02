@@ -9,7 +9,11 @@
 -- ToDo:
 -- [ ] Implementation
 
+with Ada.Real_Time;
+
 with Generic_Signal;
+
+
 with MS5611.Driver;
 with ublox8.Driver;
 with MPU6000.Driver;
@@ -38,7 +42,9 @@ package Generic_Sensor with SPARK_Mode is
    end record;
 
    procedure initialize(Self : in out Sensor_Tag) 
-   is null with Global => (In_Out => (MS5611.Driver.State, ublox8.Driver.State, MPU6000.Driver.State, HMC5883L.Driver.State));
+   is null with Global => (Output => MS5611.Driver.Coefficients,
+                           In_Out => (IMU.State, Ada.Real_Time.Clock_Time,
+                                      MS5611.Driver.State, ublox8.Driver.State, MPU6000.Driver.State, HMC5883L.Driver.State));
         
    -- start the measurement
    procedure start_Measurement(Self : in out Sensor_Tag) is null;

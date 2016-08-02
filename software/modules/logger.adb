@@ -19,7 +19,7 @@ with SDLog;
 with NVRAM;
 with Buildinfo;
 
-package body Logger with SPARK_Mode,
+package body Logger with SPARK_Mode => Off,
   Refined_State => (LogState => (queue_ulog, Logging_Task, logger_level, msg_gps,
                                  With_SDLog))
 is        
