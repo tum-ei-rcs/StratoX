@@ -320,7 +320,9 @@ is
             loop
                ULog.Get_Header_Ulog (bytes, len, valid);
                exit Get_Ulog_Defs_Loop when not valid;
-               Write_Bytes_To_SD (len => len, buf => bytes);
+               if len > 0 then
+                  Write_Bytes_To_SD (len => len, buf => bytes);
+               end if;
             end loop Get_Ulog_Defs_Loop;
             
             queue_ulog.Enable;
