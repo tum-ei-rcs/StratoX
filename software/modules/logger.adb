@@ -18,6 +18,11 @@ with System;
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
 with Ada.Real_Time;
+with ULog;
+
+--  force elaboration of those before the logging task starts
+pragma Elaborate_All (SDLog);
+pragma Elaborate_All (Ulog);
 
 --  @summary Simultaneously writes to UART, and SD card.
 package body Logger with SPARK_Mode,
@@ -38,6 +43,11 @@ is
 
    --  protected type to implement the ULog queue
    protected type Ulog_Queue_T is
+      procedure Enable;
+      --  initially the queue does not accept messages
+      --  call this after everything has been set up
+      --  (SD log, etc.).
+      
       procedure New_Msg (msg : in ULog.Message);
       --  enqueue new message. this is not blocking, except to ensure mutex.
       --  it is fast (only memcpy), but it can silently fail if buffer is full.
@@ -60,6 +70,7 @@ is
       Buffer : Buffer_Ulog (0 .. LOG_QUEUE_LENGTH - 1);
       --  cannot use a discriminant for this (would violate No_Implicit_Heap_Allocations)
 
+      Queue_Enable  : Boolean := False;
       Num_Queued    : Natural := 0;
       Not_Empty     : Boolean := False; -- simple barrier (Ravenscar)
       Pos_Read      : bufpos := 0;
@@ -71,7 +82,7 @@ is
    end Ulog_Queue_T;
 
    --  sporadic logging task waking up when message is enqueued
-   task Logging_Task is
+   task Logging_Task is 
       pragma Priority (System.Priority'First); -- lowest prio for logging
    end Logging_Task;
 
@@ -94,30 +105,15 @@ is
    logger_level : Log_Level := DEBUG;
    With_SDLog   : Boolean := False;
 
-   -----------------------
-   --  Write_Bytes_To_SD
-   -----------------------
-
-   --  slow procedure! Takes Byte_Array, converts to SD data type and writes
-   procedure Write_Bytes_To_SD (len : Natural; buf : HIL.Byte_Array) is
-   begin
-      if len > 0 then
-         declare
-            subtype Bytes_ULog is HIL.Byte_Array (1 .. len);
-            subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. Unsigned_16 (len));
-            function To_FileData is new Ada.Unchecked_Conversion (Bytes_ULog, SD_Data_ULog);
-            buf_last : constant Integer := buf'First + len - 1;
-         begin
-            SDLog.Write_Log (To_FileData (buf (buf'First .. buf_last)));
-         end;
-      end if;
-   end Write_Bytes_To_SD;
-
    --------------
    --  LOG TASK
    --------------
 
    --  the task which logs to SD card in the background
+   --  XXX: compiler assumes that all the code in a task body is potentially 
+   --  executed at elaboration time if a task is declared at the library level.
+   --  thus, all callees here have to be elaborated before this task.
+
    task body Logging_Task is
       msg : ULog.Message;
       BUFLEN : constant := 512;
@@ -132,7 +128,7 @@ is
          ULog.Serialize_Ulog (msg, len, bytes); -- this can be slow again
          Write_Bytes_To_SD (len => len, buf => bytes);
 
-         --  occasionally log queue state (overflows, num_queued).
+         --  occasionally log queue state (overflows, num_queued). 
          r := r + 1;
          if r = 0 then
             declare
@@ -156,25 +152,33 @@ is
             end;
          end if;
       end loop;
-   end Logging_Task;
+   end Logging_Task;  
 
    --  implementation of the message queue
    protected body Ulog_Queue_T is
+      
+      procedure Enable is
+      begin
+         Queue_Enable := True;
+      end Enable;
+      
       procedure New_Msg (msg : in ULog.Message) is
       begin
-         Buffer (Integer (Pos_Write)) := msg;
-         Pos_Write := Pos_Write + 1;
-         if Num_Queued < Buffer'Last then
-            Num_Queued := Num_Queued + 1;
-         else -- =Buffer'Last
-            Pos_Read := Pos_Read + 1; -- overwrite oldest
-            if Num_Overflows < Natural'Last then
-               Num_Overflows := Num_Overflows + 1;
+         if Queue_Enable then
+            Buffer (Integer (Pos_Write)) := msg;
+            Pos_Write := Pos_Write + 1;
+            if Num_Queued < Buffer'Last then
+               Num_Queued := Num_Queued + 1;
+            else -- =Buffer'Last
+               Pos_Read := Pos_Read + 1; -- overwrite oldest
+               if Num_Overflows < Natural'Last then
+                  Num_Overflows := Num_Overflows + 1;
+               end if;
             end if;
-         end if;
 
-         Not_Empty := (Num_Queued > 0);
-         pragma Assert ((Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)));
+            Not_Empty := (Num_Queued > 0);
+            pragma Assert ((Not_Empty and (Num_Queued > 0)) or ((not Not_Empty) and (Num_Queued = 0)));
+         end if;
       end New_Msg;
 
       entry Get_Msg (msg : out ULog.Message) when Not_Empty is
@@ -193,17 +197,34 @@ is
       function Get_Length return Natural is (Num_Queued);
    end Ulog_Queue_T;
 
-   ----------------------------
-   --  Instantiation / Body   --
-   ----------------------------
+   -----------------------
+   --  Write_Bytes_To_SD
+   -----------------------
 
+   --  slow procedure! Takes Byte_Array, converts to SD data type and writes
+   procedure Write_Bytes_To_SD (len : Natural; buf : HIL.Byte_Array) is
+   begin
+      if len > 0 then
+         declare
+            subtype Bytes_ULog is HIL.Byte_Array (1 .. len);
+            subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. Unsigned_16 (len));
+            function To_FileData is new Ada.Unchecked_Conversion (Bytes_ULog, SD_Data_ULog);
+            buf_last : constant Integer := buf'First - 1 + len;
+            n_wr : Integer;
+            pragma Unreferenced (n_wr);
+         begin
+            SDLog.Write_Log (To_FileData (buf (buf'First .. buf_last)), n_wr);
+         end;
+      end if;
+   end Write_Bytes_To_SD;
+   
    --  HAL, only change Adapter to port Code
    package body Adapter is
-      procedure init (status : out Init_Error_Code) is
+      procedure init_adapter (status : out Init_Error_Code) is
       begin
          --  HIL.UART.configure; already done in CPU.initialize
          status := SUCCESS;
-      end init;
+      end init_adapter;
 
       procedure write (message : Message_Type) is
          CR : constant Character := Character'Val (13); -- ASCII
@@ -221,7 +242,7 @@ is
    procedure Init (status : out Init_Error_Code) is
    begin
       SDLog.Init;
-      Adapter.init (status);
+      Adapter.init_adapter (status);
    end Init;
 
    -----------
@@ -286,25 +307,26 @@ is
          len         : Natural;
          valid       : Boolean;
       begin
-         With_SDLog := False;
          if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
          then
             log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
-            return;
+            With_SDLog := False;
          else
             log_console (Logger.INFO, "Log name: " & buildstring & "/" & fname);
             With_SDLog := True;
+            --  write file header (ULog message definitions)
+            ULog.Init;
+            Get_Ulog_Defs_Loop :
+            loop
+               ULog.Get_Header_Ulog (bytes, len, valid);
+               exit Get_Ulog_Defs_Loop when not valid;
+               Write_Bytes_To_SD (len => len, buf => bytes);
+            end loop Get_Ulog_Defs_Loop;
+            
+            queue_ulog.Enable;
          end if;
-
-         --  write file header (ULog message definitions)
-         ULog.Init;
-         Get_Ulog_Defs_Loop :
-         loop
-            ULog.Get_Header_Ulog (bytes, len, valid);
-            exit Get_Ulog_Defs_Loop when not valid;
-            Write_Bytes_To_SD (len => len, buf => bytes);
-         end loop Get_Ulog_Defs_Loop;
       end;
+      
    end Start_SDLog;
 
 end Logger;

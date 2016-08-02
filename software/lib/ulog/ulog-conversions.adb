@@ -79,10 +79,10 @@ package body ULog.Conversions with SPARK_Mode is
    --  Init
    -----------
 
-   procedure Init is
+   procedure Init_Conv is
    begin
       New_Conversion;
-   end Init;
+   end Init_Conv;
 
    --------------
    --  Get_Size
