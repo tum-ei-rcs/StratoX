@@ -40,6 +40,8 @@ package Units.Numerics with SPARK_Mode is
 --        
 --     function Arccos  (X : Unit_Type; Cycle : Angle_Type) return Angle_Type;
          
+         
+   -- Calculates angle to point y,x      
    function Arctan
      (Y : Unit_Type;
       X : Unit_Type := 1.0) return Angle_Type;

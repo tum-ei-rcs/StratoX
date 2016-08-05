@@ -346,6 +346,9 @@ package Units with
   -- procedure Saturate(input : Unit_Type; output : in out Unit_Type);
 
 
+   function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type;
+
+
    -- function Radian( degree : Float ) return Float
 
    function average( signal : Unit_Array ) return Unit_Type;

@@ -128,7 +128,21 @@ is
 
    -- init
    procedure initialize is
-      protocol_version : Data_Type(1 .. 2) := (others => 0);     
+      protocol_version : Data_Type(1 .. 2) := (others => 0); 
+      
+      
+      procedure delay_us( us : NAtural ) is
+         -- SPARK RM 7.1.3: Clock() has side-effects, so it must
+         -- be used in a "non-interfering context". That means, we have
+         -- to make it a proper R-value here and cannot directly
+         -- increment it with Milliseconds:
+         t_abs : Ada.Real_Time.Time := Clock;
+      begin
+         t_abs := t_abs + Microseconds( 2 );
+         delay until t_abs;
+      end;
+      
+      
    begin
       Logger.log_console(Logger.DEBUG, "Probe PX4IO");
       for i in Integer range 1 .. 3 loop
@@ -147,16 +161,7 @@ is
 
       -- clear all Alarms
       write(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, (1 .. 2 => HIL.Byte ( 255 ) ) );   -- PX4IO clears Bits with 1 (inverted)
-      declare 
-         -- SPARK RM 7.1.3: Clock() has side-effects, so it must
-         -- be used in a "non-interfering context". That means, we have
-         -- to make it a proper R-value here and cannot directly
-         -- increment it with Milliseconds:
-         t_abs : Ada.Real_Time.Time := Clock;
-      begin
-         t_abs := t_abs + Milliseconds( 2 );
-         delay until t_abs;
-      end;
+      delay_us( 100 );                                                                               
       
       -- clear status flags
       modify_clear(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
@@ -168,18 +173,20 @@ is
                   PX4IO_P_STATUS_FLAGS_MIXER_OK or
                   PX4IO_P_STATUS_FLAGS_INIT_OK
                   );
-                  
+      delay_us( 100 );           
     
       -- disarm before setup (exactly as in original PX4 code)
       modify_clear(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
 		PX4IO_P_SETUP_ARMING_FMU_ARMED or
+                PX4IO_P_SETUP_ARMING_FAILSAFE_CUSTOM or -- was 1 if failsafe
 		PX4IO_P_SETUP_ARMING_INAIR_RESTART_OK or
 		PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE_OK or
 		PX4IO_P_SETUP_ARMING_ALWAYS_PWM_ENABLE or
                 PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE or
+                PX4IO_P_SETUP_ARMING_TERMINATION_FAILSAFE or -- was 1 during failsafe
                 PX4IO_P_SETUP_ARMING_LOCKDOWN );
       --delay until Clock + Milliseconds ( 2 );
-      
+      delay_us( 100 ); 
       
       -- read the setup
       read_Status;
@@ -201,7 +208,7 @@ is
       
       -- give IO some values (should enable PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED )
       sync_Outputs;     
-      
+      delay_us( 100 ); 
       
       
       -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)

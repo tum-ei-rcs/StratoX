@@ -25,7 +25,7 @@ package body Crash is
       NVRAM.Store(NVRAM.VAR_EXCEPTION_LINE_H,  HIL.toBytes( Unsigned_16( line ) )(2) );
 
       -- wait until write finished (interrupt based)
-      delay until now + Milliseconds(10);
+      delay until now + Milliseconds(80);
 
       --  Abruptly stop the program.
       --  On bareboard platform, this returns to the monitor or reset the board.

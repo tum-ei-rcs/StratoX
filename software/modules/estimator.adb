@@ -48,6 +48,8 @@ package body Estimator with SPARK_Mode is
       logger_console_calls : Logger_Call_Type := 0;
       stable_Time     : Time_Type := 0.0 * Second;
       last_stable_check : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
+      home_pos : GPS_Loacation_Type;
+      home_baro_alt : Altitude_Type := 0.0 * Meter;
    end record;
 
    type Sensor_Record is record
@@ -129,7 +131,7 @@ package body Estimator with SPARK_Mode is
       Magnetometer.Sensor.read_Measurement;
       Mag := Magnetometer.Sensor.get_Sample.data;
 
-      Logger.log_console(Logger.TRACE, "Mag (uT):" & Image(Mag(X) * 1.0e6) & ", " & Image(Mag(Y) * 1.0e6) & ", " & Image(Mag(Z) * 1.0e6) );
+      -- Logger.log_console(Logger.DEBUG, "Mag (uT):" & Image(Mag(X) * 1.0e6) & ", " & Image(Mag(Y) * 1.0e6) & ", " & Image(Mag(Z) * 1.0e6) );
       G_Object_Orientation.Yaw := Heading(Mag, G_Object_Orientation);
 
 
@@ -235,6 +237,14 @@ package body Estimator with SPARK_Mode is
    end log_Info;
 
 
+   procedure lock_Home(position : GPS_Loacation_Type; baro_height : Altitude_Type) is
+   begin
+      G_state.home_pos := position;
+      G_state.home_baro_alt := baro_height;
+   end lock_Home;
+
+
+
    function get_Orientation return Orientation_Type is
    begin
       return G_Object_Orientation;
@@ -274,10 +284,22 @@ package body Estimator with SPARK_Mode is
    end get_max_Height;
 
 
+   function get_relative_Height return Altitude_Type is
+      result : Altitude_Type;
+   begin
+      if G_state.fix = FIX_3D then
+         result := G_state.avg_gps_height - G_state.home_pos.Altitude;
+      else
+         result := G_state.avg_baro_height - G_state.home_baro_alt;
+      end if;
+      return result;
+   end get_relative_Height;
 
 
-
-
+   function get_Baro_Height return Altitude_Type is
+   begin
+      return G_state.avg_baro_height;
+   end get_Baro_Height;
 
 
    function Orientation(gravity_vector : Linear_Acceleration_Vector) return Orientation_Type is
@@ -314,7 +336,7 @@ package body Estimator with SPARK_Mode is
       function gps_average( signal : GPS_Buffer_Pack.Element_Array ) return Altitude_Type is
          avg : Altitude_Type;
       begin
-         avg := signal( signal'First ).Altitude / Unit_Type( 2.0 );
+         avg := Altitude_Type( 0.0 );
          for index in GPS_Buffer_Pack.Length_Type range 1 .. 2 loop
             avg := avg + signal( index ).Altitude / Unit_Type( 2.0 );
          end loop;

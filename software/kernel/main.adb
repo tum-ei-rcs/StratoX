@@ -8,7 +8,10 @@ with CPU;
 with Units;            use Units;
 with Units.Navigation; use Units.Navigation;
 
+with HIL;
+
 with MPU6000.Driver;
+with PX4IO.Driver;
 with HIL;
 with NVRAM;
 with Logger;
@@ -79,6 +82,8 @@ package body Main is
 
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_H, exception_line(2));
+         
+         Logger.log_console(Logger.WARN, "Last Exception: " & Integer'Image( Integer( HIL.toUnsigned_16( exception_line ) ) ) );
       end;
 
       -- TODO: pick up last mission state from NVRAM and continue where
@@ -173,6 +178,7 @@ package body Main is
             when Console.STATUS =>
                Estimator.log_Info;
                Controller.log_Info;
+               PX4IO.Driver.read_Status;
 
                Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
 

@@ -11,16 +11,16 @@ package body Units.Vectors is
    begin
       case (axis) is
          when X =>
-            result (Y) := Cos (angle) * vector (Y) - Sin (angle) * vector (Z);
-            result (Z) := Sin (angle) * vector (Y) + Cos (angle) * vector (Z);
+            result (Y) :=  Cos (angle) * vector (Y) - Sin (angle) * vector (Z);
+            result (Z) :=  Sin (angle) * vector (Y) + Cos (angle) * vector (Z);
 
          when Y =>
-            result (X) := Cos (angle) * vector (X) + Sin (angle) * vector (Z);
+            result (X) :=  Cos (angle) * vector (X) + Sin (angle) * vector (Z);
             result (Z) := -Sin (angle) * vector (X) + Cos (angle) * vector (Z);
 
          when Z =>
-            result (X) := Cos (angle) * vector (X) - Sin (angle) * vector (Y);
-            result (Y) := Sin (angle) * vector (X) + Cos (angle) * vector (Y);
+            result (X) :=  Cos (angle) * vector (X) - Sin (angle) * vector (Y);
+            result (Y) :=  Sin (angle) * vector (X) + Cos (angle) * vector (Y);
       end case;
       vector := result;
    end rotate;

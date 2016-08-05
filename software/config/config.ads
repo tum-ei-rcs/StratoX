@@ -28,6 +28,7 @@ package Config is
    -- Flight
    -- -------------------------------
    OPTIMAL_PITCH : constant Pitch_Type := -5.0 * Degree;
+   CIRCLE_TRAJECTORY_ROLL : constant Roll_Type := 8.0 * Degree;
 
 
 

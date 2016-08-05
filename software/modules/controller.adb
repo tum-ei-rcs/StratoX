@@ -96,6 +96,8 @@ package body Controller with SPARK_Mode is
 
 
       G_state.control_profiler.init("Control");
+      Logger.log(Logger.DEBUG, "Controller initialized");
+
    end initialize;
 
 
@@ -173,8 +175,8 @@ package body Controller with SPARK_Mode is
 
       -- control
       control_Pitch;
-      control_Yaw;
-      -- G_Target_Orientation.Roll := 10.0 * Degree;  -- TEST: Omakurve
+      -- control_Yaw;
+      G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
       control_Roll;
 
       G_state.control_profiler.start;
@@ -265,13 +267,17 @@ package body Controller with SPARK_Mode is
       now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Yaw_Control) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
-      G_Last_Yaw_Control := now;
-      G_Target_Orientation.Yaw := Yaw_Type( Heading( G_Object_Position,
-                                                     G_Target_Position ) );
+      if G_Target_Position.Longitude /= 0.0 * Degree and G_Target_Position.Latitude /= 0.0 * Degree then
+         G_Last_Yaw_Control := now;
+         G_Target_Orientation.Yaw := Yaw_Type( Heading( G_Object_Position,
+                                               G_Target_Position ) );
 
-      error := delta_Angle( G_Object_Orientation.Yaw, G_Target_Orientation.Yaw );
+         error := delta_Angle( G_Object_Orientation.Yaw, G_Target_Orientation.Yaw );
 
-      Yaw_PID_Controller.step(PID_Yaw, error, dt, G_Target_Orientation.Roll);
+         Yaw_PID_Controller.step(PID_Yaw, error, dt, G_Target_Orientation.Roll);
+      else
+         G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;
+      end if;
    end control_Yaw;
 
 

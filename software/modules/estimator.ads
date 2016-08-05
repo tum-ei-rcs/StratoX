@@ -28,6 +28,8 @@ package Estimator with SPARK_Mode is
    
    procedure log_Info;
    
+   procedure lock_Home(position : GPS_Loacation_Type; baro_height : Altitude_Type);
+   
    function get_Orientation return Orientation_Type;
    
    function get_Position return GPS_Loacation_Type;
@@ -35,8 +37,12 @@ package Estimator with SPARK_Mode is
    function get_GPS_Fix return GPS_Fix_Type;
    
    function get_current_Height return Altitude_Type;
+   
+   function get_relative_Height return Altitude_Type;
   
    function get_max_Height return Altitude_Type;
+   
+   function get_Baro_Height return Altitude_Type;
    
    function get_Stable_Time return Time_Type;  
    

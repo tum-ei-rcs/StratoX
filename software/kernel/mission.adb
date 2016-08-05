@@ -10,6 +10,7 @@ with Units; use Units;
 
 with Console; use Console;
 with Buzzer_Manager;
+with LED_Manager;
 with Logger;
 with Ulog;
 
@@ -52,20 +53,26 @@ package body Mission with SPARK_Mode is
    procedure load_Mission is
       old_state_val : HIL.Byte := HIL.Byte( 0 );
       height : HIL.Byte_Array_2;
+      baro_height : Altitude_Type;
    begin
       NVRAM.Load( VAR_MISSIONSTATE, old_state_val );
       G_state.mission_state := Mission_State_Type'Val( old_state_val );
       if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
          start_New_Mission;
       else
+         -- Baro
          NVRAM.Load( VAR_HOME_HEIGHT_L, height(1) );
          NVRAM.Load( VAR_HOME_HEIGHT_H, height(2) );
+         baro_height := Unit_Type( HIL.toUnsigned_16( height ) ) * Meter;
+         
+         -- GPS
          NVRAM.Load( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
          NVRAM.Load( VAR_GPS_TARGET_LAT_A,  Float( G_state.home.Latitude ) );
          NVRAM.Load( VAR_GPS_TARGET_ALT_A,  Float( G_state.home.Altitude ) );
          
-         G_state.home.Altitude := Unit_Type( HIL.toUnsigned_16( height ) ) * Meter;
-         Logger.log(Logger.DEBUG, "Home Height: " & Image(G_state.home.Altitude) );
+         -- lock Home
+         Logger.log(Logger.DEBUG, "Home Height: " & Image(G_state.home.Altitude) );  
+         Estimator.lock_Home( G_state.home, baro_height );
          
          Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
       end if;    
@@ -149,9 +156,10 @@ package body Mission with SPARK_Mode is
       procedure lock_Home is
       begin
          G_state.home := Estimator.get_Position;
-         G_state.home.Altitude := Estimator.get_current_Height;
-         NVRAM.Store( VAR_HOME_HEIGHT_L, HIL.toBytes( Unsigned_16( G_state.home.Altitude ) )(1) );
-         NVRAM.Store( VAR_HOME_HEIGHT_H, HIL.toBytes( Unsigned_16( G_state.home.Altitude ) )(2) );
+         Estimator.lock_Home(Estimator.get_Position, Estimator.get_Baro_Height);
+         --G_state.home.Altitude := Estimator.get_current_Height;
+         NVRAM.Store( VAR_HOME_HEIGHT_L, HIL.toBytes( Unsigned_16( Estimator.get_Baro_Height ) )(1) );
+         NVRAM.Store( VAR_HOME_HEIGHT_H, HIL.toBytes( Unsigned_16( Estimator.get_Baro_Height ) )(2) );
          
          NVRAM.Store( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
          NVRAM.Store( VAR_GPS_TARGET_LAT_A,  Float( G_state.home.Latitude ) );
@@ -170,6 +178,7 @@ package body Mission with SPARK_Mode is
       -- check GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
          G_state.gps_lock_threshold_time := G_state.gps_lock_threshold_time + To_Time(now - G_state.last_call); 
+         LED_Manager.LED_switchOn;
          
          if G_state.gps_lock_threshold_time > 10.0 * Second then
             lock_Home;
@@ -213,7 +222,7 @@ package body Mission with SPARK_Mode is
       -- check target height
       -- FIXME: Sprung von Baro auf GPS hat ausgelöst.
       --if Estimator.get_current_Height >= G_state.home.Altitude + Config.CFG_TARGET_ALTITUDE_THRESHOLD then
-      if Estimator.get_current_Height >= G_state.home.Altitude + Config.CFG_TARGET_ALTITUDE_THRESHOLD then
+      if Estimator.get_relative_Height >= Config.CFG_TARGET_ALTITUDE_THRESHOLD then
          G_state.target_threshold_time := G_state.target_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT     
          if G_state.target_threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
             Logger.log(Logger.INFO, "Target height reached. Detaching...");
