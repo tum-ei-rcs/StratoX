@@ -90,6 +90,8 @@ package body Estimator with SPARK_Mode is
 
       -- Position Sensors
       Barometer.Sensor.initialize;
+      Barometer.Sensor.read_Measurement;
+
       GPS.Sensor.initialize;
 
       -- Profiler
@@ -241,6 +243,9 @@ package body Estimator with SPARK_Mode is
    begin
       G_state.home_pos := position;
       G_state.home_baro_alt := baro_height;
+
+      G_state.avg_baro_height := baro_height;
+      G_state.avg_gps_height := position.Altitude;
    end lock_Home;
 
 
@@ -252,6 +257,7 @@ package body Estimator with SPARK_Mode is
 
    function get_Position return GPS_Loacation_Type is
    begin
+      -- G_Object_Position.Altitude := 0.0 * Meter - G_state.avg_baro_height;
       return G_Object_Position;
    end get_Position;
 
@@ -375,7 +381,7 @@ package body Estimator with SPARK_Mode is
          buf : Height_Buffer_Pack.Element_Array(1 .. Height_Buffer_Pack.Length_Type'Last);
       begin
          get_all( G_height_buffer, buf );
-         if Length(G_height_buffer) > 1 then
+         if Length(G_height_buffer) = Height_Buffer_Pack.Length_Type'Last then
             G_state.avg_baro_height := baro_average( buf );
          end if;
       end;

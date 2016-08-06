@@ -6,6 +6,8 @@ with Logger;
 with Profiler;
 with Config.Software;
 with Units.Numerics; use Units.Numerics;
+with Units.Navigation; use Units.Navigation;
+
 with Ulog;
 
 
@@ -22,6 +24,7 @@ package body Controller with SPARK_Mode is
       logger_calls : Logger_Call_Type;
       logger_console_calls : Logger_Call_Type;
       control_profiler : Profiler.Profile_Tag;
+      distance_to_target : Length_Type;
    end record;
 
    package Pitch_PID_Controller is new Generic_PID_Controller(Angle_Type,
@@ -175,8 +178,8 @@ package body Controller with SPARK_Mode is
 
       -- control
       control_Pitch;
-      -- control_Yaw;
-      G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
+      control_Yaw;
+      --G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
       control_Roll;
 
       G_state.control_profiler.start;
@@ -268,6 +271,12 @@ package body Controller with SPARK_Mode is
       dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Yaw_Control) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
       if G_Target_Position.Longitude /= 0.0 * Degree and G_Target_Position.Latitude /= 0.0 * Degree then
+
+         G_state.distance_to_target := Distance( G_Object_Position, G_Target_Position );
+
+         -- Logger.log( Logger.INFO, " Distance: " & Integer'Image( Integer( G_state.distance_to_target )) );
+
+
          G_Last_Yaw_Control := now;
          G_Target_Orientation.Yaw := Yaw_Type( Heading( G_Object_Position,
                                                G_Target_Position ) );

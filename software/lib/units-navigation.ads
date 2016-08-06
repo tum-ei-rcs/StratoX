@@ -27,7 +27,7 @@ package Units.Navigation with SPARK_Mode is
    -- GPS Position
    subtype Longitude_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree;
    subtype Latitude_Type is Units.Angle_Type range -90.0 * Degree .. 90.0 * Degree;
-   subtype Altitude_Type is Units.Length_Type range -10.0 * Meter .. 10_000.0 * Meter;
+   subtype Altitude_Type is Units.Length_Type range -100.0 * Meter .. 10_000.0 * Meter;
 
    type GPS_Loacation_Type is record
       Longitude : Longitude_Type := 0.0 * Degree;
@@ -79,8 +79,7 @@ package Units.Navigation with SPARK_Mode is
    function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type;
 
 
-   -- function Distance( source : GPS_Loacation_Type, destination : GPS_Loacation_Type ) return Length_Type is ()
-
+   function Distance( source : GPS_Loacation_Type; target: GPS_Loacation_Type ) return Length_Type;
 
 
    function To_Orientation( rotation : Rotation_Vector ) return Orientation_Type is

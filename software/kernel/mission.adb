@@ -73,6 +73,7 @@ package body Mission with SPARK_Mode is
          -- lock Home
          Logger.log(Logger.DEBUG, "Home Height: " & Image(G_state.home.Altitude) );  
          Estimator.lock_Home( G_state.home, baro_height );
+         Controller.set_Target_Position( G_state.home );
          
          Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
       end if;    

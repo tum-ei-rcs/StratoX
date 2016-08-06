@@ -61,7 +61,7 @@ private
    
    function valid_Package( data : in Data_Type ) return Boolean;
    
-   procedure write(page : Page_Type; offset : Offset_Type; data : Data_Type) 
+   procedure write(page : Page_Type; offset : Offset_Type; data : Data_Type; retries : Natural := 2) 
    with pre => data'Length mod 2 = 0 and data'Length <= 64;
 
 end PX4IO.Driver;

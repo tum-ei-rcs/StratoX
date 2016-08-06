@@ -22,8 +22,8 @@ package Config.Software is
    
    -- Misison
    CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 60.0 * Second;
-   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 600.0 * Second;
-   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 360.0 * Second;
+   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 60.0 * Second;   -- 600
+   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 60.0 * Second;  -- 360
    
    
 

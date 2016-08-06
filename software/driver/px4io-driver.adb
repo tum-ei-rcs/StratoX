@@ -6,6 +6,8 @@ with CRC8;
 with Logger;
 with HIL.Devices;
 
+with Profiler;
+
 package body PX4IO.Driver 
 with SPARK_Mode
 is
@@ -27,7 +29,7 @@ is
    G_state : State_Type;
    
    
-   procedure write(page : Page_Type; offset : Offset_Type; data : Data_Type) 
+   procedure write(page : Page_Type; offset : Offset_Type; data : Data_Type; retries : in Natural := 2) 
    is
       Data_TX : HIL.UART.Data_Type := (
                                        1 => HIL.Byte( PKT_CODE_WRITE + data'Length/2 ),
@@ -37,7 +39,7 @@ is
                                        ) & data;
       Data_RX : HIL.UART.Data_Type(1 ..4) := (others => 0);
       valid   : Boolean := False;
-      retries : Natural range 0 .. 5 := 0;
+      curr_retry : Natural := 0;
    begin
    
       Transmit_Loop : loop
@@ -48,17 +50,17 @@ is
       
          valid := valid_Package( Data_RX ) and Data_RX(1) = PKT_CODE_SUCCESS;
          
-         exit Transmit_Loop when valid or retries >= 2;
-         retries := retries + 1;
+         exit Transmit_Loop when valid or curr_retry >= retries;
+         curr_retry := curr_retry + 1;
       end loop Transmit_Loop;
       
-      if retries >= 2 then
+      if curr_retry >= retries then
          Logger.log_console(Logger.WARN, "PX4IO write failed");
       end if;
       
    end write;
    
-   procedure read(page : Page_Type; offset : Offset_Type; data : out Data_Type)
+   procedure read(page : Page_Type; offset : Offset_Type; data : out Data_Type; retries : in Natural := 2)
    with pre => data'Length mod 2 = 0 and data'Length > 0
    is
       Data_TX : HIL.UART.Data_Type(1 .. (4+data'Length)) := (     -- maximum 68 (4 + 64), but is this necessary?
@@ -70,7 +72,15 @@ is
                                                );
       Data_RX : HIL.UART.Data_Type(1 .. (4+data'Length)) := ( others => 0 );
       valid   : Boolean := False;
-      retries : Natural range 0 .. 5 := 0;
+      curr_retry : Natural := 0;
+      
+      
+      procedure delay_us( us : Natural ) is
+         t_abs : Ada.Real_Time.Time := Clock;
+      begin
+         t_abs := t_abs + Microseconds( us );
+         delay until t_abs;
+      end;
    begin
    
       Transmit_Loop : loop
@@ -80,12 +90,18 @@ is
          
          valid := valid_Package( Data_RX );
          
-         exit Transmit_Loop when valid or retries >= 2;
-         retries := retries + 1;
+         exit Transmit_Loop when valid or curr_retry >= retries;
+         curr_retry := curr_retry + 1;
+         delay_us( 100 );
       end loop Transmit_Loop;
-      
+
       -- for pos in Data'Range loop
       data( data'Range ) := Data_RX(5 .. (4 + data'Length));
+
+      if curr_retry >= retries then
+         Logger.log_console(Logger.WARN, "PX4IO read failed");
+         data( data'Range ) := (others => HIL.Byte( 0 ) );
+      end if;
    end read;
    
    
@@ -93,7 +109,7 @@ is
       Data   : Data_Type(1 .. 2) := ( others => 0 );
       Status : Unsigned_16 := 0;
    begin
-      read(page, offset, Data);
+      read(page, offset, Data, 10);
       Status := HIL.toUnsigned_16( Data );
       set_Bits(Status, set_mask);
       Data   := HIL.toBytes( Status );      
@@ -104,7 +120,7 @@ is
       Data   : Data_Type(1 .. 2) := ( others => 0 );
       Status : Unsigned_16 := 0;
    begin
-      read(page, offset, Data);
+      read(page, offset, Data, 10);
       Status := HIL.toUnsigned_16( Data );
       clear_Bits(Status, clear_mask);
       Data   := HIL.toBytes( Status );      
@@ -138,10 +154,11 @@ is
          -- increment it with Milliseconds:
          t_abs : Ada.Real_Time.Time := Clock;
       begin
-         t_abs := t_abs + Microseconds( 2 );
+         t_abs := t_abs + Microseconds( us );
          delay until t_abs;
       end;
       
+      delay_profiler : Profiler.Profile_Tag;
       
    begin
       Logger.log_console(Logger.DEBUG, "Probe PX4IO");
@@ -159,9 +176,18 @@ is
       write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_SET_DEBUG, HIL.toBytes ( Unsigned_16(5) ) );
       --delay until Clock + Milliseconds ( 2 ); -- delay until or Clock makes SPARK conk out      
 
+
+
+      -- safety on (for config after reboot)
+      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, HIL.toBytes (PX4IO_FORCE_SAFETY_MAGIC ) ); -- force into armed state
+
+
       -- clear all Alarms
       write(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, (1 .. 2 => HIL.Byte ( 255 ) ) );   -- PX4IO clears Bits with 1 (inverted)
-      delay_us( 100 );                                                                               
+      
+      delay_profiler.init("DelayProf");
+      delay_profiler.start;
+      
       
       -- clear status flags
       modify_clear(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
@@ -173,8 +199,8 @@ is
                   PX4IO_P_STATUS_FLAGS_MIXER_OK or
                   PX4IO_P_STATUS_FLAGS_INIT_OK
                   );
-      delay_us( 100 );           
-    
+            
+      
       -- disarm before setup (exactly as in original PX4 code)
       modify_clear(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
 		PX4IO_P_SETUP_ARMING_FMU_ARMED or
@@ -186,7 +212,15 @@ is
                 PX4IO_P_SETUP_ARMING_TERMINATION_FAILSAFE or -- was 1 during failsafe
                 PX4IO_P_SETUP_ARMING_LOCKDOWN );
       --delay until Clock + Milliseconds ( 2 );
-      delay_us( 100 ); 
+      
+      -- clear termination and failsafe twice, because px4io requires two steps for clearing both
+--        modify_clear(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
+--                     PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE or
+--                     PX4IO_P_SETUP_ARMING_TERMINATION_FAILSAFE );
+--        
+      
+      -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
+      modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED);       
       
       -- read the setup
       read_Status;
@@ -199,21 +233,9 @@ is
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_MAX_TRANSFER, Data);   -- substract -2 (because PX4 is doing it)
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_RC_INPUT_COUNT, Data);
       --delay until Clock + Milliseconds ( 2 );
-    
-    
-      -- set PWM limits
-      --write(PX4IO_PAGE_CONTROL_MIN_PWM, 0, );
-      --write(PX4IO_PAGE_CONTROL_MAX_PWM
+       
       
-      
-      -- give IO some values (should enable PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED )
-      sync_Outputs;     
-      delay_us( 100 ); 
-      
-      
-      -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
-      --modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED); 
-      --delay until Clock + Milliseconds ( 2 );
+     
 
 
       -- setup arming
@@ -236,6 +258,14 @@ is
 
       -- safety off
       write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes (PX4IO_FORCE_SAFETY_MAGIC ) ); -- force into armed state
+
+
+      delay_profiler.stop;
+
+      -- give IO some values (should enable PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED )
+      sync_Outputs;
+
+      delay_profiler.log;
 
    end initialize;
    
