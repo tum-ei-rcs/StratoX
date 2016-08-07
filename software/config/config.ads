@@ -19,22 +19,28 @@ package Config is
 
    BARO_I2C_ADDRESS : constant := 0;
 
+
+
+
+
    -- Estimator
    -- -------------------------------
    DEFAULT_LONGITUDE : constant Longitude_Type := 11.60555 * Degree;     -- Englischer Garten
    DEFAULT_LATITUDE  : constant Latitude_Type := 48.16423 * Degree;
 
+   TARGET_AREA_RADIUS : constant Length_Type := 50.0 * Meter;
+
 
    -- Flight
    -- -------------------------------
-   OPTIMAL_PITCH : constant Pitch_Type := -5.0 * Degree;
-   CIRCLE_TRAJECTORY_ROLL : constant Roll_Type := 8.0 * Degree;
+   OPTIMAL_PITCH : constant Pitch_Type := -3.0 * Degree;
+   CIRCLE_TRAJECTORY_ROLL : constant Roll_Type := 5.0 * Degree;
 
 
 
    -- Mission
    -- -------------------------------
-   CFG_TARGET_ALTITUDE_THRESHOLD : constant Altitude_Type := 70.0 * Meter;
+   CFG_TARGET_ALTITUDE_THRESHOLD : constant Altitude_Type := 100.0 * Meter;
    CFG_TARGET_ALTITUDE_THRESHOLD_TIME : constant := 6.0 * Second;
 
    CFG_DELTA_ALTITUDE_THRESH : constant Altitude_Type := 20.0 * Meter;  -- Diff
@@ -57,5 +63,23 @@ package Config is
 
    CFG_MOTOR_SPEED_LIMIT_MIN : constant := 0.0 * Degree / Second;
    CFG_MOTOR_SPEED_LIMIT_MAX : constant := 10.0 * 360.0 * Degree / Second;  -- Degree per Second
+
+
+
+   -- Parameter Server
+   -- organize parameters in groups
+
+   type Float_Parameter_Type is( TIMEOUT_TEST,
+                                 BUADRATE
+                                 );
+
+   type FLoat_Parameter_Array is array( Float_Parameter_Type ) of Float;
+
+
+
+   -- procedure get_Parameter( param : Float_Parameter_Type; value : out Float );
+
+
+
 
 end Config;

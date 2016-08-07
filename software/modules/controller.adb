@@ -178,8 +178,8 @@ package body Controller with SPARK_Mode is
 
       -- control
       control_Pitch;
-      control_Yaw;
-      --G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
+      --control_Yaw;
+      G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
       control_Roll;
 
       G_state.control_profiler.start;
@@ -276,14 +276,17 @@ package body Controller with SPARK_Mode is
 
          -- Logger.log( Logger.INFO, " Distance: " & Integer'Image( Integer( G_state.distance_to_target )) );
 
+         if G_state.distance_to_target > Config.TARGET_AREA_RADIUS then
+            G_Last_Yaw_Control := now;
+            G_Target_Orientation.Yaw := Yaw_Type( Heading( G_Object_Position,
+                                                  G_Target_Position ) );
 
-         G_Last_Yaw_Control := now;
-         G_Target_Orientation.Yaw := Yaw_Type( Heading( G_Object_Position,
-                                               G_Target_Position ) );
+            error := delta_Angle( G_Object_Orientation.Yaw, G_Target_Orientation.Yaw );
 
-         error := delta_Angle( G_Object_Orientation.Yaw, G_Target_Orientation.Yaw );
-
-         Yaw_PID_Controller.step(PID_Yaw, error, dt, G_Target_Orientation.Roll);
+            Yaw_PID_Controller.step(PID_Yaw, error, dt, G_Target_Orientation.Roll);
+         else
+            G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;
+         end if;
       else
          G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;
       end if;
