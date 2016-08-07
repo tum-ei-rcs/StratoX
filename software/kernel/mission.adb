@@ -212,7 +212,7 @@ package body Mission with SPARK_Mode is
 
    procedure monitor_Ascend is
       height : Altitude_Type := 0.0 * Meter;
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       -- Estimator
       Estimator.update;
@@ -272,7 +272,7 @@ package body Mission with SPARK_Mode is
    end perform_Detach;
 
    procedure control_Descend is
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       
       procedure deactivate is
       begin

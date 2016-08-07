@@ -3,14 +3,15 @@
 --  Author: Martin Becker (becker@rcs.ei.tum.de)
 
 --  @summary String functions
-package MyStrings is
+package MyStrings with SPARK_Mode is
    function Is_AlNum (c : Character) return Boolean;
    --  is the given character alphanumeric?
 
    function Strip_Non_Alphanum (s : String) return String;
    --  remove all non-alphanumeric characters from string
 
-   function StrChr (S : String; C : Character) return Integer;
+   function StrChr (S : String; C : Character) return Integer with
+     Pre => S'Last < Natural'Last;
    --  search for occurence of character in string.
    --  return index in S, or S'Last + 1 if not found.
 

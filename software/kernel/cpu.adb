@@ -12,7 +12,7 @@ with HIL.I2C;
 with Ada.Real_Time; use Ada.Real_Time;
 
 
-package body CPU is
+package body CPU with SPARK_Mode is
 
    -- configures hardware registers
    procedure initialize is

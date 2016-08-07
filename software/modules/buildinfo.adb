@@ -1,6 +1,6 @@
 with MyStrings; use MyStrings;
 
-package body Buildinfo is
+package body Buildinfo with SPARK_Mode is
 
    function Short_Datetime return String is
       b_time : constant String := Strip_Non_Alphanum (Compilation_Time);

@@ -1,5 +1,5 @@
 with Ada.Numerics.Generic_Elementary_Functions;
-package body Quaternions is
+package body Generic_Quaternions is
    package Elementary_Functions is
       new Ada.Numerics.Generic_Elementary_Functions (Real);
    use Elementary_Functions;
@@ -56,4 +56,4 @@ package body Quaternions is
              Real'Image (Left.C) & "j +" &
              Real'Image (Left.D) & "k";
    end Image;
-end Quaternions;
+end Generic_Quaternions;

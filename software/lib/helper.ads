@@ -11,17 +11,12 @@
 -- [ ] Implementation
 
 
-package Helper is
-
+package Helper with SPARK_Mode is
 
    generic
       type Numeric_Type is range <>;
-   function addWrap( 
-                     x   : Numeric_Type; 
-                     inc : Numeric_Type)
-                    return Numeric_Type;
-
-
+   function addWrap(x   : Numeric_Type; 
+                    inc : Numeric_Type) return Numeric_Type;
 
 --    function deltaWrap( 
 --      low  : Integer; 
@@ -30,12 +25,9 @@ package Helper is
 --    is ( if low < high then (high - low)
 --         else (high'Last - low) + (high - low'First) );
 
-
-
    -- to polar
 
-   procedure delay_ms( ms : Natural);
-   
+   procedure delay_ms (ms : Natural);   
 
    --  Saturate a Float value within a given range.
    function Saturate

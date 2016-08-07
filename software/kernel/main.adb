@@ -27,7 +27,7 @@ with Buzzer_Manager;
 with Buildinfo;
 with Profiler; use Profiler;
 
-package body Main is
+package body Main with SPARK_Mode => Off is --  SPARK: "unbound symbol 'Floating.remainder_'"
 
    type LED_Counter_Type is mod 1000/Config.Software.MAIN_TICK_RATE_MS/2;
    G_led_counter : LED_Counter_Type := 0;
@@ -53,7 +53,11 @@ package body Main is
       -- MPU6000.Driver.Reset;
 
       -- wait to satisfy some (?) timing
-      delay until Clock + Milliseconds (50);
+      declare
+         now : constant Time := Clock;
+      begin
+         delay until now + Milliseconds (50);
+      end;
 
       --  start NVRAM (bootcounter...)
       Logger.log_console (Logger.INFO, "Initializing NVRAM...");
@@ -69,7 +73,11 @@ package body Main is
 
       --  wait to satisfy some timing
       --  TODO XXX FIXME: why? This is too slow for in-air reset.
-      delay until Clock + Milliseconds (1500);
+      declare
+         now : constant Time := Clock;
+      begin
+         delay until now + Milliseconds (1500);
+      end;
 
       --  Illustration how to use NVRAM
       declare
@@ -82,7 +90,7 @@ package body Main is
 
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_H, exception_line(2));
-         
+
          Logger.log_console(Logger.WARN, "Last Exception: " & Integer'Image( Integer( HIL.toUnsigned_16( exception_line ) ) ) );
       end;
 
@@ -196,9 +204,14 @@ package body Main is
 
          -- Profile
          Main_Profile.stop;
-         if loop_duration_max < (Clock - loop_time_start) then
-            loop_duration_max := Clock - loop_time_start;
-         end if;
+         declare
+            now  : constant Time := Clock;
+            diff : constant Time_Span := now - loop_time_start;
+         begin
+            if loop_duration_max < diff then
+               loop_duration_max := diff;
+            end if;
+         end;
 
          -- wait remaining loop time
          delay until loop_time_start + Milliseconds (MAIN_TICK_RATE_MS);

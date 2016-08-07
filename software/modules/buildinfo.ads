@@ -1,4 +1,4 @@
-package Buildinfo is
+package Buildinfo with SPARK_Mode is
    function Compilation_Date return String -- implementation-defined (GNAT)
      with Import, Convention => Intrinsic;
    function Compilation_Time return String -- implementation-defined (GNAT)
