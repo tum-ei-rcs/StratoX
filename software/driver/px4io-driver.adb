@@ -290,17 +290,18 @@ is
       function saturate( angle : Angle_Type ) return Servo_Angle_Type is
          result : Servo_Angle_Type := 0.0 * Degree;
       begin
-         if Angle_Type(angle) > Servo_Angle_Type'Last then
+         if angle > Servo_Angle_Type'Last then
             result := Servo_Angle_Type'Last;
-         elsif Angle_Type(angle) < Servo_Angle_Type'First then
+         elsif angle < Servo_Angle_Type'First then
             result := Servo_Angle_Type'First;
          else
-            result := Angle_Type(angle);
+            result := angle;
          end if;
          return result;
       end saturate;
    begin
       case(servo) is
+         --  TODO: bug? Servo_Angle_Type is casted to Angle_Type, but latter one is in radians, servo angle in degree.
             when LEFT_ELEVON  => G_Servo_Angle_Left  := saturate( Angle_Type(angle) - Angle_Type(G_state.Left_Servo_Offset) );
             when RIGHT_ELEVON => G_Servo_Angle_Right := saturate( Angle_Type(angle) - Angle_Type(G_state.Right_Servo_Offset) );
       end case;

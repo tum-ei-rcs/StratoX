@@ -4,11 +4,11 @@
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 with Interfaces; use Interfaces;
 with HIL.NVRAM;  use HIL.NVRAM;
-with HIL; use HIL;
+with HIL;        use HIL;
 with Buildinfo;  use Buildinfo;
 with Fletcher16;
 
-package body NVRAM with SPARK_Mode => Off,   -- Test
+package body NVRAM with SPARK_Mode => On,   -- Somehow this package includes interrupts, which are accesses
    Refined_State => (Memory_State => null)
 is
 

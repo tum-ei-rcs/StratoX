@@ -1,6 +1,6 @@
 generic
    type Real is digits <>;
-package Quaternions is
+package Generic_Quaternions is
    type Quaternion is record
       A, B, C, D : Real;
    end record;
@@ -13,4 +13,4 @@ package Quaternions is
    function "*" (Left : Real; Right : Quaternion) return Quaternion;
    function "*" (Left, Right : Quaternion) return Quaternion;
    function Image (Left : Quaternion) return String;
-end Quaternions;
+end Generic_Quaternions;

@@ -3,17 +3,21 @@
 --  Author: Martin Becker (becker@rcs.ei.tum.de)
 
 --  @summary String functions
-package body MyStrings is
+package body MyStrings with SPARK_Mode is
 
    procedure StrCpySpace (outstring : out String; instring : String) is
    begin
       if instring'Length >= outstring'Length then
          --  trim
-         outstring := instring (instring'First .. instring'First + outstring'Length - 1);
+         outstring := instring (instring'First .. instring'First - 1 + outstring'Length);
       else
          --  pad
-         outstring (outstring'First .. instring'Length) := instring;
-         outstring (instring'Length + 1 .. outstring'Last) := (others => ' ');
+         declare
+            lastidx : constant Natural := outstring'First + instring'Length - 1;
+         begin
+            outstring := (others => ' ');
+            outstring (outstring'First .. lastidx) := instring;
+         end;
       end if;
    end StrCpySpace;
 
@@ -59,7 +63,7 @@ package body MyStrings is
       return (c in 'a' .. 'z') or (c in 'A' .. 'Z') or (c in '0' .. '9');
    end Is_AlNum;
 
-   function Strip_Non_Alphanum (s : String) return String is
+   function Strip_Non_Alphanum (s : String) return String with SPARK_Mode => Off is
       tmp : String (1 .. s'Length) := s;
       len : Integer := 0;
    begin
@@ -70,7 +74,7 @@ package body MyStrings is
          end if;
       end loop;
       declare
-         ret : constant String (1 .. len) := tmp (1 .. len);
+         ret : constant String (1 .. len) := tmp (1 .. len); --  SPARK: "subtype constraint cannot depend on len"
       begin
          return ret;
       end;

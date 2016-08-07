@@ -1,10 +1,8 @@
-
 with Config.Software;
 with HIL.UART;
 with HIL.Devices;
 
-
-package body Console is
+package body Console with SPARK_Mode => Off is -- SPARK: "unbound symbol 'Floating.remainder_'"
 
    procedure read_Command( cmd : out User_Command_Type ) is
       data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);

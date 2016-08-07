@@ -5,15 +5,20 @@ with Profiler;
 with Ada.Real_Time; use Ada.Real_Time;
 with Logger;
 with Units;
+with FAT_Filesystem;                   use FAT_Filesystem;
+with FAT_Filesystem.Directories;       use FAT_Filesystem.Directories;
+with FAT_Filesystem.Directories.Files; use FAT_Filesystem.Directories.Files;
 
 --  @summary tools for SD Logging
-package body SDLog.Tools is
+package body SDLog.Tools with SPARK_Mode => Off is
+
+   ENDL : constant Character := Character'Val (10);
 
    --------------------
    --  Perf_Test
    --------------------
 
-   procedure Perf_Test (megabytes : Unsigned_32) is
+   procedure Perf_Test (FS : in FAT_Filesystem_Access; megabytes : Unsigned_32) is
       dummydata  : FAT_Filesystem.Directories.Files.File_Data (1 .. 1024);
       TARGETSIZE : constant Unsigned_32 := megabytes * 1024 * 1024;
       filesize   : Unsigned_32;
@@ -48,7 +53,7 @@ package body SDLog.Tools is
    begin
       Logger.log_console (Logger.INFO, "Write performance test with " & megabytes'Img & " MB" & ENDL);
 
-      if (not SD_Initialized) or Error_State then
+      if (not SDLog.SD_Initialized) or SDLog.Error_State then
          Logger.log_console (Logger.ERROR, "SD Card not initialized" & ENDL);
          return;
       end if;
@@ -107,12 +112,12 @@ package body SDLog.Tools is
    --  List_Rootdir
    ------------------
 
-   procedure List_Rootdir is
+   procedure List_Rootdir (FS : in FAT_Filesystem_Access) is
       Dir : Directory_Handle;
       Ent : Directory_Entry;
    begin
 
-      if (not SD_Initialized) or Error_State then
+      if (not SDLog.SD_Initialized) or SDLog.Error_State then
          return;
       end if;
 
