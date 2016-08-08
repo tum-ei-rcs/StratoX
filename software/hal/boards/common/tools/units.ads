@@ -331,20 +331,18 @@ package Units with
    ( Left + Ada.Real_Time.Microseconds ( Integer( Float(Right)/Float(1.0e-6) ) ) );
 
 
-   -- wrap angle between two values
-   -- idea: shift range to 0 .. X, wrap with mod, shift back
-   function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
-   ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
-   -- FIXME: Spark error: unbound symbol 'Floating.remainder_'
-   -- ( if angle > max then max elsif angle < min then min else angle );
---     with
---     pre => max > min,
---     post => wrap_Angle'Result in min .. max;
--- if angle - min < 0.0 * Degree then Angle_Type'Remainder( (angle - min), (max-min) ) + max else
+   function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
+     with Pre => min <= 0.0 * Radian and then
+     max >= 0.0 * Radian and then
+     max > min and then
+     max < Angle_Type'Last / 2.0 and then
+     min > Angle_Type'First / 2.0,
+     Post => wrap_angle'Result >= min and wrap_angle'Result <= max;
+   --  wrap angle between two values
+   --  Must make no assumptions on input 'angle' here, otherwise caller might fail if it isn't SPARK.
 
 
   -- procedure Saturate(input : Unit_Type; output : in out Unit_Type);
-
 
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type;
 

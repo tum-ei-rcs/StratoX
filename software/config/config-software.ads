@@ -1,17 +1,14 @@
--- Institution: Technische Universität München
+-- Institution: Technische Universitaet Muenchen
 -- Department:  Realtime Computer Systems (RCS)
 -- Project:     StratoX
 -- Module:      Software Configuration
---
--- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
---
--- Description:
--- Configuration of the Software, adjust these parameters to your needs
-
+-- Authors:     Emanuel Regnath (emanuel.regnath@tum.de)
+-- 
 with Units;
 with Logger;
 
-package Config.Software is
+--  @summary Configuration of the Software, adjust these parameters to your needs
+package Config.Software with SPARK_Mode is
 
    DEBUG_MODE_IS_ACTIVE : constant Boolean := True;
    
@@ -53,7 +50,7 @@ package Config.Software is
    -- ----------------------------------------
    
    -- Roll Constrains
-   CFG_TARGET_ROLL_LIMIT : constant Roll_Type := 10.0 * Degree; 
+   CFG_TARGET_ROLL_LIMIT : constant Roll_Type := 10.0 * Degree;    
    
    
    -- PID Gains

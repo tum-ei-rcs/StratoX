@@ -1,3 +1,5 @@
+with Interfaces; use Interfaces;
+
 package body Units is
 
 
@@ -24,6 +26,57 @@ package body Units is
       return avg;
    end average;
 
+   -- idea: shift range to 0 .. X, wrap with mod, shift back
+   --function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
+   -- ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
+   function wrap_angle (angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
+      span : constant Angle_Type := max - min;
+      d_flt : Float;
+      d_int : Float;
+      frac  : Float;
+      less  : Angle_Type;
+      wr    : Angle_Type;
+      off   : Angle_Type;
+      f64   : Interfaces.IEEE_Float_64;
+   begin
+      if span = Angle_Type (0.0) then
+         --  this might happen due to float cancellation, despite precondition
+         wr := min;
+      else
+         pragma Assert (span > Angle_Type (0.0));
+         if angle >= min and angle <= max then
+            wr := angle;
+         elsif angle < min then
+            off := (min - angle);
+            d_flt := Float (off / span); -- overflow check might fail
+            d_int := Float'Floor (d_flt);
+            frac  := Float (d_flt - d_int);
+            f64 := Interfaces.IEEE_Float_64 (frac) * Interfaces.IEEE_Float_64 (span);
+            --pragma Assert (f64 >= 0.0);
+            if f64 < Interfaces.IEEE_Float_64 (Angle_Type'Last) and f64 >= Interfaces.IEEE_Float_64 (Angle_Type'First) then
+               less := Angle_Type (f64); -- overflow check might fail
+               wr := max - less;
+            else
+               wr := min;
+            end if;
+         else -- angle > max
+            off := angle - max;
+            d_flt := Float (off / span); -- overflow check might fail
+            d_int := Float'Floor (d_flt);
+            frac  := Float (d_flt - d_int);
+            pragma Assert (frac >= 0.0);
+            f64 := Interfaces.IEEE_Float_64 (frac) * Interfaces.IEEE_Float_64 (span);
+            --pragma Assert (f64 >= 0.0); -- this fails. why? both span and frac are positive
+            if f64 > Interfaces.IEEE_Float_64 (Angle_Type'First) and f64 < Interfaces.IEEE_Float_64 (Angle_Type'Last) then
+               less := Angle_Type (f64);
+               wr := min + less;
+            else
+               wr := max;
+            end if;
+         end if;
+      end if;
+      return wr;
+   end wrap_angle;
 
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type is
       result : Angle_Type := To - From;

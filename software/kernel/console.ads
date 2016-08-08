@@ -1,16 +1,13 @@
--- Institution: Technische Universität München
+-- Institution: Technische Universitaet Muenchen
 -- Department:  Realtime Computer Systems (RCS)
 -- Project:     StratoX
 -- Module:      Console
---
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
---
--- Description: Command Line Interface for user interactions
 -- 
 -- ToDo:
 -- [ ] Implementation
 
-
+--  @summary Command Line Interface for user interactions
 package Console with 
    SPARK_Mode
 is

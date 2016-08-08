@@ -15,7 +15,6 @@ with Units.Navigation; use Units.Navigation;
 
 package Controller with SPARK_Mode is
 
-
    -- init
    procedure initialize;
         

@@ -1,8 +1,13 @@
+--  Institution: Technische Universitaet Muenchen
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--  Author:      Emanuel Regnath (emanuel.regnath@tum.de)
 with Config.Software;
 with HIL.UART;
 with HIL.Devices;
 
-package body Console with SPARK_Mode => Off is -- SPARK: "unbound symbol 'Floating.remainder_'"
+--  @summary Command Line Interface for user interactions
+package body Console with SPARK_Mode => On is
 
    procedure read_Command( cmd : out User_Command_Type ) is
       data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);
@@ -49,6 +54,7 @@ package body Console with SPARK_Mode => Off is -- SPARK: "unbound symbol 'Floati
       CR : constant Character := Character'Val(13);  -- ASCII
    begin
       HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message & CR ) );
+      null;
    end write_Line;
 
 end Console;

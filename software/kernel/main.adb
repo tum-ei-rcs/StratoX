@@ -27,7 +27,7 @@ with Buzzer_Manager;
 with Buildinfo;
 with Profiler; use Profiler;
 
-package body Main with SPARK_Mode => Off is --  SPARK: "unbound symbol 'Floating.remainder_'"
+package body Main with SPARK_Mode => On is
 
    type LED_Counter_Type is mod 1000/Config.Software.MAIN_TICK_RATE_MS/2;
    G_led_counter : LED_Counter_Type := 0;
