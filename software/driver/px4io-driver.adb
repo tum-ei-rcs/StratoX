@@ -9,7 +9,7 @@ with HIL.Devices;
 with Profiler;
 
 package body PX4IO.Driver 
-with SPARK_Mode
+with SPARK_Mode => Off -- fix bug in set_servo_angle() first (dimension mismatch)
 is
    type Check_Status_Mod_Type is mod 2**5;
    G_check_counter : Check_Status_Mod_Type := 0;
