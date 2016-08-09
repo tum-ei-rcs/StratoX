@@ -107,7 +107,7 @@ package body Main is
       mgps.alt := 560.0;
       mgps.gps_week := 1908;
       mgps.gps_msec := 0;
-      mgps.fix := ULog.FIX3D;
+      mgps.fix := 0;
       mgps.nsat := 8;
 
       loop

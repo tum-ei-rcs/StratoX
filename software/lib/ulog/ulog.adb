@@ -47,68 +47,121 @@ package body ULog with SPARK_Mode => On is
    --  Such FMT messages define the anatomy of 'msg body' for
    --  all messages with Type /= 0x80.
 
-   ----------------
-   --  PROTOTYPES
-   ----------------
+   ---------------------
+   --  USER PROTOTYPES
+   ---------------------
+
+   --  add one Serialize_Ulog_* for each new message
+   procedure Serialize_Ulog_GPS (ct : in out ULog.Conversions.Conversion_Tag;
+                                 msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = GPS;
+
+   procedure Serialize_Ulog_IMU (ct : in out ULog.Conversions.Conversion_Tag;
+                                 msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = IMU;
+
+   procedure Serialize_Ulog_Controller (ct : in out ULog.Conversions.Conversion_Tag;
+                                        msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = CONTROLLER;
+
+   procedure Serialize_Ulog_Text (ct : in out ULog.Conversions.Conversion_Tag;
+                                  msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = TEXT;
+
+   procedure Serialize_Ulog_LogQ (ct : in out ULog.Conversions.Conversion_Tag;
+                                  msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = LOG_QUEUE;
+
+   -------------------------
+   --  INTERNAL PROTOTYPES
+   -------------------------
+
    function Time_To_U64 (rtime : Ada.Real_Time.Time) return Unsigned_64
-     with Pre => rtime >= Ada.Real_Time.Time_First;
+     with Pre => rtime >= Ada.Real_Time.Time_First; -- SPARK: "precond. might fail". Me: no (private type).
+
+   procedure Serialize_Ulog_With_Tag (ct : out ULog.Conversions.Conversion_Tag;
+                                      msg : in Message;
+                                      len : out Natural;
+                                      bytes : out HIL.Byte_Array)
+     with Post => len < 256 and --  ulog messages cannot be longer
+     then len <= bytes'Length;
 
    ------------------------
    --  Serialize_Ulog_GPS
    ------------------------
 
-   procedure Serialize_Ulog_GPS (msg : in Message; buf : out HIL.Byte_Array) is
+   procedure Serialize_Ulog_GPS (ct : in out ULog.Conversions.Conversion_Tag;
+                                 msg : in Message; buf : out HIL.Byte_Array) is
    begin
-      Set_Name ("GPS");
-      Append_Float ("lat", buf, msg.lat);
-      Append_Float ("lon", buf, msg.lon);
-      Append_Float ("alt", buf, msg.alt);
-      Append_Uint8 ("sat", buf, msg.nsat);
-      Append_Uint8 ("fix", buf, msg.fix);
-      Append_Uint64 ("ms", buf, msg.gps_msec);
-      Append_Int16 ("wk", buf, msg.gps_week);
+      Set_Name (ct, "GPS");
+      Append_Float (ct, "lat", buf, msg.lat);
+      Append_Float (ct, "lon", buf, msg.lon);
+      Append_Float (ct, "alt", buf, msg.alt);
+      Append_Uint8 (ct, "sat", buf, msg.nsat);
+      Append_Uint8 (ct, "fix", buf, msg.fix);
+      Append_Uint64 (ct, "ms", buf, msg.gps_msec);
+      Append_Int16 (ct, "wk", buf, msg.gps_week);
    end Serialize_Ulog_GPS;
+   --  pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 
-   procedure Serialize_Ulog_IMU (msg : in Message; buf : out HIL.Byte_Array) is
+
+   ------------------------
+   --  Serialize_Ulog_IMU
+   ------------------------
+
+   procedure Serialize_Ulog_IMU (ct : in out ULog.Conversions.Conversion_Tag;
+                                 msg : in Message; buf : out HIL.Byte_Array) is
    begin
-      Set_Name ("IMU");
-      Append_Float ("accX", buf, msg.accX);
-      Append_Float ("accY", buf, msg.accY);
-      Append_Float ("accZ", buf, msg.accZ);
-      Append_Float ("gyroX", buf, msg.gyroX);
-      Append_Float ("gyroY", buf, msg.gyroY);
-      Append_Float ("gyroZ", buf, msg.gyroZ);
-      Append_Float ("roll", buf, msg.roll);
-      Append_Float ("pitch", buf, msg.pitch);
-      Append_Float ("yaw", buf, msg.yaw);
+      Set_Name (ct, "IMU");
+      Append_Float (ct, "accX", buf, msg.accX);
+      Append_Float (ct, "accY", buf, msg.accY);
+      Append_Float (ct, "accZ", buf, msg.accZ);
+      Append_Float (ct, "gyroX", buf, msg.gyroX);
+      Append_Float (ct, "gyroY", buf, msg.gyroY);
+      Append_Float (ct, "gyroZ", buf, msg.gyroZ);
+      Append_Float (ct, "roll", buf, msg.roll);
+      Append_Float (ct, "pitch", buf, msg.pitch);
+      Append_Float (ct, "yaw", buf, msg.yaw);
    end Serialize_Ulog_IMU;
+   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 
-   procedure Serialize_Ulog_Controller (msg : in Message; buf : out HIL.Byte_Array) is
+   -------------------------------
+   --  Serialize_Ulog_Controller
+   -------------------------------
+
+   procedure Serialize_Ulog_Controller (ct : in out ULog.Conversions.Conversion_Tag;
+                                        msg : in Message; buf : out HIL.Byte_Array) is
    begin
-      Set_Name ("Controller");
-      Append_Float ("TarYaw", buf, msg.target_yaw);
-      Append_Float ("TarRoll", buf, msg.target_roll);
-      Append_Float ("EleL", buf, msg.elevon_left);
-      Append_Float ("EleR", buf, msg.elevon_right);
+      Set_Name (ct, "Ctrl");
+      Append_Float (ct, "TarYaw", buf, msg.target_yaw);
+      Append_Float (ct, "TarRoll", buf, msg.target_roll);
+      Append_Float (ct, "EleL", buf, msg.elevon_left);
+      Append_Float (ct, "EleR", buf, msg.elevon_right);
    end Serialize_Ulog_Controller;
+   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 
+   ------------------------
+   --  Serialize_Ulog_LogQ
+   ------------------------
 
-
-   procedure Serialize_Ulog_LogQ (msg : in Message; buf : out HIL.Byte_Array) is
+   procedure Serialize_Ulog_LogQ (ct : in out ULog.Conversions.Conversion_Tag;
+                                  msg : in Message; buf : out HIL.Byte_Array) is
    begin
-      Set_Name ("LogQ");
-      Append_Uint16 ("ovf", buf, msg.n_overflows);
-      Append_Uint8 ("qd", buf, msg.n_queued);
-      Append_Uint8 ("max", buf, msg.max_queued);
+      Set_Name (ct, "LogQ");
+      Append_Uint16 (ct, "ovf", buf, msg.n_overflows);
+      Append_Uint8 (ct, "qd", buf, msg.n_queued);
+      Append_Uint8 (ct, "max", buf, msg.max_queued);
    end Serialize_Ulog_LogQ;
+   --  pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 
    -------------------------
    --  Serialize_Ulog_Text
    -------------------------
 
-   procedure Serialize_Ulog_Text (msg : in Message; buf : out HIL.Byte_Array) is
+   procedure Serialize_Ulog_Text (ct : in out ULog.Conversions.Conversion_Tag;
+                                  msg : in Message; buf : out HIL.Byte_Array) is
    begin
-      Set_Name ("Text");
+      Set_Name (ct, "Text");
       --  we allow 128B, but the longest field is 64B. split over two.
       declare
          txt : String renames msg.txt (msg.txt'First .. msg.txt'First + 63);
@@ -121,7 +174,7 @@ package body ULog with SPARK_Mode => On is
          else
             len := 0;
          end if;
-         Append_String64 ("text1", buf, txt, len);
+         Append_String64 (ct, "text1", buf, txt, len);
       end;
       declare
          txt : String renames msg.txt (msg.txt'First + 64 .. msg.txt'Last);
@@ -134,58 +187,85 @@ package body ULog with SPARK_Mode => On is
          else
             len := 0;
          end if;
-         Append_String64 ("text2", buf, txt, len);
+         Append_String64 (ct, "text2", buf, txt, len);
       end;
    end Serialize_Ulog_Text;
+   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 
    --------------------
    --  Time_To_U64
    --------------------
 
    function Time_To_U64 (rtime : Ada.Real_Time.Time) return Unsigned_64 is
-     (Unsigned_64 ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1)));
+      tmp : Integer;
+      u64 : Unsigned_64;
+   begin
+      tmp := (rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1);
+      if tmp < Integer (Unsigned_64'First) then
+         u64 := Unsigned_64'First;
+      else
+         u64 := Unsigned_64 (tmp);
+      end if;
+      return u64;
+   end Time_To_U64;
    --  SPARK: "precondition might a fail". Me: "no (because Time_First is private and SPARK can't know)"
 
    --------------------
    --  Serialize_Ulog
    --------------------
 
-   procedure Serialize_Ulog (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array) is
+   procedure Serialize_Ulog (msg : in Message; len : out Natural;
+                             bytes : out HIL.Byte_Array) is
+      ct : ULog.Conversions.Conversion_Tag;
    begin
-      New_Conversion;
+      Serialize_Ulog_With_Tag (ct => ct, msg => msg, len => len, bytes => bytes);
+      pragma Unreferenced (ct); -- caller doesn't want that
+   end Serialize_Ulog;
+
+   -----------------------------
+   --  Serialize_Ulog_With_Tag
+   -----------------------------
+
+   procedure Serialize_Ulog_With_Tag (ct : out ULog.Conversions.Conversion_Tag;
+                                      msg : in Message; len : out Natural;
+                                      bytes : out HIL.Byte_Array) is
+   begin
+      New_Conversion (ct);
       --  write header
-      Append_Unlabeled_Bytes (buf => bytes, tail => ULOG_MSG_HEAD
+      Append_Unlabeled_Bytes (t => ct, buf => bytes, tail => ULOG_MSG_HEAD
                               & HIL.Byte (Message_Type'Pos (msg.Typ)));
+      pragma Annotate (GNATprove, Intentional, """bytes"" is not initialized", "done by Martin Becker");
 
       --  serialize the timestamp
       declare
+         pragma Assume (msg.t >= Ada.Real_Time.Time_First); -- see a-reatim.ads
          time_usec : constant Unsigned_64 := Time_To_U64 (msg.t);
       begin
-         Append_Uint64 (label => "t", buf => bytes, tail => time_usec);
+         Append_Uint64 (t => ct, label => "t", buf => bytes, tail => time_usec);
       end;
 
       --  call the appropriate serializaton procedure for other components
       case msg.Typ is
          when NONE => null;
          when GPS =>
-            Serialize_Ulog_GPS (msg, bytes);
+            Serialize_Ulog_GPS (ct, msg, bytes);
          when IMU =>
-            Serialize_Ulog_IMU (msg, bytes);
-         when Controller =>
-            Serialize_Ulog_Controller (msg, bytes);
+            Serialize_Ulog_IMU (ct, msg, bytes);
+         when CONTROLLER =>
+            Serialize_Ulog_Controller (ct, msg, bytes);
          when TEXT =>
-            Serialize_Ulog_Text (msg, bytes);
+            Serialize_Ulog_Text (ct, msg, bytes);
          when LOG_QUEUE =>
-            Serialize_Ulog_LogQ (msg, bytes);
+            Serialize_Ulog_LogQ (ct, msg, bytes);
       end case;
 
       --  read back the length
-      len := ULog.Conversions.Get_Size;
+      len := Get_Size (ct);
       if len > bytes'Length or len > 255 then
          len := 0; -- buffer overflow
       end if;
       --  pragma Assert (len <= bytes'Length);
-   end Serialize_Ulog;
+   end Serialize_Ulog_With_Tag;
 
    -------------------
    --  Serialize_CSV
@@ -267,10 +347,14 @@ package body ULog with SPARK_Mode => On is
                   pragma Unreferenced (serbuf);
                   serlen : Natural;
                begin
-                  Serialize_Ulog (msg => m, len => serlen, bytes => serbuf);
-                  fmsg.fmt := ULog.Conversions.Get_Format;
-                  fmsg.name := ULog.Conversions.Get_Name;
-                  fmsg.lbl := ULog.Conversions.Get_Labels;
+                  declare
+                     ct : ULog.Conversions.Conversion_Tag;
+                  begin
+                     Serialize_Ulog_With_Tag (ct => ct, msg => m, len => serlen, bytes => serbuf);
+                     fmsg.fmt := ULog.Conversions.Get_Format (ct);
+                     fmsg.name := ULog.Conversions.Get_Name (ct);
+                     fmsg.lbl := ULog.Conversions.Get_Labels (ct);
+                  end;
                   fmsg.len := HIL.Byte (serlen);
                end;
 
@@ -299,7 +383,6 @@ package body ULog with SPARK_Mode => On is
       All_Defs := False;
       Hdr_Def  := False;
       Next_Def := Message_Type'First;
-      ULog.Conversions.Init_Conv;
    end Init;
 
 end ULog;
