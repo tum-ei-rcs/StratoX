@@ -48,7 +48,7 @@ with System.BB.Board_Support;
 with System.BB.Parameters;
 with System.BB.CPU_Primitives.Multiprocessors;
 
-package System.OS_Interface is
+package System.OS_Interface with SPARK_Mode => Off is
    pragma Preelaborate;
 
    ----------------

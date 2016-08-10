@@ -84,7 +84,7 @@ package body Main with SPARK_Mode => On is
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots); -- is maintained by the NVRAM itself
          Logger.log_console (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
-         Logger.log_console (Logger.INFO, "Build date: " & Buildinfo.Compilation_Date
+         Logger.log_console (Logger.INFO, "Build date: " & Buildinfo.Compilation_ISO_Date
                      & " " & Buildinfo.Compilation_Time);
 
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
