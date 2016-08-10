@@ -343,8 +343,10 @@ is
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
          len         : Natural;
          valid       : Boolean;
+         log_started : Boolean;
       begin
-         if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
+         SDLog.Start_Logfile (dirname => buildstring, filename => fname, ret => log_started);
+         if not log_started
          then
             log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
             With_SDLog := False;

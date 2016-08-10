@@ -18,7 +18,7 @@ is
    procedure Close;
    --  closes the SD log
 
-   function Start_Logfile (dirname : String; filename : String) return Boolean;
+   procedure Start_Logfile (dirname : String; filename : String; ret : out Boolean);
    --  @summary create new logfile
 
    procedure Write_Log (Data : SDLog_Data; n_written : out Integer);
