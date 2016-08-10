@@ -22,6 +22,7 @@ package body Helper with SPARK_Mode is
    end delay_ms;
 
    subtype Balance_Type is Float range -1.0 .. 1.0;
+   pragma Unreferenced (Balance_Type);
 
    --function mix( channel_a : Float; channel_b : Float; balance : Balance_Type);
 

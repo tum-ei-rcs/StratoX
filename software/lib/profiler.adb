@@ -16,10 +16,10 @@ package body Profiler with SPARK_Mode is
 
    procedure init(Self : in out Profile_Tag; name : String) is
       now : constant Time := Clock;
-      maxlen : constant Integer := (if name'Length > self.name'Length
-                                    then self.name'Length else name'Length);
+      maxlen : constant Integer := (if name'Length > Self.name'Length
+                                    then Self.name'Length else name'Length);
 
-      idx_s0 : constant Integer := self.name'first;
+      idx_s0 : constant Integer := Self.name'First;
       idx_s1 : constant Integer := idx_s0 - 1 + maxlen;
 
       idx_n0 : constant Integer := name'First;
@@ -57,7 +57,8 @@ package body Profiler with SPARK_Mode is
    procedure log(Self : in Profile_Tag) is
    begin
       if CFG_PROFILER_PROFILING and CFG_PROFILER_LOGGING then
-         Logger.log_console (Logger.INFO, Self.name & " Profile: " & Integer'Image ( Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
+         Logger.log_console (Logger.INFO, Self.name & " Profile: " & Integer'Image (
+                             Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
       end if;
    end log;
 

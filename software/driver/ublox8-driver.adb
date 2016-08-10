@@ -6,8 +6,6 @@ with HIL; use HIL;
 with HIL.Config; use HIL.Config;
 with HIL.UART; use type HIL.UART.Data_Type;
 with HIL.Devices;
-with Interfaces; use Interfaces;
-with Config.Software;
 
 with Logger;
 
@@ -24,7 +22,7 @@ is
                                                 Array_Type => Byte_Array);
    
 
-   G_heading : Heading_Type := NORTH;
+   G_heading : constant Heading_Type := NORTH;
    
    G_GPS_Message : GPS_Message_Type := 
       ( year => 0,
@@ -88,7 +86,7 @@ is
       check : constant UBX_Checksum_Array := (1 => cks.ck_a, 2 => cks.ck_b);
       isReceived : Boolean := False;
       retries : Natural := 1;
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       while isReceived = False and retries > 0 loop
          HIL.UART.write(UBLOX_M8N, header & data & check);
@@ -165,7 +163,7 @@ is
                                               5 => Byte(20),
                                               6 => Byte(0));
                                               
-      msg_cfg_prt : Data_Type(0 .. 19) := (0 => UBX_TX_CFG_PRT_PORTID,
+      msg_cfg_prt : constant Data_Type(0 .. 19) := (0 => UBX_TX_CFG_PRT_PORTID,
                                            2 => Byte(0),
                                            4 => HIL.toBytes( UBX_TX_CFG_PRT_MODE )(1), -- uart mode 8N1
                                            5 => HIL.toBytes( UBX_TX_CFG_PRT_MODE )(2), -- uart mode no parity, 1 stop bit
@@ -176,7 +174,7 @@ is
                                            16 => Byte( 0 ), -- flags
                                            others => Byte( 0 ) );
                                       
-      msg_cfg_msg_head : UBX_Header_Array := (1 => UBX_SYNC1,
+      msg_cfg_msg_head : constant UBX_Header_Array := (1 => UBX_SYNC1,
                                               2 => UBX_SYNC2,
                                               3 => UBX_CLASS_CFG,
                                               4 => UBX_ID_CFG_MSG,
@@ -194,8 +192,8 @@ is
                                               5 => Byte(3),  -- length
                                               6 => Byte(0));
                                           
-      current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
+      --  current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      --  MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
       
       procedure delay_ms( ms : Natural) is
          current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
@@ -209,7 +207,7 @@ is
    
       for i in Integer range 1 .. 2 loop
       -- 1. Set binary protocol (CFG-PRT, own message)
-      writeToDevice(msg_cfg_prt_head, msg_cfg_prt);  -- no ACK is expected here
+         writeToDevice(msg_cfg_prt_head, msg_cfg_prt);  -- no ACK is expected here
       
 
       -- 2. Set baudrate (CFG-PRT, again own message)
@@ -221,30 +219,30 @@ is
 --        writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
 --        
       -- set other to 0
-      msg_cfg_msg(2) := Byte( 0 );
-      msg_cfg_msg(1) := UBX_ID_NAV_POSLLH;
-      delay_ms( 10 );
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
+         msg_cfg_msg(2) := Byte( 0 );
+         msg_cfg_msg(1) := UBX_ID_NAV_POSLLH;
+         delay_ms( 10 );
+         writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
             
-      msg_cfg_msg(1) := UBX_ID_NAV_SOL;
-      delay_ms( 10 );
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
+         msg_cfg_msg(1) := UBX_ID_NAV_SOL;
+         delay_ms( 10 );
+         writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
       
-      msg_cfg_msg(1) := UBX_ID_NAV_VELNED;
-      delay_ms( 10 );
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  
+         msg_cfg_msg(1) := UBX_ID_NAV_VELNED;
+         delay_ms( 10 );
+         writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  
 
       
-      msg_cfg_msg(1) := UBX_ID_NAV_STATUS;
-      delay_ms( 10 );
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
-      delay_ms( 10 );
+         msg_cfg_msg(1) := UBX_ID_NAV_STATUS;
+         delay_ms( 10 );
+         writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
+         delay_ms( 10 );
       
       -- set NAV_PVT to 0.2Hz
-      msg_cfg_msg(2) := Byte( 5 );
-      msg_cfg_msg(1) := UBX_ID_NAV_PVT;
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
-      delay_ms( 10 );    
+         msg_cfg_msg(2) := Byte( 5 );
+         msg_cfg_msg(1) := UBX_ID_NAV_PVT;
+         writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
+         delay_ms( 10 );    
       
       end loop;
       -- 4. set dynamic model
@@ -252,7 +250,9 @@ is
       
    end init;
 
-   -- read measurements values. Should be called periodically.
+   --  read measurements values. Should be called periodically.
+   --  Parses Ublox message UBX-NAV-PVT
+   --  FIXME: declare packed record and use Unchecked_Union or use Unchecked_Conversion
    procedure update_val is
       data_rx : Data_Type(0 .. 91) := (others => 0);
       isValid : Boolean;
@@ -261,9 +261,13 @@ is
       if isValid then
          G_GPS_Message.year := Year_Type( HIL.toUnsigned_16( data_rx( 4 .. 5 ) ) );
          G_GPS_Message.month := Month_Type( data_rx( 6 ) );
+         G_GPS_Message.day := Day_Of_Month_Type ( data_rx (7) );
+
          G_GPS_Message.lon := Unit_Type(Float( HIL.toInteger_32( data_rx(24 .. 27) ) ) * 1.0e-7) * Degree;
          G_GPS_Message.lat := Unit_Type(Float( HIL.toInteger_32( data_rx(28 .. 31) ) ) * 1.0e-7) * Degree;
          G_GPS_Message.alt := Unit_Type(Float( HIL.toInteger_32( data_rx(36 .. 39) ) )) * Milli * Meter;
+         G_GPS_Message.sats := Unsigned_8 (data_rx(23));
+         G_GPS_Message.speed := Units.Linear_Velocity_Type ( Float (HIL.toInteger_32 (data_rx(60 .. 64))) / 1000.0);
          
          case data_rx(20) is
          when HIL.Byte(2) => G_GPS_Message.fix := FIX_2D;
@@ -294,15 +298,21 @@ is
    begin
       return G_GPS_Message.fix;
    end get_Fix;
+   
+   function get_Nsat return Unsigned_8 is
+   begin
+      return G_GPS_Message.sats;
+   end get_Nsat;
 
    function get_Direction return Heading_Type is
    begin
       return G_heading;
    end get_Direction;
+   pragma Unreferenced (get_Direction);
 
    procedure perform_Self_Check (Status : out Error_Type) is
    begin
-      null;
+      Status := SUCCESS; -- TODO
    end perform_Self_Check;
 
 

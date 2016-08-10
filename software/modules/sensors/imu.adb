@@ -3,9 +3,6 @@
 with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
-with Generic_Queue;
-with Units; use Units;
-with Logger;
 
 
 package body IMU with
@@ -45,12 +42,12 @@ is
       ( ( X => vector(Y), Y => -vector(X), Z => vector(Z) ) );
 
    function MPU_To_PX4Frame(vector : Angular_Velocity_Vector) return Angular_Velocity_Vector is
-      ( ( Roll => vector(Pitch), Pitch => -vector(Roll), Yaw => vector(Yaw) ) );
+      ( ( ROLL => vector(PITCH), PITCH => -vector(ROLL), YAW => vector(YAW) ) );
 
 
    overriding
    procedure initialize (Self : in out IMU_Tag) is
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin 
       G_state.lastFuse := now;
       G_state.kmLastCall := now;
@@ -78,8 +75,8 @@ is
    
    
    procedure perform_Kalman_Filtering(Self : IMU_Tag; newAngle : Orientation_Type) is
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt : Time_Type := Units.To_Time( now - G_state.kmLastCall ); 
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt : constant Time_Type := Units.To_Time( now - G_state.kmLastCall ); 
       newRate : Angular_Velocity_Vector := get_Angular_Velocity(Self);
       BIAS_LIMIT : constant Angular_Velocity_Type := 500.0*Degree/Second;
       predAngle : Angle_Vector;
@@ -122,7 +119,7 @@ is
       -- 1. Predict
       ------------------
       G_state.kmRoll.Rate := newRate(ROLL) - G_state.kmRoll.Bias;  -- Bias bei Pitch hoch: 6.2    
-      predAngle(Roll) := wrap_Angle( Angle_Type( G_state.kmRoll.Angle ) + Angle_Type( G_state.kmRoll.Rate * dt ),
+      predAngle(ROLL) := wrap_Angle(  G_state.kmRoll.Angle  + Angle_Type( G_state.kmRoll.Rate * dt ),
                                      Roll_Type'First, Roll_Type'Last);
                                     
       G_state.kmRoll.Angle := predAngle(ROLL);
@@ -169,7 +166,7 @@ is
       -- 1. Predict
       G_state.kmPitch.Rate := newRate(PITCH) - G_state.kmPitch.Bias;   
       
-      predAngle(PITCH) := Angle_Type( G_state.kmPitch.Angle ) + Angle_Type( G_state.kmPitch.Rate * dt );
+      predAngle(PITCH) :=  G_state.kmPitch.Angle  + Angle_Type( G_state.kmPitch.Rate * dt );
       
       -- if pitch prediction exceeds |90°|, the remainder has to be inverted: 80° + 15° = 85°!
       if predAngle(PITCH) > 90.0*Degree then
@@ -234,31 +231,34 @@ is
       result : Angular_Velocity_Vector;
       sensitivity : constant Angular_Velocity_Type := Unit_Type( Driver.MPU6000_DEG_PER_LSB_2000 ) * Degree / Second;
    begin
-      result := ( Roll => Unit_Type( Float( Self.sample.data.Gyro_X ) ) * sensitivity,
-                  Pitch => Unit_Type( Float( Self.sample.data.Gyro_Y ) ) * sensitivity,
-                  Yaw => Unit_Type( Float( Self.sample.data.Gyro_Z ) ) * sensitivity );
+      result := ( ROLL => Unit_Type( Float( Self.sample.data.Gyro_X ) ) * sensitivity,
+                  PITCH => Unit_Type( Float( Self.sample.data.Gyro_Y ) ) * sensitivity,
+                  YAW => Unit_Type( Float( Self.sample.data.Gyro_Z ) ) * sensitivity );
       result := MPU_To_PX4Frame( result );
       return result;
    end get_Angular_Velocity;
 
    function get_Orientation(Self : IMU_Tag) return Orientation_Type is
+      pragma Unreferenced (Self);
    begin
-      return ( ROLL => G_state.kmRoll.Angle, PITCH => G_state.kmPitch.Angle, YAW => 0.0 * Degree);
+      return ( Roll => G_state.kmRoll.Angle, Pitch => G_state.kmPitch.Angle, Yaw => 0.0 * Degree);
    end get_Orientation;
 
 
 
    -- Complementary Filter: angle = 0.98 *(angle+gyro*dt) + 0.02*acc
-   function Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; Angular_Rate : Angular_Velocity_Vector) return Orientation_Type is
+   function Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; 
+                              Angular_Rate : Angular_Velocity_Vector) return Orientation_Type is
+      pragma Unreferenced (Self);
       result : Orientation_Type;
       fraction : constant := 0.7;
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt : Ada.Real_Time.Time_Span := now - G_state.lastFuse;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt  : constant Ada.Real_Time.Time_Span := now - G_state.lastFuse;
    begin
-      result.Roll := fraction * ( G_state.filterAngle(Roll) + Angular_Rate(Roll) * Units.To_Time( dt ) ) +
+      result.Roll := fraction * ( G_state.filterAngle(ROLL) + Angular_Rate(ROLL) * Units.To_Time( dt ) ) +
       (1.0 - fraction) * Orientation.Roll;
       
-      result.Pitch := fraction * ( G_state.filterAngle(Pitch) + Angular_Rate(Pitch) * Units.To_Time( dt ) ) +
+      result.Pitch := fraction * ( G_state.filterAngle(PITCH) + Angular_Rate(PITCH) * Units.To_Time( dt ) ) +
       (1.0 - fraction) * Orientation.Pitch;
       
       G_state.lastFuse := Ada.Real_Time.Clock;

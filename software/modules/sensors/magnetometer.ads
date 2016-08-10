@@ -2,9 +2,7 @@ with Generic_Sensor;
 
 with Units; use Units;
 with HMC5883L.Driver;
-with Units.Navigation; use Units.Navigation;
 with Units.Vectors; use Units.Vectors;
-with Interfaces; use Interfaces;
 
 package Magnetometer with SPARK_Mode is
 

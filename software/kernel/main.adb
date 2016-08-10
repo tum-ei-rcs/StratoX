@@ -1,23 +1,22 @@
 -- Description:
 -- Main System File
--- todo: better unit name
+-- the main loop (TM)
 
 with Ada.Real_Time;                     use Ada.Real_Time;
 
 with CPU;
 with Units;            use Units;
-with Units.Navigation; use Units.Navigation;
+--  with Units.Navigation; use Units.Navigation;
 
 with HIL;
 
-with MPU6000.Driver;
+--  with MPU6000.Driver;
 with PX4IO.Driver;
-with HIL;
 with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
 
-with Crash;
+--  with Crash;
 with Mission;
 with Console;
 with Estimator;
@@ -42,10 +41,10 @@ package body Main with SPARK_Mode => On is
       declare
          ret : Logger.Init_Error_Code;
       begin
-         Logger.init (ret);
+         Logger.Init (ret);
          pragma Unreferenced (ret);
       end;
-      Logger.set_Log_Level (CFG_LOGGER_LEVEL_UART);
+      Logger.Set_Log_Level (CFG_LOGGER_LEVEL_UART);
 
       --perform_Self_Test;
 
@@ -127,7 +126,7 @@ package body Main with SPARK_Mode => On is
 
       Main_Profile : Profile_Tag;
 
-      body_info : Body_Type;
+      --  body_info : Body_Type;
 
       command : Console.User_Command_Type;
    begin
@@ -188,14 +187,16 @@ package body Main with SPARK_Mode => On is
                Controller.log_Info;
                PX4IO.Driver.read_Status;
 
-               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer(
+                                   Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
 
             when Console.ARM => Controller.activate;
 
             when Console.DISARM => Controller.deactivate;
 
             when Console.PROFILE =>
-               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer(
+                                   Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
                Main_Profile.log;
 
             when others =>

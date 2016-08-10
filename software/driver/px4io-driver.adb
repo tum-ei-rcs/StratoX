@@ -80,7 +80,7 @@ is
       begin
          t_abs := t_abs + Microseconds( us );
          delay until t_abs;
-      end;
+      end delay_us;
    begin
    
       Transmit_Loop : loop
@@ -147,7 +147,7 @@ is
       protocol_version : Data_Type(1 .. 2) := (others => 0); 
       
       
-      procedure delay_us( us : NAtural ) is
+      procedure delay_us( us : Natural ) is
          -- SPARK RM 7.1.3: Clock() has side-effects, so it must
          -- be used in a "non-interfering context". That means, we have
          -- to make it a proper R-value here and cannot directly
@@ -156,7 +156,8 @@ is
       begin
          t_abs := t_abs + Microseconds( us );
          delay until t_abs;
-      end;
+      end delay_us;
+      pragma Unreferenced (delay_us);
       
       delay_profiler : Profiler.Profile_Tag;
       
@@ -278,10 +279,12 @@ is
                  Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );
       
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, Status);
-      Logger.log_console(Logger.DEBUG, "PX4IO Alarms: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );    
+      Logger.log_console(Logger.DEBUG, "PX4IO Alarms: " & Integer'Image( Integer(Status(2)) ) 
+                         & ", " & Integer'Image( Integer(Status(1)) ) );    
       
       read(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, Status);
-      Logger.log_console(Logger.DEBUG, "PX4IO ArmSetup: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );          
+      Logger.log_console(Logger.DEBUG, "PX4IO ArmSetup: " & Integer'Image( Integer(Status(2)) ) 
+                         & ", " & Integer'Image( Integer(Status(1)) ) );          
       
    end read_Status;
 

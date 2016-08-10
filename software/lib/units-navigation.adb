@@ -1,7 +1,7 @@
 with Units.Numerics; use Units.Numerics;
 with Units; use Units;
 
-with Logger;
+--  with Logger;
 
 package body Units.Navigation is
 
@@ -15,7 +15,8 @@ package body Units.Navigation is
       rotate(temp_vector, X, orientation.Roll);
       rotate(temp_vector, Y, orientation.Pitch);
 
-      -- Logger.log_console(Logger.DEBUG, "Rot vec:" & Image(temp_vector(X) * 1.0e6) & ", " & Image(temp_vector(Y) * 1.0e6) & ", " & Image(temp_vector(Z) * 1.0e6) );
+      -- Logger.log_console(Logger.DEBUG, "Rot vec:" & Image(temp_vector(X) * 1.0e6) & ", "
+      --  & Image(temp_vector(Y) * 1.0e6) & ", " & Image(temp_vector(Z) * 1.0e6) );
 
       -- Arctan: Only X = Y = 0 raises exception
       if temp_vector(Y) /= 0.0 or temp_vector(X) /= 0.0 then
@@ -55,6 +56,7 @@ package body Units.Navigation is
       end if;
       return Heading_Type( result );
    end Heading;
+   pragma Unreferenced (Heading);
 
 
    -- From http://www.movable-type.co.uk/scripts/latlong.html

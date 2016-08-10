@@ -79,29 +79,29 @@ package Units.Vectors with SPARK_Mode is
            ) );
 
    function "+" (Left, Right : Angle_Vector) return Angle_Vector is
-      ( Left(Roll) + Right(Roll), Left(Pitch) + Right(Pitch), Left(Yaw) + Right(Yaw) );
+      ( Left(ROLL) + Right(ROLL), Left(PITCH) + Right(PITCH), Left(YAW) + Right(YAW) );
 
    function "+" (Left, Right : Rotation_Vector) return Rotation_Vector is
-      ( Left(Roll) + Right(Roll), Left(Pitch) + Right(Pitch), Left(Yaw) + Right(Yaw) );
+      ( Left(ROLL) + Right(ROLL), Left(PITCH) + Right(PITCH), Left(YAW) + Right(YAW) );
 
    function "*" (Left : Unit_Type; Right : Rotation_Vector) return Rotation_Vector is
-      ( ( Left * Right(Roll), Left * Right(Pitch), Left * Right(Yaw) ) );
+      ( ( Left * Right(ROLL), Left * Right(PITCH), Left * Right(YAW) ) );
 
 
    function "+" (Left, Right : Angular_Velocity_Vector) return Angular_Velocity_Vector is
-      ( (  Left(Roll) + Right(Roll),
-           Left(Pitch) + Right(Pitch),
-           Left(Yaw) + Right(Yaw)
+      ( (  Left(ROLL) + Right(ROLL),
+           Left(PITCH) + Right(PITCH),
+           Left(YAW) + Right(YAW)
            ) );
 
    function "-" (Left, Right : Angular_Velocity_Vector) return Angular_Velocity_Vector is
-      ( (  Left(Roll) - Right(Roll),
-           Left(Pitch) - Right(Pitch),
-           Left(Yaw) - Right(Yaw)
+      ( (  Left(ROLL) - Right(ROLL),
+           Left(PITCH) - Right(PITCH),
+           Left(YAW) - Right(YAW)
            ) );
 
    function "*" (Left : Angular_Velocity_Vector; Right : Time_Type) return Rotation_Vector is
-      ( ( Left(Roll) * Right, Left(Pitch) * Right, Left(Yaw) * Right ) );
+      ( ( Left(ROLL) * Right, Left(PITCH) * Right, Left(YAW) * Right ) );
 
 
    procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);

@@ -13,6 +13,7 @@
 with Units.Navigation; use Units.Navigation;
 with Units;
 with HIL.UART;
+with Interfaces; use Interfaces;
 
 package ublox8.Driver with
 SPARK_Mode,
@@ -32,7 +33,7 @@ is
       minute : Minute_Type;          --*< Minute of hour, range 0..59 (UTC)
       second : Second_Type;          --*< Seconds of minute, range 0..60 (UTC)
       fix : GPS_Fix_Type := NO_FIX;
-      sats : Natural := 0;                --*< Number of SVs used in Nav Solution
+      sats : Unsigned_8 := 0;                --*< Number of SVs used in Nav Solution
       lon : Longitude_Type;
       lat : Latitude_Type;
       alt : Altitude_Type;
@@ -51,6 +52,8 @@ is
    function get_GPS_Message return GPS_Message_Type;
 
    function get_Fix return GPS_Fix_Type;
+
+   function get_Nsat return Unsigned_8;
 
    -- function get_Direction return Direction_Type;
 

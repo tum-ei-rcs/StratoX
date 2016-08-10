@@ -4,6 +4,7 @@ with Generic_Sensor;
 
 with Units.Navigation; use Units.Navigation;
 with ublox8.Driver;
+with Interfaces; use Interfaces;
 
 package GPS with
 SPARK_Mode
@@ -26,6 +27,8 @@ is
    function get_Position(Self : GPS_Tag) return GPS_Data_Type;
 
    function get_GPS_Fix(Self : GPS_Tag) return GPS_Fix_Type;
+
+   function get_Num_Sats(Self : GPS_Tag) return Unsigned_8;
 
    -- function get_Angular_Velocity (Self : GPS_Tag)
 
