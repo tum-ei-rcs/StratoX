@@ -14,12 +14,11 @@ with Ada.Real_Time; use Ada.Real_Time;
 
 package body ublox8.Driver with
 SPARK_Mode,
-Refined_State => (State => (G_GPS_Message, G_heading))
+Refined_State => (State => (G_GPS_Message))
 is  
-   package Fletcher16_Byte is new Fletcher16 (
-                                                Index_Type => Natural, 
-                                                Element_Type => Byte, 
-                                                Array_Type => Byte_Array);
+   package Fletcher16_Byte is new Fletcher16 (Index_Type => Natural, 
+                                              Element_Type => Byte, 
+                                              Array_Type => Byte_Array);
    
 
    G_heading : constant Heading_Type := NORTH;
