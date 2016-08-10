@@ -3,7 +3,9 @@ with Generic_Sensor;
 with Units; use Units;
 with MS5611.Driver; use MS5611;
 
-package Barometer with SPARK_Mode is
+package Barometer with SPARK_Mode,
+  Abstract_State => (States_Beyond_Sensor_Template)
+is
 
    type Barometer_Data_Type is record
       pressure : Pressure_Type;
@@ -25,11 +27,13 @@ package Barometer with SPARK_Mode is
       null;
    end record;
 
-   overriding procedure initialize (Self : in out Barometer_Tag) with
-   Global => (Output => MS5611.Driver.Coefficients, In_Out => (MS5611.Driver.State));
+   overriding procedure initialize (Self : in out Barometer_Tag)
+     with Global => (Output => Barometer_Sensor.Sensor_State);
+   --  with Global => (Output => MS5611.Driver.Coefficients, In_Out => (MS5611.Driver.State));
 
    overriding procedure read_Measurement(Self : in out Barometer_Tag)
-   with Global => (Input => MS5611.Driver.State, In_Out => (MS5611.Driver.Coefficients));
+     with Global => (In_Out => Barometer_Sensor.Sensor_State);
+   --  with Global => (Input => MS5611.Driver.State, In_Out => (MS5611.Driver.Coefficients));
 
    function get_Pressure(Self : Barometer_Tag) return Pressure_Type;
 

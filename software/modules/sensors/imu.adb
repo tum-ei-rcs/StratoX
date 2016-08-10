@@ -2,12 +2,11 @@
 
 with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
-
-
+with MPU6000.Driver; use MPU6000;
 
 package body IMU with
 -- SPARK_Mode,
-Refined_State => (State => (G_state))
+Refined_State => (State => (G_state, Sensor))
 is
 
 
