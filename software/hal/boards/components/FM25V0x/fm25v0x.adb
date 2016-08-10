@@ -140,13 +140,9 @@ is
    end Write_Enable;
 
    procedure Init is
-      t_now : Ada.Real_Time.Time;
    begin
       if not Is_Init then
-         t_now := Clock;
-         while t_now < FM25v0x_STARTUP_TIME_MS loop
-            t_now := Clock;
-         end loop;
+         delay until FM25v0x_STARTUP_TIME_MS;
          Is_Init := True;
          --  nothing to do here
       end if;

@@ -1,9 +1,9 @@
--- Institution: Technische Universität München
--- Department:  Realtime Computer Systems (RCS)
--- Project:     StratoX
--- Module:      Software Configuration
+--  Institution: Technische Universitatt Muenchen
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
+--  Module:      Software Configuration
 --
--- Authors: Martin Becker (becker@rcs.ei.tum.de)
+--  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 with FM25v0x;
 
 --  @summary

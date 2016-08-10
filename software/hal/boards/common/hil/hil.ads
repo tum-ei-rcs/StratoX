@@ -1,4 +1,4 @@
---  Institution: Technische Universität München
+--  Institution: Technische Universitaet Muenchen
 --  Department:  Realtime Computer Systems (RCS)
 --  Project:     StratoX
 --

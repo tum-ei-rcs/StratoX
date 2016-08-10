@@ -1,19 +1,16 @@
--- Institution: Technische Universität München
--- Department: Realtime Computer Systems (RCS)
--- Project: StratoX
+--  Institution: Technische Universitaet Muenchen
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
 --
--- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--           Martin Becker (becker@rcs.ei.tum.de)
 with Units;
 
--- @summary
--- Driver for the Barometer MS5611-01BA03
---
--- ToDo:
---  - Adjustment to current System
---  - Use HIL.I2C
+--  @summary Driver for the Barometer MS5611-01BA03
 package MS5611.Driver with
-   SPARK_Mode,
-   Abstract_State => (State, Coefficients)
+  SPARK_Mode,
+  Abstract_State => (State, Coefficients),
+  Initializes => (State, Coefficients) -- all have defaults in the body
 is
 
    type Device_Type is (Baro, NONE);
@@ -36,24 +33,24 @@ is
                      OSR_4096 -- 0.002degC/0.012mbar, <9.04ms
    ) with Default_Value => OSR_256;
 
-   procedure reset;
-   -- send a soft-reset to the device.
+   procedure Reset;
+   --  send a soft-reset to the device.
 
-   procedure init with Global => (IN_Out => (State, Coefficients));
-   -- initialize the device, get chip-specific compensation values
+   procedure Init;
+   --  initialize the device, get chip-specific compensation values
 
-   procedure update_val with Global => (Input => Coefficients, IN_Out => State);
-   -- trigger measurement update. Should be called periodically.
+   procedure Update_Val;
+   --  trigger measurement update. Should be called periodically.
 
-   function get_temperature return Temperature_Type;
+   function Get_Temperature return Temperature_Type;
    -- get temperature from buffer
    -- @return the last known temperature measurement
 
-   function get_pressure return Pressure_Type;
+   function Get_Pressure return Pressure_Type;
    -- get barometric pressure from buffer
    -- @return the last known pressure measurement
 
-   procedure self_check (Status : out Error_Type);
+   procedure Self_Check (Status : out Error_Type);
    -- implements the self-check of the barometer.
    -- It checks the measured altitude for validity by
    -- comparing them to altitude_offset. Furthermore it can adapt
