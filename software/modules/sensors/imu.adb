@@ -5,8 +5,8 @@ with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with MPU6000.Driver; use MPU6000;
 
 package body IMU with
--- SPARK_Mode,
-Refined_State => (State => (G_state, Sensor))
+SPARK_Mode,
+Refined_State => (State => (G_state))
 is
 
 
@@ -44,14 +44,16 @@ is
       ( ( ROLL => vector(PITCH), PITCH => -vector(ROLL), YAW => vector(YAW) ) );
 
 
-   overriding
+   --overriding
    procedure initialize (Self : in out IMU_Tag) is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      success : Boolean;
    begin 
       G_state.lastFuse := now;
       G_state.kmLastCall := now;
       
-      if MPU6000.Driver.Test_Connection then
+      MPU6000.Driver.Test_Connection (success);
+      if success then
          Driver.Init;
          Driver.Set_Full_Scale_Gyro_Range( FS_Range => Driver.MPU6000_Gyro_FS_2000 );
          Driver.Set_Full_Scale_Accel_Range( FS_Range => Driver.MPU6000_Accel_FS_8 );
@@ -61,7 +63,7 @@ is
       end if;
    end initialize;
 
-   overriding
+   --overriding
    procedure read_Measurement(Self : in out IMU_Tag) is
    begin
       Driver.Get_Motion_6(Self.sample.data.Acc_X,
@@ -246,10 +248,10 @@ is
 
 
    -- Complementary Filter: angle = 0.98 *(angle+gyro*dt) + 0.02*acc
-   function Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; 
-                              Angular_Rate : Angular_Velocity_Vector) return Orientation_Type is
+   procedure Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; 
+                               Angular_Rate : Angular_Velocity_Vector;
+                               result : out Orientation_Type) is
       pragma Unreferenced (Self);
-      result : Orientation_Type;
       fraction : constant := 0.7;
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       dt  : constant Ada.Real_Time.Time_Span := now - G_state.lastFuse;
@@ -260,9 +262,7 @@ is
       result.Pitch := fraction * ( G_state.filterAngle(PITCH) + Angular_Rate(PITCH) * Units.To_Time( dt ) ) +
       (1.0 - fraction) * Orientation.Pitch;
       
-      G_state.lastFuse := Ada.Real_Time.Clock;
-   
-      return result;
+      G_state.lastFuse := Ada.Real_Time.Clock;      
    end Fused_Orientation;
 
 

@@ -3,7 +3,6 @@
 --  Project:     StratoX
 --
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
-pragma SPARK_Mode (Off);
 
 with STM32.Device;
 with STM32.SPI;
@@ -12,8 +11,7 @@ with HIL.GPIO;
 
 --  @summary
 --  Target-specific mapping for HIL of SPI
-package body HIL.SPI with
-   SPARK_Mode => Off
+package body HIL.SPI with SPARK_Mode => Off -- SPI_Mode et. al. not allowed
    -- Refined_State => (Deselect => (SIGNAL_DESELECT) ) 
 is
 

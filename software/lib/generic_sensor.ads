@@ -19,8 +19,8 @@ with Generic_Signal;
 --  be added some day.
 generic
    type Data_Type is private; 
-package Generic_Sensor with SPARK_Mode,
-  Abstract_State => Sensor_State -- implementations may have a state
+package Generic_Sensor with SPARK_Mode
+  --,Abstract_State => Sensor_State -- implementations may have a state
 is
 
    package Sensor_Signal is new Generic_Signal( Data_Type );
@@ -45,22 +45,22 @@ is
       sample : Sample_Type; -- sensor-specific, most recent measurement
    end record;
 
-   procedure initialize(Self : in out Sensor_Tag) is null
-     with Global => (Output => Sensor_State);
+   --procedure initialize(Self : in out Sensor_Tag) is abstract;
+     --with Global => (Output => Sensor_State);
 --       with Global => (Output => MS5611.Driver.Coefficients,
 --                             In_Out => ( 
 --                                        Ada.Real_Time.Clock_Time,
 --                                        MS5611.Driver.State, ublox8.Driver.State, MPU6000.Driver.State, HMC5883L.Driver.State));
 --          
    --  trigger start of the measurement
-   procedure start_Measurement(Self : in out Sensor_Tag) is null; -- !!NULL!!
+   --procedure start_Measurement(Self : in out Sensor_Tag) is abstract;
         
    --  read the result from the sensor, possibly includes some pre-processing
-   procedure read_Measurement(Self : in out Sensor_Tag) is null
-     with Global => (In_Out => Sensor_State);
+   --procedure read_Measurement(Self : in out Sensor_Tag) is abstract;
+     --with Global => (In_Out => Sensor_State);
      -- with Global => (In_Out => (MS5611.Driver.State, MS5611.Driver.Coefficients, MPU6000.Driver.State, ublox8.Driver.State, HMC5883L.Driver.State));
         
-   procedure tick(Self : in out Sensor_Tag) is null; -- !!NULL!!
+   -- procedure tick(Self : in out Sensor_Tag) is abstract; -- !!NULL!!
    --  update state, wait for finished conversion
         
    function new_Sample(Self : in Sensor_Tag) return Boolean is 
