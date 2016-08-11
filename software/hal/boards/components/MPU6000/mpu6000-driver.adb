@@ -6,8 +6,7 @@ with Ada.Unchecked_Conversion;
 
 
 package body MPU6000.Driver with SPARK_Mode,
-  Refined_State => (State => Is_Init,
-                    Device_State => (Device_Address))
+  Refined_State => (State => Is_Init)
 is
 
    READ_FLAG : constant Byte := Byte( 2#1000_0000# );
@@ -628,8 +627,12 @@ is
       -- set digital low pass filter (DLPF)
       Set_DLPF_Mode(MPU6000_DLPF_BW_20);
 
-      --  Determine the device's I2C address (FIXME: why? this is SPI!)
-      Set_Device_Address (Shift_Left (MPU6000_ADDRESS_AD0_HIGH, 1));
+      --  Determine the device's I2C address (FIXME: why? this is SPI)
+      declare
+         hypothetical_i2c_address : constant HIL.Byte := Shift_Left (MPU6000_ADDRESS_AD0_HIGH, 1);
+      begin
+         null;
+      end;
 
       --  Delay to wait for the state initialization of SCL and SDA
       declare
@@ -639,10 +642,5 @@ is
       end;
 
    end Init;
-   
-   procedure Set_Device_Address (addr : HIL.Byte) is
-   begin
-      Device_Address := addr;
-   end Set_Device_Address;
-   
+      
 end MPU6000.Driver;

@@ -1,23 +1,18 @@
--- Institution: Technische Universität München
--- Department:  Realtime Computer Systems (RCS)
+-- Institution: AdaCore / Technische Universitaet Muenchen
+-- Department:  *       / Realtime Computer Systems (RCS)
 -- Project:     StratoX
--- Module:      MPU 6000 Driver
+-- Module:      MPU 6000 Driver for SPI
 --
--- Authors:  Anthony Leonardo Gracio, Emanuel Regnath (emanuel.regnath@tum.de)
---
--- Description: Control a single LED
-
-
-with Interfaces; use Interfaces;
-with Ada.Real_Time;       use Ada.Real_Time;
-
--- with HIL; 
-with HIL.SPI; use HIL;
+-- Authors:  Anthony Leonardo Gracio, 
+--           Emanuel Regnath (emanuel.regnath@tum.de)
+with Interfaces;    use Interfaces;
+with Ada.Real_Time; use Ada.Real_Time;
+with HIL.SPI;       use HIL;
 
 use type HIL.SPI.Data_Type;
 
 package MPU6000.Driver with SPARK_Mode,
-  Abstract_State => (State, Device_State),
+  Abstract_State => State,
   Initializes => State
 is
 
@@ -184,8 +179,6 @@ private
    --  Global variables and constants
 
    Is_Init : Boolean := False with Part_Of => State;
-   Device_Address : HIL.Byte with Part_Of => Device_State;  -- I2C device address. Who needs this anyway?
-   pragma Unreferenced (Device_Address);
 
    --  MPU6000 Device ID.
    MPU6000_DEVICE_ID        : constant := 16#68#;
@@ -252,7 +245,5 @@ private
       Low  : Byte) return Integer_16;
    pragma Inline (Fuse_Low_And_High_Register_Parts);
       
-   procedure Set_Device_Address (addr : HIL.Byte) with
-     Global => (Output => Device_State);
    
 end MPU6000.Driver;
