@@ -279,10 +279,12 @@ is
                  Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );
       
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, Status);
-      Logger.log_console(Logger.DEBUG, "PX4IO Alarms: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );    
+      Logger.log_console(Logger.DEBUG, "PX4IO Alarms: " & Integer'Image( Integer(Status(2)) ) 
+                         & ", " & Integer'Image( Integer(Status(1)) ) );    
       
       read(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, Status);
-      Logger.log_console(Logger.DEBUG, "PX4IO ArmSetup: " & Integer'Image( Integer(Status(2)) ) & ", " & Integer'Image( Integer(Status(1)) ) );          
+      Logger.log_console(Logger.DEBUG, "PX4IO ArmSetup: " & Integer'Image( Integer(Status(2)) ) 
+                         & ", " & Integer'Image( Integer(Status(1)) ) );          
       
    end read_Status;
 

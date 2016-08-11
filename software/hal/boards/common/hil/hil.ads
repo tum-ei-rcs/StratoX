@@ -1,4 +1,4 @@
---  Institution: Technische Universität München
+--  Institution: Technische Universitaet Muenchen
 --  Department:  Realtime Computer Systems (RCS)
 --  Project:     StratoX
 --
@@ -76,7 +76,7 @@ is
       
    function toBytes( source : in Float) return Byte_Array_4 is
       (From_Float_To_Byte_Array( source ) )
-   with pre => source'Size = 32;   
+   with Pre => source'Size = 32;
 
    -- FAILS  (unsigned arg, constrained return)
    function toBytes_uc(uint : Unsigned_16) return Byte_Array_2 is

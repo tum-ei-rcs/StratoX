@@ -255,10 +255,18 @@ package body Media_Reader.SDCard is
 
       function Buffer_Error return Boolean is (Had_Buffer_Error);
 
+      -------------------
+      -- Wait_Transfer --
+      -------------------
+
       entry Wait_Transfer (Status : out DMA_Error_Code) when Finished is
       begin
          Status := DMA_Status;
       end Wait_Transfer;
+
+      ------------------------
+      -- Set_Transfer_State --
+      ------------------------
 
       procedure Set_Transfer_State
       is
@@ -267,6 +275,10 @@ package body Media_Reader.SDCard is
          DMA_Status := DMA_No_Error;
          Had_Buffer_Error := False;
       end Set_Transfer_State;
+
+      --------------------------
+      -- Clear_Transfer_State --
+      --------------------------
 
       procedure Clear_Transfer_State
       is
@@ -516,7 +528,10 @@ package body Media_Reader.SDCard is
       end if;
    end Write_Block;
 
-   --  that works.
+   ----------------
+   -- Read_Block --
+   ----------------
+
    overriding function Read_Block
      (Controller   : in out SDCard_Controller;
       Block_Number : Unsigned_32;

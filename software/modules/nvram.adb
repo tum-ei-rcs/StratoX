@@ -1,4 +1,4 @@
---  Institution: Technische Universität München
+--  Institution: Technische Universitaet Muenchen
 --  Department:  Real-Time Computer Systems (RCS)
 --  Project:     StratoX
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)
@@ -41,9 +41,11 @@ is
    --  depends on build date/time
    type NVRAM_Header is
        record
-          ck_a : HIL.Byte;
-          ck_b : HIL.Byte;
+          ck_a : HIL.Byte := 0;
+          ck_b : HIL.Byte := 0;
        end record;
+   HDR_OFF_CK_A : constant HIL.NVRAM.Address := 0; -- GNATprove cannot handle this yet: framhdr.ck_a'Position;
+   HDR_OFF_CK_B : constant HIL.NVRAM.Address := 1;
    for NVRAM_Header'Size use 16;
 
    ----------------------------------
@@ -87,8 +89,7 @@ is
    --  header's address is fixed at beginning of NVRAM
 
    procedure Make_Header (newhdr : out NVRAM_Header) is
-
-      build_date : constant String := Compilation_Date & Compilation_Time;
+      build_date : constant String := Compilation_ISO_Date & Compilation_Time;
       crc        : constant Fletcher16_String.Checksum_Type :=
         Fletcher16_String.Checksum (build_date);
    begin
@@ -97,21 +98,14 @@ is
 
    procedure Write_Header (hdr : in NVRAM_Header) is
    begin
-      --  FIXME: can this be done safer. Maybe with aggregates?
-      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address +
-                         hdr.ck_a'Position, byte => hdr.ck_a);
-      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address +
-                         hdr.ck_b'Position, byte => hdr.ck_b);
+      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address + HDR_OFF_CK_A, byte => hdr.ck_a);
+      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => hdr.ck_b);
    end Write_Header;
 
    procedure Read_Header (framhdr : out NVRAM_Header) is
    begin
-      framhdr := (Fletcher16_String.Byte (0), Fletcher16_String.Byte (0));
-      --  FIXME: can this be done safer. Maybe with aggregates?
-      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address +
-                        framhdr.ck_a'Position, byte => framhdr.ck_a);
-      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address +
-                        framhdr.ck_b'Position, byte => framhdr.ck_b);
+      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address + HDR_OFF_CK_A, byte => framhdr.ck_a);
+      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => framhdr.ck_b);
    end Read_Header;
 
    function Get_Default (var : in Variable_Name) return HIL.Byte
@@ -173,10 +167,12 @@ is
    procedure Load (variable : in Variable_Name; data : out Float) is
       bytes : Byte_Array_4;
    begin
-      for index in Natural range 1 .. 4 loop
-         HIL.NVRAM.Read_Byte (addr => Var_To_Address (Variable_Name'Val (Variable_Name'Pos( variable ) -1 + index )), byte => bytes(index));
+      for index in Natural range 0 .. 3 loop
+         HIL.NVRAM.Read_Byte (addr => Var_To_Address (
+                              Variable_Name'Val (Variable_Name'Pos( variable ) + index )),
+                              byte => bytes(bytes'First + index));
       end loop;
-      data := HIL.toFloat (bytes );
+      data := HIL.toFloat (bytes);
    end Load;
 
    procedure Store (variable : Variable_Name; data : in HIL.Byte) is
@@ -186,15 +182,13 @@ is
 
    procedure Store (variable : in Variable_Name; data : in Float) is
       bytes : constant Byte_Array_4 := HIL.toBytes (data );
---        index : Positive := 1;
    begin
-      for index in Natural range 1 .. 4 loop
-      --  for var in Variable_Name range variable .. Variable_Name'Val( Variable_Name'Pos( variable ) -1 + index ) loop
-         HIL.NVRAM.Write_Byte (addr => Var_To_Address (Variable_Name'Val (Variable_Name'Pos( variable ) -1 + index )), byte => bytes(index));
+      for index in Natural range 0 .. 3 loop
+         HIL.NVRAM.Write_Byte (addr => Var_To_Address (
+                               Variable_Name'Val (Variable_Name'Pos( variable ) + index )),
+                               byte => bytes(bytes'First + index));
       end loop;
    end Store;
-
-
 
    procedure Reset is
       hdr_this : NVRAM_Header;

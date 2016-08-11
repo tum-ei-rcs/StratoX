@@ -47,7 +47,7 @@ is
 
    overriding
    procedure initialize (Self : in out IMU_Tag) is
-   now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin 
       G_state.lastFuse := now;
       G_state.kmLastCall := now;
@@ -75,8 +75,8 @@ is
    
    
    procedure perform_Kalman_Filtering(Self : IMU_Tag; newAngle : Orientation_Type) is
-   now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-   dt : constant Time_Type := Units.To_Time( now - G_state.kmLastCall ); 
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt : constant Time_Type := Units.To_Time( now - G_state.kmLastCall ); 
       newRate : Angular_Velocity_Vector := get_Angular_Velocity(Self);
       BIAS_LIMIT : constant Angular_Velocity_Type := 500.0*Degree/Second;
       predAngle : Angle_Vector;
@@ -94,12 +94,6 @@ is
 
       -- Preprocessing
       -- =======================================================================
-
-
-      -- accelerometer compensation
-      -- newAngle 
-
-
 
 
 
@@ -245,7 +239,7 @@ is
    end get_Angular_Velocity;
 
    function get_Orientation(Self : IMU_Tag) return Orientation_Type is
-   pragma Unreferenced (Self);
+      pragma Unreferenced (Self);
    begin
       return ( Roll => G_state.kmRoll.Angle, Pitch => G_state.kmPitch.Angle, Yaw => 0.0 * Degree);
    end get_Orientation;
@@ -253,12 +247,13 @@ is
 
 
    -- Complementary Filter: angle = 0.98 *(angle+gyro*dt) + 0.02*acc
-   function Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; Angular_Rate : Angular_Velocity_Vector) return Orientation_Type is
-   pragma Unreferenced (Self);
+   function Fused_Orientation(Self : IMU_Tag; Orientation : Orientation_Type; 
+                              Angular_Rate : Angular_Velocity_Vector) return Orientation_Type is
+      pragma Unreferenced (Self);
       result : Orientation_Type;
       fraction : constant := 0.7;
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt : constant Ada.Real_Time.Time_Span := now - G_state.lastFuse;
+      dt  : constant Ada.Real_Time.Time_Span := now - G_state.lastFuse;
    begin
       result.Roll := fraction * ( G_state.filterAngle(ROLL) + Angular_Rate(ROLL) * Units.To_Time( dt ) ) +
       (1.0 - fraction) * Orientation.Roll;

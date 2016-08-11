@@ -46,11 +46,12 @@ package Profiler with SPARK_Mode is
    function get_Max(Self : in Profile_Tag) return Time_Span;
 
 private
+   subtype Name_Length_Type is Integer range 0 .. 30;
    subtype Name_Type is String(1 .. 30);
 
    type Profile_Tag is tagged record
       name         : Name_Type := (others => ' ');
-      name_length  : Natural := 0;
+      name_length  : Name_Length_Type := 0;
       max_duration : Time_Span := Milliseconds( 0 );
       start_Time   : Time := Time_First;
       stop_Time    : Time := Time_First;

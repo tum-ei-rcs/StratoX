@@ -1846,7 +1846,10 @@ package body STM32.SDMMC is
       return Err;
    end Read_Blocks_DMA;
 
-   -- new and untested writing function
+   ---------------------
+   --  Write_Blocks_DMA
+   ---------------------
+
    function Write_Blocks_DMA
      (Controller : in out SDMMC_Controller;
       Addr       : Unsigned_64;
@@ -1929,7 +1932,6 @@ package body STM32.SDMMC is
       Enable_Interrupt (Controller, Data_Timeout_Interrupt);
       Enable_Interrupt (Controller, Data_End_Interrupt); -- this never comes
       Enable_Interrupt (Controller, TX_Underrun_Interrupt); -- not used in https://github.com/lvniqi/STM32F4xx_DSP_StdPeriph_Lib_V1.3.0/blob/master/Libraries/SDIO/sdio_sdcard.c
-      -- TODO: stop bit interrupt
 
       -- start DMA first
       STM32.DMA.Start_Transfer_with_Interrupts

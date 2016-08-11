@@ -34,7 +34,8 @@
 --   @author  MCD Application Team                                          --
 --   @version V1.1.0                                                        --
 --   @date    19-June-2014                                                  --
---   @brief   DMA HAL module driver.                                        --
+--   @brief   DMA HAL module driver.  
+--   Extended by Technical Unversity of Munich, Martin Becker               --
 --                                                                          --
 --   COPYRIGHT(c) 2014 STMicroelectronics                                   --
 ------------------------------------------------------------------------------

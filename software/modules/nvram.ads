@@ -99,13 +99,16 @@ is
    procedure Load (variable : in Variable_Name; data : out HIL.Byte);
    --  read variable with given name from NVRAM and return value
 
-   procedure Load (variable : in Variable_Name; data : out Float);
+   procedure Load (variable : in Variable_Name; data : out Float)
+     with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
+   --  same, but with Float convenience conversion. Point to first variable of the quadrupel.
 
    procedure Store (variable : in Variable_Name; data : in HIL.Byte);
-   --  write variable with given name to NVRAM
+   --  write variable with given name to NVRAM.
 
-   procedure Store (variable : in Variable_Name; data : in Float);
-   --  write variable with given name to NVRAM
+   procedure Store (variable : in Variable_Name; data : in Float)
+     with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
+   --  same, but with Float convenience conversion.  Point to first variable of the quadrupel.
 
    procedure Reset;
    --  explicit reset of NVRAM to defaults; same effect as re-compiling.

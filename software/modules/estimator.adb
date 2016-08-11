@@ -1,4 +1,5 @@
 
+--with Generic_Signal;
 --with Generic_Sensor;
 with Generic_Queue;
 
@@ -19,7 +20,6 @@ with Config.Software;
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 pragma Elaborate_All(generic_queue);
-with Interfaces; use Interfaces;
 
 package body Estimator with SPARK_Mode is
 
@@ -37,6 +37,7 @@ package body Estimator with SPARK_Mode is
 
    type State_Type is record
       fix : GPS_Fix_Type := NO_FIX;
+      nsat : Unsigned_8 := 0;
       avg_gps_height : Altitude_Type := 0.0 * Meter;
       max_gps_height : Altitude_Type := 0.0 * Meter;
       avg_baro_height : Altitude_Type := 0.0 * Meter;
@@ -107,7 +108,7 @@ package body Estimator with SPARK_Mode is
       Mag : Magnetic_Flux_Density_Vector;
       GFixS : String := "NO";
       pragma Unreferenced (GFixS);
-      -- now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+
    begin
       G_Profiler.start;
 
@@ -116,9 +117,12 @@ package body Estimator with SPARK_Mode is
       G_imu.Acc := IMU.Sensor.get_Linear_Acceleration;
       G_imu.Gyro := IMU.Sensor.get_Angular_Velocity;
 
--- Logger.log_console(Logger.DEBUG,"Acc: " & Image(G_imu.Acc(X)) & ", " & Image(G_imu.Acc(Y)) & ", " & Image(G_imu.Acc(Z)) );
-      -- Logger.log_console(Logger.DEBUG,"Gyro: " & AImage(G_imu.Gyro(Roll)*Second) & ", " & AImage(G_imu.Gyro(Pitch)*Second) & ", " & AImage(G_imu.Gyro(YAW)*Second) );
-      -- Logger.log_console(Logger.DEBUG,"Gyro: " & RImage(G_imu.Gyro(Roll)*Second) & ", " & RImage(G_imu.Gyro(Pitch)*Second) & ", " & RImage(G_imu.Gyro(YAW)*Second) );
+      -- Logger.log_console(Logger.DEBUG,"Acc: " & Image(G_imu.Acc(X)) & ", "
+      --      & Image(G_imu.Acc(Y)) & ", " & Image(G_imu.Acc(Z)) );
+      -- Logger.log_console(Logger.DEBUG,"Gyro: " & AImage(G_imu.Gyro(Roll)*Second)
+      --      & ", " & AImage(G_imu.Gyro(Pitch)*Second) & ", " & AImage(G_imu.Gyro(YAW)*Second) );
+      -- Logger.log_console(Logger.DEBUG,"Gyro: " & RImage(G_imu.Gyro(Roll)*Second)
+      --      & ", " & RImage(G_imu.Gyro(Pitch)*Second) & ", " & RImage(G_imu.Gyro(YAW)*Second) );
 
 
       Acc_Orientation := Orientation( G_imu.Acc );
@@ -127,9 +131,12 @@ package body Estimator with SPARK_Mode is
       G_Object_Orientation := IMU.Sensor.get_Orientation;
 
 
-      -- Logger.log_console(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", " & AImage( Acc_Orientation.Pitch ) & ", " & AImage( Acc_Orientation.Yaw ) );
-      -- Logger.log_console(Logger.INFO, "CF : " & AImage( CF_Orientation.Roll ) & ", " & AImage( CF_Orientation.Pitch ) & ", " & AImage( CF_Orientation.Yaw ) );
-      -- Logger.log_console(Logger.INFO, "KM : " & AImage( G_Object_Orientation.Roll ) & ", " & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
+      -- Logger.log_console(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", "
+      --     & AImage( Acc_Orientation.Pitch ) & ", " & AImage( Acc_Orientation.Yaw ) );
+      -- Logger.log_console(Logger.INFO, "CF : " & AImage( CF_Orientation.Roll ) & ", "
+      --     & AImage( CF_Orientation.Pitch ) & ", " & AImage( CF_Orientation.Yaw ) );
+      -- Logger.log_console(Logger.INFO, "KM : " & AImage( G_Object_Orientation.Roll ) & ", "
+      --     & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
 
       Magnetometer.Sensor.read_Measurement;
       Mag := Magnetometer.Sensor.get_Sample.data;
@@ -159,6 +166,7 @@ package body Estimator with SPARK_Mode is
 
       GPS.Sensor.read_Measurement;
       G_state.fix := GPS.Sensor.get_GPS_Fix;
+      G_state.nsat := GPS.Sensor.get_Num_Sats;
       -- FIXME: Sprung durch Baro Offset, falls GPS wegfällt
       if G_state.fix = FIX_3D then
          G_Object_Position := GPS.Sensor.get_Position;
@@ -205,9 +213,6 @@ package body Estimator with SPARK_Mode is
 
       G_state.logger_console_calls := Logger_Call_Type'Succ( G_state.logger_console_calls );
       if G_state.logger_console_calls = 0 then
-
-         Logger.log_console(Logger.DEBUG,"Acc: " & Image(G_imu.Acc(X)) & ", " & Image(G_imu.Acc(Y)) & ", " & Image(G_imu.Acc(Z)) );
-
          Logger.log_console(Logger.DEBUG,
                             "RPY: " & AImage( G_Object_Orientation.Roll ) &
                             ", " & AImage( G_Object_Orientation.Pitch ) &
@@ -238,7 +243,7 @@ package body Estimator with SPARK_Mode is
                    gps_week => 0,
                    gps_msec => 0,
                    fix      => Unsigned_8 (GPS_Fix_Type'Pos( G_state.fix )),
-                   nsat     => 0,
+                   nsat     => G_state.nsat,
                    lat      => Float( G_Object_Position.Latitude / Degree ),
                    lon      => Float( G_Object_Position.Longitude / Degree ),
                    alt      => Float( G_Object_Position.Altitude )
@@ -278,6 +283,10 @@ package body Estimator with SPARK_Mode is
       return G_state.fix;
    end get_GPS_Fix;
 
+   function get_Num_Sat return Unsigned_8 is
+   begin
+      return G_state.nsat;
+   end get_Num_Sat;
 
    function get_current_Height return Altitude_Type is
       result : Altitude_Type;
@@ -320,9 +329,6 @@ package body Estimator with SPARK_Mode is
    end get_Baro_Height;
 
 
-
-
-
    function Orientation(acc_vector : Linear_Acceleration_Vector) return Orientation_Type is
       angles : Orientation_Type;
       g_length : Float := 0.0;
@@ -332,9 +338,6 @@ package body Estimator with SPARK_Mode is
       if abs(gravity_vector) < 0.7*GRAVITY or 1.3*GRAVITY < abs(gravity_vector) then
          gravity_vector(Z) := gravity_vector(Z) - (  Unit_Type'Copy_Sign( 1.0, gravity_vector(Z) ) * (abs(gravity_vector) - GRAVITY) );
       end if;
-
-
-
 
       -- check valid
       if gravity_vector(Y) = 0.0 * Meter / Second**2 and gravity_vector(Z) = 0.0 * Meter / Second**2 then
@@ -421,16 +424,17 @@ package body Estimator with SPARK_Mode is
       pos_values : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length_Type'Last);
       pos_ref : GPS_Loacation_Type;
 
-now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       stable : Boolean := True;
    begin
       if G_orientation_buffer.Length > 1 and G_pos_buffer.Length > 1 then
-         G_state.stable_Time := G_state.stable_Time + Units.To_Time(  now - G_state.last_stable_check  );
+         G_state.stable_Time := G_state.stable_Time + Units.To_Time( now - G_state.last_stable_check );
          G_orientation_buffer.get_all(or_values);
          or_ref := or_values(1);
          for index in Integer range 1 .. G_orientation_buffer.Length loop
             if or_values(index).Roll - or_ref.Roll > 1.5 * Degree  or
-            or_values(index).Pitch - or_ref.Pitch > 1.5 * Degree then
+              or_values(index).Pitch - or_ref.Pitch > 1.5 * Degree
+            then
                G_state.stable_Time := 0.0 * Second;
             end if;
          end loop;
@@ -440,7 +444,8 @@ now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
          for index in Integer range 1 .. G_pos_buffer.Length loop
             if pos_values(index).Longitude - pos_ref.Longitude > 0.002 * Degree or   -- 0.002° ≈ 111 Meter
             pos_values(index).Latitude - pos_ref.Latitude > 0.002 * Degree or
-            pos_values(index).Altitude - pos_ref.Altitude > 10.0 * Meter then
+              pos_values(index).Altitude - pos_ref.Altitude > 10.0 * Meter
+            then
                G_state.stable_Time := 0.0 * Second;
             end if;
          end loop;

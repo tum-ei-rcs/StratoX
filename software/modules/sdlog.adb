@@ -59,20 +59,21 @@ package body SDLog with SPARK_Mode => Off is
 
    --  creates a new directory within root, that is named
    --  after the build.
-   function Start_Logfile (dirname : String; filename : String) return Boolean is
+   procedure Start_Logfile (dirname : String; filename : String; ret : out Boolean) is
       Hnd_Root : Directory_Handle;
       Status   : Status_Code;
       Log_Dir  : Directory_Entry;
       Log_Hnd  : Directory_Handle;
 
    begin
+      ret := False;
       if (not SD_Initialized) or Error_State then
-         return False;
+         return;
       end if;
 
       if Open_Root_Directory (FS, Hnd_Root) /= OK then
          Error_State := True;
-         return False;
+         return;
       end if;
 
       --  1. create log directory
@@ -81,13 +82,13 @@ package body SDLog with SPARK_Mode => Off is
                                 D_Entry => Log_Dir);
       if Status /= OK and then Status /= Already_Exists
       then
-         return False;
+         return;
       end if;
       Close (Hnd_Root);
 
       Status := Open (E => Log_Dir, Dir => Log_Hnd);
       if Status /= OK then
-         return False;
+         return;
       end if;
 
       --  2. create log file
@@ -95,10 +96,11 @@ package body SDLog with SPARK_Mode => Off is
                              newname => filename,
                              File => fh_log);
       if Status /= OK then
-         return False;
+         return;
       end if;
+
+      ret := True;
       log_open := True;
-      return True;
    end Start_Logfile;
 
    ---------------

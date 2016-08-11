@@ -1,7 +1,7 @@
 --  Project: StratoX
---  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
---          Martin Becker (becker@rcs.ei.tum.de)
---
+--  Authors: Martin Becker (becker@rcs.ei.tum.de)
+--           Emanuel Regnath (emanuel.regnath@tum.de)
+--           
 --  Description:
 --     allows logging of structured messages at several logging levels.
 --
@@ -9,6 +9,7 @@
 --     Logger.init  -- initializes the Logger
 --     Logger.log_console (Logger.INFO, "Program started.")  -- writes log on info level to console
 --     Logger.log_sd (Logger.INFO, gps_msg) -- writes GPS record to SD card
+--     Logger.log (Logger.INFO, "hello") -- writes to both SD and console
 with SDLog;
 with NVRAM;
 with Buildinfo;
@@ -30,7 +31,7 @@ package body Logger with SPARK_Mode,
 is
 
    --  the type for the queue buffer
-   type Buffer_Ulog is array (Natural range <>) of ULog.Message;
+   type Buffer_Ulog is array (Natural range <>) of ULog.Message; -- no discriminant => mutable variant record
    type bufpos is mod LOG_QUEUE_LENGTH;
 
    --  if GNATprove crashes with reference to that file,
@@ -115,7 +116,7 @@ is
    --  thus, all callees here have to be elaborated before this task.
 
    task body Logging_Task is
-      msg : ULog.Message;
+      msg : ULog.Message; -- no discriminant given -> mutable variant record
       BUFLEN : constant := 512;
       bytes : HIL.Byte_Array (1 .. BUFLEN);
       len : Natural;
@@ -177,7 +178,7 @@ is
       procedure New_Msg (msg : in ULog.Message) is
       begin
          if Queue_Enable then
-            Buffer (Integer (Pos_Write)) := msg;
+            Buffer (Integer (Pos_Write)) := msg; -- FIXME: SPARK "discriminant check might fail"
             Pos_Write := Pos_Write + 1;
             if Num_Queued < Buffer'Last then
                Num_Queued := Num_Queued + 1;
@@ -197,7 +198,7 @@ is
       begin
          pragma Assume (Num_Queued > 0); -- via barrier and assert in New_Msg
 
-         msg := Buffer (Integer (Pos_Read));
+         msg := Buffer (Integer (Pos_Read)); -- FIXME: SPARK "discriminant check might fail"
          n_queued_before := Num_Queued;
          Pos_Read := Pos_Read + 1;
          Num_Queued := Num_Queued - 1;
@@ -277,13 +278,22 @@ is
    procedure log(msg_level : Log_Level; message : Message_Type) is
       text_msg : ULog.Message( ULog.TEXT );
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      maxlen : constant Integer := (if message'Length > text_msg.txt'Length 
+                                    then text_msg.txt'Length else message'Length);
    begin
       log_console (msg_level, message);
-      if Log_Level'Pos (msg_level) >= Log_Level'Pos (INFO) then
-         text_msg.t := now;
-         text_msg.txt(1 .. message'Last) := message;
-         text_msg.txt_last := message'Last;
-         log_sd (msg_level, text_msg);
+      if maxlen > 0 then         
+         if Log_Level'Pos (msg_level) >= Log_Level'Pos (INFO) then
+            text_msg.t := now;  
+            declare
+               idx_t : constant Integer := text_msg.txt'First - 1 + maxlen;
+               idx_m : constant Integer := message'First - 1 + maxlen;
+            begin
+               text_msg.txt(text_msg.txt'First .. idx_t) := message (message'First .. idx_m);
+               text_msg.txt_last := idx_m;
+            end;
+            log_sd (msg_level, text_msg);
+         end if;
       end if;
    end log;
 
@@ -333,8 +343,10 @@ is
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
          len         : Natural;
          valid       : Boolean;
+         log_started : Boolean;
       begin
-         if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
+         SDLog.Start_Logfile (dirname => buildstring, filename => fname, ret => log_started);
+         if not log_started
          then
             log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
             With_SDLog := False;

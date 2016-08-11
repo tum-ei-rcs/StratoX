@@ -13,6 +13,7 @@
 with Units; use Units;
 with Units.Vectors;    use Units.Vectors;
 with Units.Navigation; use Units.Navigation;
+with Interfaces;       use Interfaces;
 --with Dynamics3D;
 
 
@@ -35,6 +36,8 @@ package Estimator with SPARK_Mode is
    function get_Position return GPS_Loacation_Type;
    
    function get_GPS_Fix return GPS_Fix_Type;
+   
+   function get_Num_Sat return Unsigned_8;
    
    function get_current_Height return Altitude_Type;
    

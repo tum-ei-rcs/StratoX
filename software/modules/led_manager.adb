@@ -152,7 +152,7 @@ package body LED_Manager is
 
    -- blink functions
    procedure LED_blink(speed : LED_Blink_Type) is
-      pulse_time : Time_Type := Blink_Speed(speed);
+      pulse_time : constant Time_Type := Blink_Speed(speed);
    begin
       LED_blinkPulse(pulse_time, pulse_time);
    end LED_blink;
@@ -253,7 +253,9 @@ package body LED_Manager is
             if LED_mode = MORSE then
                null; -- LED_morseNextPulse;
             end if;
-            if current_pulse.time_mark_on > 0 then  LED_set(ON); end if;
+            if current_pulse.time_mark_on > 0 then  
+               LED_set(ON); 
+            end if;
          elsif time_counter < current_pulse.time_mark_on then 
             LED_set(ON);
          end if;

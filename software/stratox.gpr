@@ -93,7 +93,7 @@ project StratoX is
    package Prove is
       -- switches for gnat2why et. al.
 
-      for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "-d"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
+      for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "-k"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
       -- for Switches use ("--timeout=5", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "--assumptions", "-d");
 
    end Prove;
@@ -101,9 +101,6 @@ project StratoX is
    package Check is
       for Default_Switches ("ada") use ("-o", "check/gnatcheck.out", "-rules", "-from=coding_standard.rules");
    end Check;
-
-   package Requirements is
-   end Requirements;
 
    -- pretty printer
    package Pretty_Printer renames Style.Pretty_Printer;

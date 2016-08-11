@@ -1,20 +1,22 @@
 -- Description:
 -- Main System File
--- todo: better unit name
+-- the main loop (TM)
 
 with Ada.Real_Time;                     use Ada.Real_Time;
 
 with CPU;
 with Units;            use Units;
-with Units.Navigation; use Units.Navigation;
+--  with Units.Navigation; use Units.Navigation;
 
 with HIL;
 
+--  with MPU6000.Driver;
 with PX4IO.Driver;
 with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
 
+--  with Crash;
 with Mission;
 with Console;
 with Estimator;
@@ -82,7 +84,7 @@ package body Main with SPARK_Mode => On is
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots); -- is maintained by the NVRAM itself
          Logger.log_console (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
-         Logger.log_console (Logger.INFO, "Build date: " & Buildinfo.Compilation_Date
+         Logger.log_console (Logger.INFO, "Build date: " & Buildinfo.Compilation_ISO_Date
                      & " " & Buildinfo.Compilation_Time);
 
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
@@ -124,12 +126,9 @@ package body Main with SPARK_Mode => On is
 
       Main_Profile : Profile_Tag;
 
-      body_info : Body_Type;
+      --  body_info : Body_Type;
 
       command : Console.User_Command_Type;
-      
-      --v : Linear_Velocity_Type := 0.0 * Meter/Second;
-      --a : Linear_Acceleration_Type := 12.0 * Meter/Second**2;
    begin
       Main_Profile.init(name => "Main");
       LED_Manager.LED_blink (LED_Manager.SLOW);
@@ -142,11 +141,6 @@ package body Main with SPARK_Mode => On is
       --Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
       --Buzzer_Manager.Set_Song( "The Final Countdown" );
       --Buzzer_Manager.Enable;
-      
-      
-      -- Dimension Test (does not work because only the static return type is propagated (see sem_dim.adb)
-      -- v := integrate(a, 2.0*Second);
-      
 
       -- arm PX4IO
       Controller.activate;
@@ -169,6 +163,18 @@ package body Main with SPARK_Mode => On is
          -- Mission
          Mission.run_Mission;
 
+         -- Estimator
+--           Estimator.update;
+--  --
+--           body_info.orientation := Estimator.get_Orientation;
+--           body_info.position := Estimator.get_Position;
+--  --
+--  --
+--           -- Controller
+--           Controller.set_Current_Orientation (body_info.orientation);
+--           Controller.set_Current_Position (body_info.position);
+--           Controller.runOneCycle;
+
 
          -- Console
          Console.read_Command( command );
@@ -181,14 +187,16 @@ package body Main with SPARK_Mode => On is
                Controller.log_Info;
                PX4IO.Driver.read_Status;
 
-               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer(
+                                   Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
 
             when Console.ARM => Controller.activate;
 
             when Console.DISARM => Controller.deactivate;
 
             when Console.PROFILE =>
-               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer( Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer(
+                                   Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
                Main_Profile.log;
 
             when others =>

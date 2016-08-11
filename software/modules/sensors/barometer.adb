@@ -7,16 +7,16 @@ package body Barometer with SPARK_Mode is
 
 
    overriding procedure initialize (Self : in out Barometer_Tag) is
-   pragma Unreferenced (Self);
+      pragma Unreferenced (Self);
    begin
-      Driver.init;
+      Driver.Init;
    end initialize;
 
    overriding procedure read_Measurement(Self : in out Barometer_Tag) is
    begin
-      Driver.update_val;
-      Self.sample.data.pressure := Driver.get_pressure;
-      Self.sample.data.temperature := Driver.get_temperature;
+      Driver.Update_Val;
+      Self.sample.data.pressure := Driver.Get_Pressure;
+      Self.sample.data.temperature := Driver.Get_Temperature;
    end read_Measurement;
 
    function get_Pressure(Self : Barometer_Tag) return Pressure_Type is
@@ -42,8 +42,12 @@ package body Barometer with SPARK_Mode is
       t_coeff : constant Temperature_Gradient_Type := 6.5 * Milli * Kelvin / Meter;
       p_ref   : constant Pressure_Type := 1013.25 * Hecto * Pascal;
       exp_frac  : constant Float := 1.0 / 5.255;
+      h0   : constant Length_Type := t_ref / t_coeff;
+      prel : constant Unit_Type := pressure / p_ref;
+      comp : constant Unit_Type := prel**exp_frac;
+      neg  : constant Unit_Type := 1.0 - comp; -- FIXME: overflow check might fail
    begin
-      return (t_ref / t_coeff) * ( 1.0 - (pressure / p_ref)**exp_frac );
+      return h0 * neg; -- FIXME: overflow check might fail
    end Altitude;
 
 end Barometer;

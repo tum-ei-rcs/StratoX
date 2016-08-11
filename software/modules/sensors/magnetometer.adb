@@ -5,13 +5,14 @@ with HMC5883L; use HMC5883L;
 --with HMC5883L.Register;
 
 with Logger;
-with Units.Vectors; use Units.Vectors;
+with Units.Vectors;
+
 
 package body Magnetometer with SPARK_Mode is
 
 
    overriding procedure initialize (Self : in out Magnetometer_Tag) is
-   pragma Unreferenced (Self);
+      pragma Unreferenced (Self);
    begin
       Driver.initialize;
    end initialize;

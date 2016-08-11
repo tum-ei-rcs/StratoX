@@ -15,16 +15,24 @@ package body Profiler with SPARK_Mode is
    end disableProfiling;
 
    procedure init(Self : in out Profile_Tag; name : String) is
-   now : constant Time := Clock;
+      now : constant Time := Clock;
+      maxlen : constant Integer := (if name'Length > Self.name'Length
+                                    then Self.name'Length else name'Length);
+
+      idx_s0 : constant Integer := Self.name'First;
+      idx_s1 : constant Integer := idx_s0 - 1 + maxlen;
+
+      idx_n0 : constant Integer := name'First;
+      idx_n1 : constant Integer := idx_n0 - 1 + maxlen;
    begin
-      Self.name(1 .. name'Length) := name;
-      Self.name_length := name'Length;
+      Self.name(idx_s0 .. idx_s1) := name (idx_n0 .. idx_n1);
+      Self.name_length := maxlen;
       Self.stop_Time := now;
       Self.start_Time := now;
    end init;
 
    procedure reset(Self : in out Profile_Tag) is
-   now : constant Time := Clock;
+      now : constant Time := Clock;
    begin
       Self.max_duration := Milliseconds( 0 );
       Self.stop_Time := now;
@@ -49,7 +57,8 @@ package body Profiler with SPARK_Mode is
    procedure log(Self : in Profile_Tag) is
    begin
       if CFG_PROFILER_PROFILING and CFG_PROFILER_LOGGING then
-         Logger.log_console (Logger.INFO, Self.name & " Profile: " & Integer'Image ( Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
+         Logger.log_console (Logger.INFO, Self.name & " Profile: " & Integer'Image (
+                             Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
       end if;
    end log;
 
@@ -71,7 +80,7 @@ package body Profiler with SPARK_Mode is
 
    -- elapsed time before stop or last measurement time after stop
    function get_Elapsed(Self : in Profile_Tag) return Time_Span with SPARK_Mode => Off is
-   now : constant Time := Clock;
+      now : constant Time := Clock;
    begin
       return (if Self.stop_Time > Self.start_Time then
                  Self.stop_Time - Self.start_Time else

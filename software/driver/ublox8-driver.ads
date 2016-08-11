@@ -1,22 +1,18 @@
--- Institution: Technische Universität München
--- Department: Realtime Computer Systems (RCS)
--- Project: StratoX
+-- Institution: Technische Universitaet Muenchen
+-- Department:  Realtime Computer Systems (RCS)
+-- Project:     StratoX
 --
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
---
--- Description: Driver for the GPS Module Ublox LEA-6H
---
--- ToDo:
--- [ ] Implementation
-
 
 with Units.Navigation; use Units.Navigation;
 with Units;
 with HIL.UART;
+with Interfaces; use Interfaces;
 
-package ublox8.Driver with
-SPARK_Mode,
-Abstract_State => State
+--  @summary Driver to parse messages of the GPS Module Ublox LEA-6H
+package ublox8.Driver with SPARK_Mode,
+  Abstract_State => State,
+  Initializes => State
 is
 
    type Error_Type is (SUCCESS, FAILURE);
@@ -32,7 +28,7 @@ is
       minute : Minute_Type;          --*< Minute of hour, range 0..59 (UTC)
       second : Second_Type;          --*< Seconds of minute, range 0..60 (UTC)
       fix : GPS_Fix_Type := NO_FIX;
-      sats : Natural := 0;                --*< Number of SVs used in Nav Solution
+      sats : Unsigned_8 := 0;                --*< Number of SVs used in Nav Solution
       lon : Longitude_Type;
       lat : Latitude_Type;
       alt : Altitude_Type;
@@ -41,22 +37,25 @@ is
 
    procedure reset;
 
-   procedure init with Global => (In_Out => State);
+   procedure init;
 
-   procedure update_val with Global => (In_Out => State);
-   -- read measurements values. Should be called periodically.
+   procedure update_val;
+   --  poll raw data. Should be called periodically.
 
    function get_Position return GPS_Loacation_Type;
+   --  read most recent position
 
    function get_GPS_Message return GPS_Message_Type;
 
    function get_Fix return GPS_Fix_Type;
+   --  read most recent fix status
+
+   function get_Nsat return Unsigned_8;
+   --  read most recent number of used satellits
 
    -- function get_Direction return Direction_Type;
 
    procedure perform_Self_Check (Status : out Error_Type);
-
-
 
 
 private
