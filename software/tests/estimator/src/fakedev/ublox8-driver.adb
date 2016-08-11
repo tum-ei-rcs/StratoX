@@ -15,6 +15,8 @@ Refined_State => (State => (null)) is
 
    procedure init is null;
 
+   function get_Nsat return Unsigned_8 is ( 0 );
+
    procedure update_val is
    begin
 
@@ -24,8 +26,8 @@ Refined_State => (State => (null)) is
 
       cur_fix := NO_FIX;-- GPS_Fix_Type'Enum_Val (Integer ( Simulation.CSV_here.Get_Column ("fix")));
 
-      cur_msg.sats := Integer ( Simulation.CSV_here.Get_Column ("NSats"));
-      cur_msg.speed := Linear_Velocity_Type ( Simulation.CSV_here.Get_Column ("Spd"));
+      cur_msg.sats := Unsigned_8 ( 0 );
+      cur_msg.speed := Linear_Velocity_Type ( 0.0 );
 
       -- don't care about the following for now:
       cur_msg.year := 2016;

@@ -43,6 +43,11 @@ package Helper with SPARK_Mode is
    pragma Inline (Saturate);
 
 
+   subtype Sign_Type is Float range -1.0 .. 1.0;
+   function sgn( x : Float ) return Sign_Type is 
+   ( if x = 0.0 then 0.0 elsif x > 0.0 then 1.0 else -1.0 );
+                                                    
+
 
 
 end Helper;
