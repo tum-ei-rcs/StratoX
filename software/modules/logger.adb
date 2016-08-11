@@ -276,7 +276,7 @@ is
 
    procedure log(msg_level : Log_Level; message : Message_Type) is
       text_msg : ULog.Message( ULog.TEXT );
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       log_console (msg_level, message);
       if Log_Level'Pos (msg_level) >= Log_Level'Pos (INFO) then

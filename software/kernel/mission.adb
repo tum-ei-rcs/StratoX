@@ -9,10 +9,8 @@ with Units; use Units;
 
 
 with Console; use Console;
-with Buzzer_Manager;
 with LED_Manager;
 with Logger;
-with Ulog;
 
 with Estimator;
 with Controller;
@@ -120,6 +118,7 @@ package body Mission with SPARK_Mode is
    begin
       null;
    end handle_Event;
+   pragma Unreferenced (handle_Event);
    
    
    
@@ -152,7 +151,7 @@ package body Mission with SPARK_Mode is
    end perform_Initialization;
 
    procedure perform_Self_Test is
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+   now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       
       procedure lock_Home is
       begin

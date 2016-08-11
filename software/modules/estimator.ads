@@ -51,7 +51,7 @@ package Estimator with SPARK_Mode is
 
 private
    function Orientation
-     (gravity_vector : Linear_Acceleration_Vector) return Orientation_Type;
+     (acc_vector : Linear_Acceleration_Vector) return Orientation_Type;
    
    procedure update_Max_Height;
    

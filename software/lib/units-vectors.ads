@@ -71,7 +71,6 @@ package Units.Vectors with SPARK_Mode is
    type Angular_Acceleration_Vector is array(Tait_Bryan_Angle_Type) of Angular_Velocity_Type;
 
 
-
    function "+" (Left, Right : Translation_Vector) return Translation_Vector is
       ( (  Left(1) + Right(1),
            Left(2) + Right(2),
@@ -79,29 +78,29 @@ package Units.Vectors with SPARK_Mode is
            ) );
 
    function "+" (Left, Right : Angle_Vector) return Angle_Vector is
-      ( Left(Roll) + Right(Roll), Left(Pitch) + Right(Pitch), Left(Yaw) + Right(Yaw) );
+      ( Left(ROLL) + Right(ROLL), Left(PITCH) + Right(PITCH), Left(YAW) + Right(YAW) );
 
    function "+" (Left, Right : Rotation_Vector) return Rotation_Vector is
-      ( Left(Roll) + Right(Roll), Left(Pitch) + Right(Pitch), Left(Yaw) + Right(Yaw) );
+      ( Left(ROLL) + Right(ROLL), Left(PITCH) + Right(PITCH), Left(YAW) + Right(YAW) );
 
    function "*" (Left : Unit_Type; Right : Rotation_Vector) return Rotation_Vector is
-      ( ( Left * Right(Roll), Left * Right(Pitch), Left * Right(Yaw) ) );
+      ( ( Left * Right(ROLL), Left * Right(PITCH), Left * Right(YAW) ) );
 
 
    function "+" (Left, Right : Angular_Velocity_Vector) return Angular_Velocity_Vector is
-      ( (  Left(Roll) + Right(Roll),
-           Left(Pitch) + Right(Pitch),
-           Left(Yaw) + Right(Yaw)
+      ( (  Left(ROLL) + Right(ROLL),
+           Left(PITCH) + Right(PITCH),
+           Left(YAW) + Right(YAW)
            ) );
 
    function "-" (Left, Right : Angular_Velocity_Vector) return Angular_Velocity_Vector is
-      ( (  Left(Roll) - Right(Roll),
-           Left(Pitch) - Right(Pitch),
-           Left(Yaw) - Right(Yaw)
+      ( (  Left(ROLL) - Right(ROLL),
+           Left(PITCH) - Right(PITCH),
+           Left(YAW) - Right(YAW)
            ) );
 
    function "*" (Left : Angular_Velocity_Vector; Right : Time_Type) return Rotation_Vector is
-      ( ( Left(Roll) * Right, Left(Pitch) * Right, Left(Yaw) * Right ) );
+      ( ( Left(ROLL) * Right, Left(PITCH) * Right, Left(YAW) * Right ) );
 
 
    procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);
@@ -109,6 +108,10 @@ package Units.Vectors with SPARK_Mode is
    function "abs" (vector : Cartesian_Vector_Type) return Unit_Type;
 
    function "abs" (vector : Angular_Vector) return Unit_Type;
+
+
+   function "abs" (vector : Linear_Acceleration_Vector) return Linear_Acceleration_Type;
+
 
 
    -- Matrices

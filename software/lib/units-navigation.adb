@@ -1,7 +1,6 @@
 with Units.Numerics; use Units.Numerics;
 with Units; use Units;
 
-with Logger;
 
 package body Units.Navigation is
 
@@ -55,6 +54,7 @@ package body Units.Navigation is
       end if;
       return Heading_Type( result );
    end Heading;
+   pragma Unreferenced (Heading);
 
 
    -- From http://www.movable-type.co.uk/scripts/latlong.html

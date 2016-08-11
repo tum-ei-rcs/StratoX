@@ -1,8 +1,12 @@
 
 
-
+with Ada.Numerics.Generic_Elementary_Functions;
 
 package Units.Numerics with SPARK_Mode is
+
+   package Math is new Ada.Numerics.Generic_Elementary_Functions( Unit_Type );
+
+
 
    function Sqrt (X : Unit_Type) return Float;
    function "**" (Left : Unit_Type; Right : Integer) return Float;
@@ -48,8 +52,8 @@ package Units.Numerics with SPARK_Mode is
          
 
    function Arctan
-     (Y     : Unit_Type;
-      X     : Unit_Type := 1.0;
+     (Y     : Unit_Type'Base;
+      X     : Unit_Type'Base := 1.0;
       Cycle : Angle_Type) return Angle_Type;
       
          

@@ -7,6 +7,7 @@ package body Barometer with SPARK_Mode is
 
 
    overriding procedure initialize (Self : in out Barometer_Tag) is
+   pragma Unreferenced (Self);
    begin
       Driver.init;
    end initialize;

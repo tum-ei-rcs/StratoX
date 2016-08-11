@@ -7,7 +7,6 @@ with HIL.Config; use HIL.Config;
 with HIL.UART; use type HIL.UART.Data_Type;
 with HIL.Devices;
 with Interfaces; use Interfaces;
-with Config.Software;
 
 with Logger;
 
@@ -24,7 +23,7 @@ is
                                                 Array_Type => Byte_Array);
    
 
-   G_heading : Heading_Type := NORTH;
+G_heading : constant Heading_Type := NORTH;
    
    G_GPS_Message : GPS_Message_Type := 
       ( year => 0,
@@ -88,7 +87,7 @@ is
       check : constant UBX_Checksum_Array := (1 => cks.ck_a, 2 => cks.ck_b);
       isReceived : Boolean := False;
       retries : Natural := 1;
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       while isReceived = False and retries > 0 loop
          HIL.UART.write(UBLOX_M8N, header & data & check);
@@ -165,7 +164,7 @@ is
                                               5 => Byte(20),
                                               6 => Byte(0));
                                               
-      msg_cfg_prt : Data_Type(0 .. 19) := (0 => UBX_TX_CFG_PRT_PORTID,
+                                              msg_cfg_prt : constant Data_Type(0 .. 19) := (0 => UBX_TX_CFG_PRT_PORTID,
                                            2 => Byte(0),
                                            4 => HIL.toBytes( UBX_TX_CFG_PRT_MODE )(1), -- uart mode 8N1
                                            5 => HIL.toBytes( UBX_TX_CFG_PRT_MODE )(2), -- uart mode no parity, 1 stop bit
@@ -176,7 +175,7 @@ is
                                            16 => Byte( 0 ), -- flags
                                            others => Byte( 0 ) );
                                       
-      msg_cfg_msg_head : UBX_Header_Array := (1 => UBX_SYNC1,
+                                      msg_cfg_msg_head : constant UBX_Header_Array := (1 => UBX_SYNC1,
                                               2 => UBX_SYNC2,
                                               3 => UBX_CLASS_CFG,
                                               4 => UBX_ID_CFG_MSG,
@@ -195,7 +194,9 @@ is
                                               6 => Byte(0));
                                           
       current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      pragma Unreferenced (current_time);
       MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
+      pragma Unreferenced (MESSAGE_DELAY_MS);
       
       procedure delay_ms( ms : Natural) is
          current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
@@ -226,9 +227,9 @@ is
       delay_ms( 10 );
       writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
             
-      msg_cfg_msg(1) := UBX_ID_NAV_SOL;
-      delay_ms( 10 );
-      writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
+            msg_cfg_msg(1) := UBX_ID_NAV_SOL;
+            delay_ms( 10 );
+            writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
       
       msg_cfg_msg(1) := UBX_ID_NAV_VELNED;
       delay_ms( 10 );
@@ -299,6 +300,7 @@ is
    begin
       return G_heading;
    end get_Direction;
+   pragma Unreferenced (get_Direction);
 
    procedure perform_Self_Check (Status : out Error_Type) is
    begin

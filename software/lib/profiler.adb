@@ -15,7 +15,7 @@ package body Profiler with SPARK_Mode is
    end disableProfiling;
 
    procedure init(Self : in out Profile_Tag; name : String) is
-      now : Time := Clock;
+   now : constant Time := Clock;
    begin
       Self.name(1 .. name'Length) := name;
       Self.name_length := name'Length;
@@ -24,7 +24,7 @@ package body Profiler with SPARK_Mode is
    end init;
 
    procedure reset(Self : in out Profile_Tag) is
-      now : Time := Clock;
+   now : constant Time := Clock;
    begin
       Self.max_duration := Milliseconds( 0 );
       Self.stop_Time := now;
@@ -71,7 +71,7 @@ package body Profiler with SPARK_Mode is
 
    -- elapsed time before stop or last measurement time after stop
    function get_Elapsed(Self : in Profile_Tag) return Time_Span with SPARK_Mode => Off is
-      now : Time := Clock;
+   now : constant Time := Clock;
    begin
       return (if Self.stop_Time > Self.start_Time then
                  Self.stop_Time - Self.start_Time else

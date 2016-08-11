@@ -10,14 +10,11 @@ with Units.Navigation; use Units.Navigation;
 
 with HIL;
 
-with MPU6000.Driver;
 with PX4IO.Driver;
-with HIL;
 with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
 
-with Crash;
 with Mission;
 with Console;
 with Estimator;
@@ -42,10 +39,10 @@ package body Main with SPARK_Mode => On is
       declare
          ret : Logger.Init_Error_Code;
       begin
-         Logger.init (ret);
+         Logger.Init (ret);
          pragma Unreferenced (ret);
       end;
-      Logger.set_Log_Level (CFG_LOGGER_LEVEL_UART);
+      Logger.Set_Log_Level (CFG_LOGGER_LEVEL_UART);
 
       --perform_Self_Test;
 
@@ -130,6 +127,9 @@ package body Main with SPARK_Mode => On is
       body_info : Body_Type;
 
       command : Console.User_Command_Type;
+      
+      --v : Linear_Velocity_Type := 0.0 * Meter/Second;
+      --a : Linear_Acceleration_Type := 12.0 * Meter/Second**2;
    begin
       Main_Profile.init(name => "Main");
       LED_Manager.LED_blink (LED_Manager.SLOW);
@@ -142,6 +142,11 @@ package body Main with SPARK_Mode => On is
       --Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
       --Buzzer_Manager.Set_Song( "The Final Countdown" );
       --Buzzer_Manager.Enable;
+      
+      
+      -- Dimension Test (does not work because only the static return type is propagated (see sem_dim.adb)
+      -- v := integrate(a, 2.0*Second);
+      
 
       -- arm PX4IO
       Controller.activate;
@@ -163,18 +168,6 @@ package body Main with SPARK_Mode => On is
 
          -- Mission
          Mission.run_Mission;
-
-         -- Estimator
---           Estimator.update;
---  --
---           body_info.orientation := Estimator.get_Orientation;
---           body_info.position := Estimator.get_Position;
---  --
---  --
---           -- Controller
---           Controller.set_Current_Orientation (body_info.orientation);
---           Controller.set_Current_Position (body_info.position);
---           Controller.runOneCycle;
 
 
          -- Console

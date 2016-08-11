@@ -6,9 +6,8 @@ with Logger;
 with Profiler;
 with Config.Software;
 with Units.Numerics; use Units.Numerics;
-with Units.Navigation; use Units.Navigation;
 
-with Ulog;
+with ULog;
 
 
 with Ada.Real_Time; use Ada.Real_Time;
@@ -141,7 +140,7 @@ package body Controller with SPARK_Mode is
 
    procedure log_Info is
       controller_msg : ULog.Message (Typ => ULog.CONTROLLER);
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       G_state.logger_console_calls := Logger_Call_Type'Succ( G_state.logger_console_calls );
       if G_state.logger_console_calls = 0 then
@@ -160,10 +159,10 @@ package body Controller with SPARK_Mode is
       -- log to SD
       controller_msg := ( Typ => ULog.CONTROLLER,
                           t => now,
-                          target_yaw => FLoat( G_Target_Orientation.Yaw ),
-                          target_roll => FLoat( G_Target_Orientation.Roll ),
-                          elevon_left => FLoat( G_Elevon_Angles(LEFT) ),
-                          elevon_right => FLoat( G_Elevon_Angles(RIGHT) ) );
+                          target_yaw => Float( G_Target_Orientation.Yaw ),
+                          target_roll => Float( G_Target_Orientation.Roll ),
+                          elevon_left => Float( G_Elevon_Angles(LEFT) ),
+                          elevon_right => Float( G_Elevon_Angles(RIGHT) ) );
       Logger.log_sd( Logger.INFO, controller_msg );
 
 
@@ -172,7 +171,7 @@ package body Controller with SPARK_Mode is
 
 
    procedure runOneCycle is
-    Control_Priority : Control_Priority_Type := EQUAL;
+   Control_Priority : Control_Priority_Type := EQUAL;
    begin
 
 
@@ -189,7 +188,7 @@ package body Controller with SPARK_Mode is
          Control_Priority := ROLL_FIRST;
       end if;
       if abs( G_Object_Orientation.Pitch ) > 40.0 *Degree then
-        Control_Priority := PITCH_FIRST;
+      Control_Priority := PITCH_FIRST;
       end if;
       G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron, Control_Priority);
 
@@ -216,7 +215,7 @@ package body Controller with SPARK_Mode is
 
    procedure set_hold is
    begin
-       -- hold glider in position
+   -- hold glider in position
       Servo.set_Angle(Servo.LEFT_ELEVON, 35.0 * Degree );
       Servo.set_Angle(Servo.RIGHT_ELEVON, 35.0 * Degree );
       PX4IO.Driver.sync_Outputs;
@@ -302,9 +301,9 @@ package body Controller with SPARK_Mode is
    begin
       -- dynamic balancing
       case (priority) is
-        when EQUAL => balance := 1.0;
-        when PITCH_FIRST => balance := 1.3;
-        when ROLL_FIRST => balance := 0.7;
+      when EQUAL => balance := 1.0;
+      when PITCH_FIRST => balance := 1.3;
+      when ROLL_FIRST => balance := 0.7;
       end case;
       balanced_elevator := Elevator_Angle_Type( Helper.Saturate( Float(elevator) * balance, Float(Elevator_Angle_Type'First), Float(Elevator_Angle_Type'Last)) );
       balanced_aileron  := Aileron_Angle_Type( Helper.Saturate( Float(aileron) * (2.0 - balance), Float(Aileron_Angle_Type'First), Float(Aileron_Angle_Type'Last)) );

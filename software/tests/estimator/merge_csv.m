@@ -31,7 +31,9 @@ for k = 1 : nfiles
     end
     label{k} = lbl;
     fclose (fid);    
-    data{k} = csvread(fname, 1);
+    % data{k} = csvread(fname, 1);
+    disp(['Test']);
+    data{k} = dlmread (fname, ',');
 end
 
 %% 2. find common time line

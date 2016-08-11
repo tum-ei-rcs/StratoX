@@ -171,7 +171,7 @@ package body ULog with SPARK_Mode => On is
             Serialize_Ulog_GPS (msg, bytes);
          when IMU =>
             Serialize_Ulog_IMU (msg, bytes);
-         when Controller =>
+         when CONTROLLER =>
             Serialize_Ulog_Controller (msg, bytes);
          when TEXT =>
             Serialize_Ulog_Text (msg, bytes);

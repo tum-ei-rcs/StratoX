@@ -39,6 +39,8 @@ is
    function To_File_Data (S : String) return SDLog_Data;
 
 private
-   log_open : Boolean := False with Part_Of => State;
+   log_open       : Boolean := False with Part_Of => State;
+   SD_Initialized : Boolean := False with Part_Of => State;
+   Error_State    : Boolean := False with Part_Of => State;
 
 end SDLog;

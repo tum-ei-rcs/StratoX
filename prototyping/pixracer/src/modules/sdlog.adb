@@ -10,11 +10,8 @@ with Media_Reader.SDCard;              use Media_Reader.SDCard;
 package body SDLog with SPARK_Mode => Off is
 
    SD_Controller   : aliased SDCard_Controller;
-   Error_State     : Boolean := False;
    FS              : FAT_Filesystem_Access := null;
-   SD_Initialized  : Boolean := False;
    fh_log          : FAT_Filesystem.Directories.Files.File_Handle;
-   -- log_open        : Boolean := False;
 
    -------------------
    --  Close_Filesys
