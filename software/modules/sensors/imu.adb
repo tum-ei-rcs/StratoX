@@ -42,7 +42,7 @@ is
       ( ( X => vector(Y), Y => -vector(X), Z => vector(Z) ) );
 
    function MPU_To_PX4Frame(vector : Angular_Velocity_Vector) return Angular_Velocity_Vector is
-      ( ( ROLL => vector(PITCH), PITCH => -vector(ROLL), YAW => vector(YAW) ) );
+      ( ( X => vector(Y), Y => -vector(X), Z => vector(Z) ) );
 
 
    overriding
@@ -95,6 +95,9 @@ is
       -- Preprocessing
       -- =======================================================================
 
+      -- compensate gyros
+       -- newRate := rotate( newRate, X 
+
 
 
       -- looping: if |pitch| exceeds 90°, the roll flips by 180°? => no, flight dynamic prevents this
@@ -108,7 +111,7 @@ is
    
       -- if roll > 90° then gyro pitch rate is inverse.
       if abs( Unit_Type( G_state.kmRoll.Angle  )) > Unit_Type( 90.0 * Degree ) then
-         newRate(PITCH) := - newRate(PITCH);
+         newRate(Y) := - newRate(Y);
       end if;
       
 
@@ -118,11 +121,11 @@ is
    
       -- 1. Predict
       ------------------
-      G_state.kmRoll.Rate := newRate(ROLL) - G_state.kmRoll.Bias;  -- Bias bei Pitch hoch: 6.2    
-      predAngle(ROLL) := wrap_Angle(  G_state.kmRoll.Angle  + Angle_Type( G_state.kmRoll.Rate * dt ),
+      G_state.kmRoll.Rate := newRate(X) - G_state.kmRoll.Bias;  -- Bias bei Pitch hoch: 6.2    
+      predAngle(X) := wrap_Angle(  G_state.kmRoll.Angle  + Angle_Type( G_state.kmRoll.Rate * dt ),
                                      Roll_Type'First, Roll_Type'Last);
                                     
-      G_state.kmRoll.Angle := predAngle(ROLL);
+      G_state.kmRoll.Angle := predAngle(X);
  
  
 
@@ -164,17 +167,17 @@ is
       -- =======================================================================
     
       -- 1. Predict
-      G_state.kmPitch.Rate := newRate(PITCH) - G_state.kmPitch.Bias;   
+      G_state.kmPitch.Rate := newRate(Y) - G_state.kmPitch.Bias;   
       
-      predAngle(PITCH) :=  G_state.kmPitch.Angle  + Angle_Type( G_state.kmPitch.Rate * dt );
+      predAngle(Y) :=  G_state.kmPitch.Angle  + Angle_Type( G_state.kmPitch.Rate * dt );
       
       -- if pitch prediction exceeds |90°|, the remainder has to be inverted: 80° + 15° = 85°!
-      if predAngle(PITCH) > 90.0*Degree then
-         G_state.kmPitch.Angle := 180.0*Degree - predAngle(PITCH);
-      elsif predAngle(PITCH) < -90.0*Degree then
-         G_state.kmPitch.Angle := -180.0*Degree - predAngle(PITCH);
+      if predAngle(Y) > 90.0*Degree then
+         G_state.kmPitch.Angle := 180.0*Degree - predAngle(Y);
+      elsif predAngle(Y) < -90.0*Degree then
+         G_state.kmPitch.Angle := -180.0*Degree - predAngle(Y);
       else
-         G_state.kmPitch.Angle := predAngle(PITCH);
+         G_state.kmPitch.Angle := predAngle(Y);
       end if;
             
       -- Calc Covariance, bleibt klein
@@ -231,9 +234,9 @@ is
       result : Angular_Velocity_Vector;
       sensitivity : constant Angular_Velocity_Type := Unit_Type( Driver.MPU6000_DEG_PER_LSB_2000 ) * Degree / Second;
    begin
-      result := ( ROLL => Unit_Type( Float( Self.sample.data.Gyro_X ) ) * sensitivity,
-                  PITCH => Unit_Type( Float( Self.sample.data.Gyro_Y ) ) * sensitivity,
-                  YAW => Unit_Type( Float( Self.sample.data.Gyro_Z ) ) * sensitivity );
+      result := ( X => Unit_Type( Float( Self.sample.data.Gyro_X ) ) * sensitivity,
+                  Y => Unit_Type( Float( Self.sample.data.Gyro_Y ) ) * sensitivity,
+                  Z => Unit_Type( Float( Self.sample.data.Gyro_Z ) ) * sensitivity );
       result := MPU_To_PX4Frame( result );
       return result;
    end get_Angular_Velocity;
@@ -255,10 +258,10 @@ is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       dt  : constant Ada.Real_Time.Time_Span := now - G_state.lastFuse;
    begin
-      result.Roll := fraction * ( G_state.filterAngle(ROLL) + Angular_Rate(ROLL) * Units.To_Time( dt ) ) +
+      result.Roll := fraction * ( G_state.filterAngle(X) + Angular_Rate(X) * Units.To_Time( dt ) ) +
       (1.0 - fraction) * Orientation.Roll;
       
-      result.Pitch := fraction * ( G_state.filterAngle(PITCH) + Angular_Rate(PITCH) * Units.To_Time( dt ) ) +
+      result.Pitch := fraction * ( G_state.filterAngle(Y) + Angular_Rate(Y) * Units.To_Time( dt ) ) +
       (1.0 - fraction) * Orientation.Pitch;
       
       G_state.lastFuse := Ada.Real_Time.Clock;

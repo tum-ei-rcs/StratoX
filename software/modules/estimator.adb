@@ -230,9 +230,9 @@ package body Estimator with SPARK_Mode is
                           accX  => Float( G_imu.Acc(X) ),
                           accY  => Float( G_imu.Acc(Y) ),
                           accZ  => Float( G_imu.Acc(Z) ),
-                          gyroX => Float( G_imu.Gyro(ROLL) ),
-                          gyroY => Float( G_imu.Gyro(PITCH) ),
-                          gyroZ => Float( G_imu.Gyro(YAW) ),
+                          gyroX => Float( G_imu.Gyro(X) ),
+                          gyroY => Float( G_imu.Gyro(Y) ),
+                          gyroZ => Float( G_imu.Gyro(Z) ),
                           roll  => Float( G_Object_Orientation.Roll ),
                           pitch => Float( G_Object_Orientation.Pitch ),
                           yaw   => Float( G_Object_Orientation.Yaw )
