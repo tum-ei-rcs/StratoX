@@ -51,7 +51,7 @@ package body Mission with SPARK_Mode is
    end start_New_Mission;
    
    procedure load_Mission is
-      old_state_val : HIL.Byte := HIL.Byte( 0 );
+      old_state_val : HIL.Byte;
       height : HIL.Byte_Array_2;
       baro_height : Altitude_Type;
    begin
@@ -62,6 +62,7 @@ package body Mission with SPARK_Mode is
       else
          -- Baro
          NVRAM.Load( VAR_HOME_HEIGHT_L, height(1) );
+         pragma Annotate (GNATprove, False_Positive, """height"" might not be initialized", "it is done right here");
          NVRAM.Load( VAR_HOME_HEIGHT_H, height(2) );
          baro_height := Unit_Type( HIL.toUnsigned_16( height ) ) * Meter;
          
@@ -79,43 +80,7 @@ package body Mission with SPARK_Mode is
       end if;    
    end load_Mission;
 
-   procedure run_Mission is
-   begin
-      case (G_state.mission_state) is
-         when UNKNOWN => null;
-         when INITIALIZING => 
-            perform_Initialization;
-            
-         when SELF_TESTING =>
-            perform_Self_Test;
-            
-         when WAITING_FOR_ARM =>
-            wait_For_Arm;
-            
-         when WAITING_FOR_RELEASE =>
-            wait_For_Release;
-            
-         when ASCENDING =>
-            monitor_Ascend;
-            
-         when DETACHING =>
-            perform_Detach;
-            
-         when DESCENDING =>
-            control_Descend;
-         
-         when WAITING_ON_GROUND =>
-            wait_On_Ground;
-            
-         when WAITING_FOR_RESET =>
-            wait_For_Reset;
-            
-      end case;
       
-      G_state.last_call := Ada.Real_Time.Clock;
-   end run_Mission;
-
-   
    procedure handle_Event( event : Mission_Event_Type ) is
    begin
       null;
@@ -339,6 +304,40 @@ package body Mission with SPARK_Mode is
    end wait_For_Reset;
 
 
-
+   procedure run_Mission is
+   begin
+      case (G_state.mission_state) is
+         when UNKNOWN => null;
+         when INITIALIZING => 
+            perform_Initialization;
+            
+         when SELF_TESTING =>
+            perform_Self_Test;
+            
+         when WAITING_FOR_ARM =>
+            wait_For_Arm;
+            
+         when WAITING_FOR_RELEASE =>
+            wait_For_Release;
+            
+         when ASCENDING =>
+            monitor_Ascend;               
+            
+         when DETACHING =>
+            perform_Detach;
+            
+         when DESCENDING =>
+            control_Descend;
+         
+         when WAITING_ON_GROUND =>
+            wait_On_Ground;
+            
+         when WAITING_FOR_RESET =>
+            wait_For_Reset;
+            
+      end case;
+      
+      G_state.last_call := Ada.Real_Time.Clock;
+   end run_Mission;
 
 end Mission;

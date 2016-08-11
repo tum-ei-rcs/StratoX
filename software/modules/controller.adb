@@ -170,49 +170,6 @@ package body Controller with SPARK_Mode is
    end log_Info;
 
 
-   procedure runOneCycle is
-      Control_Priority : Control_Priority_Type := EQUAL;
-   begin
-
-
-      -- control
-      control_Pitch;
-      --control_Yaw;
-      G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
-      control_Roll;
-
-      G_state.control_profiler.start;
-
-      -- mix
-      if abs( G_Object_Orientation.Roll ) > 90.0 * Degree then
-         Control_Priority := ROLL_FIRST;
-      end if;
-      if abs( G_Object_Orientation.Pitch ) > 40.0 *Degree then
-         Control_Priority := PITCH_FIRST;
-      end if;
-      G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron, Control_Priority);
-
-
-      -- set servos
-      Servo.set_Angle(Servo.LEFT_ELEVON, G_Elevon_Angles(LEFT) );
-      Servo.set_Angle(Servo.RIGHT_ELEVON, G_Elevon_Angles(RIGHT) );
-
-      -- Output
-      PX4IO.Driver.sync_Outputs;
-
-      G_state.control_profiler.stop;
-
-      -- log
-      G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
-      if G_state.logger_calls = 0 then
-         log_Info;
-      end if;
-
-
-
-
-   end runOneCycle;
-
    procedure set_hold is
    begin
       -- hold glider in position
@@ -263,6 +220,54 @@ package body Controller with SPARK_Mode is
       G_Last_Call_Time := now;
       Pitch_PID_Controller.step(PID_Pitch, error, dt, G_Plane_Control.Elevator);
    end control_Pitch;
+
+
+   function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type is
+      result : Angle_Type := To - From;
+   begin
+      if result > 180.0 * Degree then
+         result := result - 360.0 * Degree;
+      elsif result < -180.0 * Degree then
+         result := result + 360.0 * Degree;
+      end if;
+      return result;
+   end delta_Angle;
+
+
+   -- 	θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
+   -- φ is lat, λ is long
+   function Heading(source_location : GPS_Loacation_Type;
+                    target_location  : GPS_Loacation_Type)
+                    return Heading_Type is
+      result : Angle_Type := 0.0 * Degree;
+   begin
+      if source_location.Longitude /= target_location.Longitude or source_location.Latitude /= target_location.Latitude then
+--           Logger.log_console(Logger.TRACE, "Calculating Heading: ");
+--           Logger.log_console(Logger.TRACE,
+--                      "Source LLA" & AImage( source_location.Longitude ) &
+--                   ", " & AImage( source_location.Latitude ) &
+--                   ", " & Image( source_location.Altitude ) );
+--                    Logger.log_console(Logger.TRACE,
+--                      "Target LLA" & AImage( target_location.Longitude ) &
+--                   ", " & AImage( target_location.Latitude ) &
+--                   ", " & Image( target_location.Altitude ) );
+         result := Arctan( Sin( delta_Angle( source_location.Longitude,
+                                           target_location.Longitude ) ) *
+                         Cos( target_location.Latitude ),
+                         Cos( source_location.Latitude ) * Sin( target_location.Latitude ) -
+                         Sin( source_location.Latitude ) * Cos( target_location.Latitude ) *
+                         Cos( delta_Angle( source_location.Longitude,
+                                      target_location.Longitude ) ),
+                     DEGREE_360
+                        );
+      end if;
+
+      -- Constrain to Heading_Type
+      if result < 0.0 * Degree then
+         result := result + Heading_Type'Last;
+      end if;
+      return Heading_Type( result );
+   end Heading;
 
    procedure control_Yaw is
       error : Angle_Type := 0.0 *Degree;
@@ -322,52 +327,46 @@ package body Controller with SPARK_Mode is
    end Elevon_Angles;
 
 
-
-   function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type is
-      result : Angle_Type := To - From;
+   procedure runOneCycle is
+      Control_Priority : Control_Priority_Type := EQUAL;
    begin
-      if result > 180.0 * Degree then
-         result := result - 360.0 * Degree;
-      elsif result < -180.0 * Degree then
-         result := result + 360.0 * Degree;
-      end if;
-      return result;
-   end delta_Angle;
 
-   -- 	θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
-   -- φ is lat, λ is long
-   function Heading(source_location : GPS_Loacation_Type;
-                    target_location  : GPS_Loacation_Type)
-                    return Heading_Type is
-      result : Angle_Type := 0.0 * Degree;
-   begin
-      if source_location.Longitude /= target_location.Longitude or source_location.Latitude /= target_location.Latitude then
---           Logger.log_console(Logger.TRACE, "Calculating Heading: ");
---           Logger.log_console(Logger.TRACE,
---                      "Source LLA" & AImage( source_location.Longitude ) &
---                   ", " & AImage( source_location.Latitude ) &
---                   ", " & Image( source_location.Altitude ) );
---                    Logger.log_console(Logger.TRACE,
---                      "Target LLA" & AImage( target_location.Longitude ) &
---                   ", " & AImage( target_location.Latitude ) &
---                   ", " & Image( target_location.Altitude ) );
-         result := Arctan( Sin( delta_Angle( source_location.Longitude,
-                                           target_location.Longitude ) ) *
-                         Cos( target_location.Latitude ),
-                         Cos( source_location.Latitude ) * Sin( target_location.Latitude ) -
-                         Sin( source_location.Latitude ) * Cos( target_location.Latitude ) *
-                         Cos( delta_Angle( source_location.Longitude,
-                                      target_location.Longitude ) ),
-                     DEGREE_360
-                        );
+      -- control
+      control_Pitch;
+      --control_Yaw;
+      G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
+      control_Roll;
+
+      G_state.control_profiler.start;
+
+      -- mix
+      if abs( G_Object_Orientation.Roll ) > 90.0 * Degree then
+         Control_Priority := ROLL_FIRST;
+      end if;
+      if abs( G_Object_Orientation.Pitch ) > 40.0 *Degree then
+         Control_Priority := PITCH_FIRST;
+      end if;
+      G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron, Control_Priority);
+
+
+      -- set servos
+      Servo.set_Angle(Servo.LEFT_ELEVON, G_Elevon_Angles(LEFT) );
+      Servo.set_Angle(Servo.RIGHT_ELEVON, G_Elevon_Angles(RIGHT) );
+
+      -- Output
+      PX4IO.Driver.sync_Outputs;
+
+      G_state.control_profiler.stop;
+
+      -- log
+      G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
+      if G_state.logger_calls = 0 then
+         log_Info;
       end if;
 
-      -- Constrain to Heading_Type
-      if result < 0.0 * Degree then
-         result := result + Heading_Type'Last;
-      end if;
-      return Heading_Type( result );
-   end Heading;
 
+
+
+   end runOneCycle;
 
 end Controller;

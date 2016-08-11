@@ -347,7 +347,7 @@ is
       Gyro_Y : out Integer_16;
       Gyro_Z : out Integer_16)
    is
-      Raw_Data : Data_Type (1 .. 14);
+      Raw_Data : Data_Type (1 .. 14) := (others => 0);
    begin
       Read_Register
         (Reg_Addr => MPU6000_RA_ACCEL_XOUT_H,

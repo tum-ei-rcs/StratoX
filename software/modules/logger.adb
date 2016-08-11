@@ -358,6 +358,8 @@ is
             Get_Ulog_Defs_Loop :
             loop
                ULog.Get_Header_Ulog (bytes, len, valid);
+               pragma Annotate (GNATprove, Intentional, """bytes"" might not be initialized", "MBe");
+               
                exit Get_Ulog_Defs_Loop when not valid;
                if len > 0 then
                   Write_Bytes_To_SD (len => len, buf => bytes);

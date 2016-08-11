@@ -262,6 +262,8 @@ is
       result.Pitch := fraction * ( G_state.filterAngle(PITCH) + Angular_Rate(PITCH) * Units.To_Time( dt ) ) +
       (1.0 - fraction) * Orientation.Pitch;
       
+      result.Yaw := Orientation.Yaw;
+      
       G_state.lastFuse := Ada.Real_Time.Clock;      
    end Fused_Orientation;
 

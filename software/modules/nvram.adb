@@ -165,7 +165,7 @@ is
    end Load;
 
    procedure Load (variable : in Variable_Name; data : out Float) is
-      bytes : Byte_Array_4;
+      bytes : Byte_Array_4 := (others => 0); -- needs init, because SPARK cannot prove via call
    begin
       for index in Natural range 0 .. 3 loop
          HIL.NVRAM.Read_Byte (addr => Var_To_Address (
