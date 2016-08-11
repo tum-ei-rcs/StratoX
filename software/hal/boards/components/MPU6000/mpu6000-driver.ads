@@ -1,24 +1,19 @@
--- Institution: Technische Universität München
--- Department:  Realtime Computer Systems (RCS)
+-- Institution: AdaCore / Technische Universitaet Muenchen
+-- Department:  *       / Realtime Computer Systems (RCS)
 -- Project:     StratoX
--- Module:      MPU 6000 Driver
+-- Module:      MPU 6000 Driver for SPI
 --
--- Authors:  Anthony Leonardo Gracio, Emanuel Regnath (emanuel.regnath@tum.de)
---
--- Description: Control a single LED
-
-
-with Interfaces; use Interfaces;
-with Ada.Real_Time;       use Ada.Real_Time;
-
--- with HIL; 
-with HIL.SPI; use HIL;
+-- Authors:  Anthony Leonardo Gracio, 
+--           Emanuel Regnath (emanuel.regnath@tum.de)
+with Interfaces;    use Interfaces;
+with Ada.Real_Time; use Ada.Real_Time;
+with HIL.SPI;       use HIL;
 
 use type HIL.SPI.Data_Type;
 
-package MPU6000.Driver with
-SPARK_Mode,
-Abstract_State => State
+package MPU6000.Driver with SPARK_Mode,
+  Abstract_State => State,
+  Initializes => State
 is
 
    --  Types and subtypes
@@ -118,10 +113,10 @@ is
    function Test return Boolean;
 
    --  Test if we are connected to MPU6000 via I2C.
-   function Test_Connection return Boolean;
+   procedure Test_Connection (success : out Boolean);
 
    --  MPU6000 self test.
-   function Self_Test return Boolean;
+   procedure Self_Test (Test_Status : out Boolean);
 
    --  Reset the MPU6000 device.
    --  A small delay of ~50ms may be desirable after triggering a reset.
@@ -176,15 +171,14 @@ is
    procedure Set_Temp_Sensor_Enabled (Value : Boolean);
 
    --  Get temperature sensor enabled status.
-   function Get_Temp_Sensor_Enabled return Boolean;
-
+   procedure Get_Temp_Sensor_Enabled (ret : out Boolean);
+   
 
 private
 
    --  Global variables and constants
 
    Is_Init : Boolean := False with Part_Of => State;
-   Device_Address : HIL.Byte with Part_Of => State;
 
    --  MPU6000 Device ID.
    MPU6000_DEVICE_ID        : constant := 16#68#;
@@ -217,9 +211,10 @@ private
       Data     : in out Byte);
 
    --  Read one but at the specified MPU6000 register
-   function Read_Bit_At_Register
+   procedure Read_Bit_At_Register
      (Reg_Addr  : Byte;
-      Bit_Pos   : Unsigned_8_Bit_Index) return Boolean;
+      Bit_Pos   : Unsigned_8_Bit_Index;
+      Bit_Value : out Boolean);
 
    --  Write data to the specified MPU6000 register
    procedure Write_Register
@@ -249,5 +244,6 @@ private
      (High : Byte;
       Low  : Byte) return Integer_16;
    pragma Inline (Fuse_Low_And_High_Register_Parts);
-
+      
+   
 end MPU6000.Driver;

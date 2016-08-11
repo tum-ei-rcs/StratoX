@@ -34,7 +34,7 @@ with STM32_SVD;     use STM32_SVD;
 
 with STM32.Device;  use STM32.Device;
 
-package body STM32.PWM is
+package body STM32.PWM with SPARK_Mode => Off is
 
    subtype Hertz is Word;
 

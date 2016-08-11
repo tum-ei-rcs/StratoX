@@ -1,18 +1,19 @@
-
 with Units.Numerics; use Units.Numerics;
+with MS5611.Driver; use MS5611;
 
-package body Barometer with SPARK_Mode is
+package body Barometer with SPARK_Mode,
+  Refined_State => (States_Beyond_Sensor_Template => null)
+is
 
-   -- Barometer_Sensor.Sensor_Signal(
-
-
-   overriding procedure initialize (Self : in out Barometer_Tag) is
-      pragma Unreferenced (Self);
+   --overriding
+   procedure initialize (Self : in out Barometer_Tag) is
    begin
       Driver.Init;
+      Self.state := READY;
    end initialize;
 
-   overriding procedure read_Measurement(Self : in out Barometer_Tag) is
+   --overriding
+   procedure read_Measurement(Self : in out Barometer_Tag) is
    begin
       Driver.Update_Val;
       Self.sample.data.pressure := Driver.Get_Pressure;
@@ -29,10 +30,6 @@ package body Barometer with SPARK_Mode is
       return Self.sample.data.temperature;
    end get_Temperature;
 
-   function get_Altitude(Self : Barometer_Tag) return Length_Type is
-   begin
-      return Altitude(Self.sample.data.pressure);
-   end get_Altitude;
 
    -- international altitude equation
    function Altitude(pressure : Pressure_Type) return Length_Type is
@@ -50,4 +47,8 @@ package body Barometer with SPARK_Mode is
       return h0 * neg; -- FIXME: overflow check might fail
    end Altitude;
 
+   function get_Altitude(Self : Barometer_Tag) return Length_Type is
+   begin
+      return Altitude(Self.sample.data.pressure);
+   end get_Altitude;
 end Barometer;

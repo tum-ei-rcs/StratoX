@@ -56,7 +56,7 @@
 with STM32.GPIO;   use STM32.GPIO;
 with STM32.Timers; use STM32.Timers;
 
-package STM32.PWM is
+package STM32.PWM with SPARK_Mode => Off is -- access types
    pragma Elaborate_Body;
 
    type PWM_Modulator is limited private;

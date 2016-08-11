@@ -1,16 +1,17 @@
 with ublox8.Driver; use ublox8;
 
-package body GPS with SPARK_Mode
+package body GPS with SPARK_Mode,
+  Refined_State => (State => (null))
 is
-
-
-   overriding procedure initialize (Self : in out GPS_Tag) is
-      pragma Unreferenced (Self);
+   --overriding
+   procedure initialize (Self : in out GPS_Tag) is
    begin
       Driver.init;
+      Self.state := READY;
    end initialize;
 
-   overriding procedure read_Measurement(Self : in out GPS_Tag) is
+   --overriding
+   procedure read_Measurement(Self : in out GPS_Tag) is
       pragma Unreferenced (Self);
    begin
       Driver.update_val;

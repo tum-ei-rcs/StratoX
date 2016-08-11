@@ -75,12 +75,12 @@ package body Main with SPARK_Mode => On is
       declare
          now : constant Time := Clock;
       begin
-         delay until now + Milliseconds (1500);
+         delay until now + Milliseconds (150); -- reduced from 1500 to 150
       end;
 
       --  Illustration how to use NVRAM
       declare
-         exception_line : HIL.Byte_Array_2;
+         exception_line : HIL.Byte_Array_2 := (0,0);
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots); -- is maintained by the NVRAM itself
          Logger.log_console (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));

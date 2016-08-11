@@ -3,6 +3,7 @@
 --  Project:     StratoX
 --
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+pragma SPARK_Mode (Off);
 
 with STM32.USARTs;
 with STM32.Device;
