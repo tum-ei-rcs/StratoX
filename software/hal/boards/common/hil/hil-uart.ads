@@ -8,7 +8,7 @@ with HIL.Devices;
 --  @summary
 --  Target-independent specification for HIL of UART
 package HIL.UART with
-   Spark_Mode => Off
+   Spark_Mode
 is
    BUFFER_MAX : constant := 200;
 
