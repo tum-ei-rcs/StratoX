@@ -2,6 +2,7 @@ with CSV;
 with Config.software;
 with Simulation;
 with Ada.Text_IO; use Ada.Text_IO;
+with Units; use Units;
 
 
 package body ms5611.driver  with
@@ -9,8 +10,8 @@ package body ms5611.driver  with
    Refined_State => (State => ( cur_temp, cur_press), Coefficients => null) is
 
    G_CELSIUS_0 : constant := 273.15;
-   cur_temp : Temperature_Type;
-   cur_press : Pressure_Type;
+   cur_temp : Temperature_Type := 300.0 * Kelvin;
+   cur_press : Pressure_Type := 1.0 * Bar;
 
    procedure reset is null;
 
@@ -24,12 +25,13 @@ package body ms5611.driver  with
 
    procedure update_val is
    begin
-      cur_press := Pressure_Type (Simulation.CSV_here.Get_Column ("Press"));
-      declare
-         f : float := Simulation.CSV_here.Get_Column ("Temp");
-      begin
-         cur_temp := convertToKelvin (f);
-      end;
+--        cur_press := Pressure_Type (Simulation.CSV_here.Get_Column ("Press"));
+--        declare
+--           f : float := Simulation.CSV_here.Get_Column ("Temp");
+--        begin
+--           cur_temp := convertToKelvin (f);
+--        end;
+      null;
    end update_val;
 
    function get_temperature return Temperature_Type is (cur_temp);

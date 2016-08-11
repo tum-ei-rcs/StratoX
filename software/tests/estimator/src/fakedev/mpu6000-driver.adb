@@ -34,12 +34,15 @@ is
    begin
 
 
-      Acc_X := Integer_16 (Simulation.CSV_here.Get_Column ("AccY") * (-SCALE_ACC));
-      Acc_Y := Integer_16 (Simulation.CSV_here.Get_Column ("AccX") * SCALE_ACC);
-      Acc_Z := Integer_16 (Simulation.CSV_here.Get_Column ("AccZ") * SCALE_ACC);
-      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("GyrY") * (-SCALE_GYR));
-      Gyro_Y := Integer_16 (Simulation.CSV_here.Get_Column ("GyrX") * SCALE_GYR);
-      Gyro_Z := Integer_16 (Simulation.CSV_here.Get_Column ("GyrZ") * SCALE_GYR);
+      Acc_X := Integer_16 (Simulation.CSV_here.Get_Column ("accY") * (-SCALE_ACC));
+      Acc_Y := Integer_16 (Simulation.CSV_here.Get_Column ("accX") * SCALE_ACC);
+      Acc_Z := Integer_16 (Simulation.CSV_here.Get_Column ("accZ") * SCALE_ACC);
+      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("gyroY") * (-SCALE_GYR));
+      Gyro_Y := Integer_16 (Simulation.CSV_here.Get_Column ("gyroX") * SCALE_GYR);
+      Gyro_Z := Integer_16 (Simulation.CSV_here.Get_Column ("gyroZ") * SCALE_GYR);
+
+
+
 
       -- Gyro_Y = 17.9
    end Get_Motion_6;

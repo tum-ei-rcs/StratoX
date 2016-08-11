@@ -356,6 +356,10 @@ package Units with
 
    function average( signal : Unit_Array ) return Unit_Type;
 
+   -- subtype Sign_Type is Float range -1.0 .. 1.0;
+   function sgn( x : Unit_Type'Base ) return Unit_Type is
+   ( if x = 0.0 then 0.0 elsif x > 0.0 then 1.0 else -1.0 );
+
 
    -- Image functions
    function Image  (unit : Unit_Type)  return String;
