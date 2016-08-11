@@ -4,8 +4,9 @@
 % @date 2016-07-20
 clear all; close all; clc
 
-csv_dir = 'rawdata/2016-07-19_5/';
-csv_files = { 'AccX.csv', 'AccY.csv', 'AccZ.csv', 'GyrX.csv', 'GyrY.csv', 'GyrZ.csv', 'Press.csv', 'Temp.csv', 'Alt.csv', 'Lat.csv', 'Lng.csv', 'NSats.csv','Spd.csv'}; outfile = [csv_dir 'rawdata.csv'];
+csv_dir = 'rawdata/aug7-5/';
+csv_files = { 'accX.csv', 'accY.csv', 'accZ.csv', 'gyroX.csv', 'gyroY.csv', 'gyroZ.csv', 'alt.csv', 'lat.csv', 'lon.csv'}; outfile = [csv_dir 'rawdata.csv'];
+%csv_files = { 'AccX.csv', 'AccY.csv', 'AccZ.csv', 'GyrX.csv', 'GyrY.csv', 'GyrZ.csv', 'Press.csv', 'Temp.csv', 'Alt.csv', 'Lat.csv', 'Lng.csv', 'NSats.csv','Spd.csv'}; outfile = [csv_dir 'rawdata.csv'];
 %csv_files = { 'Roll.csv', 'Pitch.csv', 'Yaw.csv'}; outfile = [csv_dir 'reference.csv'];
 STEP=0.02; % target dt in seconds
 

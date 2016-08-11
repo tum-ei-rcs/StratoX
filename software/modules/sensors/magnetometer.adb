@@ -1,5 +1,8 @@
 
-with HMC5883L.Driver; use HMC5883L;
+with Interfaces; use Interfaces;
+
+with HMC5883L; use HMC5883L;
+with HMC5883L.Driver;
 --with HMC5883L.Register;
 
 with Logger;

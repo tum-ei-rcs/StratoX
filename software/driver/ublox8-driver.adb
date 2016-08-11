@@ -6,6 +6,7 @@ with HIL; use HIL;
 with HIL.Config; use HIL.Config;
 with HIL.UART; use type HIL.UART.Data_Type;
 with HIL.Devices;
+with Interfaces; use Interfaces;
 
 with Logger;
 
@@ -191,8 +192,10 @@ is
                                               5 => Byte(3),  -- length
                                               6 => Byte(0));
                                           
-      --  current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      --  MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
+      current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      pragma Unreferenced (current_time);
+      MESSAGE_DELAY_MS : constant Ada.Real_Time.Time_Span := Milliseconds( 10 );
+      pragma Unreferenced (MESSAGE_DELAY_MS);
       
       procedure delay_ms( ms : Natural) is
          current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;

@@ -71,7 +71,6 @@ package Units.Vectors with SPARK_Mode is
    type Angular_Acceleration_Vector is array(Tait_Bryan_Angle_Type) of Angular_Velocity_Type;
 
 
-
    function "+" (Left, Right : Translation_Vector) return Translation_Vector is
       ( (  Left(1) + Right(1),
            Left(2) + Right(2),
@@ -109,6 +108,10 @@ package Units.Vectors with SPARK_Mode is
    function "abs" (vector : Cartesian_Vector_Type) return Unit_Type;
 
    function "abs" (vector : Angular_Vector) return Unit_Type;
+
+
+   function "abs" (vector : Linear_Acceleration_Vector) return Linear_Acceleration_Type;
+
 
 
    -- Matrices

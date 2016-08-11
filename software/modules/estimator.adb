@@ -42,6 +42,7 @@ package body Estimator with SPARK_Mode is
       max_gps_height : Altitude_Type := 0.0 * Meter;
       avg_baro_height : Altitude_Type := 0.0 * Meter;
       max_baro_height : Altitude_Type := 0.0 * Meter;
+      height_deviation : Linear_Velocity_Type := 0.0 * Meter/Second;
       baro_calls : Baro_Call_Type := 0;
       logger_calls : Logger_Call_Type := 0;
       logger_console_calls : Logger_Call_Type := 0;
@@ -150,6 +151,14 @@ package body Estimator with SPARK_Mode is
       Barometer.Sensor.read_Measurement; -- >= 4 calls for new data
       G_state.baro_calls := Baro_Call_Type'Succ( G_state.baro_calls );
       if G_state.baro_calls = 0 then
+         declare
+            previous_height : Altitude_Type := 0.0*Meter;
+         begin
+            if Height_Buffer_Pack.Length( G_height_buffer ) > 0 then
+               Height_Buffer_Pack.get_front( G_height_buffer, previous_height );
+               -- G_state.height_deviation := (Barometer.Sensor.get_Altitude - previous_height ) / dt;
+            end if;
+         end;
          Height_Buffer_Pack.push_back( G_height_buffer, Barometer.Sensor.get_Altitude );
          update_Max_Height;
       end if;
@@ -320,11 +329,15 @@ package body Estimator with SPARK_Mode is
    end get_Baro_Height;
 
 
-   function Orientation(gravity_vector : Linear_Acceleration_Vector) return Orientation_Type is
+   function Orientation(acc_vector : Linear_Acceleration_Vector) return Orientation_Type is
       angles : Orientation_Type;
       g_length : Float := 0.0;
+      gravity_vector : Linear_Acceleration_Vector := acc_vector;
    begin
       -- normalize vector
+      if abs(gravity_vector) < 0.7*GRAVITY or 1.3*GRAVITY < abs(gravity_vector) then
+         gravity_vector(Z) := gravity_vector(Z) - (  Unit_Type'Copy_Sign( 1.0, gravity_vector(Z) ) * (abs(gravity_vector) - GRAVITY) );
+      end if;
 
       -- check valid
       if gravity_vector(Y) = 0.0 * Meter / Second**2 and gravity_vector(Z) = 0.0 * Meter / Second**2 then

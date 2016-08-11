@@ -41,8 +41,8 @@ is
 
 
    function Arctan
-     (Y     : Unit_Type;
-      X     : Unit_Type := 1.0;
+     (Y     : Unit_Type'Base;
+      X     : Unit_Type'Base := 1.0;
       Cycle : Angle_Type)
       return Angle_Type is
    begin

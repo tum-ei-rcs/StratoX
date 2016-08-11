@@ -35,4 +35,11 @@ package body Units.Vectors is
       return Unit_Type (Sqrt (vector (ROLL)**2 + vector (PITCH)**2 + vector (YAW)**2));
    end "abs";
 
+   function "abs" (vector : Linear_Acceleration_Vector) return Linear_Acceleration_Type is
+   begin
+      return Linear_Acceleration_Type(Sqrt (vector (X)**2 + vector (Y)**2 + vector (Z)**2));
+   end "abs";
+
+
+
 end Units.Vectors;

@@ -296,7 +296,7 @@ package Units with
    Bar      : constant Pressure_Type := 1_000.0 * Hecto * Pascal;
    Gauss    : constant Magnetic_Flux_Density_Type := 0.1 * Tesla;
 
-   -- Constants
+   -- Approximate gravity on the earth's surface
    GRAVITY : constant Linear_Acceleration_Type := 9.81 * Meter / (Second**2);
 
    CELSIUS_0 : constant Temperature_Type := 273.15 * Kelvin;
@@ -346,6 +346,11 @@ package Units with
 
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type;
 
+   -- Experiment
+   function integrate(x : Unit_Type'Base; dt : Time_Type) return Unit_Type'Base is
+   ( x * dt );
+   pragma Inline_Always( integrate );
+
 
    -- function Radian( degree : Float ) return Float
 
@@ -353,8 +358,7 @@ package Units with
 
 
    -- Image functions
-   function Image (unit : Unit_Type) return String;
-
+   function Image  (unit : Unit_Type)  return String;
    function AImage (unit : Angle_Type) return String;
    function RImage (unit : Angle_Type) return String;
 
