@@ -32,9 +32,9 @@ is
    
    G_state  : State_Type;
 
-   KM_ACC_VARIANCE : constant Unit_Type := 0.00005;  -- old: 0.001;
-   KM_GYRO_BIAS_VARIANCE : constant Unit_Type := 8.0e-6; -- old: 0.003;
-   KM_MEASUREMENT_VARIANCE : constant Unit_Type := 0.003; -- old: 0.03;
+   KM_ACC_VARIANCE : constant Unit_Type := 0.001;  -- tut: 0.001 px4: 0.00005;
+   KM_GYRO_BIAS_VARIANCE : constant Unit_Type := 0.005; -- tut: 0.003, px4: 8.0e-6;
+   KM_MEASUREMENT_VARIANCE : constant Unit_Type := 0.008; -- tut: 0.03, px4: 0.003?;
 
 
    function MPU_To_PX4Frame(vector : Linear_Acceleration_Vector) return Linear_Acceleration_Vector is
@@ -97,7 +97,13 @@ is
       -- =======================================================================
 
       -- compensate gyros
-       -- newRate := rotate( newRate, X 
+      rotate( Cartesian_Vector_Type(newRate), X, G_state.kmRoll.Angle );
+
+      -- if roll > 90° then gyro pitch rate is inverse.
+      -- not needed if gyro is compensated
+--        if abs( Unit_Type( G_state.kmRoll.Angle  )) > Unit_Type( 90.0 * Degree ) then
+--           newRate(Y) := - newRate(Y);
+--        end if;
 
 
 
@@ -110,10 +116,7 @@ is
       end if;
    
    
-      -- if roll > 90° then gyro pitch rate is inverse.
-      if abs( Unit_Type( G_state.kmRoll.Angle  )) > Unit_Type( 90.0 * Degree ) then
-         newRate(Y) := - newRate(Y);
-      end if;
+
       
 
       -- ROLL

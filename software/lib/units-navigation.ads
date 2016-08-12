@@ -66,6 +66,8 @@ package Units.Navigation with SPARK_Mode is
 
    EARTH_RADIUS : constant Length_Type := 6378.137 * Kilo * Meter;
 
+   METER_PER_LAT_DEGREE : constant := 111.111 * Kilo * Meter; -- average lat
+
 
    type Body_Type is record
       mass        : Mass_Type;
@@ -79,6 +81,7 @@ package Units.Navigation with SPARK_Mode is
    function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type;
 
 
+   -- FIXME: this seems not to work yet
    function Distance( source : GPS_Loacation_Type; target: GPS_Loacation_Type ) return Length_Type;
 
 
@@ -86,6 +89,15 @@ package Units.Navigation with SPARK_Mode is
    (  wrap_Angle( rotation(X), Roll_Type'First, Roll_Type'Last ),
       wrap_Angle( rotation(Y), Pitch_Type'First, Pitch_Type'Last ),
       wrap_Angle( rotation(Z), Yaw_Type'First, Yaw_Type'Last ) );
+
+
+--     function "-" (Left : GPS_Loacation_Type; Right : GPS_Loacation_Type) return Translation_Vector is
+--     ( X => Left.Longitude-Right.Longitude,
+--
+--     function "+" (Left : GPS_Loacation_Type; Right : Translation_Vector) return GPS_Loacation_Type is
+--     ( Longitude => Left.Longitude +
+
+
 
    function "+" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
      ( wrap_Angle( Angle_Type( Left.Roll ) + Right(X), Roll_Type'First, Roll_Type'Last ),
