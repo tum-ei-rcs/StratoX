@@ -37,7 +37,7 @@ is
       Acc_X := Integer_16 (Simulation.CSV_here.Get_Column ("accY") * (-SCALE_ACC));
       Acc_Y := Integer_16 (Simulation.CSV_here.Get_Column ("accX") * SCALE_ACC);
       Acc_Z := Integer_16 (Simulation.CSV_here.Get_Column ("accZ") * SCALE_ACC);
-      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("gyroY") * (-SCALE_GYR));
+      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("gyroY") * (SCALE_GYR));
       Gyro_Y := Integer_16 (Simulation.CSV_here.Get_Column ("gyroX") * SCALE_GYR);
       Gyro_Z := Integer_16 (Simulation.CSV_here.Get_Column ("gyroZ") * SCALE_GYR);
 

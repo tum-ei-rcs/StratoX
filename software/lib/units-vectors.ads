@@ -60,15 +60,15 @@ package Units.Vectors with SPARK_Mode is
    type Tait_Bryan_Angle_Type is (ROLL, PITCH, YAW);
    type Euler_Angle_Type is (X1, Z2, X3);
 
-   type Angular_Vector is array(Tait_Bryan_Angle_Type) of Unit_Type;
+   type Angular_Vector is array(Cartesian_Coordinates_Type) of Unit_Type;
 
    type Unit_Vector is array(Tait_Bryan_Angle_Type) of Angle_Type;
 
-   type Angle_Vector is array(Tait_Bryan_Angle_Type) of Angle_Type;
-   type Rotation_Vector is array(Tait_Bryan_Angle_Type) of Angle_Type;
+   type Angle_Vector is array(Cartesian_Coordinates_Type) of Angle_Type;
+   type Rotation_Vector is array(Cartesian_Coordinates_Type) of Angle_Type;
 
-   type Angular_Velocity_Vector is array(Tait_Bryan_Angle_Type) of Angular_Velocity_Type;
-   type Angular_Acceleration_Vector is array(Tait_Bryan_Angle_Type) of Angular_Velocity_Type;
+   type Angular_Velocity_Vector is array(Cartesian_Coordinates_Type) of Angular_Velocity_Type;
+   type Angular_Acceleration_Vector is array(Cartesian_Coordinates_Type) of Angular_Velocity_Type;
 
 
    function "+" (Left, Right : Translation_Vector) return Translation_Vector is
@@ -78,29 +78,29 @@ package Units.Vectors with SPARK_Mode is
            ) );
 
    function "+" (Left, Right : Angle_Vector) return Angle_Vector is
-      ( Left(ROLL) + Right(ROLL), Left(PITCH) + Right(PITCH), Left(YAW) + Right(YAW) );
+      ( Left(X) + Right(X), Left(Y) + Right(Y), Left(Z) + Right(Z) );
 
    function "+" (Left, Right : Rotation_Vector) return Rotation_Vector is
-      ( Left(ROLL) + Right(ROLL), Left(PITCH) + Right(PITCH), Left(YAW) + Right(YAW) );
+      ( Left(X) + Right(X), Left(Y) + Right(Y), Left(Z) + Right(Z) );
 
    function "*" (Left : Unit_Type; Right : Rotation_Vector) return Rotation_Vector is
-      ( ( Left * Right(ROLL), Left * Right(PITCH), Left * Right(YAW) ) );
+      ( ( Left * Right(X), Left * Right(Y), Left * Right(Z) ) );
 
 
    function "+" (Left, Right : Angular_Velocity_Vector) return Angular_Velocity_Vector is
-      ( (  Left(ROLL) + Right(ROLL),
-           Left(PITCH) + Right(PITCH),
-           Left(YAW) + Right(YAW)
+      ( (  Left(X) + Right(X),
+           Left(Y) + Right(Y),
+           Left(Z) + Right(Z)
            ) );
 
    function "-" (Left, Right : Angular_Velocity_Vector) return Angular_Velocity_Vector is
-      ( (  Left(ROLL) - Right(ROLL),
-           Left(PITCH) - Right(PITCH),
-           Left(YAW) - Right(YAW)
+      ( (  Left(X) - Right(X),
+           Left(Y) - Right(Y),
+           Left(Z) - Right(Z)
            ) );
 
    function "*" (Left : Angular_Velocity_Vector; Right : Time_Type) return Rotation_Vector is
-      ( ( Left(ROLL) * Right, Left(PITCH) * Right, Left(YAW) * Right ) );
+      ( ( Left(X) * Right, Left(Y) * Right, Left(Z) * Right ) );
 
 
    procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);

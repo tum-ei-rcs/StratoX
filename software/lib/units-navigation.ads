@@ -83,22 +83,22 @@ package Units.Navigation with SPARK_Mode is
 
 
    function To_Orientation( rotation : Rotation_Vector ) return Orientation_Type is
-   (  wrap_Angle( rotation(ROLL), Roll_Type'First, Roll_Type'Last ),
-      wrap_Angle( rotation(PITCH), Pitch_Type'First, Pitch_Type'Last ),
-      wrap_Angle( rotation(YAW), Yaw_Type'First, Yaw_Type'Last ) );
+   (  wrap_Angle( rotation(X), Roll_Type'First, Roll_Type'Last ),
+      wrap_Angle( rotation(Y), Pitch_Type'First, Pitch_Type'Last ),
+      wrap_Angle( rotation(Z), Yaw_Type'First, Yaw_Type'Last ) );
 
    function "+" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
-     ( wrap_Angle( Angle_Type( Left.Roll ) + Right(ROLL), Roll_Type'First, Roll_Type'Last ),
-      wrap_Angle( Angle_Type( Left.Pitch) + Right(PITCH), Pitch_Type'First, Pitch_Type'Last ),
-      wrap_Angle( Angle_Type( Left.Yaw) + Right(YAW), Yaw_Type'First, Yaw_Type'Last ) ) with
-   pre => Angle_Type( Left.Roll ) + Right(ROLL) < Angle_Type'Last and
-     Angle_Type( Left.Pitch) + Right(PITCH) <  Angle_Type'Last and
-     Angle_Type( Left.Yaw) + Right(YAW) <  Angle_Type'Last;
+     ( wrap_Angle( Angle_Type( Left.Roll ) + Right(X), Roll_Type'First, Roll_Type'Last ),
+      wrap_Angle( Angle_Type( Left.Pitch) + Right(Y), Pitch_Type'First, Pitch_Type'Last ),
+      wrap_Angle( Angle_Type( Left.Yaw) + Right(Z), Yaw_Type'First, Yaw_Type'Last ) ) with
+   pre => Angle_Type( Left.Roll ) + Right(X) < Angle_Type'Last and
+     Angle_Type( Left.Pitch) + Right(Y) <  Angle_Type'Last and
+     Angle_Type( Left.Yaw) + Right(Z) <  Angle_Type'Last;
 
    function "-" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
-   ( wrap_Angle( Left.Roll - Right(ROLL), Roll_Type'First, Roll_Type'Last ),
-         wrap_Angle( Left.Pitch - Right(PITCH), Pitch_Type'First, Pitch_Type'Last ),
-         wrap_Angle( Left.Yaw - Right(YAW), Yaw_Type'First, Yaw_Type'Last ) );
+   ( wrap_Angle( Left.Roll - Right(X), Roll_Type'First, Roll_Type'Last ),
+         wrap_Angle( Left.Pitch - Right(Y), Pitch_Type'First, Pitch_Type'Last ),
+         wrap_Angle( Left.Yaw - Right(Z), Yaw_Type'First, Yaw_Type'Last ) );
 
 
    function "-" (Left, Right : Orientation_Type) return Rotation_Vector is
