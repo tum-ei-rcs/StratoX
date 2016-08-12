@@ -27,7 +27,6 @@ project StratoX is
 
       when "analyze" =>
          for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
-         for Excluded_Source_Files use ("generic_vector3d.ads", "generic_quaternions.ads", "generic_quaternions.adb");
          for Runtime ("ada") use Pixhawk'Runtime ("Ada");
          for Target use "arm-eabi";
    end case;
