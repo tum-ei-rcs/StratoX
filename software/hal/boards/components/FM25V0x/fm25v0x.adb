@@ -123,14 +123,24 @@ is
    --  IMPLEMENTATION
    ----------------------------------------
 
+   --  Unchecked Union is not modeled by GNATprove, yet. So we have to give some hints,
+   --  that this is all completely initializing the other record components.
    procedure Read_Status_Register (Status : out Status_Register) is
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Status.Reserved_0_0"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Status.Reserved_4_6"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Status.Enable_HW_Lock"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Status.Write_Enabled"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Status.Soft_Lock"" will be used", "part of Union");
+
       cmd      : constant HIL.SPI.Data_Type (1 .. 1) := (1 => Interfaces.Unsigned_8 (OP_RDSR));
       response : HIL.SPI.Data_Type (1 .. Status.Data_Array'Length);
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Status.Reserved_0_0"" will be used", "part of Union");
    begin
       HIL.SPI.transfer (Device => HIL_DEVICE, Data_TX => cmd, Data_RX => response);
       for k in response'Range loop
          Status.Data_Array (k) := response (k);
       end loop;
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Status.Data_Array"" might be used", "part of Union");
    end Read_Status_Register;
 
    procedure Write_Enable is
@@ -148,7 +158,16 @@ is
       end if;
    end Init;
 
+   --  Unchecked Union is not modeled by GNATprove, yet. So we have to give some hints,
+   --  that this is all completely initializing the other record components.
    procedure Read_Device_ID (Dev_ID : out Msg_Device_ID) is
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Dev_ID.Manufacturer_ID"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Dev_ID.Family"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Dev_ID.Density"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Dev_ID.Sub"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Dev_ID.Rev"" will be used", "part of Union");
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Dev_ID.Reserved_0_2"" will be used", "part of Union");
+
       cmd      : constant HIL.SPI.Data_Type (1 .. 1) := (1 => Interfaces.Unsigned_8 (OP_RDID));
       response : HIL.SPI.Data_Type ( 1 .. Dev_ID.Data_Array'Length  );
    begin
@@ -156,6 +175,7 @@ is
       for k in response'Range loop
          Dev_ID.Data_Array (k) := response (k);
       end loop;
+      pragma Annotate (GNATprove, False_Positive, "input value of ""Dev_ID.Data_Array"" might be used", "part of Union");
    end Read_Device_ID;
 
    procedure Self_Check (Status : out Boolean) is
@@ -179,6 +199,7 @@ is
       rsp : HIL.SPI.Data_Type (1 .. 1);
    begin
       cmd (1) := Interfaces.Unsigned_8 (OP_READ);
+      pragma Annotate (GNATprove, False_Positive, """cmd"" might not be initialized", "done right here");
       cmd (2) := HIL.Byte (addr / 2**8);   -- high
       cmd (3) := HIL.Byte (addr mod 2**8); -- low
       HIL.SPI.transfer (Device => HIL_DEVICE, Data_TX => cmd, Data_RX => rsp);
@@ -192,8 +213,10 @@ is
                     -- the write_enable is cleared after each
                     -- transaction
       cmd (1) := Interfaces.Unsigned_8 (OP_WRITE);
+      pragma Annotate (GNATprove, False_Positive, """cmd"" might not be initialized", "done right here");
       cmd (2) := HIL.Byte (addr / 2**8);   -- high
       cmd (3) := HIL.Byte (addr mod 2**8); -- low
+
       cmd (4) := byte;
       HIL.SPI.write (Device => HIL_DEVICE, Data => cmd);
    end Write_Byte;

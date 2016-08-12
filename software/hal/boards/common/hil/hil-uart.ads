@@ -1,8 +1,8 @@
--- Institution: Technische Universität München
+-- Institution: Technische Universitaet Muenchen
 -- Department:  Realtime Computer Systems (RCS)
 -- Project:     StratoX
 --
--- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+-- Authors:     Emanuel Regnath (emanuel.regnath@tum.de)
 with HIL.Devices;
 
 --  @summary
