@@ -44,7 +44,7 @@ private
    
    procedure wait_For_Release;
 
-   procedure monitor_Ascend;
+   procedure monitor_Ascend with Pre => True; -- workaround got GNATprove bug P811-036
    
    procedure perform_Detach;
 
