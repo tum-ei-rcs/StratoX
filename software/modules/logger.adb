@@ -86,6 +86,9 @@ is
    task Logging_Task is 
       pragma Priority (System.Priority'First); -- lowest prio for logging
    end Logging_Task;
+   pragma Annotate (GNATprove, Intentional, 
+                    """sdlog.fh_log"" might not be initialized before start of tasks of type ""Logging_Task""", 
+                    "The queue will not accept values before fh_log is initialized. MBe.");
 
    ----------------------------
    --  PROTOTYPES

@@ -95,12 +95,14 @@ package body Profiler with SPARK_Mode is
 
 
    procedure Read_From_Memory(Self : in out Profile_Tag) is
+      pragma Unreferenced (Self);
    begin
       null;
    end Read_From_Memory;
 
 
    procedure Write_To_Memory(Self : in out Profile_Tag) is
+      pragma Unreferenced (Self);
    begin
       null;
    end Write_To_Memory;
