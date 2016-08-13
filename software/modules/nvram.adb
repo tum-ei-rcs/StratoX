@@ -44,7 +44,8 @@ is
           ck_a : HIL.Byte := 0;
           ck_b : HIL.Byte := 0;
        end record;
-   HDR_OFF_CK_A : constant HIL.NVRAM.Address := 0; -- GNATprove cannot handle this yet: framhdr.ck_a'Position;
+   --  GNATprove from SPARK 2016 GPL doesn't implement attribute Position, yet
+   HDR_OFF_CK_A : constant HIL.NVRAM.Address := 0;
    HDR_OFF_CK_B : constant HIL.NVRAM.Address := 1;
    for NVRAM_Header'Size use 16;
 
@@ -97,12 +98,20 @@ is
    end Make_Header;
 
    procedure Write_Header (hdr : in NVRAM_Header) is
+      Unused_Header : NVRAM_Header;
+      --  GNATprove from SPARK 2017 onwards can do this:
+      --  HDR_OFF_CK_A : constant HIL.NVRAM.Address := Unused_Header.ck_a'Position;
+      --  HDR_OFF_CK_B : constant HIL.NVRAM.Address := Unused_Header.ck_b'Position;
    begin
       HIL.NVRAM.Write_Byte (addr => Hdr_To_Address + HDR_OFF_CK_A, byte => hdr.ck_a);
       HIL.NVRAM.Write_Byte (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => hdr.ck_b);
    end Write_Header;
 
    procedure Read_Header (framhdr : out NVRAM_Header) is
+      Unused_Header : NVRAM_Header;
+      --  GNATprove from SPARK 2017 onwards can do this:
+      --  HDR_OFF_CK_A : constant HIL.NVRAM.Address := Unused_Header.ck_a'Position;
+      --  HDR_OFF_CK_B : constant HIL.NVRAM.Address := Unused_Header.ck_b'Position;
    begin
       HIL.NVRAM.Read_Byte (addr => Hdr_To_Address + HDR_OFF_CK_A, byte => framhdr.ck_a);
       HIL.NVRAM.Read_Byte (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => framhdr.ck_b);
