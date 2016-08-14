@@ -281,7 +281,7 @@ package body ULog with SPARK_Mode => On is
       declare
          SERLEN : constant Natural := Get_Size (ct);
       begin
-         if Buffer_Overflow (ct) or SERLEN > bytes'Length -- or len > 255
+         if Buffer_Overflow (ct) or SERLEN > bytes'Length or SERLEN > 255
          then
             len := 0;
          else

@@ -76,7 +76,8 @@ is
    end read_Measurement;
    
    
-   procedure perform_Kalman_Filtering(Self : IMU_Tag; newAngle : Orientation_Type) is
+   procedure perform_Kalman_Filtering(Self : IMU_Tag; newAngle : Orientation_Type) with SPARK_Mode => Off  -- TODO: fix the SPARK error below, then turn back on
+   is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       dt : constant Time_Type := Units.To_Time( now - G_state.kmLastCall ); 
       newRate : Angular_Velocity_Vector := get_Angular_Velocity(Self);
@@ -98,7 +99,7 @@ is
       -- =======================================================================
 
       -- compensate gyros
-      rotate( Cartesian_Vector_Type(newRate), X, G_state.kmRoll.Angle );
+      rotate( Cartesian_Vector_Type(newRate), X, G_state.kmRoll.Angle ); -- SPARK: conversion between array types that have different element types is not yet supported
 
       -- if roll > 90° then gyro pitch rate is inverse.
       -- not needed if gyro is compensated
