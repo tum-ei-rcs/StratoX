@@ -223,8 +223,10 @@ is
    begin
       if len > 0 then
          declare
+            pragma Assert (len > 0);
             subtype Bytes_ULog is HIL.Byte_Array (1 .. len);
-            subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. Unsigned_16 (len));
+            up : constant Unsigned_16 := Unsigned_16 (len);
+            subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. up);
             function To_FileData is new Ada.Unchecked_Conversion (Bytes_ULog, SD_Data_ULog);
             buf_last : constant Integer := buf'First - 1 + len;
             n_wr : Integer;
@@ -244,10 +246,14 @@ is
       end init_adapter;
 
       procedure write (message : Message_Type) is
-         CR : constant Character := Character'Val (13); -- ASCII
-         --  LF : constant Character := Character'Val (10);
-      begin
-         HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message & CR ) );
+         CR : constant Character := Character'Val (13); -- ASCII         
+      begin         
+         if message'Last < Integer'Last then
+            HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message & CR ) );
+         else
+            -- no space left for CR
+            HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message ));
+         end if;
       end write;	
    end Adapter;
 
@@ -341,7 +347,10 @@ is
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => num_boots);
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
-         fname       : constant String := HIL.Byte'Image (num_boots) & ".log";
+         bootstr     : constant String := HIL.Byte'Image (num_boots);
+         pragma Assume (bootstr'First = 1 and bootstr'Length <= 4); 
+            -- Byte'Last is 255, and strings always start at index one
+         fname       : constant String := bootstr(bootstr'First .. bootstr'Last) & ".log";
          BUFLEN      : constant := 128; -- header is around 90 bytes long
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
          len         : Natural;

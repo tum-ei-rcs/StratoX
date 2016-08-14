@@ -10,6 +10,7 @@ with GPS;
 with Barometer;
 with Magnetometer;
 
+with Units;          use Units;
 with Units.Numerics; use Units.Numerics;
 
 with Logger;
@@ -78,6 +79,8 @@ package body Estimator with SPARK_Mode is
    G_Profiler : Profiler.Profile_Tag;
 
 
+   function Len_to_Alt (len : Units.Length_Type) return Altitude_Type
+     with Pre => True; -- need this fake contract as workaround for GNATprove bug
 
    -- init
    procedure initialize is
@@ -100,6 +103,20 @@ package body Estimator with SPARK_Mode is
 
       Logger.log_console(Logger.INFO, "Estimator initialized");
    end initialize;
+
+   --  handle the different ranges of Length_Type and Altitude_Type
+   function Len_to_Alt (len : Units.Length_Type) return Altitude_Type is
+      alt : Altitude_Type;
+   begin
+      if len < Altitude_Type'First then
+         alt := Altitude_Type'First;
+      elsif len > Altitude_Type'Last then
+         alt := Altitude_Type'Last;
+      else
+         alt := Altitude_Type (len);
+      end if;
+      return alt;
+   end Len_to_Alt;
 
    -- fetch fresh measurement data
    procedure update is
@@ -154,12 +171,12 @@ package body Estimator with SPARK_Mode is
          declare
             previous_height : Altitude_Type := 0.0*Meter;
          begin
-            if Height_Buffer_Pack.Length( G_height_buffer ) > 0 then
+            if not Height_Buffer_Pack.Empty( G_height_buffer ) then
                Height_Buffer_Pack.get_front( G_height_buffer, previous_height );
                -- G_state.height_deviation := (Barometer.Sensor.get_Altitude - previous_height ) / dt;
             end if;
          end;
-         Height_Buffer_Pack.push_back( G_height_buffer, Barometer.Sensor.get_Altitude );
+         Height_Buffer_Pack.push_back( G_height_buffer, Len_to_Alt (Barometer.Sensor.get_Altitude));
          update_Max_Height;
       end if;
 
@@ -174,13 +191,11 @@ package body Estimator with SPARK_Mode is
       elsif G_state.fix = FIX_2D then
          GFixS := "2D";
          G_Object_Position := GPS.Sensor.get_Position;
-         G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;  -- Overwrite Alt
+         G_Object_Position.Altitude := Len_To_Alt (Barometer.Sensor.get_Altitude);  -- Overwrite Alt
       else
          GFixS := "NO";
-         G_Object_Position.Altitude := Barometer.Sensor.get_Altitude;
+         G_Object_Position.Altitude := Len_To_Alt (Barometer.Sensor.get_Altitude);
       end if;
-
-
 
       -- update stable measurements
       check_stable_Time;
@@ -390,10 +405,18 @@ package body Estimator with SPARK_Mode is
       -- GPS
       declare
          buf : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length_Type'Last );    -- Buffer
+         maxitem : constant GPS_Buffer_Pack.Length_Type := Length (G_pos_buffer);
       begin
-         get_all( G_pos_buffer, buf );
-         if Length(G_pos_buffer) > 1 then
-            G_state.avg_gps_height := gps_average( buf );
+         -- this is a bit wonky: SPARK cannot see the length of the queue because it's private
+         -- and thus the precondition cannot be checked. So we must check here for matching
+         -- buffer lengths.
+         if maxitem = buf'Length then
+            get_all( G_pos_buffer, buf );
+            if maxitem > 1 then
+               G_state.avg_gps_height := gps_average( buf );
+            end if;
+         else
+            null; -- TODO: what if it dosn't match?
          end if;
       end;
 
@@ -404,10 +427,18 @@ package body Estimator with SPARK_Mode is
       -- Baro
       declare
          buf : Height_Buffer_Pack.Element_Array(1 .. Height_Buffer_Pack.Length_Type'Last);
+         maxitem : constant Height_Buffer_Pack.Length_Type := Length (G_height_buffer);
       begin
-         get_all( G_height_buffer, buf );
-         if Length(G_height_buffer) = Height_Buffer_Pack.Length_Type'Last then
-            G_state.avg_baro_height := baro_average( buf );
+         -- this is a bit wonky: SPARK cannot see the length of the queue because it's private
+         -- and thus the precondition cannot be checked. So we must check here for matching
+         -- buffer lengths.
+         if maxitem = buf'Length then
+            get_all( G_height_buffer, buf );
+            if Length(G_height_buffer) = Height_Buffer_Pack.Length_Type'Last then
+               G_state.avg_baro_height := baro_average( buf );
+            end if;
+         else
+            null; -- TODO
          end if;
       end;
 
@@ -429,27 +460,34 @@ package body Estimator with SPARK_Mode is
    begin
       if G_orientation_buffer.Length > 1 and G_pos_buffer.Length > 1 then
          G_state.stable_Time := G_state.stable_Time + Units.To_Time( now - G_state.last_stable_check );
-         G_orientation_buffer.get_all(or_values);
-         or_ref := or_values(1);
-         for index in Integer range 1 .. G_orientation_buffer.Length loop
-            if or_values(index).Roll - or_ref.Roll > 1.5 * Degree  or
-              or_values(index).Pitch - or_ref.Pitch > 1.5 * Degree
-            then
-               G_state.stable_Time := 0.0 * Second;
-            end if;
-         end loop;
+         if or_values'Length = G_orientation_buffer.Length then
+            G_orientation_buffer.get_all(or_values);
+            or_ref := or_values(1);
+            for index in Integer range 1 .. G_orientation_buffer.Length loop
+               if or_values(index).Roll - or_ref.Roll > 1.5 * Degree  or
+                 or_values(index).Pitch - or_ref.Pitch > 1.5 * Degree
+               then
+                  G_state.stable_Time := 0.0 * Second;
+               end if;
+            end loop;
+         else
+            null; -- TODO
+         end if;
 
-         G_pos_buffer.get_all(pos_values);
-         pos_ref := pos_values(1);
-         for index in Integer range 1 .. G_pos_buffer.Length loop
-            if pos_values(index).Longitude - pos_ref.Longitude > 0.002 * Degree or   -- 0.002° ≈ 111 Meter
-            pos_values(index).Latitude - pos_ref.Latitude > 0.002 * Degree or
-              pos_values(index).Altitude - pos_ref.Altitude > 10.0 * Meter
-            then
-               G_state.stable_Time := 0.0 * Second;
-            end if;
-         end loop;
-
+         if G_pos_buffer.Length = pos_values'Length then
+            G_pos_buffer.get_all(pos_values);
+            pos_ref := pos_values(1);
+            for index in Integer range 1 .. G_pos_buffer.Length loop
+               if pos_values(index).Longitude - pos_ref.Longitude > 0.002 * Degree or   -- 0.002° ≈ 111 Meter
+                 pos_values(index).Latitude - pos_ref.Latitude > 0.002 * Degree or
+                 pos_values(index).Altitude - pos_ref.Altitude > 10.0 * Meter
+               then
+                  G_state.stable_Time := 0.0 * Second;
+               end if;
+            end loop;
+         else
+            null; -- TODO
+         end if;
       else
          G_state.stable_Time := 0.0 * Second;
       end if;
