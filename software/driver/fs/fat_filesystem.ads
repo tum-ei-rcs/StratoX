@@ -238,7 +238,7 @@ private
       Window_Block    : Unsigned_32 := 16#FFFF_FFFF#; -- current block/sector that we have read
       Window          : Block (0 .. 511);
    end record;
-   for FAT_Filesystem'Alignment use 32; -- might be necessary, because Window is a DMA address
+   for FAT_Filesystem'Alignment use 4; -- might be necessary, because Window is a DMA address, and DMA works on words
 
    type FAT_Address is record
       --  Cluster   : Unsigned_32; -- cluster number into which Block_LBA falls

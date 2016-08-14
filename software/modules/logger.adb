@@ -31,7 +31,7 @@ package body Logger with SPARK_Mode,
 is
 
    --  the type for the queue buffer
-   type Buffer_Ulog is array (Natural range <>) of ULog.Message; -- no discriminant => mutable variant record
+   type Buffer_Ulog is array (Natural range <>) of ULog.Message; -- IMPORTANT: no discriminant (=mutable)
    type bufpos is mod LOG_QUEUE_LENGTH;
 
    --  if GNATprove crashes with reference to that file,
@@ -60,6 +60,8 @@ is
       --  until buffer has data, and then returns it.
       --  FIXME: how can we specify a precondition on the private variable?
       --  for now we put an assertion in the body
+      --  FIXME: we need to specify a precondition, that msg is a mutable
+      --  variant record. Otherwise a discriminant check will fail.
 
       function Get_Num_Overflows return Natural;
       --  query how often the buffer overflowed. If this happens, either increase
@@ -86,6 +88,9 @@ is
    task Logging_Task is 
       pragma Priority (System.Priority'First); -- lowest prio for logging
    end Logging_Task;
+   pragma Annotate (GNATprove, Intentional, 
+                    """sdlog.fh_log"" might not be initialized before start of tasks of type ""Logging_Task""", 
+                    "The queue will not accept values before fh_log is initialized. MBe.");
 
    ----------------------------
    --  PROTOTYPES
@@ -116,12 +121,12 @@ is
    --  thus, all callees here have to be elaborated before this task.
 
    task body Logging_Task is
-      msg : ULog.Message; -- no discriminant given -> mutable variant record
+      msg : ULog.Message; -- IMPORTANT: no discriminant -> mutable. Otherwise exceptions.
       BUFLEN : constant := 512;
       bytes : HIL.Byte_Array (1 .. BUFLEN);
       len : Natural;
 
-      type loginfo_ratio is mod 100;
+      type loginfo_ratio is mod 100; -- every one out of this will be a log message about the queue
       r : loginfo_ratio := 0;
       
       n_que : Natural;
@@ -178,7 +183,11 @@ is
       procedure New_Msg (msg : in ULog.Message) is
       begin
          if Queue_Enable then
-            Buffer (Integer (Pos_Write)) := msg; -- FIXME: SPARK "discriminant check might fail"
+            Buffer (Integer (Pos_Write)) := msg;
+            pragma Annotate (GNATprove, False_Positive, 
+                             "discriminant check might fail", 
+                             "GNATprove does not see that the buffer consists of mutable variant records. MBe");
+            
             Pos_Write := Pos_Write + 1;
             if Num_Queued < Buffer'Last then
                Num_Queued := Num_Queued + 1;
@@ -198,7 +207,11 @@ is
       begin
          pragma Assume (Num_Queued > 0); -- via barrier and assert in New_Msg
 
-         msg := Buffer (Integer (Pos_Read)); -- FIXME: SPARK "discriminant check might fail"
+         msg := Buffer (Integer (Pos_Read)); 
+         --  FIXME: SPARK "discriminant check might fail". True, if the caller does hand
+         --  over a constrained variant record. But we cannot formulate this as a precondition
+         --  and entries cannot have return values. No better way.
+         
          n_queued_before := Num_Queued;
          Pos_Read := Pos_Read + 1;
          Num_Queued := Num_Queued - 1;
@@ -220,8 +233,10 @@ is
    begin
       if len > 0 then
          declare
+            pragma Assert (len > 0);
             subtype Bytes_ULog is HIL.Byte_Array (1 .. len);
-            subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. Unsigned_16 (len));
+            up : constant Unsigned_16 := Unsigned_16 (len);
+            subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. up);
             function To_FileData is new Ada.Unchecked_Conversion (Bytes_ULog, SD_Data_ULog);
             buf_last : constant Integer := buf'First - 1 + len;
             n_wr : Integer;
@@ -241,10 +256,14 @@ is
       end init_adapter;
 
       procedure write (message : Message_Type) is
-         CR : constant Character := Character'Val (13); -- ASCII
-         --  LF : constant Character := Character'Val (10);
-      begin
-         HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message & CR ) );
+         CR : constant Character := Character'Val (13); -- ASCII         
+      begin         
+         if message'Last < Integer'Last then
+            HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message & CR ) );
+         else
+            -- no space left for CR
+            HIL.UART.write(HIL.Devices.Console, HIL.UART.toData_Type ( message ));
+         end if;
       end write;	
    end Adapter;
 
@@ -338,7 +357,10 @@ is
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => num_boots);
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
-         fname       : constant String := HIL.Byte'Image (num_boots) & ".log";
+         bootstr     : constant String := HIL.Byte'Image (num_boots);
+         pragma Assume (bootstr'First = 1 and bootstr'Length <= 4); 
+            -- Byte'Last is 255, and strings always start at index one
+         fname       : constant String := bootstr(bootstr'First .. bootstr'Last) & ".log";
          BUFLEN      : constant := 128; -- header is around 90 bytes long
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
          len         : Natural;

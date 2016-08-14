@@ -106,23 +106,23 @@ package body Generic_Queue with SPARK_Mode => Off is
       Self.hasElements := False;
    end pop_all;
 
-   procedure get_all( Self : in out Buffer_Tag; elements : out Element_Array ) is
+   procedure get_all( Self : in Buffer_Tag; elements : out Element_Array ) is
    begin
       p_get_all(Self, elements );
    end get_all;
 
-   procedure get_front( Self : in out Buffer_Tag; element : out Element_Type ) is
+   procedure get_front( Self : in Buffer_Tag; element : out Element_Type ) is
    begin
       element := Self.Buffer(  Self.index_head );
    end get_front;
 
-   procedure get_front( Self : in out Buffer_Tag; elements : out Element_Array ) is
+   procedure get_front( Self : in Buffer_Tag; elements : out Element_Array ) is
    begin
       p_get(Self, elements);
    end get_front;
 
 
-   procedure get_back( Self : in out Buffer_Tag; element : out Element_Type ) is
+   procedure get_back( Self : in Buffer_Tag; element : out Element_Type ) is
    begin
       pragma Assert (not Self.Empty);
       element := Self.Buffer(  Self.index_tail - 1 );
@@ -135,13 +135,13 @@ package body Generic_Queue with SPARK_Mode => Off is
 --        return Self.Buffer(  index );
 --     end get_at;
 
-   procedure get_nth_first( Self : in out Buffer_Tag; nth : Index_Type; element : out Element_Type) is
+   procedure get_nth_first( Self : in Buffer_Tag; nth : Index_Type; element : out Element_Type) is
    begin
       pragma Assert ( Self.index_head <= Self.index_tail-1 - nth );
       element := Self.Buffer(  Self.index_tail-1 - nth );
    end get_nth_first;
 
-   procedure get_nth_last( Self : in out Buffer_Tag; nth : Index_Type; element : out Element_Type) is
+   procedure get_nth_last( Self : in Buffer_Tag; nth : Index_Type; element : out Element_Type) is
    begin
       pragma Assert ( Self.index_head + nth <= Self.index_tail-1 );
       element := Self.Buffer(  Self.index_head + nth );
@@ -178,7 +178,7 @@ package body Generic_Queue with SPARK_Mode => Off is
    end Overflows;
 
 
-   procedure p_get_all( Self : in out Buffer_Tag; elements : out Element_Array ) is
+   procedure p_get_all( Self : in Buffer_Tag; elements : out Element_Array ) is
    begin
       if not Self.Empty then
          if Self.index_head <= Self.index_tail-1 then  -- no wrap
@@ -191,7 +191,7 @@ package body Generic_Queue with SPARK_Mode => Off is
       end if;
    end p_get_all;
 
-   procedure p_get( Self : in out Buffer_Tag; elements : out Element_Array ) is
+   procedure p_get( Self : in Buffer_Tag; elements : out Element_Array ) is
       delta_head : Index_Type;
    begin
       if not Self.Empty and elements'Length /= 0 then

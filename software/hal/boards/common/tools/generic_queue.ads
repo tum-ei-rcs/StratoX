@@ -57,28 +57,28 @@ package Generic_Queue with SPARK_Mode is
      with Post'Class => Self.Empty;
    -- read and remove all elements, front first
 
-   procedure get_front( Self : in out Buffer_Tag; element : out Element_Type )
+   procedure get_front( Self : in Buffer_Tag; element : out Element_Type )
      with Pre'Class => not Self.Empty;
    -- read element at front
 
-   procedure get_front( Self : in out Buffer_Tag; elements : out Element_Array )
+   procedure get_front( Self : in Buffer_Tag; elements : out Element_Array )
      with Pre'Class => elements'Length <= Self.Length;
    -- read element at front
 
-   procedure get_back( Self : in out Buffer_Tag; element : out Element_Type )
+   procedure get_back( Self : in Buffer_Tag; element : out Element_Type )
      with Pre'Class => not Self.Empty;
    -- read element at back
 
-   procedure get_all( Self : in out Buffer_Tag; elements : out Element_Array )
+   procedure get_all( Self : in Buffer_Tag; elements : out Element_Array )
      with Pre'Class => elements'Length = Self.Length;
    -- read all elements, front first
 
    --function get_at( index : Index_Type ) return Element_Type;
 
-   procedure get_nth_first( Self : in out Buffer_Tag; nth : Index_Type; element : out Element_Type);
+   procedure get_nth_first( Self : in Buffer_Tag; nth : Index_Type; element : out Element_Type);
    -- read nth element, nth = 0 is front
 
-   procedure get_nth_last( Self : in out Buffer_Tag; nth : Index_Type; element : out Element_Type);
+   procedure get_nth_last( Self : in Buffer_Tag; nth : Index_Type; element : out Element_Type);
    -- read nth element, nth = 0 is back
 
    function Length( Self : in Buffer_Tag) return Length_Type;
@@ -110,7 +110,7 @@ private
       Num_Overflows : Natural := 0;
    end record;
 
-   procedure p_get_all( Self : in out Buffer_Tag; elements : out Element_Array );
-   procedure p_get( Self : in out Buffer_Tag; elements : out Element_Array );
+   procedure p_get_all( Self : in Buffer_Tag; elements : out Element_Array );
+   procedure p_get( Self : in Buffer_Tag; elements : out Element_Array );
 
 end Generic_Queue;
