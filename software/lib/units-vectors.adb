@@ -42,4 +42,16 @@ package body Units.Vectors is
 
 
 
+   function Ones( n : Natural ) return Unit_Matrix is
+      result : Unit_Matrix(1 .. n, 1 .. n) := (others => (others => 0.0));
+   begin
+      for i in result'Range loop
+         result(i,i) := 1.0;
+      end loop;
+      return result;
+   end Ones;
+
+
+procedure setOnes( A : in out Unit_Matrix; first : Natural; last : Natural) is null;
+
 end Units.Vectors;

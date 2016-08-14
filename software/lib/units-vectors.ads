@@ -10,11 +10,11 @@
 
 
 
---with Ada.Numerics.Generic_Real_Arrays;
+with Ada.Numerics.Generic_Real_Arrays;
 
 package Units.Vectors with SPARK_Mode is
 
-   --package Unit_Arrays_Pack is new Ada.Numerics.Generic_Real_Arrays(Unit_Type);
+   package Unit_Arrays_Pack is new Ada.Numerics.Generic_Real_Arrays(Unit_Type);
 
    subtype Scalar is Unit_Type;
    type Vector3D_Type is array(1 .. 3) of Unit_Type;
@@ -25,7 +25,7 @@ package Units.Vectors with SPARK_Mode is
 
 
    type Cartesian_Coordinates_Type is (X, Y, Z);
-   type Cartesian_Vector_Type is array(Cartesian_Coordinates_Type) of Unit_Type;
+   type Cartesian_Vector_Type is array(Cartesian_Coordinates_Type) of Unit_Type'Base;
 
 
    subtype Translation_Vector_Array is Vector3D_Type; -- of Length_Type;
@@ -40,7 +40,7 @@ package Units.Vectors with SPARK_Mode is
 --           (Unit_Name => Radian, Unit_Symbol => "Rad", Dim_Symbol => "A"));
 
 
-   type Translation_Vector is array(1 .. 3) of Length_Type; -- of Length_Type;
+   type Translation_Vector is array(Cartesian_Coordinates_Type) of Length_Type; -- of Length_Type;
 
    type Linear_Velocity_Vector is array(Cartesian_Coordinates_Type) of Linear_Velocity_Type;
    type Linear_Acceleration_Vector is array(Cartesian_Coordinates_Type) of Linear_Acceleration_Type;
@@ -72,9 +72,9 @@ package Units.Vectors with SPARK_Mode is
 
 
    function "+" (Left, Right : Translation_Vector) return Translation_Vector is
-      ( (  Left(1) + Right(1),
-           Left(2) + Right(2),
-           Left(3) + Right(3)
+      ( (  Left(X) + Right(X),
+           Left(Y) + Right(Y),
+           Left(Z) + Right(Z)
            ) );
 
    function "+" (Left, Right : Angle_Vector) return Angle_Vector is
@@ -102,6 +102,10 @@ package Units.Vectors with SPARK_Mode is
    function "*" (Left : Angular_Velocity_Vector; Right : Time_Type) return Rotation_Vector is
       ( ( Left(X) * Right, Left(Y) * Right, Left(Z) * Right ) );
 
+   function "*" (Left : Linear_Velocity_Vector; Right : Time_Type) return Translation_Vector is
+      ( ( Left(X) * Right, Left(Y) * Right, Left(Z) * Right ) );
+
+
 
    procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);
 
@@ -115,13 +119,16 @@ package Units.Vectors with SPARK_Mode is
 
 
    -- Matrices
+   subtype Unit_Matrix is Unit_Arrays_Pack.Real_Matrix; -- array(Natural <>, Natural <>) of
+
+
+
    type Unit_Vector2D is array(1..2) of Unit_Type;
    type Unit_Matrix2D is array(1..2, 1..2) of Unit_Type;
 
-
    -- subtype Unit_Vector2D is Unit_Arrays_Pack.Real_Vector(1..2);
    --subtype Unit_Vector3D is Unit_Arrays_Pack.Real_Vector(1..3);
-   --subtype Unit_Matrix3D is Unit_Arrays_Pack.Real_Matrix(1..3, 1..3);
+   subtype Unit_Matrix3D is Unit_Arrays_Pack.Real_Matrix(1..3, 1..3);
 
 
 
@@ -131,6 +138,10 @@ package Units.Vectors with SPARK_Mode is
    function "-" (Left, Right : Unit_Vector2D) return Unit_Vector2D is
       ( Left(1) - Right(1), Left(2) - Right(2) );
 
+
+   function Ones( n : Natural ) return Unit_Matrix;
+
+   procedure setOnes( A : in out Unit_Matrix; first : Natural; last : Natural);
 
 
 

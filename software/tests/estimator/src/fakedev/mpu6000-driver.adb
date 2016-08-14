@@ -1,8 +1,8 @@
 with Simulation;
 with Ada.Text_IO; use Ada.Text_IO;
 
-package body MPU6000.Driver  with
-Refined_State => (State => (Is_Init, Device_Address))
+package body MPU6000.Driver  with SPARK_Mode,
+Refined_State => (State => (Is_Init))
 is
 
    procedure Init is null;
@@ -11,10 +11,10 @@ is
    function Test return Boolean is (True);
 
    --  Test if we are connected to MPU6000 via I2C.
-   function Test_Connection return Boolean is (True);
+   procedure Test_Connection (success : out Boolean) is null;
 
    --  MPU6000 self test.
-   function Self_Test return Boolean is (True);
+   procedure Self_Test (Test_Status : out Boolean) is null;
 
    --  Reset the MPU6000 device.
    --  A small delay of ~50ms may be desirable after triggering a reset.
@@ -37,7 +37,7 @@ is
       Acc_X := Integer_16 (Simulation.CSV_here.Get_Column ("accY") * (-SCALE_ACC));
       Acc_Y := Integer_16 (Simulation.CSV_here.Get_Column ("accX") * SCALE_ACC);
       Acc_Z := Integer_16 (Simulation.CSV_here.Get_Column ("accZ") * SCALE_ACC);
-      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("gyroY") * (SCALE_GYR));
+      Gyro_X := Integer_16 (Simulation.CSV_here.Get_Column ("gyroY") * (-SCALE_GYR));
       Gyro_Y := Integer_16 (Simulation.CSV_here.Get_Column ("gyroX") * SCALE_GYR);
       Gyro_Z := Integer_16 (Simulation.CSV_here.Get_Column ("gyroZ") * SCALE_GYR);
 
@@ -86,7 +86,7 @@ is
    procedure Set_Temp_Sensor_Enabled (Value : Boolean) is null;
 
    --  Get temperature sensor enabled status.
-   function Get_Temp_Sensor_Enabled return Boolean is (True);
+   procedure Get_Temp_Sensor_Enabled (ret : out Boolean) is null;
 
    function Evaluate_Self_Test
      (Low          : Float;
@@ -105,9 +105,10 @@ is
       Data     : in out Byte) is null;
 
    --  Read one but at the specified MPU6000 register
-   function Read_Bit_At_Register
+   procedure Read_Bit_At_Register
      (Reg_Addr  : Byte;
-      Bit_Pos   : Unsigned_8_Bit_Index) return Boolean is (True);
+      Bit_Pos   : Unsigned_8_Bit_Index;
+      Bit_Value : out Boolean) is null;
 
    --  Write data to the specified MPU6000 register
    procedure Write_Register

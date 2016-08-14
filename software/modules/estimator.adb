@@ -4,6 +4,10 @@
 with Generic_Queue;
 
 with Ada.Real_Time; use Ada.Real_Time;
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
+
+with Config.Software;
+with Units.Numerics; use Units.Numerics;
 
 with IMU;
 with GPS;
@@ -16,9 +20,8 @@ with Units.Numerics; use Units.Numerics;
 with Logger;
 with ULog;
 with Profiler;
+with Kalman;
 
-with Config.Software;
-with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 pragma Elaborate_All(generic_queue);
 
@@ -51,6 +54,7 @@ package body Estimator with SPARK_Mode is
       last_stable_check : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
       home_pos : GPS_Loacation_Type;
       home_baro_alt : Altitude_Type := 0.0 * Meter;
+      kmObservations: Kalman.Observation_Vector;
    end record;
 
    type Sensor_Record is record
@@ -101,6 +105,8 @@ package body Estimator with SPARK_Mode is
       -- Profiler
       G_Profiler.init("Estimator");
 
+      Kalman.reset;
+
       Logger.log_console(Logger.INFO, "Estimator initialized");
    end initialize;
 
@@ -144,8 +150,8 @@ package body Estimator with SPARK_Mode is
 
       Acc_Orientation := Orientation( G_imu.Acc );
       -- CF_Orientation := IMU.Fused_Orientation( IMU.Sensor, Acc_Orientation, Gyro);
-      IMU.perform_Kalman_Filtering( IMU.Sensor, Acc_Orientation );
-      G_Object_Orientation := IMU.Sensor.get_Orientation;
+      -- IMU.perform_Kalman_Filtering( IMU.Sensor, Acc_Orientation );
+      -- G_Object_Orientation := IMU.Sensor.get_Orientation;
 
 
       -- Logger.log_console(Logger.INFO, "RPY: " & AImage( Acc_Orientation.Roll ) & ", "
@@ -197,9 +203,15 @@ package body Estimator with SPARK_Mode is
          G_Object_Position.Altitude := Len_To_Alt (Barometer.Sensor.get_Altitude);
       end if;
 
+      -- perform Kalman
+      G_state.kmObservations := ( G_Object_Position, G_state.avg_baro_height, Acc_Orientation, G_imu.Gyro );
+      Kalman.perform_Filter_Step( (0.0 * Degree, 0.0*Degree, 0.0*Degree), G_state.kmObservations );
+
+      G_Object_Orientation.Roll := Kalman.get_States.orientation.Roll;
+      G_Object_Orientation.Pitch := Kalman.get_States.orientation.Pitch;
+
       -- update stable measurements
       check_stable_Time;
-
 
       -- Outputs
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );

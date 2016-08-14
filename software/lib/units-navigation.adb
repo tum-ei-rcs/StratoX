@@ -1,4 +1,3 @@
-with Units.Numerics; use Units.Numerics;
 with Units; use Units;
 
 --  with Logger;
@@ -71,6 +70,7 @@ package body Units.Navigation is
    end Distance;
 
 
+--   function "+" (Left : GPS_Loacation_Type; Right : Translation_Vector) return GPS_Loacation_Type
 
 
 
