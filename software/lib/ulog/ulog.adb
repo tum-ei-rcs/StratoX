@@ -259,11 +259,17 @@ package body ULog with SPARK_Mode => On is
             Serialize_Ulog_LogQ (ct, msg, bytes);
       end case;
 
-      --  read back the length
-      len := Get_Size (ct);
-      if len > bytes'Length or len > 255 then
-         len := 0; -- buffer overflow
-      end if;
+      --  read back the length, and drop incomplete messages
+      declare
+         SERLEN : constant Natural := Get_Size (ct);
+      begin
+         if Buffer_Overflow (ct) or SERLEN > bytes'Length -- or len > 255
+         then
+            len := 0;
+         else
+            len := SERLEN;
+         end if;
+      end;
       --  pragma Assert (len <= bytes'Length);
    end Serialize_Ulog_With_Tag;
 
