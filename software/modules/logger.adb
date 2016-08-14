@@ -31,7 +31,7 @@ package body Logger with SPARK_Mode,
 is
 
    --  the type for the queue buffer
-   type Buffer_Ulog is array (Natural range <>) of ULog.Message; -- no discriminant => mutable variant record
+   type Buffer_Ulog is array (Natural range <>) of ULog.Message; -- IMPORTANT: no discriminant (=mutable)
    type bufpos is mod LOG_QUEUE_LENGTH;
 
    --  if GNATprove crashes with reference to that file,
@@ -60,6 +60,8 @@ is
       --  until buffer has data, and then returns it.
       --  FIXME: how can we specify a precondition on the private variable?
       --  for now we put an assertion in the body
+      --  FIXME: we need to specify a precondition, that msg is a mutable
+      --  variant record. Otherwise a discriminant check will fail.
 
       function Get_Num_Overflows return Natural;
       --  query how often the buffer overflowed. If this happens, either increase
@@ -119,12 +121,12 @@ is
    --  thus, all callees here have to be elaborated before this task.
 
    task body Logging_Task is
-      msg : ULog.Message; -- no discriminant given -> mutable variant record
+      msg : ULog.Message; -- IMPORTANT: no discriminant -> mutable. Otherwise exceptions.
       BUFLEN : constant := 512;
       bytes : HIL.Byte_Array (1 .. BUFLEN);
       len : Natural;
 
-      type loginfo_ratio is mod 100;
+      type loginfo_ratio is mod 100; -- every one out of this will be a log message about the queue
       r : loginfo_ratio := 0;
       
       n_que : Natural;
@@ -181,7 +183,11 @@ is
       procedure New_Msg (msg : in ULog.Message) is
       begin
          if Queue_Enable then
-            Buffer (Integer (Pos_Write)) := msg; -- FIXME: SPARK "discriminant check might fail"
+            Buffer (Integer (Pos_Write)) := msg;
+            pragma Annotate (GNATprove, False_Positive, 
+                             "discriminant check might fail", 
+                             "GNATprove does not see that the buffer consists of mutable variant records. MBe");
+            
             Pos_Write := Pos_Write + 1;
             if Num_Queued < Buffer'Last then
                Num_Queued := Num_Queued + 1;
@@ -201,7 +207,11 @@ is
       begin
          pragma Assume (Num_Queued > 0); -- via barrier and assert in New_Msg
 
-         msg := Buffer (Integer (Pos_Read)); -- FIXME: SPARK "discriminant check might fail"
+         msg := Buffer (Integer (Pos_Read)); 
+         --  FIXME: SPARK "discriminant check might fail". True, if the caller does hand
+         --  over a constrained variant record. But we cannot formulate this as a precondition
+         --  and entries cannot have return values. No better way.
+         
          n_queued_before := Num_Queued;
          Pos_Read := Pos_Read + 1;
          Num_Queued := Num_Queued - 1;
