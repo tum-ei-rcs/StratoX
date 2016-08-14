@@ -52,4 +52,6 @@ package body Units.Vectors is
    end Ones;
 
 
+procedure setOnes( A : in out Unit_Matrix; first : Natural; last : Natural) is null;
+
 end Units.Vectors;

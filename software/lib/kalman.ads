@@ -12,32 +12,30 @@ SPARK_Mode,
 Abstract_State => State
 is
 
-   k : constant := 16;  -- states
-   l : constant := 3;   -- inputs 
-   m : constant := 17;  -- observations
-
    -- the states: everything that needs to be estimated for a solution
    
-   type State_Vector_Index_Type is 
-   ( LON,
-     LAT,
-     ALT,
-     GROUND_SPEED_X,
-     GROUND_SPEED_Y,
-     GROUND_SPEED_Z,
-     ROLL,
-     PITCH,
-     YAW,
-     ROLL_RATE,
-     PITCH_RATE,
-     YAW_RATE,
-     ROLL_BIAS,
-     PITCH_BIAS,
-     YAW_BIAS,
-     AIR_SPEED_X,
-     AIR_SPEED_Y,
-     AIR_SPEED_Z
+   type State_Vector_Index_Name_Type is 
+   ( X_LON,
+     X_LAT,
+     X_ALT,
+     X_GROUND_SPEED_X,   -- NORTH => + lat
+     X_GROUND_SPEED_Y,   -- EAST => + lon
+     X_GROUND_SPEED_Z,   -- DOWN => - alt
+     X_ROLL,
+     X_PITCH,
+     X_YAW,
+     X_ROLL_RATE,
+     X_PITCH_RATE,
+     X_YAW_RATE,
+     X_ROLL_BIAS,
+     X_PITCH_BIAS,
+     X_YAW_BIAS,
+     X_AIR_SPEED_X,
+     X_AIR_SPEED_Y,
+     X_AIR_SPEED_Z
     );
+    
+   subtype State_Vector_Index_Type is Natural range 1 .. State_Vector_Index_Name_Type'Range_Length;
    
    type State_Vector is record -- 16 states
       pos : GPS_Loacation_Type;
@@ -50,11 +48,14 @@ is
 
 
    -- the inputs: everything that you can control
-   type Input_Vector_Index_Type is 
-   ( ELEVATOR,
-     AILERON,
-     RUDDER );
-  
+   type Input_Vector_Index_Name_Type is 
+   ( U_ELEVATOR,
+     U_AILERON,
+     U_RUDDER );
+
+   subtype Input_Vector_Index_Type is Natural range 1 .. Input_Vector_Index_Name_Type'Range_Length;
+
+
    type Input_Vector is record
       Elevator : Angle_Type;
       Aileron  : Angle_Type;
@@ -62,18 +63,20 @@ is
    end record;
 
    -- the observations: everything that can be observed
-   type Observation_Vector_Index_Type is
-   ( LON,
-     LAT,
-     ALT,
-     BARO_ALT,
-     ROLL,
-     PITCH,
-     YAW,
-     ROLL_RATE,
-     PITCH_RATE,
-     YAW_RATE
+   type Observation_Vector_Index_Name_Type is
+   ( Z_LON,
+     Z_LAT,
+     Z_ALT,
+     Z_BARO_ALT,
+     Z_ROLL,
+     Z_PITCH,
+     Z_YAW,
+     Z_ROLL_RATE,
+     Z_PITCH_RATE,
+     Z_YAW_RATE
     );
+    
+   subtype Observation_Vector_Index_Type is Natural range 1 .. Observation_Vector_Index_Name_Type'Range_Length;   
    
    type Observation_Vector is record
       gps_pos : GPS_Loacation_Type;
@@ -102,7 +105,14 @@ is
    -- 3. Calculate Mean
 
 
+   function map( index : State_Vector_Index_Name_Type ) return State_Vector_Index_Type is
+   ( State_Vector_Index_Type( State_Vector_Index_Name_Type'Pos( index ) + 1 ) );
 
+   function map( index : Input_Vector_Index_Name_Type ) return Input_Vector_Index_Type is
+   ( Input_Vector_Index_Type( Input_Vector_Index_Name_Type'Pos( index ) + 1 ) );
+
+   function map( index : Observation_Vector_Index_Name_Type ) return Observation_Vector_Index_Type is
+   ( Observation_Vector_Index_Type( Observation_Vector_Index_Name_Type'Pos( index ) + 1 ) );
 
 
 
@@ -111,6 +121,7 @@ is
    subtype kk_Matrix is Unit_Matrix( State_Vector_Index_Type, State_Vector_Index_Type);
    subtype kl_Matrix is Unit_Matrix( State_Vector_Index_Type, Input_Vector_Index_Type);
    subtype mk_Matrix is Unit_Matrix( Observation_Vector_Index_Type, State_Vector_Index_Type);
+   subtype km_Matrix is Unit_Matrix( State_Vector_Index_Type, Observation_Vector_Index_Type);   
    subtype mm_Matrix is Unit_Matrix( Observation_Vector_Index_Type, Observation_Vector_Index_Type);
 
 
@@ -126,8 +137,16 @@ is
 --        rates : Unit_Matrix3D;
 --     end record;
 
-   subtype Innovation_Vector is kk_Matrix;
-   subtype Innovation_Covariance_Matrix is kk_Matrix;
+
+
+   type Innovation_Vector is record
+      delta_gps_pos : GPS_Translation_Type;
+      delta_baro_alt : Altitude_Type;
+      delta_acc_ori : Rotation_Vector;
+      delta_gyr_rates : Angular_Velocity_Vector;   
+   end record;
+   
+   subtype Innovation_Covariance_Matrix is mm_Matrix;
    
    subtype Kalman_Gain_Matrix is km_Matrix;
 
@@ -146,6 +165,9 @@ is
 
    -- 2. step
    procedure update( z : in Observation_Vector; dt : Time_Type );
+   
+   
+   function get_States return State_Vector;
 
 
 private
@@ -159,6 +181,11 @@ private
    procedure uptate_state( states : in out State_Vector; samples : Observation_Vector; dt : Time_Type );
    procedure update_cov( P : in out State_Covariance_Matrix; dt : Time_Type );
 
+
+
+   function "-"(Left, Right : Observation_Vector) return Innovation_Vector;
+
+   procedure calculate_A( A : out State_Transition_Matrix; dt : Time_Type );
 
    -- input2state, state,  A, Au PHP
 --     function State_Prediction( u : Input_Vector; dt : Time_Type ) return State_Vector;

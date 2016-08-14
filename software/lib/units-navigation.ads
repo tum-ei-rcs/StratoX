@@ -9,6 +9,7 @@
 --
 
 with Units.Vectors; use Units.Vectors;
+with Units.Numerics; use Units.Numerics;
 
 package Units.Navigation with SPARK_Mode is
 
@@ -27,13 +28,19 @@ package Units.Navigation with SPARK_Mode is
    -- GPS Position
    subtype Longitude_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree;
    subtype Latitude_Type is Units.Angle_Type range -90.0 * Degree .. 90.0 * Degree;
-   subtype Altitude_Type is Units.Length_Type range -100.0 * Meter .. 10_000.0 * Meter;
+   subtype Altitude_Type is Units.Length_Type range -10_000.0 * Meter .. 10_000.0 * Meter;
 
    type GPS_Loacation_Type is record
       Longitude : Longitude_Type := 0.0 * Degree;
       Latitude  : Latitude_Type := 0.0 * Degree;
       Altitude  : Altitude_Type := 0.0 * Meter;
    end record;
+
+   subtype GPS_Translation_Type is GPS_Loacation_Type;    -- FIXME: Δ Altitude could be negative
+
+
+   type NED_Coordinates_Type is (DIM_NORTH, DIM_EAST, DIM_DOWN);
+   type NED_Translation_Vector is array(NED_Coordinates_Type) of Length_Type;
 
    type Longitude_Array is array (Natural range <>) of Longitude_Type;
    type Latitude_Array is array (Natural range <>) of Latitude_Type;
@@ -66,7 +73,7 @@ package Units.Navigation with SPARK_Mode is
 
    EARTH_RADIUS : constant Length_Type := 6378.137 * Kilo * Meter;
 
-   METER_PER_LAT_DEGREE : constant := 111.111 * Kilo * Meter; -- average lat
+   METER_PER_LAT_DEGREE : constant Length_Angle_Ratio_Type := 111.111 * Kilo * Meter / Degree; -- average lat
 
 
    type Body_Type is record
@@ -91,11 +98,22 @@ package Units.Navigation with SPARK_Mode is
       wrap_Angle( rotation(Z), Yaw_Type'First, Yaw_Type'Last ) );
 
 
+   function To_NED_Translation( value : GPS_Translation_Type) return NED_Translation_Vector is
+   ( DIM_NORTH => Cos(value.Latitude) * value.Longitude * METER_PER_LAT_DEGREE,
+      DIM_EAST => value.Latitude * METER_PER_LAT_DEGREE,
+      DIM_DOWN => -(value.Altitude) );
+
+
+   function "-" (Left, Right : GPS_Loacation_Type) return GPS_Translation_Type is
+   ( Left.Longitude - Right.Longitude, Left.Latitude - Right.Latitude, Left.Altitude - Right.Altitude );
+
 --     function "-" (Left : GPS_Loacation_Type; Right : GPS_Loacation_Type) return Translation_Vector is
---     ( X => Left.Longitude-Right.Longitude,
---
+--     ( X => Cos(Left.Latitude - Right.Latitude) * (Left.Longitude - Right.Longitude) * METER_PER_LAT_DEGREE,
+--        Y => (Left.Latitude - Right.Latitude) * METER_PER_LAT_DEGREE,
+--        Z => -(Left.Altitude - Right.Altitude) );
+
 --     function "+" (Left : GPS_Loacation_Type; Right : Translation_Vector) return GPS_Loacation_Type is
---     ( Longitude => Left.Longitude +
+--     ( Longitude => Left.Longitude + Right(X) , Altitude => Left.Altitude - Right(Z)
 
 
 

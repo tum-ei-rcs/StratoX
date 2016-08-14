@@ -25,7 +25,7 @@ package Units.Vectors with SPARK_Mode is
 
 
    type Cartesian_Coordinates_Type is (X, Y, Z);
-   type Cartesian_Vector_Type is array(Cartesian_Coordinates_Type) of Unit_Type;
+   type Cartesian_Vector_Type is array(Cartesian_Coordinates_Type) of Unit_Type'Base;
 
 
    subtype Translation_Vector_Array is Vector3D_Type; -- of Length_Type;
@@ -72,9 +72,9 @@ package Units.Vectors with SPARK_Mode is
 
 
    function "+" (Left, Right : Translation_Vector) return Translation_Vector is
-      ( (  Left(1) + Right(1),
-           Left(2) + Right(2),
-           Left(3) + Right(3)
+      ( (  Left(X) + Right(X),
+           Left(Y) + Right(Y),
+           Left(Z) + Right(Z)
            ) );
 
    function "+" (Left, Right : Angle_Vector) return Angle_Vector is
@@ -140,6 +140,8 @@ package Units.Vectors with SPARK_Mode is
 
 
    function Ones( n : Natural ) return Unit_Matrix;
+
+   procedure setOnes( A : in out Unit_Matrix; first : Natural; last : Natural);
 
 
 

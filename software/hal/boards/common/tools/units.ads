@@ -52,6 +52,9 @@ package Units with
 
 
    -- Derived Units
+   subtype Length_Angle_Ratio_Type is Unit_Type with
+     Dimension => (Meter => 1, Radian => -1, others => 0);
+
 
    -- mechanical
    subtype Frequency_Type is Unit_Type with
