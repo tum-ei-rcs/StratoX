@@ -35,7 +35,7 @@
 
 generic
    type Real is digits <>;
-package Ada.Numerics.Generic_Real_Arrays is
+package Ada.Numerics.Generic_Real_Arrays with SPARK_Mode is
    pragma Pure (Generic_Real_Arrays);
 
    --  Types

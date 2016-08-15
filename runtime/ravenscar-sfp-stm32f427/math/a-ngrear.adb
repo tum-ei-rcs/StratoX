@@ -41,7 +41,7 @@
 with System; use System;
 with System.Generic_Array_Operations; use System.Generic_Array_Operations;
 
-package body Ada.Numerics.Generic_Real_Arrays is
+package body Ada.Numerics.Generic_Real_Arrays with SPARK_Mode => Off is
 
    package Ops renames System.Generic_Array_Operations;
 
