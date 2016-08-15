@@ -354,6 +354,11 @@ package Units with
    ( x * dt );
    pragma Inline_Always( integrate );
 
+   generic
+      type T is digits <>; -- any floating point type
+   function Saturated_Addition (left, right : T) return T
+     with Inline, Pre => 0.0 in T'Range;
+   --  add two objects of same Unit type and limit to the type's bounds
 
    -- function Radian( degree : Float ) return Float
 

@@ -44,6 +44,11 @@ is
           ck_a : HIL.Byte := 0;
           ck_b : HIL.Byte := 0;
        end record;
+   for NVRAM_Header use
+       record
+          ck_a at 0 range 0 .. 7;
+          ck_b at 1 range 0 .. 7;
+       end record;
    --  GNATprove from SPARK 2016 GPL doesn't implement attribute Position, yet
    HDR_OFF_CK_A : constant HIL.NVRAM.Address := 0;
    HDR_OFF_CK_B : constant HIL.NVRAM.Address := 1;

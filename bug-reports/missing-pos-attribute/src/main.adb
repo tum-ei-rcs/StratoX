@@ -7,6 +7,11 @@ procedure main with SPARK_Mode is
           c1 : Unsigned_8 := 0;
           c2 : Unsigned_8 := 0;
        end record;
+   for Some_Record use
+       record
+          c1 at 0 range 0 .. 7;
+          c2 at 1 range 0 .. 7;
+       end record;
    for Some_Record'Size use 16;
    foo : Some_Record;
 
@@ -14,7 +19,7 @@ procedure main with SPARK_Mode is
    off_c2 : constant Integer := foo.c2'Position;
 begin
    pragma Assert (off_c1 < 10000);
-   pragma Assert (off_c2 = 0);
+   pragma Assert (off_c2 = 1);
    Put_Line ("Pos c1=" & Integer'Image (off_c1)); -- stdout: 0
    Put_Line ("Pos c2=" & Integer'Image (off_c2)); -- stdout: 1
 end main;

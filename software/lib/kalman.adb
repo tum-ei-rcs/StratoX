@@ -62,7 +62,13 @@ is
       
       
       -- Set A, Dynamic Matrix
-      calculate_A( G.A, 0.0 * Second);
+      declare
+         A : State_Transition_Matrix;
+         --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
+      begin
+         calculate_A( A, 0.0 * Second);
+         G.A := A;
+      end;
 
       -- Set P, Covariance Matrix
       G.P := Ones( k );
@@ -89,13 +95,24 @@ is
    procedure predict(u : Input_Vector; dt : Time_Type) is 
    begin
       predict_state( G.x, u, dt );
-      predict_cov( G.P, G.Q );
+      declare
+         P : State_Covariance_Matrix;
+         --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
+      begin         
+         predict_cov( P, G.Q );
+         G.P := P;
+      end;
    end predict;
 
 
    procedure update(z : Observation_Vector; dt : Time_Type) is
    begin
-      uptate_state( G.x, z, dt );
+      declare
+         x : State_Vector;
+      begin
+         uptate_state( x, z, dt );
+         G.x := x;
+      end;
       update_cov( G.P, dt );
    end update;
 
@@ -124,6 +141,7 @@ is
       new_state.rates(Y) := input.Elevator * ELEVON_TO_GYRO;
       new_state.pos := state.pos; -- + state.ground_speed * dt;
       new_state.air_speed(X) := state.air_speed(X) - state.orientation.Pitch * PITCH_TO_AIRSPEED;
+      -- FIXME: new_state is never used, and state is not written.
    end predict_state;   
 
 
@@ -177,6 +195,7 @@ is
    end uptate_state;
 
    procedure update_cov( P : in out State_Covariance_Matrix; dt : Time_Type ) is
+      pragma Unreferenced (P);
    begin
       null;
    end update_cov;
