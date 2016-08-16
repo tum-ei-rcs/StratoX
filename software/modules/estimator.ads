@@ -14,8 +14,9 @@ with Units; use Units;
 with Units.Vectors;    use Units.Vectors;
 with Units.Navigation; use Units.Navigation;
 with Interfaces;       use Interfaces;
---with Dynamics3D;
 
+
+with Kalman;
 
 package Estimator with SPARK_Mode is
 
@@ -23,7 +24,7 @@ package Estimator with SPARK_Mode is
    procedure initialize;
 
    -- fetch fresh measurement data
-   procedure update;
+   procedure update( input : Kalman.Input_Vector );
    
    procedure reset_log_calls;
    

@@ -40,6 +40,7 @@ package body Estimator with SPARK_Mode is
    use IMU_Buffer_Pack;
 
    type State_Type is record
+      init_time : Time := Time_First;
       fix : GPS_Fix_Type := NO_FIX;
       nsat : Unsigned_8 := 0;
       avg_gps_height : Altitude_Type := 0.0 * Meter;
@@ -89,6 +90,8 @@ package body Estimator with SPARK_Mode is
    -- init
    procedure initialize is
    begin
+      G_state.init_time := Clock;
+
       G_state.max_gps_height := 0.0 * Meter;
       G_state.max_baro_height := 0.0 * Meter;
 
@@ -125,13 +128,14 @@ package body Estimator with SPARK_Mode is
    end Len_to_Alt;
 
    -- fetch fresh measurement data
-   procedure update is
+   procedure update( input : Kalman.Input_Vector ) is
       Acc_Orientation : Orientation_Type;
       CF_Orientation : Orientation_Type;
       Mag : Magnetic_Flux_Density_Vector;
       GFixS : String := "NO";
       pragma Unreferenced (GFixS);
 
+      now : Time := Clock;
    begin
       G_Profiler.start;
 
@@ -205,7 +209,7 @@ package body Estimator with SPARK_Mode is
 
       -- perform Kalman
       G_state.kmObservations := ( G_Object_Position, G_state.avg_baro_height, Acc_Orientation, G_imu.Gyro );
-      Kalman.perform_Filter_Step( (0.0 * Degree, 0.0*Degree, 0.0*Degree), G_state.kmObservations );
+      Kalman.perform_Filter_Step( input, G_state.kmObservations );
 
       G_Object_Orientation.Roll := Kalman.get_States.orientation.Roll;
       G_Object_Orientation.Pitch := Kalman.get_States.orientation.Pitch;
@@ -363,6 +367,7 @@ package body Estimator with SPARK_Mode is
    begin
       -- normalize vector
       if abs(gravity_vector) < 0.7*GRAVITY or 1.3*GRAVITY < abs(gravity_vector) then
+         --null;
          gravity_vector(Z) := gravity_vector(Z) - (  sgn( gravity_vector(Z) ) * (abs(gravity_vector) - GRAVITY) );
       end if;
 

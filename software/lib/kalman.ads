@@ -50,8 +50,9 @@ is
    -- the inputs: everything that you can control
    type Input_Vector_Index_Name_Type is 
    ( U_ELEVATOR,
-     U_AILERON,
-     U_RUDDER );
+     U_AILERON
+     --U_RUDDER 
+    );
 
    subtype Input_Vector_Index_Type is Natural range 1 .. Input_Vector_Index_Name_Type'Range_Length;
 
@@ -59,7 +60,7 @@ is
    type Input_Vector is record
       Elevator : Angle_Type;
       Aileron  : Angle_Type;
-      Rudder   : Angle_Type;
+      --Rudder   : Angle_Type;
    end record;
 
    -- the observations: everything that can be observed
@@ -158,6 +159,7 @@ is
 
    procedure reset;
 
+   -- perform one full cycle (predict & update)
    procedure perform_Filter_Step( u : in Input_Vector; z : in Observation_Vector );
 
    -- 1. step
@@ -166,7 +168,7 @@ is
    -- 2. step
    procedure update( z : in Observation_Vector; dt : Time_Type );
    
-   
+   -- get the estimated states
    function get_States return State_Vector;
 
 
@@ -178,13 +180,25 @@ private
    
    
    -- Update
-   procedure uptate_state( states : in out State_Vector; samples : Observation_Vector; dt : Time_Type );
-   procedure update_cov( P : in out State_Covariance_Matrix; dt : Time_Type );
+   procedure calculate_gain( states : State_Vector; 
+                             samples : Observation_Vector; 
+                             dt : Time_Type;
+                             K : out Kalman_Gain_Matrix; 
+                             residual : out Innovation_Vector);
+                             
+   procedure uptate_state( states : in out State_Vector; 
+                           K      : Kalman_Gain_Matrix; 
+                           residual : Innovation_Vector; 
+                           dt     : Time_Type );
+                           
+   procedure update_cov( P : in out State_Covariance_Matrix; K : Kalman_Gain_Matrix );
 
 
 
    function "-"(Left, Right : Observation_Vector) return Innovation_Vector;
 
+
+   -- calculate the jacobi matrix of the dynamic state model
    procedure calculate_A( A : out State_Transition_Matrix; dt : Time_Type );
 
    -- input2state, state,  A, Au PHP

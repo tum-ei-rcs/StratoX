@@ -139,7 +139,15 @@ package Units.Vectors with SPARK_Mode is
       ( Left(1) - Right(1), Left(2) - Right(2) );
 
 
+   -- n×n Identity Matrix
+   function Eye( n : Natural ) return Unit_Matrix;
+
+   -- n×n Matrix with all elements 1.0
    function Ones( n : Natural ) return Unit_Matrix;
+
+   -- n×n Matrix with all elements 0.0
+   function Zeros( n : Natural ) return Unit_Matrix;
+
 
    procedure setOnes( A : in out Unit_Matrix; first : Natural; last : Natural);
 

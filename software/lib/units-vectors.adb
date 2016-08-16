@@ -40,17 +40,26 @@ package body Units.Vectors is
       return Linear_Acceleration_Type(Sqrt (vector (X)**2 + vector (Y)**2 + vector (Z)**2));
    end "abs";
 
-
-
-   function Ones( n : Natural ) return Unit_Matrix is
+   function Eye( n : Natural ) return Unit_Matrix is
       result : Unit_Matrix(1 .. n, 1 .. n) := (others => (others => 0.0));
    begin
       for i in result'Range loop
          result(i,i) := 1.0;
       end loop;
       return result;
+   end Eye;
+
+   function Ones( n : Natural ) return Unit_Matrix is
+      result : Unit_Matrix(1 .. n, 1 .. n) := (others => (others => 1.0));
+   begin
+      return result;
    end Ones;
 
+   function Zeros( n : Natural ) return Unit_Matrix is
+      result : Unit_Matrix(1 .. n, 1 .. n) := (others => (others => 0.0));
+   begin
+      return result;
+   end Zeros;
 
 procedure setOnes( A : in out Unit_Matrix; first : Natural; last : Natural) is null;
 

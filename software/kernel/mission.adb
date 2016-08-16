@@ -39,6 +39,8 @@ package body Mission with SPARK_Mode is
 
    G_state : State_Type;
    
+   
+   
    procedure start_New_Mission is
    begin
       if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
@@ -137,7 +139,7 @@ package body Mission with SPARK_Mode is
    begin
    
       -- get initial values
-      Estimator.update;
+      Estimator.update( (0.0*Degree, 0.0*Degree) );
       
       -- set hold
       Controller.set_hold;
@@ -166,7 +168,7 @@ package body Mission with SPARK_Mode is
 
    procedure wait_For_Arm is
    begin
-      Estimator.update;
+      Estimator.update( (0.0*Degree, 0.0*Degree) );
       next_State;
    end wait_For_Arm;
 
@@ -181,7 +183,7 @@ package body Mission with SPARK_Mode is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       -- Estimator
-      Estimator.update;
+      Estimator.update( (0.0*Degree, 0.0*Degree) );
      
       -- set hold
       Controller.set_hold; 
@@ -250,9 +252,12 @@ package body Mission with SPARK_Mode is
          -- Buzzer_Manager.Enable;  
       end deactivate;
       
+      Elevons : Controller.Elevon_Angle_Array := Controller.get_Elevons;
    begin
       -- Estimator
-      Estimator.update;
+      Estimator.update( (Elevons(Controller.RIGHT)/2.0 + Elevons(Controller.LEFT)/2.0,
+                         Elevons(Controller.RIGHT)/2.0 - Elevons(Controller.LEFT)/2.0) );
+      
       G_state.body_info.orientation := Estimator.get_Orientation;
       G_state.body_info.position := Estimator.get_Position;
 
@@ -260,6 +265,7 @@ package body Mission with SPARK_Mode is
       Controller.set_Current_Orientation (G_state.body_info.orientation);
       Controller.set_Current_Position (G_state.body_info.position);
       Controller.runOneCycle; 
+      
       
       
       -- Check stable position

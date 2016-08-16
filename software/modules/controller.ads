@@ -15,6 +15,14 @@ with Units.Navigation; use Units.Navigation;
 
 package Controller with SPARK_Mode is
 
+   subtype Elevator_Angle_Type is Angle_Type range -43.0 * Degree .. 43.0 * Degree;
+   subtype Aileron_Angle_Type  is Angle_Type range -43.0 * Degree .. 43.0 * Degree;   
+   subtype Elevon_Angle_Type   is Angle_Type range -45.0 * Degree .. 45.0 * Degree;
+
+   type Elevon_Index_Type is (LEFT, RIGHT);   
+   type Elevon_Angle_Array is array(Elevon_Index_Type) of Elevon_Angle_Type;
+
+
    -- init
    procedure initialize;
         
@@ -29,7 +37,7 @@ package Controller with SPARK_Mode is
    procedure set_Target_Pitch (pitch : Pitch_Type);
         
    procedure set_Current_Orientation (orientation : Orientation_Type);
-   
+
    procedure log_Info;
 
    procedure runOneCycle;
@@ -38,18 +46,11 @@ package Controller with SPARK_Mode is
    
    procedure detach;
 
-private
+   function get_Elevons return Elevon_Angle_Array;
 
-   subtype Elevator_Angle_Type is Angle_Type range -43.0 * Degree .. 43.0 * Degree;
-   subtype Aileron_Angle_Type  is Angle_Type range -43.0 * Degree .. 43.0 * Degree;   
-   subtype Elevon_Angle_Type   is Angle_Type range -45.0 * Degree .. 45.0 * Degree;
+private
    
    type Control_Priority_Type is (EQUAL, PITCH_FIRST, ROLL_FIRST);
-
-   type Elevon_Index_Type is (LEFT, RIGHT);
-
-   
-   type Elevon_Angle_Array is array(Elevon_Index_Type) of Elevon_Angle_Type;
 
    type Plane_Control_Type is record
       Elevator : Elevator_Angle_Type;

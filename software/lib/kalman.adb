@@ -4,6 +4,9 @@ with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Numerics.Generic_Real_Arrays;
 with Units.Vectors; use Units.Vectors.Unit_Arrays_Pack;
 
+with Logger;
+
+
 package body Kalman with SPARK_Mode,
 Refined_State => (State => G)
 is
@@ -39,6 +42,13 @@ is
 
    procedure reset is 
       now : Time := Clock;
+      
+      ANGLE_PROCESS_VARIANCE : constant := 2.0e-5;  -- trust in orientation prediction
+      RATE_PROCESS_VARIANCE : constant := 1.0e-3;  -- dont trust in rate prediction
+      BIAS_PROCESS_VARIANCE : constant := 6.0e-5;  -- trust in prev bias
+      
+      ANGLE_MEASUREMENT_VARIANCE : constant := 1.0e-2;
+      RATE_MEASUREMENT_VARIANCE : constant := 1.0e-3;   -- trust rate measurement
    begin
       G.t_last := now;
    
@@ -56,24 +66,41 @@ is
       G.H( map(Z_ROLL_RATE) , map(X_ROLL_RATE) )  := 1.0;
       G.H( map(Z_PITCH_RATE), map(X_PITCH_RATE) ) := 1.0;
       G.H( map(Z_YAW_RATE)  , map(X_YAW_RATE) )   := 1.0;
-      G.H( map(Z_ROLL_RATE) , map(X_ROLL_BIAS) )  := -1.0;
-      G.H( map(Z_PITCH_RATE), map(X_PITCH_BIAS) ) := -1.0;
-      G.H( map(Z_YAW_RATE)  , map(X_YAW_BIAS) )   := -1.0;
-      
-      
+--        G.H( map(Z_ROLL) , map(X_ROLL_BIAS) )  := -1.0;  -- gyro measurements INCLUDES bias
+--        G.H( map(Z_PITCH), map(X_PITCH_BIAS) ) := -1.0;
+--        G.H( map(Z_YAW)  , map(X_YAW_BIAS) )   := -1.0;
+        
+
       -- Set A, Dynamic Matrix
       calculate_A( G.A, 0.0 * Second);
 
       -- Set P, Covariance Matrix
-      G.P := Ones( k );
+      G.P := Zeros( k );
       
       -- Process Noise
-      G.Q := Ones( k );
+      G.Q := Eye( k ) * 1.0e-1;
+      G.Q( map(X_ROLL), map(X_ROLL) ) := ANGLE_PROCESS_VARIANCE;
+      G.Q( map(X_PITCH), map(X_PITCH) ) := ANGLE_PROCESS_VARIANCE;
+      G.Q( map(X_YAW), map(X_YAW) ) := ANGLE_PROCESS_VARIANCE;
+
+      G.Q( map(X_ROLL_RATE), map(X_ROLL_RATE) ) := RATE_PROCESS_VARIANCE;
+      G.Q( map(X_PITCH_RATE), map(X_PITCH_RATE) ) := RATE_PROCESS_VARIANCE;    
+      G.Q( map(X_YAW_RATE), map(X_YAW_RATE) ) := RATE_PROCESS_VARIANCE;
+      
+      G.Q( map(X_ROLL_BIAS), map(X_ROLL_BIAS) ) := BIAS_PROCESS_VARIANCE;
+      G.Q( map(X_PITCH_BIAS), map(X_PITCH_BIAS) ) := BIAS_PROCESS_VARIANCE;
+   
       
       -- Measurement Noise
-      G.R := Ones( m );
+      G.R := Eye( m ) * 1.0e-3;
+      G.R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE;
+      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE  / 100.0;
+      G.R( map(Z_YAW), map(Z_YAW) ) := ANGLE_MEASUREMENT_VARIANCE;
       
-      
+      G.R( map(Z_ROLL_RATE), map(Z_ROLL_RATE) ) := RATE_MEASUREMENT_VARIANCE;
+      G.R( map(Z_PITCH_RATE), map(Z_PITCH_RATE) ) := RATE_MEASUREMENT_VARIANCE * 10.0;
+      G.R( map(Z_YAW_RATE), map(Z_YAW_RATE) ) := RATE_MEASUREMENT_VARIANCE;
+            
    end reset;
 
    procedure perform_Filter_Step( u : in Input_Vector; z : in Observation_Vector ) is
@@ -94,9 +121,12 @@ is
 
 
    procedure update(z : Observation_Vector; dt : Time_Type) is
+      K : Kalman_Gain_Matrix;
+      residual : Innovation_Vector;
    begin
-      uptate_state( G.x, z, dt );
-      update_cov( G.P, dt );
+      calculate_gain( G.x, z, dt, K, residual ); 
+      uptate_state( G.x, K, residual, dt );
+      update_cov( G.P, K );
    end update;
 
 
@@ -116,14 +146,17 @@ is
       compensated_rates : Angular_Velocity_Vector := state.rates;
    begin
       -- gyro compensation
-      -- rotate( Cartesian_Vector_Type( compensated_rates ), X , state.orientation.Roll );
+      rotate( Cartesian_Vector_Type( compensated_rates ), X , state.orientation.Roll );
    
       -- state prediction
       new_state.orientation := state.orientation + (state.rates - state.bias) * dt;
-      new_state.rates(X) := input.Aileron * ELEVON_TO_GYRO;
-      new_state.rates(Y) := input.Elevator * ELEVON_TO_GYRO;
+      new_state.rates(X) := state.rates(X) + input.Aileron * ELEVON_TO_GYRO;
+      new_state.rates(Y) := state.rates(Y) + input.Elevator * ELEVON_TO_GYRO;
+      new_state.bias := state.bias;
       new_state.pos := state.pos; -- + state.ground_speed * dt;
       new_state.air_speed(X) := state.air_speed(X) - state.orientation.Pitch * PITCH_TO_AIRSPEED;
+      
+      state := new_state;
    end predict_state;   
 
 
@@ -133,8 +166,13 @@ is
    end predict_cov;
 
 
-   procedure uptate_state( states : in out State_Vector; samples : Observation_Vector; dt : Time_Type ) is
-   
+
+   procedure calculate_gain( states : State_Vector; 
+                             samples : Observation_Vector; 
+                             dt : Time_Type;
+                             K : out Kalman_Gain_Matrix;
+                             residual : out Innovation_Vector) is
+                             
       function measurement_transition( states : in State_Vector; dt : Time_Type ) return Observation_Vector is
          samples : Observation_Vector;
       begin
@@ -146,9 +184,7 @@ is
          return samples;
       end measurement_transition;
       
-      residual : Innovation_Vector;
       S : Innovation_Covariance_Matrix;
-      K : Kalman_Gain_Matrix;
       
    begin
       -- estimate gain
@@ -156,29 +192,53 @@ is
       S := G.H * G.P * Transpose(G.H) + G.R;
       K := G.P * Transpose(G.H) * Inverse( S );
       
+      -- save observation vector
+      G.z := samples;
+   end calculate_gain;
+   
+   procedure uptate_state( states : in out State_Vector; 
+                           K      : Kalman_Gain_Matrix; 
+                           residual : Innovation_Vector; 
+                           dt : Time_Type ) is
+                           
+      BIAS_LIMIT : Angular_Velocity_Type := 40.0 * Degree/Second;
+   begin
       -- update state
       states.pos.Longitude := states.pos.Longitude + K( map(X_LON), map(Z_LON) ) * residual.delta_gps_pos.Longitude;
       states.pos.Latitude := states.pos.Latitude + K( map(X_LAT), map(Z_LAT) ) * residual.delta_gps_pos.Latitude;
-      states.pos.Altitude := states.pos.Altitude + K( map(X_ALT), map(Z_ALT) ) * residual.delta_gps_pos.Altitude;
+      states.pos.Altitude := states.pos.Altitude + K( map(X_ALT), map(Z_ALT) ) * residual.delta_gps_pos.Altitude
+                                                 + K( map(X_ALT), map(Z_BARO_ALT) ) * residual.delta_baro_alt;
       states.orientation.Roll := states.orientation.Roll + K( map(X_ROLL), map(Z_ROLL) ) * residual.delta_acc_ori(X);
       states.orientation.Pitch := states.orientation.Pitch + K( map(X_PITCH), map(Z_PITCH) ) * residual.delta_acc_ori(Y);
       states.orientation.Yaw := states.orientation.Yaw + K( map(X_YAW), map(Z_YAW) ) * residual.delta_acc_ori(Z);
       states.rates(X) := states.rates(X) + K( map(X_ROLL_RATE), map(Z_ROLL_RATE) ) * residual.delta_gyr_rates(X);
       states.rates(Y) := states.rates(Y) + K( map(X_PITCH_RATE), map(Z_PITCH_RATE) ) * residual.delta_gyr_rates(Y);
       states.rates(Z) := states.rates(Z) + K( map(X_YAW_RATE), map(Z_YAW_RATE) ) * residual.delta_gyr_rates(Z);
-      states.bias(X) := states.bias(X) + K( map(X_ROLL_BIAS), map(Z_ROLL_RATE) ) * residual.delta_gyr_rates(X);
-      states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH_RATE) ) * residual.delta_gyr_rates(Y);
-      states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW_RATE) ) * residual.delta_gyr_rates(Z);
+      states.bias(X) := states.bias(X) + K( map(X_ROLL_BIAS), map(Z_ROLL) ) * residual.delta_acc_ori(X) / dt;
+      states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
+      states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
       
+      Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
+                 ", K_roll: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
+                 ", GyrX: " & AImage(states.rates(X)*Second)
+                 --", dgX: " & Unit_Type'Image(residual.delta_gyr_rates(X))
+                 );
       
-      -- update cov
-      G.P := G.P - (K * G.H) * G.P;  
-      
+      -- limit bias
+      for dim in Cartesian_Coordinates_Type loop
+         if states.bias(dim) < -BIAS_LIMIT then
+            states.bias(dim) := -BIAS_LIMIT;
+         elsif states.bias(dim) > BIAS_LIMIT then
+            states.bias(dim) := BIAS_LIMIT;
+         end if;
+      end loop;
+          
    end uptate_state;
 
-   procedure update_cov( P : in out State_Covariance_Matrix; dt : Time_Type ) is
+   procedure update_cov( P : in out State_Covariance_Matrix; K : Kalman_Gain_Matrix ) is
    begin
-      null;
+      -- update cov
+      P := P - (K * G.H) * P;
    end update_cov;
 
 
@@ -189,7 +249,6 @@ is
                Left.acc_ori   - Right.acc_ori,
                Left.gyr_rates - Right.gyr_rates );
    end "-";
-   
    
    procedure calculate_A( A : out State_Transition_Matrix; dt : Time_Type ) is
    begin
@@ -204,7 +263,13 @@ is
       
       A( map(X_ROLL_RATE), map(X_ROLL_RATE) ) := 1.0;
       A( map(X_PITCH_RATE), map(X_PITCH_RATE) ) := 1.0;
-      A( map(X_YAW_RATE), map(X_PITCH_RATE) ) := 1.0;
+      A( map(X_YAW_RATE), map(X_YAW_RATE) ) := 1.0;
+      
+      A( map(X_ROLL_BIAS), map(X_ROLL_BIAS) ) := 1.0;
+      A( map(X_PITCH_BIAS), map(X_PITCH_BIAS) ) := 1.0;
+      A( map(X_YAW_BIAS), map(X_YAW_BIAS) ) := 1.0;
+      
+      
       
    end calculate_A;
 

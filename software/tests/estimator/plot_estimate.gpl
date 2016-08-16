@@ -6,6 +6,7 @@ set termoption dashed
 plot 'estimate.csv' using 1:2 with lines lt 2 lc rgb 'red' title columnhead, \
      'estimate.csv' using 1:3 with lines lt 2 lc rgb 'blue' title columnhead, \
      'rawdata.csv' using 1:2 with lines lt 2 lc rgb 'cyan' title columnhead, \
+     'rawdata.csv' using 1:3 with lines lt 2 lc rgb 'orange' title columnhead, \
      'rawdata.csv' using 1:4 with lines lt 2 lc rgb 'cyan' title columnhead, \
      'rawdata.csv' using 1:6 with lines lt 1 lc rgb 'yellow' title columnhead, \
      'rawdata.csv' using 1:5 with lines lt 1 lc rgb 'purple' title columnhead, \

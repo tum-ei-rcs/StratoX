@@ -344,6 +344,14 @@ package Units with
    --  wrap angle between two values
    --  Must make no assumptions on input 'angle' here, otherwise caller might fail if it isn't SPARK.
 
+   function mirror_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
+     with Pre => min <= 0.0 * Radian and then
+     max >= 0.0 * Radian and then
+     max > min and then
+     max < Angle_Type'Last / 2.0 and then
+     min > Angle_Type'First / 2.0,
+     Post => mirror_Angle'Result >= min and mirror_Angle'Result <= max;
+
 
   -- procedure Saturate(input : Unit_Type; output : in out Unit_Type);
 

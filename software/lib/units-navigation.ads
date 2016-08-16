@@ -119,7 +119,7 @@ package Units.Navigation with SPARK_Mode is
 
    function "+" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
      ( wrap_Angle( Angle_Type( Left.Roll ) + Right(X), Roll_Type'First, Roll_Type'Last ),
-      wrap_Angle( Angle_Type( Left.Pitch) + Right(Y), Pitch_Type'First, Pitch_Type'Last ),
+      mirror_Angle( Angle_Type( Left.Pitch) + Right(Y), Pitch_Type'First, Pitch_Type'Last ),
       wrap_Angle( Angle_Type( Left.Yaw) + Right(Z), Yaw_Type'First, Yaw_Type'Last ) ) with
    pre => Angle_Type( Left.Roll ) + Right(X) < Angle_Type'Last and
      Angle_Type( Left.Pitch) + Right(Y) <  Angle_Type'Last and
@@ -127,7 +127,7 @@ package Units.Navigation with SPARK_Mode is
 
    function "-" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is
    ( wrap_Angle( Left.Roll - Right(X), Roll_Type'First, Roll_Type'Last ),
-         wrap_Angle( Left.Pitch - Right(Y), Pitch_Type'First, Pitch_Type'Last ),
+         mirror_Angle( Left.Pitch - Right(Y), Pitch_Type'First, Pitch_Type'Last ),
          wrap_Angle( Left.Yaw - Right(Z), Yaw_Type'First, Yaw_Type'Last ) );
 
 

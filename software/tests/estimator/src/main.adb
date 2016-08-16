@@ -4,7 +4,19 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Real_Time; use Ada.Real_Time;
 with Simulation;
 
+with Units; use Units;
+
+
 procedure main is
+
+
+   subtype Elevon_Angle_Type   is Angle_Type range -45.0 * Degree .. 45.0 * Degree;
+
+   type Elevon_Index_Type is (LEFT, RIGHT);
+
+   type Elevon_Angle_Array is array(Elevon_Index_Type) of Elevon_Angle_Type;
+
+
    est_ort : Orientation_Type;
    est_loc : GPS_Loacation_Type;
    est_gfx : GPS_Fix_Type;
@@ -13,6 +25,8 @@ procedure main is
 
    outfile : File_Type;
    next : Ada.Real_Time.Time;
+
+   Elevons : Elevon_Angle_Array := (0.0*Degree, 0.0*Degree);
 
    procedure startfile is
    begin
@@ -42,7 +56,14 @@ begin
       Simulation.update;
       exit Read_Loop when Simulation.Finished;
 
-      Estimator.update;
+
+      -- Read Control Signals
+      -- Elevons(LEFT) := Simulation.CSV_here.Get_Column ("EleL");
+      -- Elevons(RIGHT) := Simulation.CSV_here.Get_Column ("EleR");
+
+
+      Estimator.update( ( Elevons( RIGHT ) / 2.0 + Elevons( LEFT ) / 2.0,
+                          Elevons( RIGHT ) / 2.0 - Elevons( LEFT ) / 2.0 ) );
 
       est_ort := Estimator.get_Orientation;
       est_loc := Estimator.get_Position;

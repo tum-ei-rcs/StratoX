@@ -369,4 +369,12 @@ package body Controller with SPARK_Mode is
 
    end runOneCycle;
 
+
+
+    function get_Elevons return Elevon_Angle_Array is
+    begin
+      return G_Elevon_Angles;
+   end get_Elevons;
+
+
 end Controller;

@@ -79,6 +79,17 @@ package body Units is
       return wr;
    end wrap_angle;
 
+
+
+
+   function mirror_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
+      span : constant Angle_Type := max - min;
+   begin
+      return max - (wrap_angle( angle, min, max ) - min);
+   end mirror_Angle;
+
+
+
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type is
       result : Angle_Type := To - From;
    begin
