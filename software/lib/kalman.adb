@@ -5,10 +5,10 @@ with Ada.Numerics.Generic_Real_Arrays;
 with Units.Vectors; use Units.Vectors.Unit_Arrays_Pack;
 
 with Logger;
-
+with Profiler;
 
 package body Kalman with SPARK_Mode,
-Refined_State => (State => G)
+Refined_State => (State => (G, KM_Profiler))
 is
 
    k : constant := State_Vector_Index_Type'Last;  -- states
@@ -37,21 +37,26 @@ is
 
    G : Global_Type;
 
+   KM_Profiler : Profiler.Profile_Tag;
 
 
-
-   procedure reset is 
+   procedure reset( init_states : State_Vector := DEFAULT_INIT_STATES ) is 
       now : Time := Clock;
       
-      ANGLE_PROCESS_VARIANCE : constant := 2.0e-5;  -- trust in orientation prediction
-      RATE_PROCESS_VARIANCE : constant := 1.0e-3;  -- dont trust in rate prediction
-      BIAS_PROCESS_VARIANCE : constant := 6.0e-5;  -- trust in prev bias
+      ANGLE_PROCESS_VARIANCE : constant := 1.0e-4;  -- trust in orientation prediction (gyro integral)
+      RATE_PROCESS_VARIANCE : constant := 1.0e-2;  -- dont trust in rate prediction
+      BIAS_PROCESS_VARIANCE : constant := 1.0e-11;  -- trust in prev bias (really slow bias drift?)
       
-      ANGLE_MEASUREMENT_VARIANCE : constant := 1.0e-2;
+      ANGLE_MEASUREMENT_VARIANCE : constant := 3.0e-2;  -- dont trust in angel measurement (acc arctan)
       RATE_MEASUREMENT_VARIANCE : constant := 1.0e-3;   -- trust rate measurement
    begin
       G.t_last := now;
-   
+      
+      -- initial states:
+      G.x := init_states;
+      
+      
+      -- init matrices with zero
       G.A := (others => (others => 0.0));
       G.H := (others => (others => 0.0));
       
@@ -66,6 +71,7 @@ is
       G.H( map(Z_ROLL_RATE) , map(X_ROLL_RATE) )  := 1.0;
       G.H( map(Z_PITCH_RATE), map(X_PITCH_RATE) ) := 1.0;
       G.H( map(Z_YAW_RATE)  , map(X_YAW_RATE) )   := 1.0;
+      
 --        G.H( map(Z_ROLL) , map(X_ROLL_BIAS) )  := -1.0;  -- gyro measurements INCLUDES bias
 --        G.H( map(Z_PITCH), map(X_PITCH_BIAS) ) := -1.0;
 --        G.H( map(Z_YAW)  , map(X_YAW_BIAS) )   := -1.0;
@@ -80,8 +86,15 @@ is
          G.A := A;
       end;
 
-      -- Set P, Covariance Matrix
-      G.P := Zeros( k );
+      -- Set P, Covariance Matrix to high values => uncertain about init values
+      G.P := Eye( k ) * 10.0;
+      G.P( map(X_ROLL), map(X_ROLL) ) := ANGLE_PROCESS_VARIANCE;
+      G.P( map(X_PITCH), map(X_PITCH) ) := ANGLE_PROCESS_VARIANCE;
+      G.P( map(X_YAW), map(X_YAW) ) := ANGLE_PROCESS_VARIANCE;      
+      
+      G.P( map(X_ROLL_BIAS), map(X_ROLL_BIAS) ) := BIAS_PROCESS_VARIANCE;   -- we are sure about the bias 
+      G.P( map(X_PITCH_BIAS), map(X_PITCH_BIAS) ) := BIAS_PROCESS_VARIANCE;   -- we are sure about the bias 
+                                                               
       
       -- Process Noise
       G.Q := Eye( k ) * 1.0e-1;
@@ -96,15 +109,19 @@ is
       G.Q( map(X_ROLL_BIAS), map(X_ROLL_BIAS) ) := BIAS_PROCESS_VARIANCE;
       G.Q( map(X_PITCH_BIAS), map(X_PITCH_BIAS) ) := BIAS_PROCESS_VARIANCE;
    
+      -- Set P to Q
+      G.P := G.Q;
+   
+   
       
       -- Measurement Noise
       G.R := Eye( m ) * 1.0e-3;
       G.R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE;
-      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE  / 100.0;
+      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE;
       G.R( map(Z_YAW), map(Z_YAW) ) := ANGLE_MEASUREMENT_VARIANCE;
       
       G.R( map(Z_ROLL_RATE), map(Z_ROLL_RATE) ) := RATE_MEASUREMENT_VARIANCE;
-      G.R( map(Z_PITCH_RATE), map(Z_PITCH_RATE) ) := RATE_MEASUREMENT_VARIANCE * 10.0;
+      G.R( map(Z_PITCH_RATE), map(Z_PITCH_RATE) ) := RATE_MEASUREMENT_VARIANCE;
       G.R( map(Z_YAW_RATE), map(Z_YAW_RATE) ) := RATE_MEASUREMENT_VARIANCE;
             
    end reset;
@@ -113,8 +130,12 @@ is
       now : Time := Clock;
       dt : Time_Type := To_Time(now - G.t_last);
    begin
+      KM_Profiler.start;
       predict(u, dt);
       update(z, dt);
+      KM_Profiler.stop;
+      KM_Profiler.log;
+      
       G.t_last := now;          
    end perform_Filter_Step;
 
@@ -123,7 +144,7 @@ is
    begin
       predict_state( G.x, u, dt );
       declare
-         P : State_Covariance_Matrix;
+         P : State_Covariance_Matrix := G.P;
          --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
       begin         
          predict_cov( P, G.Q );
@@ -153,22 +174,24 @@ is
    procedure predict_state( state : in out State_Vector; input : Input_Vector; dt : Time_Type ) is
       new_state : State_Vector := state;
       
-      ELEVON_TO_GYRO : constant Frequency_Type := 0.5 * Hertz;
+      ELEVON_TO_GYRO : constant Frequency_Type := 0.3;
       PITCH_TO_AIRSPEED : constant := 0.5 * Meter / ( Degree * Second );
       compensated_rates : Angular_Velocity_Vector := state.rates;
+      
    begin
       -- gyro compensation
       rotate( Cartesian_Vector_Type( compensated_rates ), X , state.orientation.Roll );
    
       -- state prediction
-      new_state.orientation := state.orientation + (state.rates - state.bias) * dt;
-      new_state.rates(X) := state.rates(X) + input.Aileron * ELEVON_TO_GYRO;
-      new_state.rates(Y) := state.rates(Y) + input.Elevator * ELEVON_TO_GYRO;
+      new_state.orientation := state.orientation + (compensated_rates - state.bias) * dt;
+      new_state.rates(X) := state.rates(X); -- + (input.Aileron - G.u.Aileron)/Second * ELEVON_TO_GYRO * dt;
+      new_state.rates(Y) := state.rates(Y); -- + (input.Elevator - G.u.Elevator)/Second * ELEVON_TO_GYRO * dt;
       new_state.bias := state.bias;
       new_state.pos := state.pos; -- + state.ground_speed * dt;
       new_state.air_speed(X) := state.air_speed(X) - state.orientation.Pitch * PITCH_TO_AIRSPEED;
       
       state := new_state;
+      G.u := input;
    end predict_state;   
 
 
@@ -213,16 +236,20 @@ is
                            residual : Innovation_Vector; 
                            dt : Time_Type ) is
                            
-      BIAS_LIMIT : Angular_Velocity_Type := 40.0 * Degree/Second;
+      BIAS_LIMIT : Angular_Velocity_Type := 50.0 * Degree/Second;
    begin
       -- update state
       states.pos.Longitude := states.pos.Longitude + K( map(X_LON), map(Z_LON) ) * residual.delta_gps_pos.Longitude;
       states.pos.Latitude := states.pos.Latitude + K( map(X_LAT), map(Z_LAT) ) * residual.delta_gps_pos.Latitude;
       states.pos.Altitude := states.pos.Altitude + K( map(X_ALT), map(Z_ALT) ) * residual.delta_gps_pos.Altitude
                                                  + K( map(X_ALT), map(Z_BARO_ALT) ) * residual.delta_baro_alt;
-      states.orientation.Roll := states.orientation.Roll + K( map(X_ROLL), map(Z_ROLL) ) * residual.delta_acc_ori(X);
-      states.orientation.Pitch := states.orientation.Pitch + K( map(X_PITCH), map(Z_PITCH) ) * residual.delta_acc_ori(Y);
-      states.orientation.Yaw := states.orientation.Yaw + K( map(X_YAW), map(Z_YAW) ) * residual.delta_acc_ori(Z);
+                                                 
+      states.orientation.Roll := wrap_Angle( states.orientation.Roll + K( map(X_ROLL), map(Z_ROLL) ) * residual.delta_acc_ori(X),
+                                             Roll_Type'First, Roll_Type'Last );
+      states.orientation.Pitch := mirror_Angle( states.orientation.Pitch + K( map(X_PITCH), map(Z_PITCH) ) * residual.delta_acc_ori(Y),
+                                                Pitch_Type'First, Pitch_Type'Last );
+      states.orientation.Yaw := wrap_Angle( states.orientation.Yaw + K( map(X_YAW), map(Z_YAW) ) * residual.delta_acc_ori(Z),
+                                            Yaw_Type'First, Yaw_Type'Last);
       states.rates(X) := states.rates(X) + K( map(X_ROLL_RATE), map(Z_ROLL_RATE) ) * residual.delta_gyr_rates(X);
       states.rates(Y) := states.rates(Y) + K( map(X_PITCH_RATE), map(Z_PITCH_RATE) ) * residual.delta_gyr_rates(Y);
       states.rates(Z) := states.rates(Z) + K( map(X_YAW_RATE), map(Z_YAW_RATE) ) * residual.delta_gyr_rates(Z);
@@ -230,8 +257,8 @@ is
       states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
       states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
       
-      Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
-                 ", K_roll: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
+      Logger.log(Logger.TRACE, "bX: " & AImage( states.bias(X)*Second ) & 
+                 ", K_bX: " & Image(  K( map(X_ROLL_BIAS), map(Z_ROLL) ) ) &
                  ", GyrX: " & AImage(states.rates(X)*Second)
                  --", dgX: " & Unit_Type'Image(residual.delta_gyr_rates(X))
                  );
@@ -249,7 +276,6 @@ is
 
 
    procedure update_cov( P : in out State_Covariance_Matrix; K :Kalman_Gain_Matrix ) is
-      pragma Unreferenced (P);
    begin
       -- update cov
       P := P - (K * G.H) * P;
@@ -267,13 +293,13 @@ is
    procedure calculate_A( A : out State_Transition_Matrix; dt : Time_Type ) is
    begin
       A := (others => (others => 0.0));
-      A( map(X_LAT), map(X_LAT) ) := 1.0; G.A( map(X_LAT), map(X_GROUND_SPEED_X) ) := Unit_Type(dt);
-      A( map(X_LON), map(X_LON) ) := 1.0; G.A( map(X_LON), map(X_GROUND_SPEED_Y) ) := Unit_Type(dt);
-      A( map(X_ALT), map(X_ALT) ) := 1.0; G.A( map(X_ALT), map(X_GROUND_SPEED_Z) ) := -Unit_Type(dt);
+      A( map(X_LAT), map(X_LAT) ) := 1.0; A( map(X_LAT), map(X_GROUND_SPEED_X) ) := Unit_Type(dt);
+      A( map(X_LON), map(X_LON) ) := 1.0; A( map(X_LON), map(X_GROUND_SPEED_Y) ) := Unit_Type(dt);
+      A( map(X_ALT), map(X_ALT) ) := 1.0; A( map(X_ALT), map(X_GROUND_SPEED_Z) ) := -Unit_Type(dt);
    
-      A( map(X_ROLL),  map(X_ROLL) )  := 1.0;   G.A( map(X_ROLL),  map(X_ROLL_RATE) )  := Unit_Type(dt);   G.A( map(X_ROLL),  map(X_ROLL_BIAS) )  := -1.0;
-      A( map(X_PITCH), map(X_PITCH) ) := 1.0;   G.A( map(X_PITCH), map(X_PITCH_RATE) ) := Unit_Type(dt);   G.A( map(X_PITCH), map(X_PITCH_BIAS) ) := -1.0; 
-      A( map(X_YAW),   map(X_YAW) )   := 1.0;   G.A( map(X_YAW),   map(X_YAW_RATE) )   := Unit_Type(dt);   G.A( map(X_YAW),   map(X_YAW_BIAS) )   := -1.0; 
+      A( map(X_ROLL),  map(X_ROLL) )  := 1.0;   A( map(X_ROLL),  map(X_ROLL_RATE) )  := Unit_Type(dt);   A( map(X_ROLL),  map(X_ROLL_BIAS) )  := -1.0;
+      A( map(X_PITCH), map(X_PITCH) ) := 1.0;   A( map(X_PITCH), map(X_PITCH_RATE) ) := Unit_Type(dt);   A( map(X_PITCH), map(X_PITCH_BIAS) ) := -1.0; 
+      A( map(X_YAW),   map(X_YAW) )   := 1.0;   A( map(X_YAW),   map(X_YAW_RATE) )   := Unit_Type(dt);   A( map(X_YAW),   map(X_YAW_BIAS) )   := -1.0; 
       
       A( map(X_ROLL_RATE), map(X_ROLL_RATE) ) := 1.0;
       A( map(X_PITCH_RATE), map(X_PITCH_RATE) ) := 1.0;

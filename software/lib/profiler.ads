@@ -18,7 +18,7 @@ package Profiler with SPARK_Mode is
    type Profile_Tag is tagged private;
 
    CFG_PROFILER_PROFILING : constant Boolean := True;
-   CFG_PROFILER_LOGGING   : constant Boolean := False;
+   CFG_PROFILER_LOGGING   : constant Boolean := True;
 
    procedure enableProfiling;
 

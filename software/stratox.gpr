@@ -59,7 +59,7 @@ project StratoX is
             for Default_Switches ("ada") use ("-g");
 
          when "release" =>
-            for Default_Switches ("ada") use ();
+            for Default_Switches ("ada") use ( );
 
          when "analyze" =>
             for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target.atp");

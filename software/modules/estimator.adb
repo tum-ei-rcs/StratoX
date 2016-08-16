@@ -366,7 +366,7 @@ package body Estimator with SPARK_Mode is
       gravity_vector : Linear_Acceleration_Vector := acc_vector;
    begin
       -- normalize vector
-      if abs(gravity_vector) < 0.7*GRAVITY or 1.3*GRAVITY < abs(gravity_vector) then
+      if abs(gravity_vector) < 0.9*GRAVITY or 1.1*GRAVITY < abs(gravity_vector) then
          --null;
          gravity_vector(Z) := gravity_vector(Z) - (  sgn( gravity_vector(Z) ) * (abs(gravity_vector) - GRAVITY) );
       end if;

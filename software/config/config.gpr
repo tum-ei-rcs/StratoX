@@ -9,7 +9,8 @@ abstract project Config is
 
    type Build_Modes is
       ("debug", "release", "analyze");
-   Build_Mode : Build_Modes := external ("My_Build_Mode", "debug");
+   Build_Mode : Build_Modes := external ("Build_Mode", "debug");
+   
 
    package Compiler is
 

@@ -348,8 +348,8 @@ package Units with
      with Pre => min <= 0.0 * Radian and then
      max >= 0.0 * Radian and then
      max > min and then
-     max < Angle_Type'Last / 2.0 and then
-     min > Angle_Type'First / 2.0,
+     max < Angle_Type'Last / 4.0 and then
+     min > Angle_Type'First / 4.0,
      Post => mirror_Angle'Result >= min and mirror_Angle'Result <= max;
 
 

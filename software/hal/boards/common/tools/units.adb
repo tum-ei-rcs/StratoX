@@ -84,8 +84,15 @@ package body Units is
 
    function mirror_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
       span : constant Angle_Type := max - min;
+      wrapped : Angle_Type := wrap_angle( angle, min-span/2.0, max+span/2.0 );
+      result : Angle_Type := wrapped;
    begin
-      return max - (wrap_angle( angle, min, max ) - min);
+      if wrapped > max then
+         result := max - (wrapped - max);
+      elsif wrapped < min then
+         result := min - (wrapped - min);
+      end if;
+      return result;
    end mirror_Angle;
 
 

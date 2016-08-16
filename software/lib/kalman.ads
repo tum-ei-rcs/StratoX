@@ -156,8 +156,16 @@ is
 
    
 
+   DEFAULT_INIT_STATES : State_Vector := ( pos => (0.0*Degree, 0.0*Degree, 0.0*Meter),
+                                           ground_speed => (0.0*Meter/Second, 0.0*Meter/Second, 0.0*Meter/Second),
+                                           orientation => (0.0*Degree, 0.0*Degree, 0.0*Degree),
+                                           rates => (0.0*Degree/Second, 0.0*Degree/Second, 0.0*Degree/Second),
+                                           bias => (0.0*Degree/Second, 0.0*Degree/Second, 0.0*Degree/Second),
+                                           air_speed => (0.0*Meter/Second, 0.0*Meter/Second, 0.0*Meter/Second) );
 
-   procedure reset;
+
+
+   procedure reset( init_states : State_Vector := DEFAULT_INIT_STATES );
 
    -- perform one full cycle (predict & update)
    procedure perform_Filter_Step( u : in Input_Vector; z : in Observation_Vector );

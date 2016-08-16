@@ -8,8 +8,11 @@ plot 'estimate.csv' using 1:2 with lines lt 2 lc rgb 'red' title columnhead, \
      'rawdata.csv' using 1:2 with lines lt 2 lc rgb 'cyan' title columnhead, \
      'rawdata.csv' using 1:3 with lines lt 2 lc rgb 'orange' title columnhead, \
      'rawdata.csv' using 1:4 with lines lt 2 lc rgb 'cyan' title columnhead, \
-     'rawdata.csv' using 1:6 with lines lt 1 lc rgb 'yellow' title columnhead, \
      'rawdata.csv' using 1:5 with lines lt 1 lc rgb 'purple' title columnhead, \
+     'rawdata.csv' using 1:6 with lines lt 1 lc rgb 'yellow' title columnhead, \
+     'rawdata.csv' using 1:7 with lines lt 1 lc rgb 'gray' title columnhead, \
+     'rawdata.csv' using 1:11 with lines lt 3 lc rgb 'green' title columnhead, \
+     'rawdata.csv' using 1:12 with lines lt 3 lc rgb 'brown' title columnhead, \
      'rawdata.csv' using 1:(0.05*($8-570)) with lines lt 1 lc rgb 'black' title 'altitude'
 #     'estimate.csv' using 1:($5-400.0) with lines axes x1y2 lt 1 lc rgb 'black' title 'altitude'
 #     'estimate.csv' using 1:4 with lines lt 1 lc rgb 'green' title columnhead, \   

@@ -5,6 +5,8 @@ with Ada.Real_Time; use Ada.Real_Time;
 with Simulation;
 
 with Units; use Units;
+with Units.Vectors; use Units.Vectors;
+with Kalman;
 
 
 procedure main is
@@ -27,6 +29,7 @@ procedure main is
    next : Ada.Real_Time.Time;
 
    Elevons : Elevon_Angle_Array := (0.0*Degree, 0.0*Degree);
+   init_state : Kalman.State_Vector := Kalman.DEFAULT_INIT_STATES;
 
    procedure startfile is
    begin
@@ -50,6 +53,16 @@ begin
    end if;
    startfile;
 
+   -- Initial States
+   init_state.orientation.Roll := -50.0*Degree;
+   init_state.orientation.Pitch := 70.0*Degree;
+   init_state.rates(X) := Angular_Velocity_Type( Simulation.CSV_here.Get_Column ("gyroX") );
+   init_state.rates(Y) := Angular_Velocity_Type( Simulation.CSV_here.Get_Column ("gyroY") );
+   init_state.bias(X) := 0.0*Degree/Second;
+   init_state.bias(Y) := 10.0*Degree/Second;
+   Kalman.reset( init_state );
+
+
    next := Clock;
    Read_Loop :
    loop
@@ -58,8 +71,8 @@ begin
 
 
       -- Read Control Signals
-      -- Elevons(LEFT) := Simulation.CSV_here.Get_Column ("EleL");
-      -- Elevons(RIGHT) := Simulation.CSV_here.Get_Column ("EleR");
+      Elevons(LEFT) := Angle_Type( Simulation.CSV_here.Get_Column ("EleL") );
+      Elevons(RIGHT) := Angle_Type( Simulation.CSV_here.Get_Column ("EleR") );
 
 
       Estimator.update( ( Elevons( RIGHT ) / 2.0 + Elevons( LEFT ) / 2.0,
