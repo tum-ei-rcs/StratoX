@@ -2,7 +2,7 @@
 --  Department:  Realtime Computer Systems (RCS)
 --  Project:     StratoX
 --
---  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--  Authors:     Emanuel Regnath (emanuel.regnath@tum.de)
 with HAL;
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
@@ -14,9 +14,7 @@ package HIL with
 is
    pragma Preelaborate;
 
-
    --procedure configure_Hardware;  
-   -- type Byte is mod 2**8 with Size => 8;
    subtype Byte is HAL.Byte;
    
    -- Unsigned_8
@@ -86,13 +84,13 @@ is
    is
       (Unsigned_16( bytes( bytes'First ) ) 
       + Unsigned_16( bytes( bytes'First + 1 ) ) * 2**8 )
-   with pre => bytes'Length = 2;
+   with Pre => bytes'Length = 2;
       
 
    function toUnsigned_32( bytes : Byte_Array) return Unsigned_32
    is
       (Unsigned_32( bytes( bytes'First ) ) + Unsigned_32( bytes'First + 1 ) * 2**8 + Unsigned_32( bytes'First + 2 ) * 2**16 + Unsigned_32( bytes'First + 3 ) * 2**24 )
-   with pre => bytes'Length = 4;
+   with Pre => bytes'Length = 4;
 
 
    function From_Byte_Array_To_Integer_32 is new Ada.Unchecked_Conversion (Source => Byte_Array_4,
@@ -103,7 +101,7 @@ is
    function toInteger_32( bytes : Byte_Array) return Integer_32
    is
       (From_Byte_Array_To_Integer_32( Byte_Array_4( bytes ) ) )
-   with pre => bytes'Length = 4;
+   with Pre => bytes'Length = 4;
 
 
    function toCharacter( source : Byte ) return Character
@@ -115,19 +113,17 @@ is
 
    procedure write_Bits( register : in out Unsigned_8; 
                          start_index : Unsigned_8_Bit_Index; 
-                         length : Natural; 
+                         length : Positive; 
                          value : Integer) with 
-                         pre => length > 0 and then
-                         length <= Natural( Unsigned_8_Bit_Index'Last ) + 1 - Natural( start_index ) and then
-                         value < 2**length;
+     Pre => length <= Natural (Unsigned_8_Bit_Index'Last) + 1 - Natural (start_index) and then
+     value < 2**(length-1) + 2**(length-1) - 1; -- e.g. 2^8 = 256, but range is only up to 2^8-1
                          
    
    function read_Bits( register : in Unsigned_8; 
                         start_index : Unsigned_8_Bit_Index; 
-                        length      : Natural) return Unsigned_8
-   with pre => length > 0 and then
-   length <= Natural(Unsigned_8_Bit_Index'Last) + 1 - Natural( start_index ),
-   post => read_Bits'Result < 2**length;
+                        length      : Positive) return Unsigned_8
+   with Pre => length <= Natural (Unsigned_8_Bit_Index'Last) + 1 - Natural (start_index),
+        Post => read_Bits'Result < 2**length;
 
 
 
@@ -136,10 +132,10 @@ is
 --        mask : Unsigned_16_Mask 
       
    procedure set_Bits( register : in out Unsigned_16; bit_mask : Unsigned_16_Mask)
-   with pre => register'Size = bit_mask'Size;
+   with Pre => register'Size = bit_mask'Size;
 
    procedure clear_Bits( register : in out Unsigned_16; bit_mask : Unsigned_16_Mask)
-   with pre => register'Size = bit_mask'Size;
+   with Pre => register'Size = bit_mask'Size;
    
    function isSet( register : Unsigned_16; bit_mask : Unsigned_16_Mask) return Boolean is
       ( ( register and Unsigned_16( bit_mask ) ) > 0 );

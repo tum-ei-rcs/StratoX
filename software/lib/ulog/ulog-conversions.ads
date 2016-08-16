@@ -14,6 +14,7 @@ private package ULog.Conversions with SPARK_Mode is
    procedure Set_Name (t : in out Conversion_Tag; s : String)
      with Pre => s'Length > 0;
    function Get_Size (t : in Conversion_Tag) return Natural;
+   function Buffer_Overflow (t : in Conversion_Tag) return Boolean;
    function Get_Format (t : in Conversion_Tag) return ULog_Format;
    function Get_Name (t : in Conversion_Tag) return ULog_Name;
    function Get_Labels (t : in Conversion_Tag) return ULog_Label;
@@ -72,10 +73,11 @@ private
    end record;
 
    type Conversion_Tag is record
-      Total_Size     : Natural := 0;
-      Label_Collect  : Label_Collect_Type;
-      Format_Collect : Format_Collect_Type;
-      Name           : ULog_Name := (others => HIL.Byte (0));
+      Buffer_Fill     : Natural := 0;
+      Label_Collect   : Label_Collect_Type;
+      Format_Collect  : Format_Collect_Type;
+      Name            : ULog_Name := (others => HIL.Byte (0));
+      Buffer_Overflow : Boolean := False;
    end record;
 
 end ULog.Conversions;

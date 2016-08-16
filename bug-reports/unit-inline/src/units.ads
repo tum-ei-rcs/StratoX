@@ -14,8 +14,7 @@
 with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Numerics;
 
-package Units with
-     Spark_Mode is
+package Units with SPARK_Mode is
 
    -- Basis Type
 
@@ -52,9 +51,6 @@ package Units with
 
 
    -- Derived Units
-   subtype Length_Angle_Ratio_Type is Unit_Type with
-     Dimension => (Meter => 1, Radian => -1, others => 0);
-
 
    -- mechanical
    subtype Frequency_Type is Unit_Type with
@@ -168,84 +164,6 @@ package Units with
    Zetta : constant Prefix_Type := Prefix_Type (1.0e+21);
    Yotta : constant Prefix_Type := Prefix_Type (1.0e+24);
 
---     type The_Prefix_Type is (
---     Yocto,
---     Zepto,
---     Atto ,
---     Femto,
---     Pico ,
---     Nano ,
---     Micro,
---     Milli,
---     Centi,
---     Deci ,
---     Deca ,
---     Hecto,
---     Kilo ,
---     Mega ,
---     Giga ,
---     Tera ,
---     Peta ,
---     Exa  ,
---     Zetta,
---     Yotta );
---
---     for The_Prefix_Type use (
---     Yocto => -24,
---     Zepto => -21,
---     Atto  => -18,
---     Femto => -15,
---     Pico  => -12,
---     Nano  => -9,
---     Micro => -6,
---     Milli => -3,
---     Centi => -2,
---     Deci  => -1,
---     Deca  =>  1,
---     Hecto =>  2,
---     Kilo  =>  3,
---     Mega  =>  6,
---     Giga  =>  9,
---     Tera  =>  12,
---     Peta  =>  15,
---     Exa   =>  18,
---     Zetta =>  21,
---     Yotta =>  24 );
---
---
---     -- only multiplying of prefixes is allowed
---  --     function "*" (Left : Float; Right : The_Prefix_Type) return Unit_Type is
---  --        ( if The_Prefix_Type'Enum_Rep(Right) < 0 then Unit_Type( Left / (1.0**(-The_Prefix_Type'Enum_Rep(Right))))
---  --        else Unit_Type(Left * (1.0**The_Prefix_Type'Enum_Rep(Right))) );
---  --         ( 10.0**The_Prefix_Type'Value(Left) * Right );
---
---  function "*" (Left : Float; Right : The_Prefix_Type) return Unit_Type is
---  ( Unit_Type( case Right is
---     when Yocto => Left * 1.0e-24,
---     when Zepto => Left * 1.0e-21,
---     when Atto  => Left * 1.0e-18,
---     when Femto => Left * 1.0e-15,
---     when Pico  => Left * 1.0e-12,
---     when Nano  => Left * 1.0e-9,
---     when Micro => Left * 1.0e-6,
---     when Milli => Left * 1.0e-3,
---     when Centi => Left * 1.0e-2,
---     when Deci  => Left * 1.0e-1,
---     when Deca  => Left * 1.0e1,
---     when Hecto => Left * 1.0e2,
---     when Kilo  => Left * 1.0e3,
---     when Mega  => Left * 1.0e6,
---     when Giga  => Left * 1.0e9,
---     when Tera  => Left * 1.0e12,
---     when Peta  => Left * 1.0e15,
---     when Exa   => Left * 1.0e18,
---     when Zetta => Left * 1.0e21,
---     when Yotta => Left * 1.0e24 ) );
-
-
---  function "*" (Left : Float; Right : Prefix_Type) return Unit_Type is
---          ( Unit_Type( Left * Float(Right) ) );
-
    -- Base units
    Meter       : constant Length_Type := Length_Type (1.0);
 
@@ -312,74 +230,7 @@ package Units with
    PLANCK_CONSTANT  : constant Unit_Type                := 6.626_070_040 * Joule * Second;
    GRAVITY_CONSTANT : constant Linear_Acceleration_Type := 127_137.6 * Kilo * Meter / (Hour**2);
 
-   -- converts Real_Time to Time_Type, precision is Nanosecond
-   function To_Time
-     (rtime : Ada.Real_Time.Time) return Time_Type is
-     (Time_Type
-        (Float ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
 
-   function To_Time
-     (rtime : Ada.Real_Time.Time_Span) return Time_Type is
-     (Time_Type
-        (Float ((rtime) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
-
-    function To_Time_Span(time : Time_Type) return Ada.Real_Time.Time_Span is
-     ( Ada.Real_Time.Microseconds ( Integer( Float(time)/Float(1.0e-6) ) ) );
-
-     function To_Degree(angle : Angle_Type) return Float is
-     ( Float( angle / Degree ) );
-
-
-   function "+"( Left : Ada.Real_Time.Time; Right : Time_Type ) return Ada.Real_Time.Time is
-   ( Left + Ada.Real_Time.Microseconds ( Integer( Float(Right)/Float(1.0e-6) ) ) );
-
-
-   function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
-     with Pre => min <= 0.0 * Radian and then
-     max >= 0.0 * Radian and then
-     max > min and then
-     max < Angle_Type'Last / 2.0 and then
-     min > Angle_Type'First / 2.0,
-     Post => wrap_angle'Result >= min and wrap_angle'Result <= max;
-   --  wrap angle between two values
-   --  Must make no assumptions on input 'angle' here, otherwise caller might fail if it isn't SPARK.
-
-   function mirror_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
-     with Pre => min <= 0.0 * Radian and then
-     max >= 0.0 * Radian and then
-     max > min and then
-     max < Angle_Type'Last / 2.0 and then
-     min > Angle_Type'First / 2.0,
-     Post => mirror_Angle'Result >= min and mirror_Angle'Result <= max;
-
-
-  -- procedure Saturate(input : Unit_Type; output : in out Unit_Type);
-
-   function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type;
-
-   -- Experiment
-   function integrate(x : Unit_Type'Base; dt : Time_Type) return Unit_Type'Base is
-   ( x * dt );
-   pragma Inline_Always( integrate );
-
-   generic
-      type T is digits <>; -- any floating point type
-   function Saturated_Addition (left, right : T) return T
-     with Inline, Pre => 0.0 in T'Range;
-   --  add two objects of same Unit type and limit to the type's bounds
-
-   -- function Radian( degree : Float ) return Float
-
-   function average( signal : Unit_Array ) return Unit_Type;
-
-   -- subtype Sign_Type is Float range -1.0 .. 1.0;
-   function sgn( x : Unit_Type'Base ) return Unit_Type is
-   ( if x = 0.0 then 0.0 elsif x > 0.0 then 1.0 else -1.0 );
-
-
-   -- Image functions
-   function Image  (unit : Unit_Type)  return String;
-   function AImage (unit : Angle_Type) return String;
-   function RImage (unit : Angle_Type) return String;
+   subtype Altitude_Type is Units.Length_Type range -100.0 * Meter .. 10_000.0 * Meter;
 
 end Units;

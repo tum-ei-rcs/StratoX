@@ -72,7 +72,13 @@ is
         
 
       -- Set A, Dynamic Matrix
-      calculate_A( G.A, 0.0 * Second);
+      declare
+         A : State_Transition_Matrix;
+         --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
+      begin
+         calculate_A( A, 0.0 * Second);
+         G.A := A;
+      end;
 
       -- Set P, Covariance Matrix
       G.P := Zeros( k );
@@ -116,7 +122,13 @@ is
    procedure predict(u : Input_Vector; dt : Time_Type) is 
    begin
       predict_state( G.x, u, dt );
-      predict_cov( G.P, G.Q );
+      declare
+         P : State_Covariance_Matrix;
+         --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
+      begin         
+         predict_cov( P, G.Q );
+         G.P := P;
+      end;
    end predict;
 
 
@@ -235,7 +247,9 @@ is
           
    end uptate_state;
 
-   procedure update_cov( P : in out State_Covariance_Matrix; K : Kalman_Gain_Matrix ) is
+
+   procedure update_cov( P : in out State_Covariance_Matrix; K :Kalman_Gain_Matrix ) is
+      pragma Unreferenced (P);
    begin
       -- update cov
       P := P - (K * G.H) * P;

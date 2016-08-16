@@ -5,6 +5,7 @@
 with Ada.Unchecked_Conversion;
 
 --  @summary convert various types to bytearrays
+--  FIXME: optimize: don't collect labels and formats unless we are building the header.
 package body ULog.Conversions with SPARK_Mode is
 
    ----------------------
@@ -50,7 +51,12 @@ package body ULog.Conversions with SPARK_Mode is
 
    function Buffer_Capacity (t : in Conversion_Tag; buf : HIL.Byte_Array)
                              return Natural
-     with Post => Buffer_Capacity'Result <= buf'Length;
+     with Post => (if buf'Length <= t.Buffer_Fill then
+                     Buffer_Capacity'Result = 0
+                   else
+                     Buffer_Capacity'Result = buf'Length - t.Buffer_Fill);
+   --  if the buffer length changed during conversion, then t.Total_Size could be
+   --  bigger than buf'length.
 
    -----------
    --  Reset
@@ -58,17 +64,24 @@ package body ULog.Conversions with SPARK_Mode is
 
    procedure New_Conversion (t : out Conversion_Tag) is
    begin
-      t.Total_Size     := 0;
-      t.Name           := (others => HIL.Byte (0));
-      t.Label_Collect  := (Labels => (others => HIL.Byte (0)), Length => 0);
-      t.Format_Collect := (Format => (others => HIL.Byte (0)), Length => 0);
+      t.Buffer_Fill     := 0;
+      t.Buffer_Overflow := False;
+      t.Name            := (others => HIL.Byte (0));
+      t.Label_Collect   := (Labels => (others => HIL.Byte (0)), Length => 0);
+      t.Format_Collect  := (Format => (others => HIL.Byte (0)), Length => 0);
    end New_Conversion;
 
    --------------
    --  Get_Size
    --------------
 
-   function Get_Size (t : in Conversion_Tag) return Natural is (t.Total_Size);
+   function Get_Size (t : in Conversion_Tag) return Natural is (t.Buffer_Fill);
+
+   ---------------------
+   --  Buffer_Overflow
+   ---------------------
+
+   function Buffer_Overflow (t : in Conversion_Tag) return Boolean is (t.Buffer_Overflow);
 
    ---------------
    --  Get_Format
@@ -110,10 +123,12 @@ package body ULog.Conversions with SPARK_Mode is
 
    function Buffer_Capacity (t : in Conversion_Tag; buf : HIL.Byte_Array)
                              return Natural is
-      cap : Natural;
+      fill : constant Natural := t.Buffer_Fill;
+      blen : constant Natural := buf'Length;
+      cap  : Natural;
    begin
-      if buf'Length > t.Total_Size then
-         cap := buf'Length - t.Total_Size;
+      if blen > fill then
+         cap := blen - fill;
       else
          cap := 0;
       end if;
@@ -127,24 +142,28 @@ package body ULog.Conversions with SPARK_Mode is
    --  add as much as we can to the buffer, without overflowing
    procedure Copy_To_Buffer (t : in out Conversion_Tag;
                              buf : in out HIL.Byte_Array; tail : HIL.Byte_Array) is
-      cap : constant Natural := Buffer_Capacity (t, buf);
+      cap  : constant Natural := Buffer_Capacity (t, buf);
+      fill : constant Natural := t.Buffer_Fill;
+      tlen : constant Natural := tail'Length;
    begin
-      if tail'Length > 0 then
-         if tail'Length <= cap then
-            pragma Assert (cap > 0);
-            declare
-               idx_l : constant Integer := buf'First + t.Total_Size;
-               idx_h : constant Integer := idx_l - 1 + tail'Length;
-            begin
-               buf (idx_l .. idx_h) := tail;
-            end;
-         end if;
-         --  keep counting, so caller can see potential overflow
-         if Natural'Last - t.Total_Size >= tail'Length then
-            t.Total_Size := t.Total_Size + tail'Length;
+      if tlen > 0 and then cap >= tlen and
+      then buf'Length >= fill -- buffer inconsistency .. don't continue
+      then
+         --  this means the buffer can take all of it
+         declare
+            idx_l : constant Integer := buf'First + fill;
+            idx_h : constant Integer := idx_l - 1 + tlen;
+         begin
+            buf (idx_l .. idx_h) := tail;
+         end;
+         --  bookkeeping
+         if Natural'Last - fill >= tlen then
+            t.Buffer_Fill := fill + tlen;
          else
-            t.Total_Size := Natural'Last;
+            t.Buffer_Fill := Natural'Last;
          end if;
+      else
+         t.Buffer_Overflow := True;
       end if;
    end Copy_To_Buffer;
 

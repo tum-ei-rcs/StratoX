@@ -1,5 +1,6 @@
 --
 with Units;
+with Units.Operations; use Units.Operations;
 use type Units.Unit_Type;
 with HIL.SPI;   -- Hardware Interface to SPI
 with MS5611.Register; use MS5611.Register;
@@ -56,6 +57,11 @@ is
    subtype OFF_Type is Float range -8589672450.9 .. 12884705280.9;
    subtype TEMP_Type is Float range -4000.9 .. 8500.9;
 
+   --  a bunch of functions that allows to add up types without overflows
+   function Sum_TEMP is new Units.Saturated_Addition (T => TEMP_Type);
+   function Sum_OFF is new Units.Saturated_Addition (T => OFF_Type);
+   function Sum_Sense is new Units.Saturated_Addition (T => Sense_Type);
+   
    ----------------------
    --  PROTOTYPES
    ----------------------
@@ -363,9 +369,9 @@ is
    begin
       case(state.FSM_State) is
          when TEMPERATURE_CONVERSION =>
-            result := (state.Conv_Info_Temp.Start + conv_time(state.Conv_Info_Temp.OSR) < Units.To_Time( now) );
+            result := ( Sum_Time (state.Conv_Info_Temp.Start, conv_time(state.Conv_Info_Temp.OSR)) < Units.To_Time( now) );
          when PRESSURE_CONVERSION =>
-            result := (state.Conv_Info_Pres.Start + conv_time(state.Conv_Info_Pres.OSR) < Units.To_Time( now) );
+            result := ( Sum_Time (state.Conv_Info_Pres.Start, conv_time(state.Conv_Info_Pres.OSR)) < Units.To_Time( now) );
          when others =>
             result := False;
       end case;
@@ -381,7 +387,7 @@ is
       T_Ref    : Float) return DT_Type
    is
    begin
-      return DT_Type (Float (Temp_Raw) - T_Ref);   -- SPARK: Overflow/Range Check fails if Temp_Raw = 16777215
+      return DT_Type (Float (Temp_Raw) - T_Ref);
    end calculateTemperatureDifference;
 
    ----------------------
@@ -472,15 +478,15 @@ is
          when TEMPERATURE_CONVERSION =>
             -- ToDo check time
             declare
-               t_abs : Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12 (Clock cannot be a direct parameter)
+               t_abs : Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12 (Clock cannot be a direct parameter)               
             begin
                if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
                   read_adc (Baro, temperature_raw);
                   if temperature_raw /= 0 then            
                      dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
-                     TEMP := 2000.0 + TEMP_Type (dT * G_tempsens);
-                     OFF  := G_off_t1 + G_tco * dT;
-                     SENS := G_sens_t1 + G_tcs * dT;
+                     TEMP := Sum_TEMP (2000.0, TEMP_Type (dt * G_tempsens));                     
+                     OFF  := Sum_OFF (G_off_t1, G_tco * dT);
+                     SENS := Sum_Sense (G_sens_t1, G_tcs * dT);
                      compensateTemperature;
                      temperature := convertToKelvin (TEMP);
                      start_conversion (D1, OSR_4096);

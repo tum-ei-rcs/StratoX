@@ -1,6 +1,6 @@
 with Units.Numerics; use Units.Numerics;
 
-package body Units.Vectors is
+package body Units.Vectors with SPARK_Mode is
 
    procedure rotate
      (vector : in out Cartesian_Vector_Type;

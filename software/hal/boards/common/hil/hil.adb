@@ -22,7 +22,7 @@ is
 
    procedure write_Bits( register : in out Unsigned_8;
                          start_index : Unsigned_8_Bit_Index;
-                         length : Natural;
+                         length : Positive;
                          value : Integer) is
       bits_mask  : Unsigned_8 := (2**length - 1) * 2**Natural(start_index);
       value_mask : Unsigned_8 := Unsigned_8( value * 2**Natural(start_index) );
@@ -32,7 +32,7 @@ is
 
    function read_Bits( register : in Unsigned_8;
                         start_index : Unsigned_8_Bit_Index;
-                        length      : Natural) return Unsigned_8 is
+                        length      : Positive) return Unsigned_8 is
       bits_mask  : Unsigned_8 := (2**length - 1) * 2**Natural(start_index);
       value : Unsigned_8 := (bits_mask and register) / 2**Natural(start_index);
    begin

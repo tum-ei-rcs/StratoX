@@ -125,4 +125,29 @@ package body Units is
       return Image(Unit_Type(unit)) & "rad";
    end RImage;
 
+   function Saturated_Addition (left, right : T) return T is
+      ret : T := left;
+   begin
+--        if right > T (0.0) and then ret > (T'Last - right) + T'Small then
+--           ret := T'Last;
+--        elsif right < T (0.0) and then ret < (T'First - right) - T'Small then
+--           ret := T'First;
+--        else
+      if True then
+         declare
+            cand : constant Float := Float (ret) + Float (right);
+         begin
+            --  range check
+            if cand > Float (T'Last) then
+               ret := T'Last;
+            elsif cand < Float (T'First) then
+               ret := T'First;
+            else
+               ret := T (cand);
+            end if;
+         end;
+      end if;
+      return ret;
+   end Saturated_Addition;
+
 end Units;
