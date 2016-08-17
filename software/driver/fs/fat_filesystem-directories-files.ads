@@ -1,9 +1,9 @@
 --  Institution: Technische Universitaet Muenchen
---  Department:  Realtime Computer Systems (RCS)
+--  Department:  Real-Time Computer Systems (RCS)
 --  Project:     StratoX
---  XXX! Nothing here is thread-safe!
+--  Authors:     Martin Becker (becker@rcs.ei.tum.de)
 --
---  Authors: Martin Becker (becker@rcs.ei.tum.de)
+--  XXX! Nothing here is proven thread-safe!
 with FAT_Filesystem;
 with FAT_Filesystem.Directories; use FAT_Filesystem.Directories;
 
@@ -28,6 +28,7 @@ package FAT_Filesystem.Directories.Files with SPARK_Mode => Off is
      (File   : in out File_Handle;
       Data   : File_Data;
       Status : out Status_Code) return Integer;
+   --  write to file
    --  @return number of bytes written (at most Data'Length), or -1 on error.
 
    function File_Flush
@@ -46,6 +47,7 @@ package FAT_Filesystem.Directories.Files with SPARK_Mode => Off is
    function File_Read
      (File : in out File_Handle;
       Data : out File_Data) return Integer;
+   --  read data from file.
    --  @return number of bytes read (at most Data'Length), or -1 on error.
 
    procedure File_Close (File : in out File_Handle);

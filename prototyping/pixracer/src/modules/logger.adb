@@ -291,9 +291,11 @@ is
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
          len         : Natural;
          valid       : Boolean;
+         Logfile_Started : Boolean;
       begin
          With_SDLog := False;
-         if not SDLog.Start_Logfile (dirname => buildstring, filename => fname)
+         SDLog.Start_Logfile (dirname => buildstring, filename => fname, ret => Logfile_Started);
+         if not Logfile_Started
          then
             log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
             return;

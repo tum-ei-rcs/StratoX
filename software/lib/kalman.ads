@@ -9,31 +9,30 @@ with Units.Navigation; use Units.Navigation;
 
 package Kalman with 
 SPARK_Mode, 
-Abstract_State => State
+  Abstract_State => State
 is
 
-   -- the states: everything that needs to be estimated for a solution
-   
+   --  the states: everything that needs to be estimated for a solution   
    type State_Vector_Index_Name_Type is 
-   ( X_LON,
-     X_LAT,
-     X_ALT,
-     X_GROUND_SPEED_X,   -- NORTH => + lat
-     X_GROUND_SPEED_Y,   -- EAST => + lon
-     X_GROUND_SPEED_Z,   -- DOWN => - alt
-     X_ROLL,
-     X_PITCH,
-     X_YAW,
-     X_ROLL_RATE,
-     X_PITCH_RATE,
-     X_YAW_RATE,
-     X_ROLL_BIAS,
-     X_PITCH_BIAS,
-     X_YAW_BIAS,
-     X_AIR_SPEED_X,
-     X_AIR_SPEED_Y,
-     X_AIR_SPEED_Z
-    );
+     ( X_LON,
+       X_LAT,
+       X_ALT,
+       X_GROUND_SPEED_X,   -- NORTH => + lat
+       X_GROUND_SPEED_Y,   -- EAST => + lon
+       X_GROUND_SPEED_Z,   -- DOWN => - alt
+       X_ROLL,
+       X_PITCH,
+       X_YAW,
+       X_ROLL_RATE,
+       X_PITCH_RATE,
+       X_YAW_RATE,
+       X_ROLL_BIAS,
+       X_PITCH_BIAS,
+       X_YAW_BIAS,
+       X_AIR_SPEED_X,
+       X_AIR_SPEED_Y,
+       X_AIR_SPEED_Z
+      );
     
    subtype State_Vector_Index_Type is Natural range 1 .. State_Vector_Index_Name_Type'Range_Length;
    
@@ -49,10 +48,10 @@ is
 
    -- the inputs: everything that you can control
    type Input_Vector_Index_Name_Type is 
-   ( U_ELEVATOR,
-     U_AILERON
-     --U_RUDDER 
-    );
+     ( U_ELEVATOR,
+       U_AILERON
+       --U_RUDDER 
+      );
 
    subtype Input_Vector_Index_Type is Natural range 1 .. Input_Vector_Index_Name_Type'Range_Length;
 
@@ -65,17 +64,17 @@ is
 
    -- the observations: everything that can be observed
    type Observation_Vector_Index_Name_Type is
-   ( Z_LON,
-     Z_LAT,
-     Z_ALT,
-     Z_BARO_ALT,
-     Z_ROLL,
-     Z_PITCH,
-     Z_YAW,
-     Z_ROLL_RATE,
-     Z_PITCH_RATE,
-     Z_YAW_RATE
-    );
+     ( Z_LON,
+       Z_LAT,
+       Z_ALT,
+       Z_BARO_ALT,
+       Z_ROLL,
+       Z_PITCH,
+       Z_YAW,
+       Z_ROLL_RATE,
+       Z_PITCH_RATE,
+       Z_YAW_RATE
+      );
     
    subtype Observation_Vector_Index_Type is Natural range 1 .. Observation_Vector_Index_Name_Type'Range_Length;   
    
@@ -107,13 +106,13 @@ is
 
 
    function map( index : State_Vector_Index_Name_Type ) return State_Vector_Index_Type is
-   ( State_Vector_Index_Type( State_Vector_Index_Name_Type'Pos( index ) + 1 ) );
+     ( State_Vector_Index_Type( State_Vector_Index_Name_Type'Pos( index ) + 1 ) );
 
    function map( index : Input_Vector_Index_Name_Type ) return Input_Vector_Index_Type is
-   ( Input_Vector_Index_Type( Input_Vector_Index_Name_Type'Pos( index ) + 1 ) );
+     ( Input_Vector_Index_Type( Input_Vector_Index_Name_Type'Pos( index ) + 1 ) );
 
    function map( index : Observation_Vector_Index_Name_Type ) return Observation_Vector_Index_Type is
-   ( Observation_Vector_Index_Type( Observation_Vector_Index_Name_Type'Pos( index ) + 1 ) );
+     ( Observation_Vector_Index_Type( Observation_Vector_Index_Name_Type'Pos( index ) + 1 ) );
 
 
 
@@ -133,10 +132,10 @@ is
    subtype Observation_Transition_Matrix is mk_Matrix;
 
    subtype State_Covariance_Matrix is kk_Matrix;
---     is record 
---        orientation : Unit_Matrix3D;
---        rates : Unit_Matrix3D;
---     end record;
+   --     is record 
+   --        orientation : Unit_Matrix3D;
+   --        rates : Unit_Matrix3D;
+   --     end record;
 
 
 
@@ -182,12 +181,12 @@ is
 
 private
 
-   -- Prediction
+   --  Prediction
    procedure predict_state( state : in out State_Vector; input : Input_Vector; dt : Time_Type );
    procedure predict_cov( P : in out State_Covariance_Matrix; Q : State_Noise_Covariance_Matrix );
    
    
-   -- Update
+   --  Update
    procedure estimate_observation_noise_cov( R : in out Observation_Noise_Covariance_Matrix; 
                                              states : State_Vector;
                                              samples : Observation_Vector
@@ -215,26 +214,26 @@ private
    procedure calculate_A( A : out State_Transition_Matrix; dt : Time_Type );
 
    -- input2state, state,  A, Au PHP
---     function State_Prediction( u : Input_Vector; dt : Time_Type ) return State_Vector;
---     function State_Prediction( x : State_Vector; dt : Time_Type ) return State_Vector;
---     function Observation_Prediction( x : State_Vector; dt : Time_Type ) return Observation_Vector;
---     
---     
---     function Cov_Prediction( P : State_Covariance_Matrix; dt : Time_Type);
---     function Cov_Innovation( P : State_Covariance_Matrix; dt : Time_Type);
---     
+   --     function State_Prediction( u : Input_Vector; dt : Time_Type ) return State_Vector;
+   --     function State_Prediction( x : State_Vector; dt : Time_Type ) return State_Vector;
+   --     function Observation_Prediction( x : State_Vector; dt : Time_Type ) return Observation_Vector;
+   --     
+   --     
+   --     function Cov_Prediction( P : State_Covariance_Matrix; dt : Time_Type);
+   --     function Cov_Innovation( P : State_Covariance_Matrix; dt : Time_Type);
+   --     
 
 
    
    -- Matrix calculations
---     function "*"( A : State_Transition_Matrix; x : State_Vector ) return State_Vector;
---     function "*"( B : Input_Transition_Matrix; u : Input_Vector ) return State_Vector;
---     function "+"( Left : State_Vector; Right : State_Vector) return State_Vector;
---  
---     function "*"( Left : State_Transition_Matrix; Right : State_Covariance_Matrix) return State_Covariance_Matrix;
---  
---     function "*"( Left : Observation_Transition_Matrix; Right : State_Vector) return Observation_Vector;
---     function "-"( Left : Observation_Vector; Right : Observation_Vector) return Observation_Vector;
+   --     function "*"( A : State_Transition_Matrix; x : State_Vector ) return State_Vector;
+   --     function "*"( B : Input_Transition_Matrix; u : Input_Vector ) return State_Vector;
+   --     function "+"( Left : State_Vector; Right : State_Vector) return State_Vector;
+   --  
+   --     function "*"( Left : State_Transition_Matrix; Right : State_Covariance_Matrix) return State_Covariance_Matrix;
+   --  
+   --     function "*"( Left : Observation_Transition_Matrix; Right : State_Vector) return Observation_Vector;
+   --     function "-"( Left : Observation_Vector; Right : Observation_Vector) return Observation_Vector;
 
 
 end Kalman;
