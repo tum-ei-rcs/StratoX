@@ -234,7 +234,9 @@ package body Mission with SPARK_Mode is
       end loop;
       
       Controller.set_Target_Position( G_state.home );
-      Estimator.reset_log_calls;     
+      Estimator.reset_log_calls;    
+      Estimator.reset;
+      
       Logger.log(Logger.INFO, "Detached");
       next_State;
    end perform_Detach;

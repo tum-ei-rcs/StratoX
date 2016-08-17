@@ -39,16 +39,18 @@ is
 
    KM_Profiler : Profiler.Profile_Tag;
 
+   ANGLE_PROCESS_VARIANCE : constant := 1.0e-4;  -- 1.0e-4  trust in orientation prediction (gyro integral)
+   RATE_PROCESS_VARIANCE  : constant := 1.0e-2;  -- dont trust in rate prediction
+   BIAS_PROCESS_VARIANCE  : constant := 1.0e-12;  -- trust in prev bias (really slow bias drift?)
+      
+   ANGLE_MEASUREMENT_VARIANCE : constant := 6.0e-2;  -- dont trust in angel measurement (acc arctan)
+   RATE_MEASUREMENT_VARIANCE : constant := 1.0e-3;   -- trust rate measurement
+
+
 
    procedure reset( init_states : State_Vector := DEFAULT_INIT_STATES ) is 
       now : Time := Clock;
       
-      ANGLE_PROCESS_VARIANCE : constant := 1.0e-4;  -- trust in orientation prediction (gyro integral)
-      RATE_PROCESS_VARIANCE : constant := 1.0e-2;  -- dont trust in rate prediction
-      BIAS_PROCESS_VARIANCE : constant := 1.0e-11;  -- trust in prev bias (really slow bias drift?)
-      
-      ANGLE_MEASUREMENT_VARIANCE : constant := 3.0e-2;  -- dont trust in angel measurement (acc arctan)
-      RATE_MEASUREMENT_VARIANCE : constant := 1.0e-3;   -- trust rate measurement
    begin
       G.t_last := now;
       
@@ -99,7 +101,7 @@ is
       -- Process Noise
       G.Q := Eye( k ) * 1.0e-1;
       G.Q( map(X_ROLL), map(X_ROLL) ) := ANGLE_PROCESS_VARIANCE;
-      G.Q( map(X_PITCH), map(X_PITCH) ) := ANGLE_PROCESS_VARIANCE;
+      G.Q( map(X_PITCH), map(X_PITCH) ) := ANGLE_PROCESS_VARIANCE * 100.0;
       G.Q( map(X_YAW), map(X_YAW) ) := ANGLE_PROCESS_VARIANCE;
 
       G.Q( map(X_ROLL_RATE), map(X_ROLL_RATE) ) := RATE_PROCESS_VARIANCE;
@@ -117,7 +119,7 @@ is
       -- Measurement Noise
       G.R := Eye( m ) * 1.0e-3;
       G.R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE;
-      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE;
+      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE / 500.0;
       G.R( map(Z_YAW), map(Z_YAW) ) := ANGLE_MEASUREMENT_VARIANCE;
       
       G.R( map(Z_ROLL_RATE), map(Z_ROLL_RATE) ) := RATE_MEASUREMENT_VARIANCE;
@@ -157,6 +159,7 @@ is
       K : Kalman_Gain_Matrix;
       residual : Innovation_Vector;
    begin
+      estimate_observation_noise_cov( G.R, G.x, z);
       calculate_gain( G.x, z, dt, K, residual ); 
       uptate_state( G.x, K, residual, dt );
       update_cov( G.P, K );
@@ -192,6 +195,9 @@ is
       
       state := new_state;
       G.u := input;
+      
+      -- estimate Q
+
    end predict_state;   
 
 
@@ -200,6 +206,20 @@ is
       P := G.A * P * Transpose(G.A) + Q;
    end predict_cov;
 
+
+   procedure estimate_observation_noise_cov( R : in out Observation_Noise_Covariance_Matrix; 
+                                             states : State_Vector;
+                                             samples : Observation_Vector
+                                             ) is
+      RATE_REF : constant Angular_Velocity_Type := 200.0*Degree/Second;
+   begin
+      R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE + 
+         10.0* ANGLE_MEASUREMENT_VARIANCE * (abs(states.orientation.Pitch/Pitch_Type'Last) +
+         50.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(X)/RATE_REF));
+      
+      R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE + 
+         50.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(Y)/RATE_REF);
+   end estimate_observation_noise_cov;
 
 
    procedure calculate_gain( states : State_Vector; 
@@ -257,8 +277,8 @@ is
       states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
       states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
       
-      Logger.log(Logger.TRACE, "bX: " & AImage( states.bias(X)*Second ) & 
-                 ", K_bX: " & Image(  K( map(X_ROLL_BIAS), map(Z_ROLL) ) ) &
+      Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
+                 ", K_bX: " & Unit_Type'Image(  K( map(X_ROLL_BIAS), map(Z_ROLL) ) ) &
                  ", GyrX: " & AImage(states.rates(X)*Second)
                  --", dgX: " & Unit_Type'Image(residual.delta_gyr_rates(X))
                  );
@@ -273,6 +293,8 @@ is
       end loop;
           
    end uptate_state;
+
+
 
 
    procedure update_cov( P : in out State_Covariance_Matrix; K :Kalman_Gain_Matrix ) is

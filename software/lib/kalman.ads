@@ -188,6 +188,11 @@ private
    
    
    -- Update
+   procedure estimate_observation_noise_cov( R : in out Observation_Noise_Covariance_Matrix; 
+                                             states : State_Vector;
+                                             samples : Observation_Vector
+                                         );
+   
    procedure calculate_gain( states : State_Vector; 
                              samples : Observation_Vector; 
                              dt : Time_Type;

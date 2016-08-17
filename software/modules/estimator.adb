@@ -9,6 +9,8 @@ with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 with Config.Software;
 with Units.Numerics; use Units.Numerics;
 
+with HIL;
+
 with IMU;
 with GPS;
 with Barometer;
@@ -21,6 +23,8 @@ with Logger;
 with ULog;
 with Profiler;
 with Kalman;
+
+with NVRAM;
 
 
 pragma Elaborate_All(generic_queue);
@@ -112,6 +116,17 @@ package body Estimator with SPARK_Mode is
 
       Logger.log_console(Logger.INFO, "Estimator initialized");
    end initialize;
+
+
+   procedure reset is
+      init_state : Kalman.State_Vector := Kalman.DEFAULT_INIT_STATES;
+      bias_raw : HIL.Byte;
+   begin
+      NVRAM.Load(NVRAM.VAR_GYRO_BIAS_X, bias_raw );
+      init_state.bias(X) := Unit_Type( HIL.toInteger_8(bias_raw)) * Deci * Degree / Second;
+      Kalman.reset;
+   end reset;
+
 
    --  handle the different ranges of Length_Type and Altitude_Type
    function Len_to_Alt (len : Units.Length_Type) return Altitude_Type is
