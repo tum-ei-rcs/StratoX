@@ -1,8 +1,9 @@
 --  Project: StratoX
---  System:  Stratosphere Balloon Flight Controller
---  Author: Martin Becker (becker@rcs.ei.tum.de)
---  XXX! Nothing here is thread-safe!
-
+--  Department:  Real-Time Computer Systems (RCS)
+--  Project:     StratoX
+--  Authors:     Martin Becker (becker@rcs.ei.tum.de)
+--
+--  XXX! Nothing here is proven thread-safe!
 with Ada.Unchecked_Conversion;
 with FAT_Filesystem; use FAT_Filesystem;
 

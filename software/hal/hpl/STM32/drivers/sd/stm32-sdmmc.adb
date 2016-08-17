@@ -1869,7 +1869,7 @@ package body STM32.SDMMC is
 
       Err        : SD_Error;
       cardstatus : HAL.Word;
-      start      : Time := Clock;
+      start      : constant Time := Clock;
       Timeout    : Boolean := False;
       Command    : SDMMC_Command;
 
@@ -1899,7 +1899,7 @@ package body STM32.SDMMC is
       Wait_Ready_loop :
       loop
          declare
-            now : Time := Clock;
+            now : constant Time := Clock;
          begin
             if now - start > Milliseconds (100) then
                Timeout := True;

@@ -34,11 +34,16 @@ is
    end record;
 
 
+   --------------------
+   --  INTERNAL STATES
+   --------------------
 
    G : Global_Type;
-
    KM_Profiler : Profiler.Profile_Tag;
 
+   -----------------
+   --  reset
+   -----------------
 
    procedure reset( init_states : State_Vector := DEFAULT_INIT_STATES ) is 
       now : Time := Clock;
@@ -115,7 +120,7 @@ is
    
       
       -- Measurement Noise
-      G.R := Eye( m ) * 1.0e-3;
+      G.R := Eye( m ) * 1.0e-3; -- default
       G.R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE;
       G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE;
       G.R( map(Z_YAW), map(Z_YAW) ) := ANGLE_MEASUREMENT_VARIANCE;
@@ -126,6 +131,10 @@ is
             
    end reset;
 
+   -------------------------
+   --  perform_Filter_Step
+   -------------------------
+   
    procedure perform_Filter_Step( u : in Input_Vector; z : in Observation_Vector ) is
       now : Time := Clock;
       dt : Time_Type := To_Time(now - G.t_last);
@@ -139,7 +148,10 @@ is
       G.t_last := now;          
    end perform_Filter_Step;
 
-
+   -------------------------
+   --  predict
+   -------------------------
+   
    procedure predict(u : Input_Vector; dt : Time_Type) is 
    begin
       predict_state( G.x, u, dt );
@@ -152,7 +164,10 @@ is
       end;
    end predict;
 
-
+   -------------------------
+   --  update
+   -------------------------
+   
    procedure update(z : Observation_Vector; dt : Time_Type) is
       K : Kalman_Gain_Matrix;
       residual : Innovation_Vector;
@@ -162,14 +177,18 @@ is
       update_cov( G.P, K );
    end update;
 
-
+   -------------------------
+   --  get_States
+   -------------------------
+   
    function get_States return State_Vector is
    begin
       return G.x;
    end get_States;
    
-   
-   
+   -------------------------
+   --  predict_state
+   -------------------------   
    
    procedure predict_state( state : in out State_Vector; input : Input_Vector; dt : Time_Type ) is
       new_state : State_Vector := state;
@@ -194,13 +213,18 @@ is
       G.u := input;
    end predict_state;   
 
+   -------------------------
+   --  predict_cov
+   -------------------------    
 
    procedure predict_cov( P : in out State_Covariance_Matrix; Q : State_Noise_Covariance_Matrix ) is
    begin
       P := G.A * P * Transpose(G.A) + Q;
    end predict_cov;
 
-
+   -------------------------
+   --  calculate_gain
+   -------------------------
 
    procedure calculate_gain( states : State_Vector; 
                              samples : Observation_Vector; 
@@ -230,6 +254,10 @@ is
       -- save observation vector
       G.z := samples;
    end calculate_gain;
+   
+   -------------------------
+   --  uptate_state
+   -------------------------
    
    procedure uptate_state( states : in out State_Vector; 
                            K      : Kalman_Gain_Matrix; 
@@ -274,6 +302,9 @@ is
           
    end uptate_state;
 
+   -------------------------
+   --  update_cov
+   -------------------------
 
    procedure update_cov( P : in out State_Covariance_Matrix; K :Kalman_Gain_Matrix ) is
    begin
@@ -281,7 +312,10 @@ is
       P := P - (K * G.H) * P;
    end update_cov;
 
-
+   -------------------------
+   --  Minus
+   -------------------------
+   
    function "-"(Left, Right : Observation_Vector) return Innovation_Vector is
    begin
       return ( Left.gps_pos   - Right.gps_pos, 
@@ -289,6 +323,10 @@ is
                Left.acc_ori   - Right.acc_ori,
                Left.gyr_rates - Right.gyr_rates );
    end "-";
+
+   -------------------------
+   --  calculate_A
+   -------------------------
    
    procedure calculate_A( A : out State_Transition_Matrix; dt : Time_Type ) is
    begin

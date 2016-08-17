@@ -1,4 +1,4 @@
--- Institution: Technische Universität München
+-- Institution: Technische Universitaet Muenchen
 -- Department:  Realtime Computer Systems (RCS)
 -- Project:     StratoX
 -- Module:      Estimator
@@ -18,6 +18,7 @@ with Interfaces;       use Interfaces;
 
 with Kalman;
 
+--  @summary Sensor data fusion
 package Estimator with SPARK_Mode is
 
    -- init

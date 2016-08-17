@@ -217,6 +217,9 @@ package body Main with SPARK_Mode => On is
          -- wait remaining loop time
          delay until loop_time_start + Milliseconds (MAIN_TICK_RATE_MS);
       end loop;
+
    end run_Loop;
+
+
 
 end Main;

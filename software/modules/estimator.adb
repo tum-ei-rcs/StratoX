@@ -1,3 +1,9 @@
+-- Institution: Technische Universitaet Muenchen
+-- Department:  Realtime Computer Systems (RCS)
+-- Project:     StratoX
+-- Module:      Estimator
+--
+-- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 
 --with Generic_Signal;
 --with Generic_Sensor;
@@ -27,67 +33,81 @@ pragma Elaborate_All(generic_queue);
 
 package body Estimator with SPARK_Mode is
 
+   ---------------------
+   --  TYPE DEFS
+   ---------------------
+
    type Height_Index_Type is mod 10;
    type IMU_Index_Type is mod 10;
    type Baro_Call_Type is mod 2;
-   type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP;
+   type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP; -- set log ratio
 
-   package Height_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => Altitude_Type);
+   package Height_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type,
+                                                   Element_Type => Altitude_Type);
    use Height_Buffer_Pack;
-   package GPS_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type, Element_Type => GPS_Loacation_Type);
+   package GPS_Buffer_Pack is new Generic_Queue(Index_Type => Height_Index_Type,
+                                                Element_Type => GPS_Loacation_Type);
    use GPS_Buffer_Pack;
-   package IMU_Buffer_Pack is new Generic_Queue(Index_Type => IMU_Index_Type, Element_Type => Orientation_Type);
+   package IMU_Buffer_Pack is new Generic_Queue(Index_Type => IMU_Index_Type,
+                                                Element_Type => Orientation_Type);
    use IMU_Buffer_Pack;
 
    type State_Type is record
-      init_time : Time := Time_First;
-      fix : GPS_Fix_Type := NO_FIX;
-      nsat : Unsigned_8 := 0;
-      avg_gps_height : Altitude_Type := 0.0 * Meter;
-      max_gps_height : Altitude_Type := 0.0 * Meter;
-      avg_baro_height : Altitude_Type := 0.0 * Meter;
-      max_baro_height : Altitude_Type := 0.0 * Meter;
-      height_deviation : Linear_Velocity_Type := 0.0 * Meter/Second;
-      baro_calls : Baro_Call_Type := 0;
-      logger_calls : Logger_Call_Type := 0;
+      init_time            : Time := Time_First;
+      fix                  : GPS_Fix_Type := NO_FIX;
+      nsat                 : Unsigned_8 := 0;
+      avg_gps_height       : Altitude_Type := 0.0 * Meter;
+      max_gps_height       : Altitude_Type := 0.0 * Meter;
+      avg_baro_height      : Altitude_Type := 0.0 * Meter;
+      max_baro_height      : Altitude_Type := 0.0 * Meter;
+      height_deviation     : Linear_Velocity_Type := 0.0 * Meter/Second;
+      baro_calls           : Baro_Call_Type := 0;
+      logger_calls         : Logger_Call_Type := 0; -- counter for log ratio
       logger_console_calls : Logger_Call_Type := 0;
-      stable_Time     : Time_Type := 0.0 * Second;
-      last_stable_check : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
-      home_pos : GPS_Loacation_Type;
-      home_baro_alt : Altitude_Type := 0.0 * Meter;
-      kmObservations: Kalman.Observation_Vector;
+      stable_Time          : Time_Type := 0.0 * Second;
+      last_stable_check    : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
+      home_pos             : GPS_Loacation_Type; -- takeoff location
+      home_baro_alt        : Altitude_Type := 0.0 * Meter; -- takeoff altitude
+      kmObservations       : Kalman.Observation_Vector;
    end record;
 
-   type Sensor_Record is record
-      GPS1  : GPS.GPS_Tag;
-      Baro1 : Barometer.Barometer_Tag;
-      IMU1  : IMU.IMU_Tag;
-      Mag1  : Magnetometer.Magnetometer_Tag;
-   end record;
-   pragma Unreferenced (Sensor_Record);
+--     type Sensor_Record is record
+--        GPS1  : GPS.GPS_Tag;
+--        Baro1 : Barometer.Barometer_Tag;
+--        IMU1  : IMU.IMU_Tag;
+--        Mag1  : Magnetometer.Magnetometer_Tag;
+--     end record;
 
    type IMU_Data_Type is record
       Acc  : Linear_Acceleration_Vector;
       Gyro : Angular_Velocity_Vector;
    end record;
 
+   ---------------------
+   --  INTERNAL STATES
+   ---------------------
 
    G_state  : State_Type;
    G_imu    : IMU_Data_Type;
    -- G_Sensor : Sensor_Record;
 
-   G_height_buffer : Height_Buffer_Pack.Buffer_Tag;
-   G_pos_buffer : GPS_Buffer_Pack.Buffer_Tag;
-
+   G_height_buffer      : Height_Buffer_Pack.Buffer_Tag;
+   G_pos_buffer         : GPS_Buffer_Pack.Buffer_Tag;
    G_orientation_buffer : IMU_Buffer_Pack.Buffer_Tag;
 
    G_Profiler : Profiler.Profile_Tag;
 
+   ---------------------
+   --  PROTOTYPES
+   ---------------------
 
    function Len_to_Alt (len : Units.Length_Type) return Altitude_Type
      with Pre => True; -- need this fake contract as workaround for GNATprove bug
 
-   -- init
+   ---------------------
+   --  initialize
+   ---------------------
+
    procedure initialize is
    begin
       G_state.init_time := Clock;
@@ -113,6 +133,10 @@ package body Estimator with SPARK_Mode is
       Logger.log_console(Logger.INFO, "Estimator initialized");
    end initialize;
 
+   ---------------------
+   --  Len_to_Alt
+   ---------------------
+
    --  handle the different ranges of Length_Type and Altitude_Type
    function Len_to_Alt (len : Units.Length_Type) return Altitude_Type is
       alt : Altitude_Type;
@@ -127,7 +151,11 @@ package body Estimator with SPARK_Mode is
       return alt;
    end Len_to_Alt;
 
-   -- fetch fresh measurement data
+   ---------------------
+   --  update
+   ---------------------
+
+   --  fetch fresh measurement data
    procedure update( input : Kalman.Input_Vector ) is
       Acc_Orientation : Orientation_Type;
       CF_Orientation : Orientation_Type;
@@ -174,7 +202,7 @@ package body Estimator with SPARK_Mode is
 
 
 
-      -- Estimate Object Position
+      --  Estimate Object Position
       Barometer.Sensor.read_Measurement; -- >= 4 calls for new data
       G_state.baro_calls := Baro_Call_Type'Succ( G_state.baro_calls );
       if G_state.baro_calls = 0 then
@@ -207,17 +235,17 @@ package body Estimator with SPARK_Mode is
          G_Object_Position.Altitude := Len_To_Alt (Barometer.Sensor.get_Altitude);
       end if;
 
-      -- perform Kalman
+      --  perform Kalman filtering
       G_state.kmObservations := ( G_Object_Position, G_state.avg_baro_height, Acc_Orientation, G_imu.Gyro );
       Kalman.perform_Filter_Step( input, G_state.kmObservations );
 
       G_Object_Orientation.Roll := Kalman.get_States.orientation.Roll;
       G_Object_Orientation.Pitch := Kalman.get_States.orientation.Pitch;
 
-      -- update stable measurements
+      --  update stable measurements
       check_stable_Time;
 
-      -- Outputs
+      --  Outputs
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
          log_Info;
@@ -230,12 +258,20 @@ package body Estimator with SPARK_Mode is
       G_Profiler.stop;
    end update;
 
+   ---------------------
+   --  reset_log_calls
+   ---------------------
 
    procedure reset_log_calls is
    begin
       G_state.logger_calls := 0;
    end reset_log_calls;
 
+   ---------------------
+   --  log_info
+   ---------------------
+
+   --  write Estimator info to logs
    procedure log_Info is
       imu_msg : ULog.Message (ULog.IMU);
       gps_msg : ULog.Message (ULog.GPS);
@@ -286,7 +322,11 @@ package body Estimator with SPARK_Mode is
 
    end log_Info;
 
+   ---------------------
+   --  lock_home
+   ---------------------
 
+   --  memorize home position
    procedure lock_Home(position : GPS_Loacation_Type; baro_height : Altitude_Type) is
    begin
       G_state.home_pos := position;
@@ -296,12 +336,18 @@ package body Estimator with SPARK_Mode is
       G_state.avg_gps_height := position.Altitude;
    end lock_Home;
 
-
+   ---------------------
+   --  get_Orientation
+   ---------------------
 
    function get_Orientation return Orientation_Type is
    begin
       return G_Object_Orientation;
    end get_Orientation;
+
+   ---------------------
+   --  get_Position
+   ---------------------
 
    function get_Position return GPS_Loacation_Type is
    begin
@@ -309,15 +355,27 @@ package body Estimator with SPARK_Mode is
       return G_Object_Position;
    end get_Position;
 
+   ---------------------
+   --  get_GPS_Fix
+   ---------------------
+
    function get_GPS_Fix return GPS_Fix_Type is
    begin
       return G_state.fix;
    end get_GPS_Fix;
 
+   ---------------------
+   --  get_Num_Sat
+   ---------------------
+
    function get_Num_Sat return Unsigned_8 is
    begin
       return G_state.nsat;
    end get_Num_Sat;
+
+   -----------------------
+   --  get_current_Height
+   -----------------------
 
    function get_current_Height return Altitude_Type is
       result : Altitude_Type;
@@ -330,6 +388,10 @@ package body Estimator with SPARK_Mode is
       return result;
    end get_current_Height;
 
+   -----------------------
+   --  get_max_Height
+   -----------------------
+
    function get_max_Height return Altitude_Type is
       result : Altitude_Type;
    begin
@@ -341,6 +403,9 @@ package body Estimator with SPARK_Mode is
       return result;
    end get_max_Height;
 
+   -----------------------
+   --  get_relative_Height
+   -----------------------
 
    function get_relative_Height return Altitude_Type is
       result : Altitude_Type;
@@ -353,13 +418,20 @@ package body Estimator with SPARK_Mode is
       return result;
    end get_relative_Height;
 
+   -----------------------
+   --  get_Baro_Height
+   -----------------------
 
    function get_Baro_Height return Altitude_Type is
    begin
       return G_state.avg_baro_height;
    end get_Baro_Height;
 
+   -----------------------
+   --  Orientation
+   -----------------------
 
+   --  estimate orientation based only on acceleration data
    function Orientation(acc_vector : Linear_Acceleration_Vector) return Orientation_Type is
       angles : Orientation_Type;
       g_length : Float := 0.0;
@@ -394,6 +466,11 @@ package body Estimator with SPARK_Mode is
       return angles;
    end Orientation;
 
+   -----------------------
+   --  update_Max_Height
+   -----------------------
+
+   --  keep track of maximum altitude
    procedure update_Max_Height is
 
       function gps_average( signal : GPS_Buffer_Pack.Element_Array ) return Altitude_Type is
@@ -465,7 +542,11 @@ package body Estimator with SPARK_Mode is
 
    end update_Max_Height;
 
+   -----------------------
+   --  check_stable_Time
+   -----------------------
 
+   --  FIXME: what is this doing?
    procedure check_stable_Time is
       or_values : IMU_Buffer_Pack.Element_Array(1 .. IMU_Buffer_Pack.Length_Type'Last);
       or_ref : Orientation_Type;
@@ -511,6 +592,10 @@ package body Estimator with SPARK_Mode is
       G_state.last_stable_check := now;
 
    end check_stable_Time;
+
+   -----------------------
+   --  get_Stable_Time
+   -----------------------
 
    function get_Stable_Time return Time_Type is
    begin

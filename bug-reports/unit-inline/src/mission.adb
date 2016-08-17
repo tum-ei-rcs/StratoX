@@ -1,9 +1,14 @@
-with Units; use Units;
+with System.Dim.Float_IO;
+
+with Units;       use Units;
 with Config;
 
 package body Mission with SPARK_Mode is
 
-   mstate : Mission_State_Type := Mission_State_Type'First;
+   package SystemDimUnits is new System.Dim.Float_IO (Unit_Type);
+   use SystemDimUnits;
+
+   mstate : Mission_State_Type := ASCENDING;
 
    procedure monitor_Ascend;
      -- with Pre => True; -- adding this is a workaround
@@ -18,6 +23,7 @@ package body Mission with SPARK_Mode is
       if height > 100.0 * Meter then -- this works
          null;
       end if;
+      Put(height, 1, 2, 0);
    end monitor_Ascend;
 
    procedure run_Mission is

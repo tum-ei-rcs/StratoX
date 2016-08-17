@@ -359,8 +359,9 @@ package Units with
 
    -- Experiment
    function integrate(x : Unit_Type'Base; dt : Time_Type) return Unit_Type'Base is
-   ( x * dt );
-   pragma Inline_Always( integrate );
+   ( x * dt ) with Pre => True;
+   --pragma Inline_Always( integrate );
+
 
    generic
       type T is digits <>; -- any floating point type
