@@ -58,8 +58,8 @@ begin
    init_state.orientation.Pitch := 70.0*Degree;
    init_state.rates(X) := Angular_Velocity_Type( Simulation.CSV_here.Get_Column ("gyroX") );
    init_state.rates(Y) := Angular_Velocity_Type( Simulation.CSV_here.Get_Column ("gyroY") );
-   init_state.bias(X) := 0.0*Degree/Second;
-   init_state.bias(Y) := 10.0*Degree/Second;
+   init_state.bias(X) := 2.0*Degree/Second;
+   init_state.bias(Y) := 2.6*Degree/Second;
    Kalman.reset( init_state );
 
 

@@ -93,9 +93,16 @@ is
    with Pre => bytes'Length = 4;
 
 
+
+   function From_Byte_To_Integer_8 is new Ada.Unchecked_Conversion (Source => Byte,
+                                                                      Target => Integer_8);
+
+
    function From_Byte_Array_To_Integer_32 is new Ada.Unchecked_Conversion (Source => Byte_Array_4,
                                                                            Target => Integer_32);
 
+   function toInteger_8( value : Byte ) return Integer_8 is
+   ( From_Byte_To_Integer_8( value ) );
 
 
    function toInteger_32( bytes : Byte_Array) return Integer_32

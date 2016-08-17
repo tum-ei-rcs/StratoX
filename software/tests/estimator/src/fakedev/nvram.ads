@@ -1,4 +1,4 @@
---  Institution: Technische Universitaet Muenchen
+--  Institution: Technische Universität München
 --  Department:  Real-Time Computer Systems (RCS)
 --  Project:     StratoX
 --  Authors:     Martin Becker (becker@rcs.ei.tum.de)

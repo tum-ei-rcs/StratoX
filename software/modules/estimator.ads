@@ -23,6 +23,8 @@ package Estimator with SPARK_Mode is
 
    -- init
    procedure initialize;
+   
+   procedure reset;
 
    -- fetch fresh measurement data
    procedure update( input : Kalman.Input_Vector );

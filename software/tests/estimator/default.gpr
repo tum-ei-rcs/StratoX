@@ -3,7 +3,7 @@ project Default is
   -- ADA_PROJECT_PATH := "/home/emu/Software/gnatpro/bin:" & ADA_PROJECT_PATH;
 
    Fake_Drivers := ("ublox8.ads", "ublox8-driver.ads","hmc5883l-driver.adb","ms5611-driver.adb", "mpu6000-driver.adb",
-                    "ublox8-driver.adb");
+                    "ublox8-driver.adb", "nvram.adb" );
 
         
    Fake_Packages := ("logger.ads", "config.ads", "config-software.ads", "hil-devices.ads", 
@@ -16,7 +16,7 @@ project Default is
                       "generic_sensor.ads", "generic_queue.ads", "generic_queue.adb", "profiler.ads", "profiler.adb", "units-vectors.ads", "units-vectors.adb",
                       "imu.ads", "imu.adb", "barometer.ads", "barometer.adb", "gps.ads", "gps.adb", 
                       "magnetometer.ads", "magnetometer.adb", "hmc5883l.ads", "hmc5883l-driver.ads",
-                      "mpu6000.ads", "ms5611.ads", "ms5611-driver.ads","mpu6000-driver.ads", "ulog.ads", "kalman.ads", "kalman.adb");
+                      "mpu6000.ads", "ms5611.ads", "ms5611-driver.ads","mpu6000-driver.ads", "ulog.ads", "kalman.ads", "kalman.adb", "nvram.ads");
         
    Test_Harness := ("main.adb", "simulation.ads", "simulation.adb");
         
