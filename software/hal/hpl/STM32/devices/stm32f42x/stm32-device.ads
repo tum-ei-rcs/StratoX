@@ -374,7 +374,7 @@ is
    SPI_3 : aliased SPI_Port (Internal_SPI_3'Access);
    SPI_4 : aliased SPI_Port (Internal_SPI_4'Access);
    SPI_5 : aliased SPI_Port (Internal_SPI_5'Access);
-   SPI_6 : aliased SPI_Port (Internal_SPI_6'Access);
+   --SPI_6 : aliased SPI_Port (Internal_SPI_6'Access);
 
    procedure Enable_Clock (This : SPI_Port);
    procedure Reset (This : SPI_Port);

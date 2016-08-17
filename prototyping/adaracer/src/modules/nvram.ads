@@ -1,0 +1,1 @@
+../../../../software/modules/nvram.ads

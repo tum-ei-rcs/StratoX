@@ -1,0 +1,46 @@
+--  This abstract project defines common scenario variables and switches used
+--  all over the software.
+abstract project Config is
+
+   for Languages use ("Ada");
+   for Source_Dirs use ();
+   type RTS_Profile_Type is ("ravenscar-sfp", "ravenscar-full");
+   RTS   : RTS_Profile_Type := external ("RTS", "ravenscar-sfp");
+
+   type Build_Modes is
+      ("debug", "release", "analyze");
+   Build_Mode : Build_Modes := external ("My_Build_Mode", "debug");
+
+   package Compiler is
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Default_Switches ("ada") use ("-O0", "-gnatwa", "-gnatQ", "-gnatw.X");
+
+         when "release" =>
+            for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.X");
+
+         when "analyze" =>
+
+      end case;
+   end Compiler;
+
+   package Builder is
+
+      case Build_Mode is
+
+         when "debug" =>
+            for Default_Switches ("ada") use ("-g");
+            for Global_Configuration_Pragmas use "gnat.adc";
+
+         when "release" =>
+            for Default_Switches ("ada") use ();
+            for Global_Configuration_Pragmas use "gnat.adc";
+
+         when "analyze" =>
+            for Global_Compilation_Switches ("Ada") use ("-gnateT=" & "target.atp");
+      end case;
+   end Builder;
+
+end Config;
