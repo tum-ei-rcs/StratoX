@@ -27,11 +27,10 @@ package body Units is
       return avg;
    end average;
 
-   -- idea: shift range to 0 .. X, wrap with mod, shift back
    --function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
    -- ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
    function wrap_angle (angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
-      span : constant Angle_Type := max - min;
+      span  : constant Angle_Type := max - min;
       d_flt : Float;
       d_int : Float;
       frac  : Float;
@@ -156,5 +155,60 @@ package body Units is
       end if;
       return ret;
    end Saturated_Addition;
+
+   function Wrapped_Addition (left, right : T) return T is
+      cand : constant Float := Float (left) + Float (right);
+      min  : constant T := T'First;
+      max  : constant T := T'Last;
+      span : constant Float := Float (max - min);
+
+      d_flt : Float;
+      d_int : Float;
+      frac  : Float;
+      less  : T;
+      off   : Float;
+      f64   : Interfaces.IEEE_Float_64;
+
+      wr    : T;
+   begin
+
+      if span = 0.0 then
+         --  this might happen due to float cancellation, despite precondition
+         wr := min;
+      else
+         pragma Assert (span > 0.0);
+         if cand >= Float (min) and cand <= Float (max) then
+            wr := T (cand);
+         elsif cand < Float (min) then
+            off := (Float (min) - cand);
+            d_flt := Float (off / span); -- overflow check might fail
+            d_int := Float'Floor (d_flt);
+            frac  := Float (d_flt - d_int);
+            f64 := Interfaces.IEEE_Float_64 (frac) * Interfaces.IEEE_Float_64 (span);
+            --pragma Assert (f64 >= 0.0);
+            if f64 < Interfaces.IEEE_Float_64 (T'Last) and f64 >= Interfaces.IEEE_Float_64 (T'First) then
+               less := T (f64); -- overflow check might fail
+               wr := max - less;
+            else
+               wr := min;
+            end if;
+         else -- cand > max
+            off := cand - Float (max);
+            d_flt := Float (off / span); -- overflow check might fail
+            d_int := Float'Floor (d_flt);
+            frac  := Float (d_flt - d_int);
+            pragma Assert (frac >= 0.0);
+            f64 := Interfaces.IEEE_Float_64 (frac) * Interfaces.IEEE_Float_64 (span);
+            --pragma Assert (f64 >= 0.0); -- this fails. why? both span and frac are positive
+            if f64 > Interfaces.IEEE_Float_64 (T'First) and f64 < Interfaces.IEEE_Float_64 (T'Last) then
+               less := T (f64);
+               wr := min + less;
+            else
+               wr := max;
+            end if;
+         end if;
+      end if;
+      return wr;
+   end Wrapped_Addition;
 
 end Units;

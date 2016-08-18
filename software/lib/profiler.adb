@@ -3,7 +3,6 @@ with Units;
 
 package body Profiler with SPARK_Mode is
 
-
    procedure enableProfiling is
    begin
       G_state.isEnabled := True;
@@ -55,10 +54,26 @@ package body Profiler with SPARK_Mode is
    end stop;
 
    procedure log(Self : in Profile_Tag) is
+      time_us_flt : constant Float := Float'Floor( Float (Units.To_Time (Self.max_duration))) * 1.0e6;
+      time_us_int : Integer;
    begin
       if CFG_PROFILER_PROFILING and CFG_PROFILER_LOGGING then
-         Logger.log_console (Logger.INFO, Self.name & " Profile: " & Integer'Image (
-                             Integer( Float( Units.To_Time(Self.max_duration) ) * 1.0e6 ) ) & " us" );
+
+         if time_us_flt > Float (Integer'Last) then
+            time_us_int := Integer'Last;
+         elsif time_us_flt < Float (Integer'First) then
+            time_us_int := Integer'First;
+         else
+            time_us_int := Integer (time_us_flt); -- rounding
+         end if;
+
+         declare
+            intimg : constant String := Integer'Image (time_us_int);
+            pragma Assert (Integer'Size = 32);
+            pragma Assume (intimg'Length <= 11);
+         begin
+            Logger.log_console (Logger.INFO, Self.name & " Profile: " & intimg & " us" );
+         end;
       end if;
    end log;
 
