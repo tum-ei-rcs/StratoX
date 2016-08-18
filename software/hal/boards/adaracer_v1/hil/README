@@ -1,0 +1,2 @@
+These files implement the hardware mapping for functions in ../common/hil.
+Everything here is target-specific.

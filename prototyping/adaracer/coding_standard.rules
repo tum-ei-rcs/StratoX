@@ -1,0 +1,19 @@
+-----------------------------------------------------
+-- This is a sample gnatcheck coding standard file --
+-----------------------------------------------------
+     
+--  First, turning on rules, that are directly implemented in gnatcheck
+   +RAbstract_Type_Declarations
+   +RAnonymous_Arrays
+   +REXIT_Statements_With_No_Loop_Name
+   +RFloat_Equality_Checks
+   +RGOTO_Statements
+   +RImproper_Returns
+   +ROTHERS_In_CASE_Statements
+   +RUnconditional_Exits
+   +RUnassigned_OUT_Parameters
+   -- list of all rules: https://gcc.gnu.org/onlinedocs/gcc-4.5.4/gnat_ugn_unw/Predefined-Rules.html#Predefined-Rules
+     
+--  Then, also include ALL compiler checks:
+   +RStyle_Checks:All_Checks
+

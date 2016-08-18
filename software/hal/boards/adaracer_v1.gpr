@@ -1,0 +1,27 @@
+with "../hpl/STM32/stm32f427.gpr"; -- this STM device is on the adaracer board
+
+library project Adaracer_V1 is
+
+   for Target use "arm-eabi";
+   for Runtime ("Ada") use STM32F427'Runtime ("Ada"); -- device defines run-time
+
+   for Library_Name use "adaracer_v1";
+   for Library_Kind use "static";
+   for Library_Dir use "lib/adaracer_v1/"; -- & Config.RTS & "/" & Config.BUILD;
+   for Object_Dir use "obj/adaracer_v1/"; -- & Config.RTS & "/" & Config.BUILD;
+
+   -- add sources specific for pixhawk board
+   for Source_Dirs use ("adaracer_v1",
+			"adaracer_v1/hil",
+                        "common/hil",
+                        "common/tools",
+			"components/FM25V0x",
+			"components/MS5611",
+                        --"stm32_common", -- this is for button, but we have no button.
+                        "stm32_common/sdcard"
+			);
+
+   --package Compiler renames Config.Compiler;
+   --package Builder renames Config.Builder;
+
+end Adaracer_V1;
