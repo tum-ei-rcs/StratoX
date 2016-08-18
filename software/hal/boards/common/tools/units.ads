@@ -283,9 +283,10 @@ package Units with
      max > min and then
      max < Angle_Type'Last / 2.0 and then
      min > Angle_Type'First / 2.0,
-     Post => wrap_angle'Result >= min and wrap_angle'Result <= max;
+     Post => Float (wrap_angle'Result) >= Float (min) and Float (wrap_angle'Result) <= Float (max);
    --  wrap angle between two values
    --  Must make no assumptions on input 'angle' here, otherwise caller might fail if it isn't SPARK.
+   --  FIXME: the float casts in Post are a workaround for gcc
 
    function mirror_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
      with Pre => min <= 0.0 * Radian and then
@@ -293,8 +294,9 @@ package Units with
      max > min and then
      max < Angle_Type'Last / 4.0 and then
      min > Angle_Type'First / 4.0,
-     Post => mirror_Angle'Result >= min and mirror_Angle'Result <= max;
+     Post => Float (mirror_Angle'Result) >= Float (min) and Float (mirror_Angle'Result) <= Float (max);
    --  mirror angle at min/max boundaries
+   --  FIXME: the float casts in Post are a workaround for gcc
 
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type;
 
