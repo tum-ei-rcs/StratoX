@@ -26,7 +26,7 @@ project StratoX is
          for Target use "arm-eabi";
 
       when "analyze" =>
-         for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
+--         for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
          for Runtime ("ada") use Pixhawk'Runtime ("Ada");
          for Target use "arm-eabi";
    end case;

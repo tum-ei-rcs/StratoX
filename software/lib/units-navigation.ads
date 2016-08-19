@@ -105,18 +105,18 @@ package Units.Navigation with SPARK_Mode is
       DIM_EAST => value.Latitude * METER_PER_LAT_DEGREE,
       DIM_DOWN => -(value.Altitude) );
 
+   function Wrap_Add_Lat is new Units.Wrapped_Addition (T => Latitude_Type);
+   function Wrap_Add_Lon is new Units.Wrapped_Addition (T => Longitude_Type);
+   function Sat_Add_Alt  is new Units.Saturated_Addition (T => Altitude_Type);
 
    function "-" (Left, Right : GPS_Loacation_Type) return GPS_Translation_Type is
-   ( delta_Angle( Right.Longitude, Left.Longitude), delta_Angle( Right.Latitude, Left.Latitude ), Left.Altitude - Right.Altitude );
-
---     function "-" (Left : GPS_Loacation_Type; Right : GPS_Loacation_Type) return Translation_Vector is
---     ( X => Cos(Left.Latitude - Right.Latitude) * (Left.Longitude - Right.Longitude) * METER_PER_LAT_DEGREE,
---        Y => (Left.Latitude - Right.Latitude) * METER_PER_LAT_DEGREE,
---        Z => -(Left.Altitude - Right.Altitude) );
+     ( Wrap_Add_Lon (Left.Longitude, - Right.Longitude),
+       Wrap_Add_Lat (Left.Latitude, - Right.Latitude),
+      Sat_Add_Alt (Left.Altitude, - Right.Altitude));
+   --  subtract two GPS positions, wrapping the Lat/Long and limiting the Altitude
 
 --     function "+" (Left : GPS_Loacation_Type; Right : Translation_Vector) return GPS_Loacation_Type is
 --     ( Longitude => Left.Longitude + Right(X) , Altitude => Left.Altitude - Right(Z)
-
 
 
    function "+" (Left : Orientation_Type; Right : Rotation_Vector) return Orientation_Type is

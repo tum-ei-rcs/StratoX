@@ -210,7 +210,7 @@ is
          msg := Buffer (Integer (Pos_Read)); 
          --  FIXME: SPARK "discriminant check might fail". True, if the caller does hand
          --  over a constrained variant record. But we cannot formulate this as a precondition
-         --  and entries cannot have return values. No better way.
+         --  and entries cannot have return values. No way to check this.
          
          n_queued_before := Num_Queued;
          Pos_Read := Pos_Read + 1;
@@ -358,7 +358,8 @@ is
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
          bootstr     : constant String := HIL.Byte'Image (num_boots);
-         pragma Assume (bootstr'First = 1 and bootstr'Length <= 4); 
+         pragma Assert (HIL.Byte'Size <= 8);
+         pragma Assume (bootstr'First = 1 and bootstr'Length < 4); 
             -- Byte'Last is 255, and strings always start at index one
          fname       : constant String := bootstr(bootstr'First .. bootstr'Last) & ".log";
          BUFLEN      : constant := 128; -- header is around 90 bytes long

@@ -193,7 +193,8 @@ is
    --  predict_state
    -------------------------   
    
-   procedure predict_state( state : in out State_Vector; input : Input_Vector; dt : Time_Type ) is
+   procedure predict_state( state : in out State_Vector; input : Input_Vector; dt : Time_Type ) with SPARK_Mode => Off -- see below
+   is
       new_state : State_Vector := state;
       
       ELEVON_TO_GYRO : constant Frequency_Type := 0.5 * Hertz;
@@ -202,7 +203,7 @@ is
       
    begin
       -- gyro compensation
-      rotate( Cartesian_Vector_Type( compensated_rates ), X , state.orientation.Roll );
+      rotate( Cartesian_Vector_Type( compensated_rates ), X , state.orientation.Roll ); -- SPARK error: conversion  between array types that have dofferent element types is not yet supported
    
       -- state prediction
       new_state.orientation := state.orientation + (compensated_rates - state.bias) * dt;
