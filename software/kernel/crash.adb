@@ -1,5 +1,7 @@
 with System.Machine_Reset;
-with Ada.Real_Time; use Ada.Real_Time;
+with Ada.Real_Time;           use Ada.Real_Time;
+with System.Task_Primitives.Operations;
+with Config.Tasking;
 
 with Logger;
 --with Boot;
@@ -25,6 +27,21 @@ package body Crash with SPARK_Mode => Off is
                                then Unsigned_16 (line)
                                else Unsigned_16'Last);
    begin
+
+      --  if the task which called this handler is not flight critical,
+      --  silently hang here. as an effect, the system lives on without this task.
+      declare
+         use System.Task_Primitives.Operations;
+         prio : constant ST.Extended_Priority := Get_Priority (Self);
+      begin
+         if prio < Config.Tasking.TASK_PRIO_FLIGHTCRITICAL then
+            loop
+               null;
+            end loop;
+            --  FIXME: there exists a "sleep infinite" procedure...just can't find it
+            --  but that'll do. at least it doesn't block flight-critical tasks
+         end if;
+      end;
 
       --  first log to NVRAM
       declare

@@ -1,7 +1,7 @@
 with System;
-
 --  @summary Catches all exceptions, logs them to NVRAM and reboots.
 package Crash with SPARK_Mode => Off is
+   pragma Elaborate_Body;
    --  XXX! SPARK must be off here, otherwise this function is not being implemented.
 
    -- default exception handler (all exceptions will be catched here)

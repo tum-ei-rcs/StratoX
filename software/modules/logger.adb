@@ -10,12 +10,12 @@
 --     Logger.log_console (Logger.INFO, "Program started.")  -- writes log on info level to console
 --     Logger.log_sd (Logger.INFO, gps_msg) -- writes GPS record to SD card
 --     Logger.log (Logger.INFO, "hello") -- writes to both SD and console
+with Config.Tasking;
 with SDLog;
 with NVRAM;
 with Buildinfo;
 with HIL.Devices;
 with HIL.UART;
-with System;
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
 with Ada.Real_Time; use Ada.Real_Time;
@@ -86,7 +86,7 @@ is
 
    --  sporadic logging task waking up when message is enqueued
    task Logging_Task is 
-      pragma Priority (System.Priority'First); -- lowest prio for logging
+      pragma Priority (Config.Tasking.TASK_PRIO_LOGGING); -- lowest prio for logging
    end Logging_Task;
    pragma Annotate (GNATprove, Intentional, 
                     """sdlog.fh_log"" might not be initialized before start of tasks of type ""Logging_Task""", 

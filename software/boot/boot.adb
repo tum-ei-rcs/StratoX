@@ -1,10 +1,12 @@
 with Main;
-with System;
+with Config.Tasking;
+with Crash; -- must be here, to activate last_chance_handler
+pragma Unreferenced (Crash); -- protect the "with" above
 
 -- the entry point after POR
 
 procedure boot is
-   pragma Priority (System.Priority'First + 50);
+   pragma Priority (Config.Tasking.TASK_PRIO_MAIN);
 -- Self_Test_Passed : Boolean;
 begin
 

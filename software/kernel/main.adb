@@ -2,7 +2,7 @@
 -- Main System File
 -- the main loop (TM)
 
-with Ada.Real_Time;                     use Ada.Real_Time;
+with Ada.Real_Time;    use Ada.Real_Time;
 
 with CPU;
 with Units;            use Units;
@@ -16,7 +16,6 @@ with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
 
---  with Crash;
 with Mission;
 with Console;
 with Estimator;
