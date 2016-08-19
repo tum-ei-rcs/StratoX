@@ -124,7 +124,7 @@ is
       -- Measurement Noise
       G.R := Eye( m ) * 1.0e-3; -- default
       G.R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE;
-      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE / 500.0;
+      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE / 100.0;
       G.R( map(Z_YAW), map(Z_YAW) ) := ANGLE_MEASUREMENT_VARIANCE;
       
       G.R( map(Z_ROLL_RATE), map(Z_ROLL_RATE) ) := RATE_MEASUREMENT_VARIANCE;
@@ -236,7 +236,7 @@ is
       RATE_REF : constant Angular_Velocity_Type := 200.0*Degree/Second;
    begin
       R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE +
-         10.0* ANGLE_MEASUREMENT_VARIANCE * abs(samples.acc_length/GRAVITY - Unit_Type(1.0)) +
+         30.0* ANGLE_MEASUREMENT_VARIANCE * abs(samples.acc_length/GRAVITY - Unit_Type(1.0)) +
          10.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.orientation.Pitch/Pitch_Type'Last) +
          50.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(X)/RATE_REF);
       
@@ -307,11 +307,11 @@ is
       states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
       states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
       
-      Logger.log(Logger.TRACE, "bX: " & AImage( states.bias(X)*Second ) & 
+      Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
                  ", K_X: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
                  ", GyrX: " & AImage(states.rates(X)*Second)
                  );
-       Logger.log(Logger.TRACE, "bY: " & AImage( states.bias(Y)*Second ) & 
+       Logger.log(Logger.DEBUG, "bY: " & AImage( states.bias(Y)*Second ) & 
                  ", K_Y: " & Image(  K( map(X_PITCH), map(Z_PITCH) ) ) &
                  ", GyrY: " & AImage(states.rates(Y)*Second)
                  );                

@@ -48,9 +48,13 @@ package Config.Software with SPARK_Mode is
    
    -- PID Controller
    -- ----------------------------------------
+
+   CFG_CONTROLL_UNSTABLE_PITCH_THRESHOLD : constant Pitch_Type := 40.0*Degree;
+   CFG_CONTROLL_UNSTABLE_ROLL_THRESHOLD : constant Roll_Type := 40.0*Degree;
    
+
    -- Roll Constrains
-   CFG_TARGET_ROLL_LIMIT : constant Roll_Type := 10.0 * Degree;    
+   CFG_TARGET_ROLL_LIMIT : constant Roll_Type := 8.0 * Degree;    
    
    
    -- PID Gains

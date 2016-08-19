@@ -4,7 +4,7 @@ with Servo;
 with Generic_PID_Controller;
 with Logger;
 with Profiler;
-with Config.Software;
+with Config.Software; use Config.Software;
 with Units.Numerics; use Units.Numerics;
 
 with ULog;
@@ -373,10 +373,10 @@ package body Controller with SPARK_Mode is
       G_state.control_profiler.start;
 
       -- mix
-      if abs( G_Object_Orientation.Roll ) > 90.0 * Degree then
+      if abs( G_Object_Orientation.Roll ) > CFG_CONTROLL_UNSTABLE_ROLL_THRESHOLD then
          Control_Priority := ROLL_FIRST;
       end if;
-      if abs( G_Object_Orientation.Pitch ) > 40.0 *Degree then
+      if abs( G_Object_Orientation.Pitch ) > CFG_CONTROLL_UNSTABLE_PITCH_THRESHOLD then
          Control_Priority := PITCH_FIRST;
       end if;
       G_Elevon_Angles := Elevon_Angles(G_Plane_Control.Elevator, G_Plane_Control.Aileron, Control_Priority);
