@@ -18,9 +18,9 @@ package Config.Software with SPARK_Mode is
    
    
    -- Misison
-   CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 120.0 * Second;
-   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 600.0 * Second;   -- 600
-   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 360.0 * Second;  -- 360
+   CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 12.0 * Second;  -- Droptest: 120
+   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 30.0 * Second;     -- Droptest: 600
+   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 60.0 * Second;   -- Droptest: 360
    
    
 
@@ -56,14 +56,14 @@ package Config.Software with SPARK_Mode is
    -- PID Gains
    CFG_PID_PITCH_P : constant := 0.550;
    CFG_PID_PITCH_I : constant := 0.040;
-   CFG_PID_PITCH_D : constant := 0.005;
+   CFG_PID_PITCH_D : constant := 0.020;
    
    CFG_PID_ROLL_P : constant := 0.450;
    CFG_PID_ROLL_I : constant := 0.060;
    CFG_PID_ROLL_D : constant := 0.020;
 
-   CFG_PID_YAW_P : constant := 0.070;  -- 0.020 gut
-   CFG_PID_YAW_I : constant := 0.050;
+   CFG_PID_YAW_P : constant := 0.050;  -- error 60° => 3° target roll
+   CFG_PID_YAW_I : constant := 0.030;  -- error 60° for 3s => 6° target roll
    CFG_PID_YAW_D : constant := 0.000;
    
 

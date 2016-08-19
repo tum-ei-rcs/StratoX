@@ -190,8 +190,8 @@ package body Estimator with SPARK_Mode is
 
       -- Logger.log_console(Logger.DEBUG,"Acc: " & Image(G_imu.Acc(X)) & ", "
       --      & Image(G_imu.Acc(Y)) & ", " & Image(G_imu.Acc(Z)) );
-      -- Logger.log_console(Logger.DEBUG,"Gyro: " & AImage(G_imu.Gyro(Roll)*Second)
-      --      & ", " & AImage(G_imu.Gyro(Pitch)*Second) & ", " & AImage(G_imu.Gyro(YAW)*Second) );
+      -- Logger.log_console(Logger.DEBUG,"Gyro: " & AImage(G_imu.Gyro(X)*Second)
+      --      & ", " & AImage(G_imu.Gyro(Y)*Second) & ", " & AImage(G_imu.Gyro(Z)*Second) );
       -- Logger.log_console(Logger.DEBUG,"Gyro: " & RImage(G_imu.Gyro(Roll)*Second)
       --      & ", " & RImage(G_imu.Gyro(Pitch)*Second) & ", " & RImage(G_imu.Gyro(YAW)*Second) );
 
@@ -252,7 +252,7 @@ package body Estimator with SPARK_Mode is
       end if;
 
       --  perform Kalman filtering
-      G_state.kmObservations := ( G_Object_Position, G_state.avg_baro_height, Acc_Orientation, G_imu.Gyro );
+      G_state.kmObservations := ( G_Object_Position, G_state.avg_baro_height, Acc_Orientation, G_imu.Gyro, abs(G_imu.Acc) );
       Kalman.perform_Filter_Step( input, G_state.kmObservations );
 
       G_Object_Orientation.Roll := Kalman.get_States.orientation.Roll;

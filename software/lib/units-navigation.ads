@@ -11,6 +11,8 @@
 with Units.Vectors; use Units.Vectors;
 with Units.Numerics; use Units.Numerics;
 
+pragma Elaborate_All(Units.Numerics);
+
 package Units.Navigation with SPARK_Mode is
 
 
@@ -105,7 +107,7 @@ package Units.Navigation with SPARK_Mode is
 
 
    function "-" (Left, Right : GPS_Loacation_Type) return GPS_Translation_Type is
-   ( Left.Longitude - Right.Longitude, Left.Latitude - Right.Latitude, Left.Altitude - Right.Altitude );
+   ( delta_Angle( Right.Longitude, Left.Longitude), delta_Angle( Right.Latitude, Left.Latitude ), Left.Altitude - Right.Altitude );
 
 --     function "-" (Left : GPS_Loacation_Type; Right : GPS_Loacation_Type) return Translation_Vector is
 --     ( X => Cos(Left.Latitude - Right.Latitude) * (Left.Longitude - Right.Longitude) * METER_PER_LAT_DEGREE,

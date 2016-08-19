@@ -2,12 +2,12 @@ with Units; use Units;
 
 --  with Logger;
 
-package body Units.Navigation is
+package body Units.Navigation with SPARK_Mode is
 
 
    -- magnetic flux vecotor is pointing to the north and about 60° down to ground
    function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type is
-      temp_vector : Cartesian_Vector_Type := Cartesian_Vector_Type(mag_vector);
+      temp_vector : Cartesian_Vector_Type := ( Unit_Type( mag_vector(X) ), Unit_Type( mag_vector(Y) ), Unit_Type( mag_vector(Z) ) );
       result : Angle_Type := 0.0 * Degree;
    begin
       -- rotate(temp_vector, Z, 45.0 * Degree);
@@ -62,10 +62,16 @@ package body Units.Navigation is
    -- a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
    function Distance( source : GPS_Loacation_Type; target: GPS_Loacation_Type ) return Length_Type is
       haversine : Unit_Type;
+
+      delta_lat : Angle_Type := Angle_Type(target.Latitude) - Angle_Type(source.Latitude);
+      delta_lon : Angle_Type := Angle_Type(target.Longitude) - Angle_Type(source.Longitude);
+
    begin
-      haversine := Sin( delta_Angle( source.Latitude, target.Latitude ) / Unit_Type(2.0) )**2.0 +
-                   Cos( source.Latitude ) * Cos( source.Latitude )  *
-                   Sin( delta_Angle( source.Longitude, target.Longitude ) / Unit_Type(2.0) )**2.0;
+      haversine := Sin( delta_lat / Unit_Type(2.0) ) * Sin( delta_lat / Unit_Type(2.0) );    -- SPARK cant prove overflow check. why? Sin postcondition: Sin'Result in -1.0 .. 1.0
+      pragma Assume( haversine <= 1.0 );
+      haversine := haversine +
+                   Cos( source.Latitude ) * Cos( target.Latitude )  *
+                   Sin( delta_lon / Unit_Type(2.0) ) * Sin( delta_lon / Unit_Type(2.0) );
       return  2.0 * EARTH_RADIUS * Unit_Type( Arctan( Unit_Type( Sqrt( haversine ) ), Unit_Type( Sqrt( Unit_Type(1.0) - haversine) ) ) );
    end Distance;
 

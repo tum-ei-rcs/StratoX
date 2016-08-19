@@ -134,6 +134,9 @@ package body Mission with SPARK_Mode is
          NVRAM.Store( VAR_GPS_TARGET_LAT_A,  Float( G_state.home.Latitude ) );
          NVRAM.Store( VAR_GPS_TARGET_ALT_A,  Float( G_state.home.Altitude ) );
          
+         -- gib laut
+         Controller.bark;
+         
       end lock_Home;
       
    begin
@@ -143,6 +146,7 @@ package body Mission with SPARK_Mode is
       
       -- set hold
       Controller.set_hold;
+      Controller.sync;
 
       -- check GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
@@ -187,6 +191,7 @@ package body Mission with SPARK_Mode is
      
       -- set hold
       Controller.set_hold; 
+      Controller.sync;
   
       -- check target height
       -- FIXME: Sprung von Baro auf GPS hat ausgelöst.
@@ -225,11 +230,33 @@ package body Mission with SPARK_Mode is
    
    procedure perform_Detach is
       isAttached : Boolean := True;
+      start : Ada.Real_Time.Time := Ada.Real_Time.Clock; 
    begin
       Controller.activate;
 
       while isAttached loop
-         Controller.detach;
+         Controller.set_detach;
+         for k in Integer range 1 .. 40 loop
+            start := Ada.Real_Time.Clock;
+            Estimator.update( (0.0*Degree, 0.0*Degree) );
+            Controller.sync;
+            delay until start + Milliseconds(20);
+         end loop;
+         Controller.set_hold;
+         for k in Integer range 1 .. 15 loop
+            start := Ada.Real_Time.Clock;
+            Estimator.update( (0.0*Degree, 0.0*Degree) );
+            Controller.sync;
+            delay until start + Milliseconds(20);
+         end loop;
+         Controller.set_detach;
+         for k in Integer range 1 .. 30 loop
+            start := Ada.Real_Time.Clock;
+            Estimator.update( (0.0*Degree, 0.0*Degree) );
+            Controller.sync;
+            delay until start + Milliseconds(20);
+         end loop;
+         
          isAttached := False;
       end loop;
       

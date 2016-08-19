@@ -4,18 +4,18 @@ package body Units.Numerics with
    SPARK_Mode => Off
 is
 
-   function Sqrt (X : Unit_Type) return Float is
+   function Sqrt (X : Unit_Type) return Unit_Type is
    begin
-      return Elementary_Functions.Sqrt (Float (X));
+      return Unit_Type( Elementary_Functions.Sqrt (Float (X)) );
    end Sqrt;
 
-   function "**"
-     (Left  : Unit_Type;
-      Right : Integer)
-      return Float is
-   begin
-      return Elementary_Functions."**" (Float (Left), Float (Right));
-   end "**";
+--     function "**"
+--       (Left  : Unit_Type;
+--        Right : Integer)
+--        return Unit_Type is
+--     begin
+--        return Unit_Type( Elementary_Functions."**" (Float (Left), Float (Right)) );
+--     end "**";
 
    function "**" (Left : Unit_Type; Right : Float) return Unit_Type is
    begin

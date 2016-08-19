@@ -43,11 +43,11 @@ is
 
 
    ANGLE_PROCESS_VARIANCE : constant := 1.0e-4;  -- 1.0e-4  trust in orientation prediction (gyro integral)
-   RATE_PROCESS_VARIANCE  : constant := 1.0e-2;  -- dont trust in rate prediction
+   RATE_PROCESS_VARIANCE  : constant := 3.0e-2;  -- 1.0e-2 dont trust in rate prediction
    BIAS_PROCESS_VARIANCE  : constant := 1.0e-12;  -- trust in prev bias (really slow bias drift?)
       
-   ANGLE_MEASUREMENT_VARIANCE : constant := 6.0e-2;  -- dont trust in angel measurement (acc arctan)
-   RATE_MEASUREMENT_VARIANCE : constant := 1.0e-3;   -- trust rate measurement
+   ANGLE_MEASUREMENT_VARIANCE : constant := 6.0e-3;  -- 3.0e-2 dont trust in angle measurement (acc arctan)
+   RATE_MEASUREMENT_VARIANCE : constant := 1.0e-4;   -- 1.0e-3 trust rate measurement
 
 
    -----------------
@@ -145,7 +145,7 @@ is
       predict(u, dt);
       update(z, dt);
       KM_Profiler.stop;
-      KM_Profiler.log;
+      --KM_Profiler.log;
       
       G.t_last := now;          
    end perform_Filter_Step;
@@ -196,7 +196,7 @@ is
    procedure predict_state( state : in out State_Vector; input : Input_Vector; dt : Time_Type ) is
       new_state : State_Vector := state;
       
-      ELEVON_TO_GYRO : constant Frequency_Type := 0.3;
+      ELEVON_TO_GYRO : constant Frequency_Type := 0.5 * Hertz;
       PITCH_TO_AIRSPEED : constant := 0.5 * Meter / ( Degree * Second );
       compensated_rates : Angular_Velocity_Vector := state.rates;
       
@@ -206,8 +206,8 @@ is
    
       -- state prediction
       new_state.orientation := state.orientation + (compensated_rates - state.bias) * dt;
-      new_state.rates(X) := state.rates(X); -- + (input.Aileron - G.u.Aileron)/Second * ELEVON_TO_GYRO * dt;
-      new_state.rates(Y) := state.rates(Y); -- + (input.Elevator - G.u.Elevator)/Second * ELEVON_TO_GYRO * dt;
+      new_state.rates(X) := state.rates(X) + (input.Aileron - G.u.Aileron)/Second * ELEVON_TO_GYRO * dt;
+      new_state.rates(Y) := state.rates(Y) + (input.Elevator - G.u.Elevator)/Second * ELEVON_TO_GYRO * dt;
       new_state.bias := state.bias;
       new_state.pos := state.pos; -- + state.ground_speed * dt;
       new_state.air_speed(X) := state.air_speed(X) - state.orientation.Pitch * PITCH_TO_AIRSPEED;
@@ -235,12 +235,14 @@ is
                                              ) is
       RATE_REF : constant Angular_Velocity_Type := 200.0*Degree/Second;
    begin
-      R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE + 
-         10.0* ANGLE_MEASUREMENT_VARIANCE * (abs(states.orientation.Pitch/Pitch_Type'Last) +
-         50.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(X)/RATE_REF));
+      R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE +
+         10.0* ANGLE_MEASUREMENT_VARIANCE * abs(samples.acc_length/GRAVITY - Unit_Type(1.0)) +
+         10.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.orientation.Pitch/Pitch_Type'Last) +
+         50.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(X)/RATE_REF);
       
       R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE + 
-         50.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(Y)/RATE_REF);
+         10.0* ANGLE_MEASUREMENT_VARIANCE * abs(samples.acc_length/GRAVITY - Unit_Type(1.0)) +
+         30.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(Y)/RATE_REF);
    end estimate_observation_noise_cov;
 
 
@@ -305,11 +307,14 @@ is
       states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
       states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
       
-      Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
-                 ", K_bX: " & Image(  K( map(X_ROLL_BIAS), map(Z_ROLL) ) ) &
+      Logger.log(Logger.TRACE, "bX: " & AImage( states.bias(X)*Second ) & 
+                 ", K_X: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
                  ", GyrX: " & AImage(states.rates(X)*Second)
-                 --", dgX: " & Unit_Type'Image(residual.delta_gyr_rates(X))
                  );
+       Logger.log(Logger.TRACE, "bY: " & AImage( states.bias(Y)*Second ) & 
+                 ", K_Y: " & Image(  K( map(X_PITCH), map(Z_PITCH) ) ) &
+                 ", GyrY: " & AImage(states.rates(Y)*Second)
+                 );                
       
       -- limit bias
       for dim in Cartesian_Coordinates_Type loop
@@ -355,9 +360,9 @@ is
       A( map(X_LON), map(X_LON) ) := 1.0; A( map(X_LON), map(X_GROUND_SPEED_Y) ) := Unit_Type(dt);
       A( map(X_ALT), map(X_ALT) ) := 1.0; A( map(X_ALT), map(X_GROUND_SPEED_Z) ) := -Unit_Type(dt);
    
-      A( map(X_ROLL),  map(X_ROLL) )  := 1.0;   A( map(X_ROLL),  map(X_ROLL_RATE) )  := Unit_Type(dt);   A( map(X_ROLL),  map(X_ROLL_BIAS) )  := -1.0;
-      A( map(X_PITCH), map(X_PITCH) ) := 1.0;   A( map(X_PITCH), map(X_PITCH_RATE) ) := Unit_Type(dt);   A( map(X_PITCH), map(X_PITCH_BIAS) ) := -1.0; 
-      A( map(X_YAW),   map(X_YAW) )   := 1.0;   A( map(X_YAW),   map(X_YAW_RATE) )   := Unit_Type(dt);   A( map(X_YAW),   map(X_YAW_BIAS) )   := -1.0; 
+      A( map(X_ROLL),  map(X_ROLL) )  := 1.0;   A( map(X_ROLL),  map(X_ROLL_RATE) )  := Unit_Type(dt);   A( map(X_ROLL),  map(X_ROLL_BIAS) )  := -Unit_Type(dt);
+      A( map(X_PITCH), map(X_PITCH) ) := 1.0;   A( map(X_PITCH), map(X_PITCH_RATE) ) := Unit_Type(dt);   A( map(X_PITCH), map(X_PITCH_BIAS) ) := -Unit_Type(dt); 
+      A( map(X_YAW),   map(X_YAW) )   := 1.0;   A( map(X_YAW),   map(X_YAW_RATE) )   := Unit_Type(dt);   A( map(X_YAW),   map(X_YAW_BIAS) )   := -Unit_Type(dt); 
       
       A( map(X_ROLL_RATE), map(X_ROLL_RATE) ) := 1.0;
       A( map(X_PITCH_RATE), map(X_PITCH_RATE) ) := 1.0;

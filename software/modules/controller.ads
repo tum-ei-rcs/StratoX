@@ -44,6 +44,12 @@ package Controller with SPARK_Mode is
    
    procedure set_hold;
    
+   procedure set_detach;
+   
+   procedure bark;  -- good boy!
+   
+   procedure sync;
+   
    procedure detach;
 
    function get_Elevons return Elevon_Angle_Array;

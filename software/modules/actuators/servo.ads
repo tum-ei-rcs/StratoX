@@ -23,6 +23,8 @@ package Servo is
    procedure deactivate;
 
    procedure set_Angle(servo: Servo_Type; angle : Servo_Angle_Type);
+   
+   -- function get_Angle(servo: Servo_Type) return Servo_Angle_Type;
 
    procedure sync;
 

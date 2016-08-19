@@ -73,7 +73,8 @@ is
        Z_YAW,
        Z_ROLL_RATE,
        Z_PITCH_RATE,
-       Z_YAW_RATE
+       Z_YAW_RATE,
+       Z_ACC_LENGTH
       );
     
    subtype Observation_Vector_Index_Type is Natural range 1 .. Observation_Vector_Index_Name_Type'Range_Length;   
@@ -83,6 +84,7 @@ is
       baro_alt : Altitude_Type;
       acc_ori : Orientation_Type;
       gyr_rates : Angular_Velocity_Vector;
+      acc_length : Linear_Acceleration_Type;
       --mag_ori : Magnetic_Flux_Density_Vector; 
    end record; 
 

@@ -112,6 +112,14 @@ package Units with
          Ampere   => -2,
          others   => 0);
 
+   subtype Electric_Field_Type is Unit_Type with
+        Dimension =>
+        (Meter    => 1,
+         Kilogram => 1,
+         Second   => -3,
+         Ampere   => -1,
+         others   => 0);
+
    subtype Magnetic_Flux_Type is Unit_Type with
         Dimension =>
         (Symbol   => "Wb",
@@ -252,7 +260,7 @@ package Units with
    Kilogram : constant Mass_Type := Mass_Type (1.0);
    Gram     : constant Mass_Type := Mass_Type (1.0e-3);
 
-   Second       : constant Time_Type := Time_Type (1.0);
+   Second   : constant Time_Type := Time_Type (1.0);
 
    Ampere : constant Current_Type := Current_Type (1.0);
 

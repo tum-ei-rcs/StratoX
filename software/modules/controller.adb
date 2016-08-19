@@ -24,6 +24,7 @@ package body Controller with SPARK_Mode is
       logger_console_calls : Logger_Call_Type;
       control_profiler : Profiler.Profile_Tag;
       distance_to_target : Length_Type;
+      detach_animation_time : Time_Type := 0.0 * Second;
    end record;
 
    package Pitch_PID_Controller is new Generic_PID_Controller(Angle_Type,
@@ -173,14 +174,46 @@ package body Controller with SPARK_Mode is
    procedure set_hold is
    begin
       -- hold glider in position
-      Servo.set_Angle(Servo.LEFT_ELEVON, 35.0 * Degree );
-      Servo.set_Angle(Servo.RIGHT_ELEVON, 35.0 * Degree );
-      PX4IO.Driver.sync_Outputs;
+      Servo.set_Angle(Servo.LEFT_ELEVON, 38.0 * Degree );
+      Servo.set_Angle(Servo.RIGHT_ELEVON, 38.0 * Degree );
    end set_hold;
 
 
-   procedure detach is
+   procedure set_detach is
    begin
+      Servo.set_Angle(Servo.LEFT_ELEVON, -40.0 * Degree );
+      Servo.set_Angle(Servo.RIGHT_ELEVON, -40.0 * Degree );
+   end set_detach;
+
+   procedure sync is
+   begin
+      PX4IO.Driver.sync_Outputs;
+   end sync;
+
+   procedure bark is
+      angle : Servo.Servo_Angle_Type := 35.0 * Degree;
+   begin
+      for k in Integer range 1 .. 20 loop
+         Servo.set_Angle(Servo.LEFT_ELEVON, angle);
+         Servo.set_Angle(Servo.RIGHT_ELEVON, angle);
+         PX4IO.Driver.sync_Outputs;
+         Helper.delay_ms( 10 );
+       end loop;
+       for k in Integer range 1 .. 20 loop
+         Servo.set_Angle(Servo.LEFT_ELEVON, angle+3.0*Degree);
+         Servo.set_Angle(Servo.RIGHT_ELEVON, angle+3.0*Degree);
+         PX4IO.Driver.sync_Outputs;
+         Helper.delay_ms( 10 );
+      end loop;
+   end bark;
+
+
+   procedure detach is
+      now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      --dt    : constant Time_Type := Time_Type( Float( (now - G_state) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
+   begin
+      --G_state.detach_animation_time := G_state.detach_animation_time +
+
       Servo.set_Angle(Servo.LEFT_ELEVON, -40.0 * Degree);
       Servo.set_Angle(Servo.RIGHT_ELEVON, -40.0 * Degree);
       for k in Integer range 1 .. 80 loop
