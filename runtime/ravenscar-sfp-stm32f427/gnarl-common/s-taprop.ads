@@ -42,7 +42,7 @@ with System.Tasking;
 with System.OS_Interface;
 
 package System.Task_Primitives.Operations
-with SPARK_Mode => On is
+with SPARK_Mode => Off is
    pragma Preelaborate;
 
    package ST renames System.Tasking;

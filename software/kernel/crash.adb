@@ -4,7 +4,6 @@ with System.Task_Primitives.Operations;
 with Config.Tasking;
 
 with Logger;
---with Boot;
 with NVRAM;
 with HIL;
 with Interfaces; use Interfaces;

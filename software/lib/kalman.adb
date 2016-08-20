@@ -8,7 +8,7 @@ with Logger;
 with Profiler;
 
 package body Kalman with SPARK_Mode,
-Refined_State => (State => (G, KM_Profiler))
+  Refined_State => (State => (G, KM_Profiler))
 is
 
    k : constant := State_Vector_Index_Type'Last;  -- states
@@ -54,8 +54,7 @@ is
    --  reset
    -----------------
    procedure reset( init_states : State_Vector := DEFAULT_INIT_STATES ) is 
-      now : Time := Clock;
-      
+      now : constant Time := Clock;      
    begin
       G.t_last := now;
       
@@ -138,8 +137,8 @@ is
    -------------------------
    
    procedure perform_Filter_Step( u : in Input_Vector; z : in Observation_Vector ) is
-      now : Time := Clock;
-      dt : Time_Type := To_Time(now - G.t_last);
+      now : constant Time := Clock;
+      dt  : constant Time_Type := To_Time(now - G.t_last);
    begin
       KM_Profiler.start;
       predict(u, dt);
@@ -156,7 +155,13 @@ is
    
    procedure predict(u : Input_Vector; dt : Time_Type) is 
    begin
-      predict_state( G.x, u, dt );
+      declare
+         x : State_Vector := G.x;
+         --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
+      begin
+         predict_state( x, u, dt );
+         G.x := x;
+      end;
       declare
          P : State_Covariance_Matrix := G.P;
          --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
@@ -175,9 +180,20 @@ is
       residual : Innovation_Vector;
    begin
       estimate_observation_noise_cov( G.R, G.x, z);
-      calculate_gain( G.x, z, dt, K, residual ); 
+      declare
+         x : constant State_Vector := G.x;
+         --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
+      begin
+         calculate_gain( x, z, dt, K, residual ); 
+      end;
       uptate_state( G.x, K, residual, dt );
-      update_cov( G.P, K );
+      declare
+         P : State_Covariance_Matrix := G.P;
+         --  avoid forbidden aliasing by copying the result into G after the call (SPARK RM 6.4.2)
+      begin
+         update_cov( P, K );
+         G.P := P;
+      end;
    end update;
 
    -------------------------
@@ -246,10 +262,22 @@ is
          30.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(Y)/RATE_REF);
    end estimate_observation_noise_cov;
 
-
+   -------------------------
+   --  Minus
+   -------------------------
+   
+   function "-"(Left, Right : Observation_Vector) return Innovation_Vector is
+   begin
+      return ( Left.gps_pos   - Right.gps_pos, 
+               Left.baro_alt  - Right.baro_alt,
+               Left.acc_ori   - Right.acc_ori,
+               Left.gyr_rates - Right.gyr_rates );
+   end "-";
+   
    -------------------------
    --  calculate_gain
    -------------------------
+   
    procedure calculate_gain( states : State_Vector; 
                              samples : Observation_Vector; 
                              dt : Time_Type;
@@ -287,45 +315,46 @@ is
                            residual : Innovation_Vector; 
                            dt : Time_Type ) is
                            
-      BIAS_LIMIT : Angular_Velocity_Type := 50.0 * Degree/Second;
+      BIAS_LIMIT : constant Angular_Velocity_Type := 50.0 * Degree/Second;
    begin
-      -- update state
-      states.pos.Longitude := states.pos.Longitude + K( map(X_LON), map(Z_LON) ) * residual.delta_gps_pos.Longitude;
-      states.pos.Latitude := states.pos.Latitude + K( map(X_LAT), map(Z_LAT) ) * residual.delta_gps_pos.Latitude;
-      states.pos.Altitude := states.pos.Altitude + K( map(X_ALT), map(Z_ALT) ) * residual.delta_gps_pos.Altitude
-                                                 + K( map(X_ALT), map(Z_BARO_ALT) ) * residual.delta_baro_alt;
+      if dt > 0.0 then 
+         -- update state
+         states.pos.Longitude := states.pos.Longitude + K( map(X_LON), map(Z_LON) ) * residual.delta_gps_pos.Longitude;
+         states.pos.Latitude := states.pos.Latitude + K( map(X_LAT), map(Z_LAT) ) * residual.delta_gps_pos.Latitude;
+         states.pos.Altitude := states.pos.Altitude + K( map(X_ALT), map(Z_ALT) ) * residual.delta_gps_pos.Altitude
+           + K( map(X_ALT), map(Z_BARO_ALT) ) * residual.delta_baro_alt;
                                                  
-      states.orientation.Roll := wrap_Angle( states.orientation.Roll + K( map(X_ROLL), map(Z_ROLL) ) * residual.delta_acc_ori(X),
-                                             Roll_Type'First, Roll_Type'Last );
-      states.orientation.Pitch := mirror_Angle( states.orientation.Pitch + K( map(X_PITCH), map(Z_PITCH) ) * residual.delta_acc_ori(Y),
-                                                Pitch_Type'First, Pitch_Type'Last );
-      states.orientation.Yaw := wrap_Angle( states.orientation.Yaw + K( map(X_YAW), map(Z_YAW) ) * residual.delta_acc_ori(Z),
-                                            Yaw_Type'First, Yaw_Type'Last);
-      states.rates(X) := states.rates(X) + K( map(X_ROLL_RATE), map(Z_ROLL_RATE) ) * residual.delta_gyr_rates(X);
-      states.rates(Y) := states.rates(Y) + K( map(X_PITCH_RATE), map(Z_PITCH_RATE) ) * residual.delta_gyr_rates(Y);
-      states.rates(Z) := states.rates(Z) + K( map(X_YAW_RATE), map(Z_YAW_RATE) ) * residual.delta_gyr_rates(Z);
-      states.bias(X) := states.bias(X) + K( map(X_ROLL_BIAS), map(Z_ROLL) ) * residual.delta_acc_ori(X) / dt;
-      states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
-      states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
+         states.orientation.Roll := wrap_Angle( states.orientation.Roll + K( map(X_ROLL), map(Z_ROLL) ) * residual.delta_acc_ori(X),
+                                                Roll_Type'First, Roll_Type'Last );
+         states.orientation.Pitch := mirror_Angle( states.orientation.Pitch + K( map(X_PITCH), map(Z_PITCH) ) * residual.delta_acc_ori(Y),
+                                                   Pitch_Type'First, Pitch_Type'Last );
+         states.orientation.Yaw := wrap_Angle( states.orientation.Yaw + K( map(X_YAW), map(Z_YAW) ) * residual.delta_acc_ori(Z),
+                                               Yaw_Type'First, Yaw_Type'Last);
+         states.rates(X) := states.rates(X) + K( map(X_ROLL_RATE), map(Z_ROLL_RATE) ) * residual.delta_gyr_rates(X);
+         states.rates(Y) := states.rates(Y) + K( map(X_PITCH_RATE), map(Z_PITCH_RATE) ) * residual.delta_gyr_rates(Y);
+         states.rates(Z) := states.rates(Z) + K( map(X_YAW_RATE), map(Z_YAW_RATE) ) * residual.delta_gyr_rates(Z);
+         states.bias(X) := states.bias(X) + K( map(X_ROLL_BIAS), map(Z_ROLL) ) * residual.delta_acc_ori(X) / dt;
+         states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
+         states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
       
-      Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
-                 ", K_X: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
-                 ", GyrX: " & AImage(states.rates(X)*Second)
-                 );
-       Logger.log(Logger.DEBUG, "bY: " & AImage( states.bias(Y)*Second ) & 
-                 ", K_Y: " & Image(  K( map(X_PITCH), map(Z_PITCH) ) ) &
-                 ", GyrY: " & AImage(states.rates(Y)*Second)
-                 );                
+         Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
+                      ", K_X: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
+                      ", GyrX: " & AImage(states.rates(X)*Second)
+                   );
+         Logger.log(Logger.DEBUG, "bY: " & AImage( states.bias(Y)*Second ) & 
+                      ", K_Y: " & Image(  K( map(X_PITCH), map(Z_PITCH) ) ) &
+                      ", GyrY: " & AImage(states.rates(Y)*Second)
+                   );                
       
-      -- limit bias
-      for dim in Cartesian_Coordinates_Type loop
-         if states.bias(dim) < -BIAS_LIMIT then
-            states.bias(dim) := -BIAS_LIMIT;
-         elsif states.bias(dim) > BIAS_LIMIT then
-            states.bias(dim) := BIAS_LIMIT;
-         end if;
-      end loop;
-          
+         -- limit bias
+         for dim in Cartesian_Coordinates_Type loop
+            if states.bias(dim) < -BIAS_LIMIT then
+               states.bias(dim) := -BIAS_LIMIT;
+            elsif states.bias(dim) > BIAS_LIMIT then
+               states.bias(dim) := BIAS_LIMIT;
+            end if;
+         end loop;
+      end if;
    end uptate_state;
 
    -------------------------
@@ -337,18 +366,6 @@ is
       -- update cov
       P := P - (K * G.H) * P;
    end update_cov;
-
-   -------------------------
-   --  Minus
-   -------------------------
-   
-   function "-"(Left, Right : Observation_Vector) return Innovation_Vector is
-   begin
-      return ( Left.gps_pos   - Right.gps_pos, 
-               Left.baro_alt  - Right.baro_alt,
-               Left.acc_ori   - Right.acc_ori,
-               Left.gyr_rates - Right.gyr_rates );
-   end "-";
 
    -------------------------
    --  calculate_A

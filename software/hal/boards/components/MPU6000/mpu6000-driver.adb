@@ -538,15 +538,23 @@ is
       --  Factory Trim of the Self - Test Response
       --  To get percent, must multiply by 100
 
-      for I in 1 .. 3 loop
-         Acc_Diff (I) :=
-           100.0 * (Float (Acc_ST_Avg (I) - Acc_Avg (I) - Factory_Trim (I)) /
-                      Float (Factory_Trim (I)));
-         Gyro_Diff (I) :=
-           100.0 * (Float (Gyro_ST_Avg (I) - Gyro_Avg (I) -
-                      Factory_Trim (I + 3)) /
-                      Float (Factory_Trim (I + 3)));
-      end loop;
+      declare
+         AFT, GFT : Float;
+      begin         
+         for I in 1 .. 3 loop
+            AFT := Float (Factory_Trim (I));
+            GFT := Float (Factory_Trim (I + 3));
+            if AFT /= 0.0 then
+               Acc_Diff (I) :=
+                 100.0 * (Float (Acc_ST_Avg (I) - Acc_Avg (I) - Factory_Trim (I)) / AFT);
+            end if;
+            if GFT /= 0.0 then
+               Gyro_Diff (I) :=
+                 100.0 * (Float (Gyro_ST_Avg (I) - Gyro_Avg (I) -
+                            Factory_Trim (I + 3)) / GFT);
+            end if;
+         end loop;
+      end;
 
       --  Restore old configuration
       Write_Byte_At_Register

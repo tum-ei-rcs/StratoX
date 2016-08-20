@@ -169,10 +169,10 @@ def get_totals(reportunits, buildunits, sorting):
     
     ## DATA FROM REPORT
     for u,uinfo in reportunits.iteritems():
-        if uinfo["subs"] == 0:
-            unit_cov = 100
-        else:
+        if uinfo["subs"] > 0:
             unit_cov = 100 * (1.0 - (float(uinfo["skip"]) / uinfo["subs"]))
+        else:
+            unit_cov = 100
         if uinfo["props"] > 0:
             unit_success = 100*float(uinfo["proven"])/uinfo["props"]
         else:
@@ -198,13 +198,27 @@ def get_totals(reportunits, buildunits, sorting):
     #################
     #  MERGE DATA
     #################
+    def do_merge(uinfo1, uinfo2):
+        uinfo["datasrc"] = "merged"
+        for cat in ("subs", "props", "proven", "skip"):
+            uinfo[cat] = max(uinfo1[cat],uinfo2[cat])
+        if uinfo["props"] > 0:
+            uinfo["success"] = 100*float(uinfo["proven"]) / uinfo["props"]
+        else:
+            uinfo["success"] = 100.0
+        if uinfo["subs"] > 0:
+            uinfo["coverage"] = 100 * (1.0 - (float(uinfo["skip"]) / uinfo["subs"]))
+        else:
+            uinfo["coverage"] = 100.0
+        return uinfo
+    # ----------
     mergedunits=reportunits
     if buildunits:
         for u,uinfo in buildunits.iteritems():
             if u in mergedunits:
-                pass
+                mergedunits[u] = do_merge(mergedunits[u], uinfo)
             else:
-                mergedunits[u]=uinfo
+                mergedunits[u] = uinfo
         
     ## TOTALS
     n = len(mergedunits)
