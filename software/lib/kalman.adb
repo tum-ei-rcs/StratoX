@@ -317,7 +317,7 @@ is
                            
       BIAS_LIMIT : constant Angular_Velocity_Type := 50.0 * Degree/Second;
    begin
-      if dt > 0.0 then 
+      if dt > Time_Type (0.0) then 
          -- update state
          states.pos.Longitude := states.pos.Longitude + K( map(X_LON), map(Z_LON) ) * residual.delta_gps_pos.Longitude;
          states.pos.Latitude := states.pos.Latitude + K( map(X_LAT), map(Z_LAT) ) * residual.delta_gps_pos.Latitude;
