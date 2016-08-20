@@ -35,6 +35,8 @@ def file2unit(filename):
 def get_stdout_stats(inputfile):
     """
     parse output of stdout from gnatprove
+    XXX! output comes twice. First for flow analysis, then again for proof.
+    this parser overwrites the flow part.
     """
     if os.stat(inputfile).st_size == 0: return None
 

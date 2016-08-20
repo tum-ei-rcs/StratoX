@@ -7,7 +7,8 @@ package MyStrings with SPARK_Mode is
    function Is_AlNum (c : Character) return Boolean;
    --  is the given character alphanumeric?
 
-   function Strip_Non_Alphanum (s : String) return String;
+   function Strip_Non_Alphanum (s : String) return String
+     with Post => Strip_Non_Alphanum'Result'Length <= S'Length;
    --  remove all non-alphanumeric characters from string
 
    function StrChr (S : String; C : Character) return Integer with
@@ -20,12 +21,15 @@ package MyStrings with SPARK_Mode is
    --  if too short, pad with spaces until it reaches the given length
    --  if too long, then crop
 
-   function RTrim (S : String) return String;
+   function RTrim (S : String) return String
+     with Post => RTrim'Result'Length <= S'Length;
    --  remove trailing spaces
 
-   function LTrim (S : String) return String;
+   function LTrim (S : String) return String
+     with Post => LTrim'Result'Length <= S'Length;
    --  remove leading spaces
 
-   function Trim (S : String) return String;
+   function Trim (S : String) return String
+     with Post => Trim'Result'Length <= S'Length;
    --  remove leading and trailing spaces
 end MyStrings;

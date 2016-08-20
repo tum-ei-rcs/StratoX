@@ -547,11 +547,15 @@ is
             if AFT /= 0.0 then
                Acc_Diff (I) :=
                  100.0 * (Float (Acc_ST_Avg (I) - Acc_Avg (I) - Factory_Trim (I)) / AFT);
+            else
+               Acc_Diff (I) := 0.0;
             end if;
             if GFT /= 0.0 then
                Gyro_Diff (I) :=
                  100.0 * (Float (Gyro_ST_Avg (I) - Gyro_Avg (I) -
                             Factory_Trim (I + 3)) / GFT);
+            else
+               Gyro_Diff (I) := 0.0;
             end if;
          end loop;
       end;

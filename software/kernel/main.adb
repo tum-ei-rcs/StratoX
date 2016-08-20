@@ -82,13 +82,17 @@ package body Main with SPARK_Mode => On is
          exception_line : HIL.Byte_Array_2 := (0,0);
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots); -- is maintained by the NVRAM itself
-         Logger.log_console (Logger.INFO, "Boot number: " & HIL.Byte'Image (num_boots));
-         Logger.log_console (Logger.INFO, "Build date: " & Buildinfo.Compilation_ISO_Date
-                     & " " & Buildinfo.Compilation_Time);
-
+         declare
+            strboot : constant String := HIL.Byte'Image (num_boots); -- unconstrained. Use in log_console => proof fail.
+            pragma Assert (HIL.Byte'Size <= 8);
+            pragma Assume (strboot'Length <= 4);
+         begin
+            Logger.log_console (Logger.INFO, ("Boot number: " & strboot));
+            Logger.log_console (Logger.INFO, "Build date: " & Buildinfo.Compilation_ISO_Date
+                                & " " & Buildinfo.Compilation_Time);
+         end;
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_H, exception_line(2));
-
          Logger.log_console(Logger.WARN, "Last Exception: " & Integer'Image( Integer( HIL.toUnsigned_16( exception_line ) ) ) );
       end;
 
