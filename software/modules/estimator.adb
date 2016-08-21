@@ -93,6 +93,7 @@ package body Estimator with SPARK_Mode is
 
    G_state  : State_Type;
    G_imu    : IMU_Data_Type;
+   G_mag    : Magnetic_Flux_Density_Vector;
    -- G_Sensor : Sensor_Record;
 
    G_height_buffer      : Height_Buffer_Pack.Buffer_Tag;
@@ -175,7 +176,6 @@ package body Estimator with SPARK_Mode is
    procedure update( input : Kalman.Input_Vector ) is
       Acc_Orientation : Orientation_Type;
       CF_Orientation : Orientation_Type;
-      Mag : Magnetic_Flux_Density_Vector;
       GFixS : String := "NO";
       pragma Unreferenced (GFixS);
 
@@ -210,10 +210,10 @@ package body Estimator with SPARK_Mode is
       --     & AImage( G_Object_Orientation.Pitch ) & ", " & AImage( G_Object_Orientation.Yaw ) );
 
       Magnetometer.Sensor.read_Measurement;
-      Mag := Magnetometer.Sensor.get_Sample.data;
+      G_mag := Magnetometer.Sensor.get_Sample.data;
 
       -- Logger.log_console(Logger.DEBUG, "Mag (uT):" & Image(Mag(X) * 1.0e6) & ", " & Image(Mag(Y) * 1.0e6) & ", " & Image(Mag(Z) * 1.0e6) );
-      G_Object_Orientation.Yaw := Heading(Mag, G_Object_Orientation);
+      G_Object_Orientation.Yaw := Heading(G_mag, G_Object_Orientation);
 
 
 
@@ -290,6 +290,7 @@ package body Estimator with SPARK_Mode is
    --  write Estimator info to logs
    procedure log_Info is
       imu_msg : ULog.Message (ULog.IMU);
+      mag_msg : ULog.Message (ULog.MAG);
       gps_msg : ULog.Message (ULog.GPS);
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
@@ -321,6 +322,14 @@ package body Estimator with SPARK_Mode is
                           yaw   => Float( G_Object_Orientation.Yaw )
       );
 
+
+      mag_msg := ( Typ => ULog.MAG,
+                          t => now,
+                          magX  => Float( G_mag(X) ),
+                          magY  => Float( G_mag(Y) ),
+                          magZ  => Float( G_mag(Z) )
+      );
+
       gps_msg := ( Typ => ULog.GPS,
                    t => now,
                    gps_week => 0,
@@ -332,8 +341,9 @@ package body Estimator with SPARK_Mode is
                    alt      => Float( G_Object_Position.Altitude )
       );
 
-      Logger.log_sd( Logger.INFO, imu_msg );
-      Logger.log_sd( Logger.INFO, gps_msg );
+      Logger.log_sd( Logger.SENSOR, imu_msg );
+      Logger.log_sd( Logger.SENSOR, mag_msg );
+      Logger.log_sd( Logger.SENSOR, gps_msg );
 
 
    end log_Info;

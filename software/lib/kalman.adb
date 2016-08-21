@@ -337,14 +337,14 @@ is
          states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
          states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
       
-         Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
-                      ", K_X: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
-                      ", GyrX: " & AImage(states.rates(X)*Second)
-                   );
-         Logger.log(Logger.DEBUG, "bY: " & AImage( states.bias(Y)*Second ) & 
-                      ", K_Y: " & Image(  K( map(X_PITCH), map(Z_PITCH) ) ) &
-                      ", GyrY: " & AImage(states.rates(Y)*Second)
-                   );                
+--           Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
+--                        ", K_X: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
+--                        ", GyrX: " & AImage(states.rates(X)*Second)
+--                     );
+--           Logger.log(Logger.DEBUG, "bY: " & AImage( states.bias(Y)*Second ) & 
+--                        ", K_Y: " & Image(  K( map(X_PITCH), map(Z_PITCH) ) ) &
+--                        ", GyrY: " & AImage(states.rates(Y)*Second)
+--                     );                
       
          -- limit bias
          for dim in Cartesian_Coordinates_Type loop

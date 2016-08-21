@@ -54,7 +54,7 @@ package body Profiler with SPARK_Mode is
    end stop;
 
    procedure log(Self : in Profile_Tag) is
-      time_us_flt : constant Float := Float'Floor( Float (Units.To_Time (Self.max_duration))) * 1.0e6;
+      time_us_flt : constant Float := Float'Floor( Float (Units.To_Time (Self.max_duration)) * 1.0e6);
       time_us_int : Integer;
    begin
       if CFG_PROFILER_PROFILING and CFG_PROFILER_LOGGING then

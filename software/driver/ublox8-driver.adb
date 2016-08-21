@@ -269,7 +269,7 @@ is
          G_GPS_Message.lat := Unit_Type(Float( HIL.toInteger_32( data_rx(28 .. 31) ) ) * 1.0e-7) * Degree;
          G_GPS_Message.alt := Unit_Type(Float( HIL.toInteger_32( data_rx(36 .. 39) ) )) * Milli * Meter;
          G_GPS_Message.sats := Unsigned_8 (data_rx(23));
-         G_GPS_Message.speed := Units.Linear_Velocity_Type ( Float (HIL.toInteger_32 (data_rx(60 .. 64))) / 1000.0);
+         G_GPS_Message.speed := Units.Linear_Velocity_Type ( Float (HIL.toInteger_32 (data_rx(60 .. 63))) / 1000.0);   -- SPARK? war 60 .. 64
          
          case data_rx(20) is
          when HIL.Byte(2) => G_GPS_Message.fix := FIX_2D;

@@ -353,7 +353,7 @@ is
    
    procedure sync_Outputs is
             Duty_Cycle : Data_Type (1 .. 2);
-            Speed      : Data_Type (1 .. 16) := (others => 0);   -- 8 Controls;
+            --Speed      : Data_Type (1 .. 16) := (others => 0);   -- 8 Controls;
             Status     : Data_Type(1 .. 2) := (others => 0);
    begin
       -- left
@@ -365,9 +365,9 @@ is
       write(PX4IO_PAGE_DIRECT_PWM, 1, Duty_Cycle);
       
       -- motor
-      Speed(1 .. 2) := HIL.toBytes( esc_PWM( G_Motor_Speed ) );
-      --write(PX4IO_PAGE_CONTROLS, PX4IO_P_CONTROLS_GROUP_0, Speed);  -- write to CONTROLS clears PX4IO_PAGE_DIRECT_PWM
-      write(PX4IO_PAGE_DIRECT_PWM, 2, Speed);
+      -- Speed(1 .. 2) := HIL.toBytes( esc_PWM( G_Motor_Speed ) );
+      -- write(PX4IO_PAGE_CONTROLS, PX4IO_P_CONTROLS_GROUP_0, Speed);  -- write to CONTROLS clears PX4IO_PAGE_DIRECT_PWM
+      -- write(PX4IO_PAGE_DIRECT_PWM, 2, Speed);
       
       -- check state
       G_check_counter := Check_Status_Mod_Type'Succ( G_check_counter );

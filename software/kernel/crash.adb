@@ -51,7 +51,7 @@ package body Crash with SPARK_Mode => Off is
       end;
 
       --  now write to console (which might fail)
-      Logger.log_console(Logger.ERROR, "Exception: Addr: "
+      Logger.log(Logger.ERROR, "Exception: Addr: "
                          & Integer'Image( To_Integer( location ) )
                          & ", line  " & Integer'Image( line ) );
 
