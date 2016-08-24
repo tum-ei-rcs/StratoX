@@ -60,6 +60,14 @@ package body ULog with SPARK_Mode => On is
                                  msg : in Message; buf : out HIL.Byte_Array)
      with Pre => msg.Typ = IMU;
 
+   procedure Serialize_Ulog_Baro (ct : in out ULog.Conversions.Conversion_Tag;
+                                  msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = BARO;
+
+   procedure Serialize_Ulog_Mag (ct : in out ULog.Conversions.Conversion_Tag;
+                                 msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = MAG;
+
    procedure Serialize_Ulog_Controller (ct : in out ULog.Conversions.Conversion_Tag;
                                         msg : in Message; buf : out HIL.Byte_Array)
      with Pre => msg.Typ = CONTROLLER;
@@ -125,19 +133,31 @@ package body ULog with SPARK_Mode => On is
    end Serialize_Ulog_IMU;
    pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 
+   ------------------------
+   --  Serialize_Ulog_BARO
+   ------------------------
+
+   procedure Serialize_Ulog_Baro (ct : in out ULog.Conversions.Conversion_Tag;
+                                  msg : in Message; buf : out HIL.Byte_Array) is
+   begin
+      Set_Name (ct, "Baro");
+      Append_Float (ct, "press", buf, msg.pressure);
+      Append_Float (ct, "temp", buf, msg.temp);
+   end Serialize_Ulog_Baro;
+   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "being done here");
 
    ------------------------
    --  Serialize_Ulog_MAG
    ------------------------
 
-   procedure Serialize_Ulog_MAG (ct : in out ULog.Conversions.Conversion_Tag;
+   procedure Serialize_Ulog_Mag (ct : in out ULog.Conversions.Conversion_Tag;
                                  msg : in Message; buf : out HIL.Byte_Array) is
    begin
       Set_Name (ct, "MAG");
       Append_Float (ct, "magX", buf, msg.magX);
       Append_Float (ct, "magY", buf, msg.magY);
       Append_Float (ct, "magZ", buf, msg.magZ);
-   end Serialize_Ulog_MAG;
+   end Serialize_Ulog_Mag;
    pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 
 
@@ -273,6 +293,8 @@ package body ULog with SPARK_Mode => On is
             Serialize_Ulog_Controller (ct, msg, bytes);
          when TEXT =>
             Serialize_Ulog_Text (ct, msg, bytes);
+         when BARO =>
+            Serialize_Ulog_Baro (ct, msg, bytes);
          when LOG_QUEUE =>
             Serialize_Ulog_LogQ (ct, msg, bytes);
       end case;

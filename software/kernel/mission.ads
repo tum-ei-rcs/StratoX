@@ -6,7 +6,7 @@ package Mission with SPARK_Mode is
    type Mission_State_Type is (
       UNKNOWN,
       INITIALIZING,
-      SELF_TESTING,
+      WAITING_FOR_GPS,
       WAITING_FOR_ARM,
       WAITING_FOR_RELEASE,
       ASCENDING,
@@ -40,7 +40,7 @@ private
    
    procedure perform_Initialization;
 
-   procedure perform_Self_Test;
+   procedure wait_for_GPSfix;
 
    procedure wait_For_Arm;
    

@@ -1,5 +1,6 @@
 with Generic_Sensor;
 
+with Units;
 with Units.Navigation; use Units.Navigation;
 with Interfaces; use Interfaces;
 
@@ -28,6 +29,8 @@ is
    function get_GPS_Fix(Self : GPS_Tag) return GPS_Fix_Type;
 
    function get_Num_Sats(Self : GPS_Tag) return Unsigned_8;
+
+   function get_Speed(Self : GPS_Tag) return Units.Linear_Velocity_Type;
 
    -- function get_Angular_Velocity (Self : GPS_Tag)
 

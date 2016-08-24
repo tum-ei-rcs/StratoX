@@ -126,7 +126,7 @@ package body Mission with SPARK_Mode is
       next_State;
    end perform_Initialization;
 
-   procedure perform_Self_Test is
+   procedure wait_for_GPSfix is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       
       procedure lock_Home is
@@ -175,7 +175,7 @@ package body Mission with SPARK_Mode is
          next_State;
       end if;
       
-   end perform_Self_Test;
+   end wait_for_GPSfix;
 
    procedure wait_For_Arm is
    begin
@@ -302,9 +302,8 @@ package body Mission with SPARK_Mode is
       Controller.set_Current_Position (G_state.body_info.position);
       Controller.runOneCycle; 
       
-      
-      
-      -- Check stable position
+            
+      -- Check stable position (not changed for 2 min)
       if Estimator.get_Stable_Time > 120.0 * Second then
          Logger.log(Logger.INFO, "Landed.");
          deactivate;
@@ -355,8 +354,8 @@ package body Mission with SPARK_Mode is
          when INITIALIZING => 
             perform_Initialization;
             
-         when SELF_TESTING =>
-            perform_Self_Test;
+         when WAITING_FOR_GPS =>
+            wait_for_GPSfix;
             
          when WAITING_FOR_ARM =>
             wait_For_Arm;

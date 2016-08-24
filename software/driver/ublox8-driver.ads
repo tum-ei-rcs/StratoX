@@ -53,6 +53,9 @@ is
    function get_Nsat return Unsigned_8;
    --  read most recent number of used satellits
 
+   function get_Velo return Units.Linear_Velocity_Type;
+   --  read most recent velocity
+
    -- function get_Direction return Direction_Type;
 
    procedure perform_Self_Check (Status : out Error_Type);

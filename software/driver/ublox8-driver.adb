@@ -321,6 +321,11 @@ is
       return G_GPS_Message.fix;
    end get_Fix;
    
+   function get_Velo return Linear_Velocity_Type is
+   begin
+      return G_GPS_Message.speed;
+   end get_Velo;
+   
    function get_Nsat return Unsigned_8 is
    begin
       return G_GPS_Message.sats;

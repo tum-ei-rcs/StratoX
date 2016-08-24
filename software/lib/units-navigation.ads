@@ -30,7 +30,7 @@ package Units.Navigation with SPARK_Mode is
    -- GPS Position
    subtype Longitude_Type is Units.Angle_Type range -180.0 * Degree .. 180.0 * Degree;
    subtype Latitude_Type is Units.Angle_Type range -90.0 * Degree .. 90.0 * Degree;
-   subtype Altitude_Type is Units.Length_Type range -10_000.0 * Meter .. 10_000.0 * Meter;
+   subtype Altitude_Type is Units.Length_Type range -10_000.0 * Meter .. 40_000.0 * Meter;
 
    type GPS_Loacation_Type is record
       Longitude : Longitude_Type := 0.0 * Degree;

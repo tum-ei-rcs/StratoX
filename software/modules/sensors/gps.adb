@@ -29,6 +29,12 @@ is
       return Driver.get_Fix;
    end get_GPS_Fix;
 
+   function get_Speed(Self : GPS_Tag) return Units.Linear_Velocity_Type is
+      pragma Unreferenced (Self);
+   begin
+      return Driver.get_Velo;
+   end get_Speed;
+
    function get_Num_Sats(Self : GPS_Tag) return Unsigned_8 is
       pragma Unreferenced (Self);
    begin

@@ -59,6 +59,7 @@ package body Estimator with SPARK_Mode is
    type State_Type is record
       init_time            : Time := Time_First;
       fix                  : GPS_Fix_Type := NO_FIX;
+      gps_speed            : Linear_Velocity_Type := 0.0 * Meter/Second;
       nsat                 : Unsigned_8 := 0;
       avg_gps_height       : Altitude_Type := 0.0 * Meter;
       max_gps_height       : Altitude_Type := 0.0 * Meter;
@@ -66,6 +67,8 @@ package body Estimator with SPARK_Mode is
       max_baro_height      : Altitude_Type := 0.0 * Meter;
       height_deviation     : Linear_Velocity_Type := 0.0 * Meter/Second;
       baro_calls           : Baro_Call_Type := 0;
+      baro_press           : Pressure_Type := 0.0 * Pascal;
+      baro_temp            : Temperature_Type := CELSIUS_0;
       logger_calls         : Logger_Call_Type := 0; -- counter for log ratio
       logger_console_calls : Logger_Call_Type := 0;
       stable_Time          : Time_Type := 0.0 * Second;
@@ -91,7 +94,7 @@ package body Estimator with SPARK_Mode is
    --  INTERNAL STATES
    ---------------------
 
-   G_state  : State_Type;
+   G_state  : State_Type; -- all the states
    G_imu    : IMU_Data_Type;
    G_mag    : Magnetic_Flux_Density_Vector;
    -- G_Sensor : Sensor_Record;
@@ -230,6 +233,8 @@ package body Estimator with SPARK_Mode is
                -- G_state.height_deviation := (Barometer.Sensor.get_Altitude - previous_height ) / dt;
             end if;
          end;
+         G_state.baro_temp := Barometer.Sensor.get_Temperature;
+         G_state.baro_press := Barometer.Sensor.get_Pressure;
          Height_Buffer_Pack.push_back( G_height_buffer, Len_to_Alt (Barometer.Sensor.get_Altitude));
          update_Max_Height;
       end if;
@@ -238,6 +243,7 @@ package body Estimator with SPARK_Mode is
       GPS.Sensor.read_Measurement;
       G_state.fix := GPS.Sensor.get_GPS_Fix;
       G_state.nsat := GPS.Sensor.get_Num_Sats;
+      G_state.gps_speed := GPS.Sensor.get_Speed;
       -- FIXME: Sprung durch Baro Offset, falls GPS wegfällt
       if G_state.fix = FIX_3D then
          G_Object_Position := GPS.Sensor.get_Position;
@@ -292,6 +298,7 @@ package body Estimator with SPARK_Mode is
       imu_msg : ULog.Message (ULog.IMU);
       mag_msg : ULog.Message (ULog.MAG);
       gps_msg : ULog.Message (ULog.GPS);
+      bar_msg : Ulog.Message (ULog.BARO);
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
 
@@ -312,25 +319,28 @@ package body Estimator with SPARK_Mode is
 
       -- log to SD
       imu_msg := ( Typ => ULog.IMU,
-                          t => now,
-                          accX  => Float( G_imu.Acc(X) ),
-                          accY  => Float( G_imu.Acc(Y) ),
-                          accZ  => Float( G_imu.Acc(Z) ),
-                          gyroX => Float( G_imu.Gyro(X) ),
-                          gyroY => Float( G_imu.Gyro(Y) ),
-                          gyroZ => Float( G_imu.Gyro(Z) ),
-                          roll  => Float( G_Object_Orientation.Roll ),
-                          pitch => Float( G_Object_Orientation.Pitch ),
-                          yaw   => Float( G_Object_Orientation.Yaw )
-      );
-
+                   t => now,
+                   accX  => Float( G_imu.Acc(X) ),
+                   accY  => Float( G_imu.Acc(Y) ),
+                   accZ  => Float( G_imu.Acc(Z) ),
+                   gyroX => Float( G_imu.Gyro(X) ),
+                   gyroY => Float( G_imu.Gyro(Y) ),
+                   gyroZ => Float( G_imu.Gyro(Z) ),
+                   roll  => Float( G_Object_Orientation.Roll ),
+                   pitch => Float( G_Object_Orientation.Pitch ),
+                   yaw   => Float( G_Object_Orientation.Yaw )
+                  );
 
       mag_msg := ( Typ => ULog.MAG,
-                          t => now,
-                          magX  => Float( G_mag(X) ),
-                          magY  => Float( G_mag(Y) ),
-                          magZ  => Float( G_mag(Z) )
-      );
+                   t => now,
+                   magX  => Float( G_mag(X) ),
+                   magY  => Float( G_mag(Y) ),
+                   magZ  => Float( G_mag(Z) ));
+
+      bar_msg := (Typ => ULog.BARO,
+                  t => now,
+                  pressure => Float (G_state.baro_press),
+                  temp => Float (G_state.baro_temp));
 
       gps_msg := ( Typ => ULog.GPS,
                    t => now,
@@ -338,15 +348,17 @@ package body Estimator with SPARK_Mode is
                    gps_msec => 0,
                    fix      => Unsigned_8 (GPS_Fix_Type'Pos( G_state.fix )),
                    nsat     => G_state.nsat,
-                   lat      => Float( G_Object_Position.Latitude / Degree ),
-                   lon      => Float( G_Object_Position.Longitude / Degree ),
-                   alt      => Float( G_Object_Position.Altitude )
-      );
+                   lat      => Float (G_Object_Position.Latitude / Degree),
+                   lon      => Float (G_Object_Position.Longitude / Degree),
+                   alt      => Float (G_Object_Position.Altitude),
+                   vel      => Float (G_state.gps_speed)
+                  );
 
-      Logger.log_sd( Logger.SENSOR, imu_msg );
-      Logger.log_sd( Logger.SENSOR, mag_msg );
+      --  order by priority (log queue might be full)
       Logger.log_sd( Logger.SENSOR, gps_msg );
-
+      Logger.log_sd( Logger.SENSOR, imu_msg );
+      Logger.log_sd( Logger.SENSOR, bar_msg );
+      Logger.log_sd( Logger.SENSOR, mag_msg );
 
    end log_Info;
 
@@ -437,11 +449,12 @@ package body Estimator with SPARK_Mode is
 
    function get_relative_Height return Altitude_Type is
       result : Altitude_Type;
+      function Sat_Add_Alt is new Units.Saturated_Addition (T => Altitude_Type);
    begin
       if G_state.fix = FIX_3D then
-         result := G_state.avg_gps_height - G_state.home_pos.Altitude;
+         result := Sat_Add_Alt (G_state.avg_gps_height, -G_state.home_pos.Altitude);
       else
-         result := G_state.avg_baro_height - G_state.home_baro_alt;
+         result := Sat_Add_Alt (G_state.avg_baro_height, -G_state.home_baro_alt);
       end if;
       return result;
    end get_relative_Height;

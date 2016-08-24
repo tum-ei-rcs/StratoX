@@ -23,7 +23,7 @@ with HIL;
 package ULog with SPARK_Mode is
 
    --  types of log messages. Add new ones when needed.
-   type Message_Type is (NONE, TEXT, GPS, IMU, MAG, CONTROLLER, LOG_QUEUE);
+   type Message_Type is (NONE, TEXT, GPS, BARO, IMU, MAG, CONTROLLER, LOG_QUEUE);
 
    type GPS_fixtype is (NOFIX, DEADR, FIX2D, FIX3D, FIX3DDEADR, FIXTIME);
 
@@ -45,6 +45,10 @@ package ULog with SPARK_Mode is
          lat      : Float                  := 0.0;
          lon      : Float                  := 0.0;
          alt      : Float                  := 0.0;
+         vel      : Float                  := 0.0;
+      when BARO =>
+         pressure : Float := 0.0;
+         temp     : Float := 0.0;
       when IMU =>
          accX     : Float := 0.0;
          accY     : Float := 0.0;
