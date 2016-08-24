@@ -13,7 +13,7 @@ begin
 
    Main.initialize;
 
-   -- test_System;
+   -- self-checks, unless in air reset
    LED_Manager.LED_switchOff;
    Main.perform_Self_Test (Self_Test_Passed);
 

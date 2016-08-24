@@ -33,6 +33,8 @@ package Mission with SPARK_Mode is
    procedure load_Mission;
 
    procedure run_Mission;
+   
+   function Is_Resumed return Boolean;
 
 private
    

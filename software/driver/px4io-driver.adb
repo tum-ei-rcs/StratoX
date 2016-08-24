@@ -28,6 +28,9 @@ is
    
    G_state : State_Type;
    
+   -----------------
+   --  write
+   -----------------
    
    procedure write(page : Page_Type; offset : Offset_Type; data : Data_Type; retries : in Natural := 2) 
    is
@@ -64,6 +67,10 @@ is
       end if;
       
    end write;
+
+   -----------------
+   --  read
+   -----------------   
    
    procedure read(page : Page_Type; offset : Offset_Type; data : out Data_Type; retries : in Natural := 2)
    with pre => data'Length mod 2 = 0 and data'Length > 0
@@ -113,6 +120,9 @@ is
       end if;
    end read;
    
+   -----------------
+   --  modify_set
+   -----------------
    
    procedure modify_set(page : Page_Type; offset : Offset_Type; set_mask : HIL.Unsigned_16_Mask) is
       Data   : Data_Type(1 .. 2) := ( others => 0 );
@@ -124,6 +134,10 @@ is
       Data   := HIL.toBytes( Status );      
       write(page, offset, Data);
    end modify_set;
+
+   -----------------
+   --  modify_clear
+   -----------------   
    
    procedure modify_clear(page : Page_Type; offset : Offset_Type; clear_mask : HIL.Unsigned_16_Mask) is
       Data   : Data_Type(1 .. 2) := ( others => 0 );
@@ -135,13 +149,20 @@ is
       Data   := HIL.toBytes( Status );      
       write(page, offset, Data);
    end modify_clear;  
+
+   -----------------
+   --  handle_Error
+   -----------------   
    
    procedure handle_Error(msg : String) is
    begin
       Logger.log_console(Logger.ERROR, msg);
       null;
    end handle_Error;
-   
+
+   -----------------
+   --  valid_Package
+   -----------------   
    
    function valid_Package( data : in Data_Type ) return Boolean is 
       check_data : Data_Type := data;
@@ -150,8 +171,10 @@ is
       return CRC8.calculateCRC8( check_data ) = data(2);      -- SPARK: index check might fail
    end valid_Package;
    
-
-   -- init
+   -----------------
+   --  initialize
+   -----------------
+   
    procedure initialize is
       protocol_version : Data_Type(1 .. 2) := (others => 0); 
       
@@ -279,6 +302,9 @@ is
 
    end initialize;
    
+   -----------------
+   --  read_Status
+   -----------------
    
    procedure read_Status is
       Status : Data_Type(1 .. 2) := (others => 0);
@@ -297,6 +323,9 @@ is
       
    end read_Status;
 
+   -----------------
+   --  set_Servo_Angle
+   -----------------
 
    procedure set_Servo_Angle(servo : Servo_Type; angle : Servo_Angle_Type) is
       function saturate( angle : Angle_Type ) return Servo_Angle_Type is
@@ -320,6 +349,9 @@ is
       Logger.log_console(Logger.TRACE, "Servo Angle " & AImage(angle) );
    end set_Servo_Angle;
    
+   -----------------
+   --  set_Motor_Speed
+   -----------------   
    
    procedure set_Motor_Speed( speed : Motor_Speed_Type ) is
    begin
@@ -327,7 +359,9 @@ is
    end set_Motor_Speed;
    
    
-   
+   -----------------
+   --  servo_Duty_Cycle
+   -----------------   
    
    function servo_Duty_Cycle(angle : in Servo_Angle_Type) return Unsigned_16 
    with post => servo_Duty_Cycle'Result >= 1_000 and servo_Duty_Cycle'Result <= 2_000
@@ -337,7 +371,10 @@ is
       return SERVO_PULSE_LENGTH_LIMIT_MIN + Unsigned_16( (angle - Servo_Angle_Type'First) / 
                                                          (Servo_Angle_Type'Last - Servo_Angle_Type'First) * pulse_range );
    end servo_Duty_Cycle;
-   
+
+   -----------------
+   --  esc_PWM
+   -----------------
    
    function esc_PWM(speed : in Motor_Speed_Type) return Unsigned_16
    is
@@ -345,11 +382,18 @@ is
       return Unsigned_16(speed); -- Todo
    end esc_PWM;
    
-
+   -----------------
+   --  arm
+   -----------------
+   
    procedure arm is
    begin
       write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes( PX4IO_FORCE_SAFETY_MAGIC ) );
    end arm;
+   
+   -----------------
+   --  disarm
+   -----------------   
    
    procedure disarm is
    begin
@@ -358,7 +402,9 @@ is
    end disarm;  
    
    
-   
+   -----------------
+   --  sync_Outputs
+   -----------------   
    
    procedure sync_Outputs is
             Duty_Cycle : Data_Type (1 .. 2);
@@ -389,6 +435,39 @@ is
       
    end sync_Outputs;
    
+   -----------------
+   --  Self_Check
+   -----------------
+   
+   procedure Self_Check (result : out Boolean) is
+      Status : Data_Type(1 .. 2) := (others => 0);
+   begin
+      result := True;
 
+      read (PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
+      if not HIL.isSet (HIL.toUnsigned_16 (Status), PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED) then
+         Logger.log_console (Logger.WARN, "PX4IO FMU not initialized");
+         result := False;
+      end if;
+      
+      read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, Status);
+      if HIL.isSet (HIL.toUnsigned_16 (Status), PX4IO_P_STATUS_ALARMS_SERVO_CURRENT) then
+         Logger.log_console (Logger.WARN, "PX4IO Servo Current Alarm");
+         result := False;
+      end if;
+      if HIL.isSet (HIL.toUnsigned_16 (Status), PX4IO_P_STATUS_ALARMS_VSERVO_FAULT) then
+         Logger.log_console (Logger.WARN, "PX4IO Servo Volts Alarm");
+         result := False;
+      end if;
+      if HIL.isSet (HIL.toUnsigned_16 (Status), PX4IO_P_STATUS_ALARMS_VSERVO_FAULT) then
+         Logger.log_console (Logger.WARN, "PX4IO Servo Fault Alarm");
+         result := False;
+      end if;
+      if HIL.isSet (HIL.toUnsigned_16 (Status), PX4IO_P_STATUS_ALARMS_TEMPERATURE) then
+         Logger.log_console (Logger.WARN, "PX4IO Temp Alarm");
+         result := False;
+      end if;
+      
+   end Self_Check;
 
 end PX4IO.Driver;

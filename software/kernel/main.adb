@@ -9,8 +9,9 @@ with Units;            use Units;
 --  with Units.Navigation; use Units.Navigation;
 
 with HIL;
+with Interfaces;      use Interfaces;
 
---  with MPU6000.Driver;
+with MPU6000.Driver;  use MPU6000.Driver;
 with PX4IO.Driver;
 with ublox8.Driver;   use ublox8.Driver;
 with NVRAM;
@@ -31,6 +32,9 @@ package body Main with SPARK_Mode => On is
    type LED_Counter_Type is mod 1000/Config.Software.MAIN_TICK_RATE_MS/2;
    G_led_counter : LED_Counter_Type := 0;
 
+   ----------------
+   --  Initialize
+   ----------------
 
    procedure initialize is
       num_boots : HIL.Byte;
@@ -46,10 +50,6 @@ package body Main with SPARK_Mode => On is
       end;
       Logger.Set_Log_Level (CFG_LOGGER_LEVEL_UART);
 
-      --perform_Self_Test;
-
-      --MS5611.Driver.reset;
-      -- MPU6000.Driver.Reset;
 
       -- wait to satisfy some (?) timing
       declare
@@ -97,19 +97,25 @@ package body Main with SPARK_Mode => On is
          Logger.log_console(Logger.WARN, "Last Exception: " & Integer'Image( Integer( HIL.toUnsigned_16( exception_line ) ) ) );
       end;
 
-      -- TODO: pick up last mission state from NVRAM and continue where
-      -- we left (that happens in case of loss of power)
+      Mission.load_Mission;
 
    end initialize;
 
-   procedure perform_Self_Test (passed : out Boolean) is
+   -----------------------
+   --  Perform_Self_Test
+   -----------------------
+
+   procedure Perform_Self_Test (passed : out Boolean) is
+      in_air_reset : constant Boolean := Mission.Is_Resumed;
    begin
-      LED_Manager.LED_switchOn;
+
+      if in_air_reset then
+         passed := True;
+         Logger.log_console (Logger.INFO, "In-Air reset, no self-check");
+         return;
+      end if;
 
       Logger.log_console (Logger.INFO, "Starting Self Test");
-
-      Logger.log_console (Logger.DEBUG, "Logger: Debug Test Message");
-      Logger.log_console (Logger.TRACE, "Logger: Trace Test Message");
 
       --  check NVRAM
       NVRAM.Self_Check (passed);
@@ -118,6 +124,34 @@ package body Main with SPARK_Mode => On is
          return;
       else
          Logger.log_console (Logger.INFO, "NVRAM self-check passed");
+      end if;
+
+      --  check MPU6000
+      declare
+         Status : Boolean;
+      begin
+         MPU6000.Driver.Self_Test (Status);
+         passed := Status;
+      end;
+      if not passed then
+         Logger.log_console (Logger.ERROR, "MPU6000 self-check failed");
+         return;
+      else
+         Logger.log_console (Logger.INFO, "MPU6000 self-check passed");
+      end if;
+
+      --  check PX4IO
+      declare
+         Status : Boolean;
+      begin
+         PX4IO.Driver.Self_Check (Status);
+         passed := Status;
+      end;
+      if not passed then
+         Logger.log_console (Logger.ERROR, "PX4IO self-check failed");
+         return;
+      else
+         Logger.log_console (Logger.INFO, "PX4IO self-check passed");
       end if;
 
       --  check GPS
@@ -136,24 +170,26 @@ package body Main with SPARK_Mode => On is
 
    end perform_Self_Test;
 
-   procedure run_Loop is
-      msg     : constant String                      := "Main";
+   --------------
+   --  Run_Loop
+   --------------
+
+   procedure Run_Loop is
+      msg     : constant String := "Main";
 
       loop_time_start   : Time      := Clock;
       loop_duration_max : Time_Span := Milliseconds (0);
 
       Main_Profile : Profile_Tag;
 
-      --  body_info : Body_Type;
-
       command : Console.User_Command_Type;
+
       checks_passed : Boolean := False;
    begin
       Main_Profile.init(name => "Main");
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
       Logger.log_console (Logger.INFO, msg);
-      Mission.load_Mission;
 
       -- beep ever 10 seconds for one second at 1kHz.
       --Buzzer_Manager.Set_Freq (1000.0 * Hertz);
@@ -181,19 +217,6 @@ package body Main with SPARK_Mode => On is
 
          -- Mission
          Mission.run_Mission;
-
-         -- Estimator
---           Estimator.update;
---  --
---           body_info.orientation := Estimator.get_Orientation;
---           body_info.position := Estimator.get_Position;
---  --
---  --
---           -- Controller
---           Controller.set_Current_Orientation (body_info.orientation);
---           Controller.set_Current_Position (body_info.position);
---           Controller.runOneCycle;
-
 
          -- Console
          Console.read_Command( command );
@@ -244,7 +267,6 @@ package body Main with SPARK_Mode => On is
       end loop;
 
    end run_Loop;
-
 
 
 end Main;

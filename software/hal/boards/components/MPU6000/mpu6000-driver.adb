@@ -387,7 +387,14 @@ is
    -- MPU6000_Self_Test --
    -----------------------
 
-   procedure Self_Test (Test_Status : out Boolean) 
+   procedure Self_Test (Test_Status : out Boolean) is      
+      data : Byte := 0;
+   begin
+      Read_Byte_At_Register (MPU6000_RA_WHO_AM_I, data);
+      Test_Status := data = 16#68#;
+   end Self_Test;
+   
+   procedure Self_Test_Extended (Test_Status : out Boolean) 
    is
       subtype Integer_32_Array_3 is Integer_32_Array (1 .. 3);
       subtype Integer_32_Array_6 is Integer_32_Array (1 .. 6);
@@ -589,7 +596,7 @@ is
         Evaluate_Self_Test
           (MPU6000_ST_ACCEL_LOW, MPU6000_ST_ACCEL_HIGH, Acc_Diff (3), "acc Z");
 
-   end Self_Test;
+   end Self_Test_Extended;
 
    -------------------
    -- MPU6000_Reset --

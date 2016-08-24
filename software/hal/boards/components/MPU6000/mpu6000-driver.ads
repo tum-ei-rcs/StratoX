@@ -115,8 +115,11 @@ is
    --  Test if we are connected to MPU6000 via I2C.
    procedure Test_Connection (success : out Boolean);
 
-   --  MPU6000 self test.
+   --  MPU6000 self test
    procedure Self_Test (Test_Status : out Boolean);
+   
+   --  Extended test, maybe altering the config of the device
+   procedure Self_Test_Extended (Test_Status : out Boolean);
 
    --  Reset the MPU6000 device.
    --  A small delay of ~50ms may be desirable after triggering a reset.

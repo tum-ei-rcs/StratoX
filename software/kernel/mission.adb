@@ -39,11 +39,16 @@ package body Mission with SPARK_Mode is
 
    G_state : State_Type;
    
-   
+   Mission_Resumed : Boolean := False;
+     
+   function New_Mission_Enabled return Boolean is 
+     (G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET);
+  
+   function Is_Resumed return Boolean is (Mission_Resumed);
    
    procedure start_New_Mission is
    begin
-      if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
+      if New_Mission_Enabled then
          NVRAM.Reset;
          G_state.mission_state := INITIALIZING;
          Logger.log(Logger.INFO, "New Mission.");
@@ -61,6 +66,7 @@ package body Mission with SPARK_Mode is
       G_state.mission_state := Mission_State_Type'Val( old_state_val );
       if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
          start_New_Mission;
+         Mission_Resumed := False;
       else
          -- Baro
          NVRAM.Load( VAR_HOME_HEIGHT_L, height(1) );
@@ -74,11 +80,12 @@ package body Mission with SPARK_Mode is
          NVRAM.Load( VAR_GPS_TARGET_ALT_A,  Float( G_state.home.Altitude ) );
          
          -- lock Home
-         Logger.log(Logger.DEBUG, "Home Height: " & Image(G_state.home.Altitude) );  
+         Logger.log(Logger.DEBUG, "Home Alt: " & Image(G_state.home.Altitude) );  
          Estimator.lock_Home( G_state.home, baro_height );
          Controller.set_Target_Position( G_state.home );
          
          Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
+         Mission_Resumed := True;
       end if;    
    end load_Mission;
 

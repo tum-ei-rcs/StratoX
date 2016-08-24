@@ -41,6 +41,8 @@ is
    -- init
    procedure initialize;
    
+   procedure Self_Check (result : out Boolean);
+   
    procedure arm;
    
    procedure disarm;
