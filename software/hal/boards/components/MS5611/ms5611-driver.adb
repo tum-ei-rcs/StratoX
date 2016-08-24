@@ -57,10 +57,22 @@ is
    subtype OFF_Type is Float range -8589672450.9 .. 12884705280.9;
    subtype TEMP_Type is Float range -4000.9 .. 8500.9;
 
-   --  a bunch of functions that allows to add up types without overflows
-   function Sum_TEMP is new Units.Saturated_Addition (T => TEMP_Type);
-   function Sum_OFF is new Units.Saturated_Addition (T => OFF_Type);
-   function Sum_Sense is new Units.Saturated_Addition (T => Sense_Type);
+   --  a bunch of functions that allows to add/sub/cast types without range problems
+   function Sat_Cast_Tref is new Units.Saturated_Cast (T_Ref_Type);
+   function Sat_Cast_Tempsense is new Units.Saturated_Cast (Tempsens_Type);
+   function Sat_Cast_TCO is new Units.Saturated_Cast (TCO_Type);
+   function Sat_Cast_TCS is new Units.Saturated_Cast (TCS_Type);
+   function Sat_Cast_OffType is new Units.Saturated_Cast (OFF_Type);
+   function Sat_Cast_TEMPType is new Units.Saturated_Cast (TEMP_Type);
+   function Sat_Cast_SensType is new Units.Saturated_Cast (Sense_Type);
+   
+   function Sat_Add_OffType is new Units.Saturated_Addition (OFF_Type);
+   function Sat_Add_SensType is new Units.Saturated_Addition (Sense_Type);
+   function Sat_Add_TempType is new Units.Saturated_Addition (TEMP_Type);
+   
+   function Sat_Sub_TempType is new Units.Saturated_Subtraction (TEMP_Type);
+   function Sat_Sub_OffType is new Units.Saturated_Subtraction (OFF_Type);
+   function Sat_Sub_SensType is new Units.Saturated_Subtraction (Sense_Type);
    
    ----------------------
    --  PROTOTYPES
@@ -263,7 +275,7 @@ is
       c3 : Coefficient_Data_Type;
       c4 : Coefficient_Data_Type;
       c5 : Coefficient_Data_Type;
-      c6 : Coefficient_Data_Type;
+      c6 : Coefficient_Data_Type;            
    begin
       read_coefficient (Baro, COEFF_SENS_T1, c1);
       G_sens_t1 := Float (c1) * Float (2**15);
@@ -272,16 +284,16 @@ is
       G_off_t1 := Float (c2) * Float (2**16);
 
       read_coefficient (Baro, COEFF_TCS, c3);
-      G_tcs := Float (c3) / Float (2**8);
+      G_tcs := Sat_Cast_TCS (Float (c3) / Float (2**8));
 
       read_coefficient (Baro, COEFF_TCO, c4);
-      G_tco := Float (c4) / Float (2**7);
+      G_tco := Sat_Cast_TCO (Float (c4) / Float (2**7));
 
       read_coefficient (Baro, COEFF_T_REF, c5);
-      G_t_ref := Float (c5) * Float (2**8);
+      G_t_ref := Sat_Cast_Tref (Float (c5) * Float (2**8));
 
       read_coefficient (Baro, COEFF_TEMPSENS, c6);
-      G_tempsens := Float (c6) / Float (2**23);
+      G_tempsens := Sat_Cast_Tempsense (Float (c6) / Float (2**23));
 
       G_Baro_State.FSM_State := READY;
 
@@ -407,22 +419,21 @@ is
    procedure compensateTemperature is
       T2    : TEMP_Type  := 0.0;
       OFF2  : OFF_Type   := 0.0;
-      SENS2 : Sense_Type := 0.0;
+      SENS2 : Sense_Type := 0.0;            
    begin
       if TEMP < TEMP_Type (2000.0) then
-         T2    := TEMP_Type (dT**2 / Float (2**31));
-         OFF2  := OFF_Type (5.0 * (TEMP - TEMP_Type (2000.0))**2 / 2.0);
+         T2    := Sat_Cast_TEMPType (dT**2 / Float (2**31));
+         OFF2  := Sat_Cast_OffType (5.0 * (TEMP - TEMP_Type (2000.0))**2 / 2.0);
          SENS2 := Sense_Type (OFF2 / 2.0);
 
          if TEMP < TEMP_Type (-1500.0) then
-            OFF2  := OFF2 + OFF_Type (7.0 * (TEMP - TEMP_Type (1500.0))**2);
-            SENS2 :=
-              SENS2 + Sense_Type (11.0 * (TEMP - TEMP_Type (1500.0))**2 / 2.0);
+            OFF2  := Sat_Add_OffType (OFF2, Sat_Cast_OffType (7.0 * (TEMP - TEMP_Type (1500.0))**2));
+            SENS2 := Sat_Add_SensType (SENS2, Sat_Cast_SensType (11.0 * (TEMP - TEMP_Type (1500.0))**2 / 2.0));
          end if;
       end if;
-      TEMP := TEMP - T2;    -- this compensates the final temperature value
-      OFF  := OFF - OFF2;
-      SENS := SENS - SENS2;
+      TEMP := Sat_Sub_TempType (TEMP, T2);    -- this compensates the final temperature value
+      OFF  := Sat_Sub_OffType (OFF, OFF2);
+      SENS := Sat_Sub_SensType (SENS, SENS2);
    end compensateTemperature;
 
    ----------------------
@@ -484,9 +495,9 @@ is
                   read_adc (Baro, temperature_raw);
                   if temperature_raw /= 0 then            
                      dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
-                     TEMP := Sum_TEMP (2000.0, TEMP_Type (dt * G_tempsens));                     
-                     OFF  := Sum_OFF (G_off_t1, G_tco * dT);
-                     SENS := Sum_Sense (G_sens_t1, G_tcs * dT);
+                     TEMP := Sat_Add_TempType (2000.0, Sat_Cast_TEMPType (dt * G_tempsens));                     
+                     OFF  := Sat_Add_OFFType (G_off_t1, Sat_Cast_OffType (G_tco * dT));
+                     SENS := Sat_Add_SensType (G_sens_t1, Sat_Cast_SensType (G_tcs * dT));
                      compensateTemperature;
                      temperature := convertToKelvin (TEMP);
                      start_conversion (D1, OSR_4096);

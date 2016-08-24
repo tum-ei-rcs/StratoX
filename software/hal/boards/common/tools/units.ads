@@ -322,6 +322,13 @@ package Units with
 
    generic
       type T is digits <>; -- any floating point type
+   function Saturated_Subtraction (left, right : T) return T
+     with Inline, Pre => 0.0 in T'Range;
+   --  that is required in addition to Saturated_Addition, if the ranges are
+   --  not symmetric
+
+   generic
+      type T is digits <>; -- any floating point type
    function Wrapped_Addition (left, right : T) return T
      with Inline,
      Pre => 0.0 in T'Range;
@@ -330,7 +337,8 @@ package Units with
 
    generic
       type T is digits <>;
-   function Saturated_Cast (val : Float) return T;
+   function Saturated_Cast (val : Float) return T
+     with Inline;
    --  convert a float into a more specific float type, and trim to the value range
 
    function sgn( x : Unit_Type'Base ) return Unit_Type is

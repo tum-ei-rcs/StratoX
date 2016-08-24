@@ -169,6 +169,23 @@ package body Units is
       return ret;
    end Saturated_Addition;
 
+
+   function Saturated_Subtraction (left, right : T) return T is
+      ret : T := left;
+      cand : constant Float := Float (ret) - Float (right);
+   begin
+      --  range check
+      if cand > Float (T'Last) then
+         ret := T'Last;
+      elsif cand < Float (T'First) then
+         ret := T'First;
+      else
+         ret := T (cand);
+      end if;
+      return ret;
+   end Saturated_Subtraction;
+
+
    function Wrapped_Addition (left, right : T) return T is
       cand : constant Float := Float (left) + Float (right);
       min  : constant T := T'First;
