@@ -131,6 +131,19 @@ package body Units is
       return Image(Unit_Type(unit)) & "rad";
    end RImage;
 
+   function Saturated_Cast (val : Float) return T is
+      ret : T;
+   begin
+      if val > Float (T'Last) then
+         ret := T'Last;
+      elsif val < Float (T'First) then
+         ret := T'First;
+      else
+         ret := T (val);
+      end if;
+      return ret;
+   end Saturated_Cast;
+
    function Saturated_Addition (left, right : T) return T is
       ret : T := left;
    begin

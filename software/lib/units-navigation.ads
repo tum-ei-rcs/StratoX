@@ -17,9 +17,9 @@ package Units.Navigation with SPARK_Mode is
 
 
    -- Date
-   type Month_Type is range 1 .. 12 with Default_Value => 1;
-   type Day_Of_Month_Type is range 1 .. 31 with Default_Value => 1;
-   type Year_Type is new Integer with Default_Value => 1970;
+   subtype Month_Type is Integer range 1 .. 12;-- with Default_Value => 1;
+   subtype Day_Of_Month_Type is Integer range 1 .. 31;-- with Default_Value => 1;
+   subtype Year_Type is Integer;-- with Default_Value => 1970;
 
    type Hour_Type is mod 24 with Default_Value => 0;
    type Minute_Type is mod 60 with Default_Value => 0;

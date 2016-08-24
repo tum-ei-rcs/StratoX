@@ -328,6 +328,10 @@ package Units with
    --  add two Floats of same Unit type and wrap ("modulo") to the type's bounds
    --  Must make no assumptions on inputs otherwise caller might fail if it isn't SPARK.
 
+   generic
+      type T is digits <>;
+   function Saturated_Cast (val : Float) return T;
+   --  convert a float into a more specific float type, and trim to the value range
 
    function sgn( x : Unit_Type'Base ) return Unit_Type is
      ( if x = 0.0 then 0.0 elsif x > 0.0 then 1.0 else -1.0 );
