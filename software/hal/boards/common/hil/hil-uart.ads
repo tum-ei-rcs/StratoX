@@ -23,7 +23,7 @@ is
 
    procedure write (Device : in Device_ID_Type; Data : in Data_Type);
 
-   procedure read (Device : in Device_ID_Type; Data : out Data_Type);
+   procedure read (Device : in Device_ID_Type; Data : out Data_Type; n_read : out Natural);
 
    function toData_Type (Message : String) return Data_Type;
 

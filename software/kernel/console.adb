@@ -11,38 +11,41 @@ package body Console with SPARK_Mode => On is
 
    procedure read_Command( cmd : out User_Command_Type ) is
       data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);
+      n_read : Natural;
    begin
       if Config.Software.DEBUG_MODE_IS_ACTIVE then
-         HIL.UART.read (HIL.Devices.Console, data_rx);
+         HIL.UART.read (HIL.Devices.Console, data_rx, n_read);
+         if n_read > 0 then
 
-         case (Character'Val (data_rx (1))) is
-         when 's' =>
-            cmd := STATUS;
+            case (Character'Val (data_rx (1))) is
+            when 's' =>
+               cmd := STATUS;
 
-         when 't' =>
-            cmd := TEST;
+            when 't' =>
+               cmd := TEST;
 
-         when 'p' =>
-            cmd := PROFILE;
+            when 'p' =>
+               cmd := PROFILE;
 
-         when 'r' =>
-            cmd := RESTART;
+            when 'r' =>
+               cmd := RESTART;
 
-         when 'a' =>
-            cmd := ARM;
+            when 'a' =>
+               cmd := ARM;
 
-         when 'd' =>
-            cmd := DISARM;
+            when 'd' =>
+               cmd := DISARM;
 
-         when '2' =>
-            cmd := INC_ELE;
+            when '2' =>
+               cmd := INC_ELE;
 
-         when '1' =>
-            cmd := DEC_ELE;
+            when '1' =>
+               cmd := DEC_ELE;
 
-         when others =>
-            cmd := NONE;
-         end case;
+            when others =>
+               cmd := NONE;
+            end case;
+         end if;
       else
          cmd := NONE;
       end if;

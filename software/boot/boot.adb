@@ -1,23 +1,30 @@
 with Main;
 with Config.Tasking;
 with Crash; -- must be here, to activate last_chance_handler
+with LED_Manager;
 pragma Unreferenced (Crash); -- protect the "with" above
 
 -- the entry point after POR
 
 procedure boot is
    pragma Priority (Config.Tasking.TASK_PRIO_MAIN);
--- Self_Test_Passed : Boolean;
+   Self_Test_Passed : Boolean := False;
 begin
 
    Main.initialize;
 
-   -- ToDo: check last system state
-
    -- test_System;
-   -- Main.perform_Self_Test;
+   LED_Manager.LED_switchOff;
+   Main.perform_Self_Test (Self_Test_Passed);
 
-   -- finally jump to main
-   Main.run_Loop;
+   -- finally jump to main, if checks passed
+   if Self_Test_Passed then
+      Main.run_Loop;
+   else
+      LED_Manager.LED_switchOn;
+      loop
+         null;
+      end loop;
+   end if;
 
 end boot;

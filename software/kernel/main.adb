@@ -12,6 +12,7 @@ with HIL;
 
 --  with MPU6000.Driver;
 with PX4IO.Driver;
+with ublox8.Driver;   use ublox8.Driver;
 with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
@@ -101,9 +102,7 @@ package body Main with SPARK_Mode => On is
 
    end initialize;
 
-   procedure perform_Self_Test is
-      success : Boolean;
-
+   procedure perform_Self_Test (passed : out Boolean) is
    begin
       LED_Manager.LED_switchOn;
 
@@ -112,11 +111,27 @@ package body Main with SPARK_Mode => On is
       Logger.log_console (Logger.DEBUG, "Logger: Debug Test Message");
       Logger.log_console (Logger.TRACE, "Logger: Trace Test Message");
 
-      NVRAM.Self_Check (success);
-      if not success then
+      --  check NVRAM
+      NVRAM.Self_Check (passed);
+      if not passed then
          Logger.log_console (Logger.ERROR, "NVRAM self-check failed");
+         return;
       else
          Logger.log_console (Logger.INFO, "NVRAM self-check passed");
+      end if;
+
+      --  check GPS
+      declare
+         Status : ublox8.Driver.Error_Type;
+      begin
+         ublox8.Driver.perform_Self_Check (Status);
+         passed := Status = ublox8.Driver.SUCCESS;
+      end;
+      if not passed then
+         Logger.log_console (Logger.ERROR, "Ublox8 self-check failed");
+         return;
+      else
+         Logger.log_console (Logger.INFO, "Ublox8 self-check passed");
       end if;
 
    end perform_Self_Test;
@@ -132,6 +147,7 @@ package body Main with SPARK_Mode => On is
       --  body_info : Body_Type;
 
       command : Console.User_Command_Type;
+      checks_passed : Boolean := False;
    begin
       Main_Profile.init(name => "Main");
       LED_Manager.LED_blink (LED_Manager.SLOW);
@@ -183,7 +199,13 @@ package body Main with SPARK_Mode => On is
          Console.read_Command( command );
 
          case ( command ) is
-            when Console.TEST => perform_Self_Test;
+            when Console.TEST =>
+               perform_Self_Test (checks_passed);
+               if not checks_passed then
+                  Logger.log_console (Logger.ERROR, "Self-checks failed");
+               else
+                  Logger.log_console (Logger.INFO, "Self-checks passed");
+               end if;
 
             when Console.STATUS =>
                Estimator.log_Info;

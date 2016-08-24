@@ -330,6 +330,8 @@ package body Mission with SPARK_Mode is
          when others =>
             null;
       end case;
+      
+      -- FIXME: turn everything OFF to save power
 
    end wait_On_Ground;
 

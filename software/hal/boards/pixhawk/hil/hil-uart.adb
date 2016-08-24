@@ -96,7 +96,7 @@ is
    protected UART_Interrupt_Handler is
       pragma Interrupt_Priority (HIL.Devices.IRQ_PRIO_UART4);
       
-      procedure get_Buffer(data : out Data_Type);
+      procedure get_Buffer(data : out Data_Type; len : out Natural);
    private
       buffer_pointer : Buffer_Index_Type := 0;
       Queue : Byte_Buffer_Pack.Buffer_Tag;
@@ -147,31 +147,21 @@ is
    end write;
 
 
-   procedure read (Device : in Device_ID_Type; Data : out Data_Type) is
+   procedure read (Device : in Device_ID_Type; Data : out Data_Type; n_read : out Natural) is
    begin
       case (Device) is
       when HIL.Devices.GPS =>
-            UART_Interrupt_Handler.get_Buffer(Data);
+         UART_Interrupt_Handler.get_Buffer (Data, n_read);
       when HIL.Devices.Console =>
          for i in Data'Range loop
-            STM32.USARTs.Receive( STM32.Device.USART_3, HAL.UInt9( Data(i) ) );
+            STM32.USARTs.Receive (STM32.Device.USART_3, HAL.UInt9( Data(i)));
          end loop; 
+         n_read := Data'Length;           
       when HIL.Devices.PX4IO =>
          for i in Data'Range loop
-            STM32.USARTs.Receive( STM32.Device.USART_6, HAL.UInt9( Data(i) ) );
+            STM32.USARTs.Receive (STM32.Device.USART_6, HAL.UInt9( Data(i)));
          end loop;
-         
-         --  this file cannot use Logger. This file is part of HIL, and Logger is
-         --  part of the application. Thus, HIL cannot compile.
---           Logger.log(Logger.TRACE, "IO: " &
---                      HIL.Byte'Image( Data(1) )& ", " &
---                      HIL.Byte'Image( Data(2) )& ", " &
---                      HIL.Byte'Image( Data(3) )& ", " &
---                      HIL.Byte'Image( Data(4) )& ", " );
---           for i in 5 .. Data'Length loop
---              Logger.log(Logger.TRACE, "IO: " & HIL.Byte'Image( Data(i) ) );
---           end loop;
-         
+         n_read := Data'Length;                  
       end case;
    end read;
    
@@ -192,18 +182,25 @@ is
    protected body UART_Interrupt_Handler is
       
 
-      procedure get_Buffer(data : out Data_Type) is
+      procedure get_Buffer(data : out Data_Type; len : out Natural) is
          buf_data : Byte_Buffer_Pack.Element_Array(1 .. data'Length);
+         qlen : constant Byte_Buffer_Pack.Length_Type := Queue.Length;
       begin
          data := (others => Byte( 0 ) );
          if not Queue.Empty then
-            if data'Length <= Queue.Length then
-               Queue.get_front(buf_data);
-               data := Data_Type( buf_data );
+            if data'Length <= qlen then
+               -- more data than caller can take
+               Queue.get_front (buf_data);
+               data := Data_Type (buf_data); -- FIXME: slow cast of entire array
+               len := data'Length;
             else
-               Queue.get_front(buf_data(1 .. Queue.Length) );
-               data(data'First .. data'First + Queue.Length - 1) := Data_Type( buf_data(1 .. Queue.Length) );
+               -- not enough data to fill caller
+               len := qlen;
+               Queue.get_front (buf_data (1 .. qlen));
+               data (data'First .. data'First + qlen - 1) := Data_Type (buf_data (1 .. qlen));
             end if;
+         else
+            len := 0;
          end if;
       end get_Buffer;
 

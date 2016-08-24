@@ -36,7 +36,7 @@ project StratoX is
       case Build_Mode is
 
          when "debug" =>
-            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", Style.Style_Switches, "-gnatet=../target-gen.atp");
+            for Default_Switches ("ada") use ("-O1", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", Style.Style_Switches, "-gnatet=../target-gen.atp");
 
          when "release" =>
             for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.Xh.k.o", "-gnatVaimrs", "-gnato", "-gnat12");

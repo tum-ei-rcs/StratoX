@@ -40,15 +40,20 @@ is
       Data_RX : HIL.UART.Data_Type(1 ..4) := (others => 0);
       valid   : Boolean := False;
       curr_retry : Natural := 0;
+      n_read : Natural;
    begin
    
       Transmit_Loop : loop
          Data_TX(2) := 0;
          Data_TX(2) := CRC8.calculateCRC8( Data_TX );         
          HIL.UART.write(HIL.Devices.PX4IO, Data_TX);
-         HIL.UART.read(HIL.Devices.PX4IO, Data_RX);  -- read response
+         HIL.UART.read(HIL.Devices.PX4IO, Data_RX, n_read);  -- read response
       
-         valid := valid_Package( Data_RX ) and Data_RX(1) = PKT_CODE_SUCCESS;
+         if n_read > 0 then
+            valid := valid_Package( Data_RX ) and Data_RX(1) = PKT_CODE_SUCCESS;
+         else
+            valid := False;
+         end if;
          
          exit Transmit_Loop when valid or curr_retry >= retries;
          curr_retry := curr_retry + 1;
@@ -73,7 +78,7 @@ is
       Data_RX : HIL.UART.Data_Type(1 .. (4+data'Length)) := ( others => 0 );
       valid   : Boolean := False;
       curr_retry : Natural := 0;
-      
+      n_read : Natural;
       
       procedure delay_us( us : Natural ) is
          t_abs : Ada.Real_Time.Time := Clock;
@@ -86,9 +91,13 @@ is
       Transmit_Loop : loop
          Data_TX(2) := CRC8.calculateCRC8( Data_TX );
          HIL.UART.write(HIL.Devices.PX4IO, Data_TX);
-         HIL.UART.read(HIL.Devices.PX4IO, Data_RX);
+         HIL.UART.read(HIL.Devices.PX4IO, Data_RX, n_read);
          
-         valid := valid_Package( Data_RX );
+         if n_read > 0 then
+            valid := valid_Package( Data_RX );
+         else
+            valid := False;
+         end if;
          
          exit Transmit_Loop when valid or curr_retry >= retries;
          curr_retry := curr_retry + 1;

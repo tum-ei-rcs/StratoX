@@ -46,17 +46,22 @@ package body Crash with SPARK_Mode => Off is
       declare
          ba : constant HIL.Byte_Array := HIL.toBytes (line16);
       begin
-         NVRAM.Store(NVRAM.VAR_EXCEPTION_LINE_L,  ba (1) );
-         NVRAM.Store(NVRAM.VAR_EXCEPTION_LINE_H,  ba (2) );
+         NVRAM.Store (NVRAM.VAR_EXCEPTION_LINE_L,  ba (1));
+         NVRAM.Store (NVRAM.VAR_EXCEPTION_LINE_H,  ba (2));
       end;
 
       --  now write to console (which might fail)
-      Logger.log(Logger.ERROR, "Exception: Addr: "
-                         & Integer'Image( To_Integer( location ) )
-                         & ", line  " & Integer'Image( line ) );
+      Logger.log (Logger.ERROR, "Exception: Addr: "
+                  & Integer'Image (To_Integer (location))
+                  & ", line  " & Integer'Image (line));
 
       -- wait until write finished (interrupt based)
       delay until now + Milliseconds(80);
+
+      --  DEBUG ONLY: hang here to let us read the console output
+      --loop
+      --   null;
+      --end loop;
 
       --  XXX! A last chance handler must always terminate or suspend the
       --  thread that executes the handler. Suspending cannot be used here,

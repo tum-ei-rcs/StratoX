@@ -16,7 +16,7 @@ is
 
    procedure initialize;
 
-   procedure perform_Self_Test;
+   procedure perform_Self_Test (passed : out Boolean);
 
    procedure run_Loop;
 

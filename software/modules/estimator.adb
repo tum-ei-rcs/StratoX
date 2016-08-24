@@ -303,9 +303,11 @@ package body Estimator with SPARK_Mode is
                             ", " & AImage( G_Object_Orientation.Yaw ) &
                             "   LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
                             ", " & AImage( G_Object_Position.Latitude ) &
-                            ", " & Image( get_current_Height ) & "m, Fix: " & Integer'Image( GPS_Fix_Type'Pos( G_state.fix ) ) );
+                              ", " & Image( get_current_Height ) & "m, Fix: "  &
+                              Integer'Image( GPS_Fix_Type'Pos( G_state.fix ) )  &
+                              " sat: " & Unsigned_8'Image (G_state.nsat));
 
-         G_Profiler.log;
+         --G_Profiler.log;
       end if;
 
       -- log to SD

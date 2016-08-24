@@ -15,7 +15,7 @@ with Ada.Real_Time; use Ada.Real_Time;
 
 package body ublox8.Driver with
 SPARK_Mode,
-Refined_State => (State => (G_GPS_Message))
+Refined_State => (State => (G_GPS_Message, last_msg_time))
 is  
    package Fletcher16_Byte is new Fletcher16 (Index_Type => Natural, 
                                               Element_Type => Byte, 
@@ -23,6 +23,7 @@ is
    
 
    G_heading : constant Heading_Type := NORTH;
+   last_msg_time : Ada.Real_Time.Time := Ada.Real_Time.Time_Last;
    
    G_GPS_Message : GPS_Message_Type := 
       ( year => 0,
@@ -53,13 +54,15 @@ is
       start : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
       timeout : constant Ada.Real_Time.Time_Span := Ada.Real_Time.Microseconds( 100 );
+      n_read : Natural := 0;
    begin
-      while sync(1) /= UBX_SYNC1 and now < start + timeout loop
-         HIL.UART.read(UBLOX_M8N, sync(1 .. 1));
+      while now < start + timeout and then (n_read = 0 or sync(1) /= UBX_SYNC1) loop
+         HIL.UART.read(UBLOX_M8N, sync(1 .. 1), n_read);
          now := Ada.Real_Time.Clock;
       end loop;
-      HIL.UART.read(UBLOX_M8N, sync(2 .. 2));
-      if sync(1) = UBX_SYNC1 and sync(2) = UBX_SYNC2 then
+      HIL.UART.read(UBLOX_M8N, sync(2 .. 2), n_read);
+      
+      if n_read > 0 and sync(1) = UBX_SYNC1 and sync(2) = UBX_SYNC2 then
          isReceived := True;
       else 
          isReceived := False;
@@ -68,15 +71,18 @@ is
 
    procedure waitForAck(isReceived : out Boolean) is
       head : Byte_Array (3 .. 6) := (others => Byte( 0 ));
+      n_read : Natural;
    begin
       waitForSync(isReceived);
       if isReceived then
-         HIL.UART.read(UBLOX_M8N, head);
-         if head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
-            Logger.log_console(Logger.DEBUG, "UBX Ack");
-         elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_NAK and head(5) = UBX_LENGTH_ACK_ACK then
-            Logger.log_console(Logger.DEBUG, "UBX NAK");
-            isReceived := False;
+         HIL.UART.read(UBLOX_M8N, head, n_read);
+         if n_read = head'Length then 
+            if head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
+               Logger.log_console(Logger.DEBUG, "UBX Ack");
+            elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_NAK and head(5) = UBX_LENGTH_ACK_ACK then
+               Logger.log_console(Logger.DEBUG, "UBX NAK");
+               isReceived := False;
+            end if;
          end if;
       end if;
    end waitForAck;
@@ -109,48 +115,62 @@ is
       cks : Fletcher16_Byte.Checksum_Type := (others => Byte( 0 ));
       type buffer_pointer_Type is mod HIL.UART.BUFFER_MAX;
       pointer : buffer_pointer_Type := 0;
+      n_read : Natural;
    begin
       isValid := False;
       data := (others => Byte( 0 ) );  -- EXCEPTION: Bis hier
       
-      HIL.UART.read(UBLOX_M8N, data_rx);
-      for i in 1 .. data_rx'Length - 2 loop
-         if data_rx(i) = UBX_SYNC1 and data_rx(i + 1) = UBX_SYNC2 then
-            pointer := buffer_pointer_Type( i - 1 );
-            
-            head := data_rx(Integer(pointer + 3) .. Integer(pointer + 6));
-            
-            if head(3) = UBX_CLASS_NAV and head(4) = UBX_ID_NAV_PVT and head(5) = UBX_LENGTH_NAV_PVT then 
+      HIL.UART.read(UBLOX_M8N, data_rx, n_read);
+      if n_read > 0 then
+         for i in 1 .. data_rx'Length - 2 loop
+            if data_rx(i) = UBX_SYNC1 and data_rx(i + 1) = UBX_SYNC2 then
                
-               if (pointer + 7) < (pointer + 100) then
-                  message := data_rx(Integer(pointer + 7) .. Integer(pointer + 98));  -- EXCEPTION: mögliches 0 Array
-                  check := data_rx(Integer(pointer + 99) .. Integer(pointer + 100));         
-               end if;
+               declare
+                  now : constant Ada.Real_Time.Time := Clock;
+               begin
+                  last_msg_time := now;
+               end;
+               
+               --Logger.log_console (Logger.DEBUG, "GPS data: " & Integer'Image (data_rx'Length));
+               pointer := buffer_pointer_Type( i - 1 );
             
-               cks := Fletcher16_Byte.Checksum( head & message );
-               if check(1) = cks.ck_a and check(2) = cks.ck_b then
-                  Logger.log_console(Logger.TRACE, "UBX valid");
-                  data := message;
-                  if message(20) /= 0 then
-                     isValid := True;
+               head := data_rx(Integer(pointer + 3) .. Integer(pointer + 6));
+            
+               if head(3) = UBX_CLASS_NAV and head(4) = UBX_ID_NAV_PVT and head(5) = UBX_LENGTH_NAV_PVT then 
+               
+                  if (pointer + 7) < (pointer + 100) then
+                     message := data_rx(Integer(pointer + 7) .. Integer(pointer + 98));  -- EXCEPTION: mögliches 0 Array
+                     check := data_rx(Integer(pointer + 99) .. Integer(pointer + 100));         
                   end if;
-               else
-                  data := (others => Byte( 0 ));
-                  Logger.log_console(Logger.DEBUG, "UBX invalid");
-               end if;
             
-            elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
-               Logger.log_console(Logger.TRACE, "UBX Ack");
-            end if;             
+                  cks := Fletcher16_Byte.Checksum( head & message );
+                  if check(1) = cks.ck_a and check(2) = cks.ck_b then
+                     Logger.log_console(Logger.TRACE, "UBX valid");
+                     data := message;
+                     if message(20) /= 0 then
+                        isValid := True;
+                     end if;
+                  else
+                     data := (others => Byte( 0 ));
+                     Logger.log_console(Logger.DEBUG, "UBX invalid");
+                  end if;
+            
+               elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
+                  Logger.log_console(Logger.TRACE, "UBX Ack");
+               end if;             
             
 
-            exit;
-         end if;
-      end loop;
-         
+               exit;            
+            end if;
+         end loop;
          -- got class 1, id 3, length 16 -> NAV_STATUS
          Logger.log_console(Logger.TRACE, "UBX msg class " & Integer'Image(Integer(head(3))) & ", id "
-                    & Integer'Image(Integer(head(4))));
+                            & Integer'Image(Integer(head(4))));
+      else
+         -- no data
+         isValid := False;
+      end if;         
+      
    end readFromDevice;   
 
 
@@ -277,8 +297,8 @@ is
          when others => G_GPS_Message.fix := NO_FIX;
          end case;
          
-         
-         Logger.log_console(Logger.TRACE, "Long: " & AImage( G_GPS_Message.lon ) );
+         --Logger.log_console (Logger.DEBUG, "Sats: " & Unsigned_8'Image (G_GPS_Message.sats));
+         --Logger.log_console(Logger.TRACE, "Long: " & AImage( G_GPS_Message.lon ) );
       else
          G_GPS_Message.fix := NO_FIX;
       end if;
@@ -312,9 +332,31 @@ is
    end get_Direction;
    pragma Unreferenced (get_Direction);
 
+   --  Self Check: wait until we see valid GPS messages (not necessarily a FIX)
    procedure perform_Self_Check (Status : out Error_Type) is
+      now     :  Ada.Real_Time.Time := Clock;
+      timeout : constant Ada.Real_Time.Time := now + Seconds (30);      
    begin
-      Status := SUCCESS; -- TODO
+      Status := FAILURE;
+      
+      Wait_Message_Loop:
+      while now < timeout loop
+         update_val;
+
+         now := Clock;
+         
+         if last_msg_time <= now then
+         declare
+               msg_age : constant Ada.Real_Time.Time_Span := now - last_msg_time;
+            begin
+               if msg_age < Seconds (1) then
+                  Status := Success;
+                  exit Wait_Message_Loop;
+               end if;
+            end;
+         end if;
+      end loop Wait_Message_Loop;
+           
    end perform_Self_Check;
 
 
