@@ -1,28 +1,17 @@
 with Interfaces; use Interfaces;
+with Bounded_Image; use Bounded_Image;
 
-package body Units is
-
-
-
---     procedure Saturate(input : Unit_Type; output : in out Unit_Type) is
---     begin
---        if input in output'Range then
---           output := input;
---        elsif input < output'First then
---           output := output'First;
---        else
---           output := output'Last;
---        end if;
---     end Saturate;
+package body Units with SPARK_Mode is
 
    function average( signal : Unit_Array ) return Unit_Type is
-      avg : Unit_Type;
+      function Sat_Add_Unit is new Saturated_Addition (Unit_Type);
+      avg : Unit_Type := 0.0;
    begin
-      avg := signal( signal'First ) / Unit_Type( signal'Length );
-      if signal'Length > 1 then
-         for index in Integer range signal'First+1 .. signal'Last loop
-            avg := avg + signal( index ) / Unit_Type( signal'Length );
+      if signal'Length > 0 then
+         for index in Integer range signal'First .. signal'Last loop
+            avg := Sat_Add_Unit (avg, signal (index));
          end loop;
+         avg := avg / Unit_Type (signal'Length);
       end if;
       return avg;
    end average;
@@ -38,6 +27,9 @@ package body Units is
       wr    : Angle_Type;
       off   : Angle_Type;
       f64   : Interfaces.IEEE_Float_64;
+
+      function Sat_Add_Angle is new Saturated_Addition (Angle_Type);
+      function Sat_Sub_Angle is new Saturated_Subtraction (Angle_Type);
    begin
       if span = Angle_Type (0.0) then
          --  this might happen due to float cancellation, despite precondition
@@ -55,7 +47,7 @@ package body Units is
             --pragma Assert (f64 >= 0.0);
             if f64 < Interfaces.IEEE_Float_64 (Angle_Type'Last) and f64 >= Interfaces.IEEE_Float_64 (Angle_Type'First) then
                less := Angle_Type (f64); -- overflow check might fail
-               wr := max - less;
+               wr := Sat_Sub_Angle (max, less);
             else
                wr := min;
             end if;
@@ -69,7 +61,7 @@ package body Units is
             --pragma Assert (f64 >= 0.0); -- this fails. why? both span and frac are positive
             if f64 > Interfaces.IEEE_Float_64 (Angle_Type'First) and f64 < Interfaces.IEEE_Float_64 (Angle_Type'Last) then
                less := Angle_Type (f64);
-               wr := min + less;
+               wr := Sat_Add_Angle (min, less);
             else
                wr := max;
             end if;
@@ -82,8 +74,19 @@ package body Units is
 
 
    function mirror_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
+
       span : constant Angle_Type := max - min;
-      wrapped : Angle_Type := wrap_angle( angle, min-span/2.0, max+span/2.0 );
+      cmax : constant Angle_Type := max + span / 2.0;
+      cmin : constant Angle_Type := min - span / 2.0;
+      --  limit to the ranges of wrap_angle's preconditions
+      amax : constant Angle_Type := Angle_Type (if cmax < Angle_Type'Last / 2.0 then cmax else Angle_Type'Last / 2.0);
+      amin : constant Angle_Type := Angle_Type (if cmin > Angle_Type'First / 2.0 then cmin else Angle_Type'First / 2.0);
+      --pragma Assert (amin <= 0.0 * Radian);
+      --pragma Assert (amax >= 0.0 * Radian);
+      --pragma Assert (max > min);
+      --pragma Assert (amin >= Angle_Type'First / 2.0);
+      --pragma Assert (amax <= Angle_Type'Last / 2.0);
+      wrapped : Angle_Type := wrap_angle (angle => angle, min => amin, max => amax);
       result : Angle_Type := wrapped;
    begin
       if wrapped > max then
@@ -97,38 +100,34 @@ package body Units is
 
 
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type is
-      result : Angle_Type := To - From;
+      function Sat_Sub_Flt is new Saturated_Subtraction (Float);
+      diff : constant Float := Sat_Sub_Flt (Float (To), Float (From));
    begin
-      if result > 180.0 * Degree then
-         result := result - 360.0 * Degree;
-      elsif result < -180.0 * Degree then
-         result := result + 360.0 * Degree;
-      end if;
-      return result;
+      return wrap_angle (angle => Angle_Type (diff), min => -180.0 * Degree, max => 180.0 * Degree);
    end delta_Angle;
 
 
 
    function Image (unit : Unit_Type) return String is
       first : constant Float  := Float'Truncation (Float (unit));
-      rest  : constant String := Integer'Image (Integer ((Float (unit) - first) * Float(10.0)));
+      rest  : constant String := Integer_Img (Integer ((Float (unit) - first) * Float(10.0)));
    begin
       if Float ( unit ) <  0.0 and -1.0 < Float ( unit ) then
-         return "-" & Integer'Image (Integer (first)) & "." & rest (rest'Length);
+         return "-" & Integer_Img (Sat_Cast_Int (first)) & "." & rest (rest'Length);
       else
-         return Integer'Image (Integer (first)) & "." & rest (rest'Length);
+         return Integer_Img (Sat_Cast_Int (first)) & "." & rest (rest'Length);
       end if;
 
    end Image;
 
    function AImage (unit : Angle_Type) return String is
    begin
-      return Integer'Image (Integer (Float (unit) / Ada.Numerics.Pi * Float(180.0))) & "Â°";
+      return Integer_Img (Sat_Cast_Int (Float (unit) / Ada.Numerics.Pi * Float(180.0))) & "°";
    end AImage;
 
    function RImage (unit : Angle_Type) return String is
    begin
-      return Image(Unit_Type(unit)) & "rad";
+      return " " & Image (Unit_Type(unit)) & "rad";
    end RImage;
 
    function Saturated_Cast (val : Float) return T is
@@ -145,16 +144,15 @@ package body Units is
    end Saturated_Cast;
 
    function Saturated_Addition (left, right : T) return T is
-      ret : T := left;
+      ret : T;
    begin
---        if right > T (0.0) and then ret > (T'Last - right) + T'Small then
---           ret := T'Last;
---        elsif right < T (0.0) and then ret < (T'First - right) - T'Small then
---           ret := T'First;
---        else
-      if True then
+      if right >= T (0.0) and then left >= (T'Last - right) then
+         ret := T'Last;
+      elsif right <= T (0.0) and then left <= (T'First - right) then
+         ret := T'First;
+      else
          declare
-            cand : constant Float := Float (ret) + Float (right);
+            cand : constant Float := Float (left) + Float (right); -- this needs to be constant and not a direct assignment to ret
          begin
             --  range check
             if cand > Float (T'Last) then
@@ -171,16 +169,18 @@ package body Units is
 
 
    function Saturated_Subtraction (left, right : T) return T is
-      ret : T := left;
-      cand : constant Float := Float (ret) - Float (right);
+      ret : T;
    begin
-      --  range check
-      if cand > Float (T'Last) then
-         ret := T'Last;
-      elsif cand < Float (T'First) then
+      if right >= T (0.0) and then (right + T'First) >= left then
          ret := T'First;
+      elsif right <= T (0.0) and then left >= (T'Last + right) then
+         ret := T'Last;
       else
-         ret := T (cand);
+         declare
+            cand : constant T := left - right; -- this needs to be constant and not a direct assignment to ret
+         begin
+            ret := cand;
+         end;
       end if;
       return ret;
    end Saturated_Subtraction;
@@ -240,5 +240,18 @@ package body Units is
       end if;
       return wr;
    end Wrapped_Addition;
+
+   function Saturate (val, min, max : T) return T is
+      ret : T;
+   begin
+      if val < min then
+         ret := min;
+      elsif val > max then
+         ret := max;
+      else
+         ret := val;
+      end if;
+      return ret;
+   end Saturate;
 
 end Units;

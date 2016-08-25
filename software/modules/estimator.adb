@@ -14,6 +14,7 @@ with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 with Config.Software;
 with Units.Numerics; use Units.Numerics;
+with Bounded_Image;  use Bounded_Image;
 
 with HIL;
 
@@ -23,7 +24,6 @@ with Barometer;
 with Magnetometer;
 
 with Units;          use Units;
-with Units.Numerics; use Units.Numerics;
 
 with Logger;
 with ULog;
@@ -182,7 +182,7 @@ package body Estimator with SPARK_Mode is
       GFixS : String := "NO";
       pragma Unreferenced (GFixS);
 
-      now : Time := Clock;
+      now : Time;
    begin
       G_Profiler.start;
 
@@ -311,8 +311,8 @@ package body Estimator with SPARK_Mode is
                             "   LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
                             ", " & AImage( G_Object_Position.Latitude ) &
                               ", " & Image( get_current_Height ) & "m, Fix: "  &
-                              Integer'Image( GPS_Fix_Type'Pos( G_state.fix ) )  &
-                              " sat: " & Unsigned_8'Image (G_state.nsat));
+                              Integer_Img( GPS_Fix_Type'Pos( G_state.fix ) )  &
+                              " sat: " & Natural_Img (Natural (G_state.nsat)));
 
          --G_Profiler.log;
       end if;
@@ -449,12 +449,12 @@ package body Estimator with SPARK_Mode is
 
    function get_relative_Height return Altitude_Type is
       result : Altitude_Type;
-      function Sat_Add_Alt is new Units.Saturated_Addition (T => Altitude_Type);
+      function Sat_Sub_Alt is new Units.Saturated_Subtraction (T => Altitude_Type);
    begin
       if G_state.fix = FIX_3D then
-         result := Sat_Add_Alt (G_state.avg_gps_height, -G_state.home_pos.Altitude);
+         result := Sat_Sub_Alt (G_state.avg_gps_height, G_state.home_pos.Altitude);
       else
-         result := Sat_Add_Alt (G_state.avg_baro_height, -G_state.home_baro_alt);
+         result := Sat_Sub_Alt (G_state.avg_baro_height, G_state.home_baro_alt);
       end if;
       return result;
    end get_relative_Height;
@@ -477,11 +477,15 @@ package body Estimator with SPARK_Mode is
       angles : Orientation_Type;
       g_length : Float := 0.0;
       gravity_vector : Linear_Acceleration_Vector := acc_vector;
+
+      function Sat_Sub_LinAcc is new Saturated_Subtraction (Linear_Acceleration_Type);
+      function Sat_Cast_Pitch is new Saturated_Cast (Pitch_Type);
+      function Sat_Add_Float is new Saturated_Addition (Float);
    begin
       -- normalize vector
       if abs(gravity_vector) < 0.9*GRAVITY or 1.1*GRAVITY < abs(gravity_vector) then
-         --null;
-         gravity_vector(Z) := gravity_vector(Z) - (  sgn( gravity_vector(Z) ) * (abs(gravity_vector) - GRAVITY) );
+         gravity_vector(Z) := Sat_Sub_LinAcc (gravity_vector(Z), ( sgn (gravity_vector(Z)) *
+                                                Sat_Sub_LinAcc (abs (gravity_vector), GRAVITY)));
       end if;
 
       -- check valid
@@ -498,8 +502,8 @@ package body Estimator with SPARK_Mode is
                                      -gravity_vector(Z)
                                       ) );
 
-         g_length := Sqrt( Float(gravity_vector(Y))**2 + Float(gravity_vector(Z))**2 );
-         angles.Pitch := Pitch_Type ( Arctan( gravity_vector(X), Linear_Acceleration_Type( g_length ) ) );
+         g_length := Sqrt (Sat_Add_Float (Float (gravity_vector(Y))**2, Float (gravity_vector(Z))**2));
+         angles.Pitch := Sat_Cast_Pitch (Float (Arctan (gravity_vector(X), Linear_Acceleration_Type (g_length))));
          angles.Yaw := 0.0 * Degree;
 
       end if;
@@ -594,11 +598,13 @@ package body Estimator with SPARK_Mode is
       pos_values : GPS_Buffer_Pack.Element_Array(1 .. GPS_Buffer_Pack.Length_Type'Last);
       pos_ref : GPS_Loacation_Type;
 
+      function Sat_Add is new Saturated_Addition (Time_Type);
+
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       stable : Boolean := True;
    begin
       if G_orientation_buffer.Length > 1 and G_pos_buffer.Length > 1 then
-         G_state.stable_Time := G_state.stable_Time + Units.To_Time( now - G_state.last_stable_check );
+         G_state.stable_Time :=  Sat_Add (G_state.stable_Time, Units.To_Time (now - G_state.last_stable_check));
          if or_values'Length = G_orientation_buffer.Length then
             G_orientation_buffer.get_all(or_values);
             or_ref := or_values(1);

@@ -1,0 +1,1 @@
+../../../hal/boards/common/tools/generic_bounded_image.adb

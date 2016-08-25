@@ -14,10 +14,10 @@ package Main with
    SPARK_Mode
 is
 
-   procedure initialize;
+   procedure Initialize;
 
-   procedure perform_Self_Test (passed : out Boolean);
+   procedure Perform_Self_Test (passed : out Boolean);
 
-   procedure run_Loop;
+   procedure Run_Loop;
 
 end Main;

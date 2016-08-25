@@ -7,6 +7,7 @@ with HIL.Config; use HIL.Config;
 with HIL.UART; use type HIL.UART.Data_Type;
 with HIL.Devices;
 with Interfaces; use Interfaces;
+with Bounded_Image; use Bounded_Image;
 
 with Logger;
 
@@ -169,8 +170,8 @@ is
             end if;
          end loop;
          -- got class 1, id 3, length 16 -> NAV_STATUS
-         Logger.log_console(Logger.TRACE, "UBX msg class " & Integer'Image(Integer(head(3))) & ", id "
-                            & Integer'Image(Integer(head(4))));
+         Logger.log_console(Logger.TRACE, "UBX msg class " & Integer_Img (Integer (head(3))) & ", id "
+                            & Integer_Img (Integer (head(4))));
       else
          -- no data
          isValid := False;

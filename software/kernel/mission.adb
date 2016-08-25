@@ -4,9 +4,10 @@ with Ada.Real_Time; use Ada.Real_Time;
 with Units.Navigation; use Units.Navigation;
 with Config.Software;
 with HIL;
+with Types; use Types;
 
 with Units; use Units;
-
+with Bounded_Image; use Bounded_Image;
 
 with Console; use Console;
 --  with Buzzer_Manager;
@@ -37,6 +38,16 @@ package body Mission with SPARK_Mode is
       last_state_change : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
    end record;
 
+   --------------
+   --  Helpers
+   --------------
+   
+   function Sat_Add_Time is new Saturated_Addition (Time_Type);
+   
+   -------------
+   --  states
+   -------------
+   
    G_state : State_Type;
    
    Mission_Resumed : Boolean := False;
@@ -61,9 +72,16 @@ package body Mission with SPARK_Mode is
       old_state_val : HIL.Byte;
       height : HIL.Byte_Array_2;
       baro_height : Altitude_Type;
+      
+      function Sat_Cast_Alt is new Saturated_Cast (Altitude_Type);
+      
    begin
       NVRAM.Load( VAR_MISSIONSTATE, old_state_val );
-      G_state.mission_state := Mission_State_Type'Val( old_state_val );
+      if old_state_val <= Mission_State_Type'Pos (Mission_State_Type'Last) then
+         G_state.mission_state := Mission_State_Type'Val (old_state_val);
+      else
+         G_state.mission_state := Mission_State_Type'First;
+      end if;
       if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
          start_New_Mission;
          Mission_Resumed := False;
@@ -72,7 +90,7 @@ package body Mission with SPARK_Mode is
          NVRAM.Load( VAR_HOME_HEIGHT_L, height(1) );
          pragma Annotate (GNATprove, False_Positive, """height"" might not be initialized", "it is done right here");
          NVRAM.Load( VAR_HOME_HEIGHT_H, height(2) );
-         baro_height := Unit_Type( HIL.toUnsigned_16( height ) ) * Meter;
+         baro_height := Sat_Cast_Alt (Float (Unit_Type (HIL.toUnsigned_16 (height)) * Meter));
          
          -- GPS
          NVRAM.Load( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
@@ -84,7 +102,7 @@ package body Mission with SPARK_Mode is
          Estimator.lock_Home( G_state.home, baro_height );
          Controller.set_Target_Position( G_state.home );
          
-         Logger.log(Logger.INFO, "Continue Mission at " & Integer'Image( Mission_State_Type'Pos( G_state.mission_state ) ) );
+         Logger.log(Logger.INFO, "Continue Mission at " & Integer_Img (Mission_State_Type'Pos (G_state.mission_state)));
          Mission_Resumed := True;
       end if;    
    end load_Mission;
@@ -101,9 +119,11 @@ package body Mission with SPARK_Mode is
    
    procedure next_State is
    begin
-      G_state.mission_state := Mission_State_Type'Succ(G_state.mission_state);
-      NVRAM.Store( VAR_MISSIONSTATE, Mission_State_Type'Pos( G_state.mission_state ) );
-      G_state.last_state_change := Ada.Real_Time.Clock;
+      if G_state.mission_state /= Mission_State_Type'Last then
+         G_state.mission_state := Mission_State_Type'Succ(G_state.mission_state);         
+         NVRAM.Store( VAR_MISSIONSTATE, Mission_State_Type'Pos( G_state.mission_state ) );
+         G_state.last_state_change := Ada.Real_Time.Clock;
+      end if;
    end next_State;
    
    
@@ -129,13 +149,19 @@ package body Mission with SPARK_Mode is
    procedure wait_for_GPSfix is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       
+      function Sat_Cast_U16 is new Saturated_Cast_Mod (Unsigned_16);
+      
       procedure lock_Home is
       begin
          G_state.home := Estimator.get_Position;
          Estimator.lock_Home(Estimator.get_Position, Estimator.get_Baro_Height);
          --G_state.home.Altitude := Estimator.get_current_Height;
-         NVRAM.Store( VAR_HOME_HEIGHT_L, HIL.toBytes( Unsigned_16( Estimator.get_Baro_Height ) )(1) );
-         NVRAM.Store( VAR_HOME_HEIGHT_H, HIL.toBytes( Unsigned_16( Estimator.get_Baro_Height ) )(2) );
+         declare
+            alt_u16 : constant Unsigned_16 := Sat_Cast_U16 (Float (Estimator.get_Baro_Height));
+         begin
+            NVRAM.Store (VAR_HOME_HEIGHT_L, HIL.toBytes (alt_u16)(1));
+            NVRAM.Store (VAR_HOME_HEIGHT_H, HIL.toBytes (alt_u16)(2));
+         end;
          
          NVRAM.Store( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
          NVRAM.Store( VAR_GPS_TARGET_LAT_A,  Float( G_state.home.Latitude ) );
@@ -144,7 +170,7 @@ package body Mission with SPARK_Mode is
          -- gib laut
          Controller.bark;
          
-      end lock_Home;
+      end lock_Home;     
       
    begin
    
@@ -157,7 +183,7 @@ package body Mission with SPARK_Mode is
 
       -- check GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
-         G_state.gps_lock_threshold_time := G_state.gps_lock_threshold_time + To_Time(now - G_state.last_call); 
+         G_state.gps_lock_threshold_time := Sat_Add_Time (G_state.gps_lock_threshold_time, To_Time(now - G_state.last_call)); 
          LED_Manager.LED_switchOn;
          
          if G_state.gps_lock_threshold_time > 10.0 * Second then
@@ -204,7 +230,7 @@ package body Mission with SPARK_Mode is
       -- FIXME: Sprung von Baro auf GPS hat ausgelöst.
       --if Estimator.get_current_Height >= G_state.home.Altitude + Config.CFG_TARGET_ALTITUDE_THRESHOLD then
       if Estimator.get_relative_Height >= Config.CFG_TARGET_ALTITUDE_THRESHOLD then
-         G_state.target_threshold_time := G_state.target_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT     
+         G_state.target_threshold_time := Sat_Add_Time (G_state.target_threshold_time, To_Time(now - G_state.last_call));  -- TODO: calc dT     
          if G_state.target_threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
             Logger.log(Logger.INFO, "Target height reached. Detaching...");
             Logger.log(Logger.INFO, "Target height reached. Detaching...");
@@ -216,7 +242,7 @@ package body Mission with SPARK_Mode is
       
       -- check for accidential drop
       if Estimator.get_current_Height < Estimator.get_max_Height - Config.CFG_DELTA_ALTITUDE_THRESH then
-         G_state.delta_threshold_time := G_state.delta_threshold_time + To_Time(now - G_state.last_call);  -- TODO: calc dT
+         G_state.delta_threshold_time := Sat_Add_Time (G_state.delta_threshold_time, To_Time(now - G_state.last_call));  -- TODO: calc dT
          if G_state.delta_threshold_time >= Config.CFG_DELTA_ALTITUDE_THRESH_TIME then
             Logger.log(Logger.INFO, "Unplanned drop detected...");
             Logger.log(Logger.INFO, "Unplanned drop detected...");

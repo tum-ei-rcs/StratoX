@@ -17,6 +17,7 @@ with ublox8.Driver;   use ublox8.Driver;
 with NVRAM;
 with Logger;
 with Config.Software; use Config.Software;
+with Bounded_Image;   use Bounded_Image;
 
 with Mission;
 with Console;
@@ -36,7 +37,7 @@ package body Main with SPARK_Mode => On is
    --  Initialize
    ----------------
 
-   procedure initialize is
+   procedure Initialize is
       num_boots : HIL.Byte;
    begin
       CPU.initialize;
@@ -49,7 +50,6 @@ package body Main with SPARK_Mode => On is
          pragma Unreferenced (ret);
       end;
       Logger.Set_Log_Level (CFG_LOGGER_LEVEL_UART);
-
 
       -- wait to satisfy some (?) timing
       declare
@@ -94,7 +94,7 @@ package body Main with SPARK_Mode => On is
          end;
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_H, exception_line(2));
-         Logger.log_console(Logger.WARN, "Last Exception: " & Integer'Image( Integer( HIL.toUnsigned_16( exception_line ) ) ) );
+         Logger.log_console(Logger.WARN, "Last Exception: " & Integer_Img( Integer( HIL.toUnsigned_16( exception_line ) ) ) );
       end;
 
       Mission.load_Mission;
@@ -235,7 +235,7 @@ package body Main with SPARK_Mode => On is
                Controller.log_Info;
                PX4IO.Driver.read_Status;
 
-               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer(
+               Logger.log_console (Logger.INFO, "Profile: " & Integer_Img ( Integer(
                                    Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
 
             when Console.ARM => Controller.activate;
@@ -243,7 +243,7 @@ package body Main with SPARK_Mode => On is
             when Console.DISARM => Controller.deactivate;
 
             when Console.PROFILE =>
-               Logger.log_console (Logger.INFO, "Profile: " & Integer'Image ( Integer(
+               Logger.log_console (Logger.INFO, "Profile: " & Integer_Img ( Integer(
                                    Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
                Main_Profile.log;
 

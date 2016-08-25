@@ -13,7 +13,9 @@
 
 with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Numerics;
+with Types;
 
+pragma Elaborate_All (Types);
 package Units with
      Spark_Mode is
 
@@ -29,7 +31,7 @@ package Units with
          (Unit_Name => Ampere, Unit_Symbol => 'A', Dim_Symbol => 'I'),
          (Unit_Name => Kelvin, Unit_Symbol => 'K', Dim_Symbol => "Theta"),
          (Unit_Name => Radian, Unit_Symbol => "Rad", Dim_Symbol => "A")),
-   Default_Value => 0.0;
+   Default_Value => 0.0; -- required for matrices
 
    type Unit_Array is array (Natural range <>) of Unit_Type;
 
@@ -257,6 +259,11 @@ package Units with
    GRAVITY_CONSTANT : constant Linear_Acceleration_Type := 127_137.6 * Kilo * Meter / (Hour**2);
 
    --------------------------
+   --  helpers functions
+   --------------------------
+   function Sat_Cast_Int is new Types.Saturated_Cast_Int (Integer);
+
+   --------------------------
    --  Conversion functions
    --------------------------
 
@@ -272,25 +279,25 @@ package Units with
         (Float ((rtime) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
 
     function To_Time_Span(time : Time_Type) return Ada.Real_Time.Time_Span is
-     ( Ada.Real_Time.Microseconds ( Integer( Float(time)/Float(1.0e-6) ) ) );
+     ( Ada.Real_Time.Microseconds (Sat_Cast_Int (Float (time) / Float(1.0e-6))));
 
      function To_Degree(angle : Angle_Type) return Float is
-     ( Float( angle / Degree ) );
+     (Float (angle / Degree));
 
    -------------------------------------------------------------
    --  Elementary math functions handling overflow/range checks
    -------------------------------------------------------------
 
    function "+"( Left : Ada.Real_Time.Time; Right : Time_Type ) return Ada.Real_Time.Time is
-   ( Left + Ada.Real_Time.Microseconds ( Integer( Float(Right)/Float(1.0e-6) ) ) );
+   ( Left + Ada.Real_Time.Microseconds (Sat_Cast_Int (Float (Right) / Float(1.0e-6))));
 
 
    function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
      with Pre => min <= 0.0 * Radian and then
      max >= 0.0 * Radian and then
      max > min and then
-     max < Angle_Type'Last / 2.0 and then
-     min > Angle_Type'First / 2.0,
+     max <= Angle_Type'Last / 2.0 and then
+     min >= Angle_Type'First / 2.0,
      Post => Float (wrap_angle'Result) >= Float (min) and Float (wrap_angle'Result) <= Float (max);
    --  wrap angle between two values
    --  Must make no assumptions on input 'angle' here, otherwise caller might fail if it isn't SPARK.
@@ -319,6 +326,12 @@ package Units with
    function Saturated_Addition (left, right : T) return T
      with Inline, Pre => 0.0 in T'Range;
    --  add two Floats of same Unit type and limit to the type's bounds
+
+   generic
+      type T is digits <>; -- any floating point type
+   function Saturate (val, min, max : T) return T
+     with Inline;
+   --  limit to given range
 
    generic
       type T is digits <>; -- any floating point type
@@ -360,10 +373,12 @@ package Units with
    ------------------
    --  I/O helpers
    ------------------
-   --  Image functions (TODO: postcond on string length)
 
-   function Image  (unit : Unit_Type)  return String;
-   function AImage (unit : Angle_Type) return String;
-   function RImage (unit : Angle_Type) return String;
+   function Image  (unit : Unit_Type)  return String
+     with Post => Image'Result'Length in 1 .. 36 and Image'Result'First = 1;
+   function AImage (unit : Angle_Type) return String
+     with Post => AImage'Result'Length in 1 .. 36 and AImage'Result'First = 1;
+   function RImage (unit : Angle_Type) return String
+     with Post => RImage'Result'Length in 1 .. 40 and RImage'Result'First = 1;
 
 end Units;

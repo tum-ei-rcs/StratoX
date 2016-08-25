@@ -19,6 +19,8 @@ is
 
    subtype Time_Type is Units.Time_Type;
 
+   --  FIXME: this is critical: those suzbtypes don't have 0.0 in their range, thus a constraint error
+   --  is raised whenever an object of those is declared without initialization.
    subtype Temperature_Type is
      Units.Temperature_Type range 233.15 .. 358.15;  -- (-)40 .. 85degC, limits from datasheet
    subtype Pressure_Type is

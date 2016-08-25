@@ -1,10 +1,10 @@
 --
-with Units;
+with Units;            use Units;
 with Units.Operations; use Units.Operations;
+with MS5611.Register;  use MS5611.Register;
+with Ada.Real_Time;    use Ada.Real_Time;
 use type Units.Unit_Type;
-with HIL.SPI;   -- Hardware Interface to SPI
-with MS5611.Register; use MS5611.Register;
-with Ada.Real_Time; use Ada.Real_Time;
+with HIL.SPI;   
 
 package body MS5611.Driver with 
 SPARK_Mode,
@@ -21,7 +21,7 @@ is
 
    type Conversion_Info_Type is record
       OSR   : OSR_Type;
-      Start : Time_Type;
+      Start : Time_Type := 0.0 * Second;
    end record;
 
    -- the current state of the sensor device
@@ -29,7 +29,7 @@ is
    -- @field Conv_Info_Temp context for state TEMPERATURE_CONVERSION
    -- @field Conv_Info_Pres context for state PRESSURE_CONVERSION
    type Baro_State_Type is record
-      FSM_State      : Baro_FSM_Type;
+      FSM_State      : Baro_FSM_Type := Baro_FSM_Type'First;
       Conv_Info_Temp : Conversion_Info_Type;
       Conv_Info_Pres : Conversion_Info_Type;
    end record;
@@ -407,8 +407,22 @@ is
    ----------------------
    
    function convertToKelvin (thisTemp : in TEMP_Type) return Temperature_Type is
+      ret  : Temperature_Type := Temperature_Type'First; -- init required, otherwise constraint error!
+      cand : Float := Float (G_CELSIUS_0) + Float (thisTemp) / 100.0;
+      
+      --function Sat_Cast_Temperature is new Units.Saturated_Cast (Temperature_Type);
+      
+      -- cannot use Sat_Cast here, because that builds on units, 
+      -- which requires default value of 0.0, which isn't in Temperature_Type'Range
    begin
-      return Temperature_Type (G_CELSIUS_0 + thisTemp / 100.0);  -- SPARK Range Check might fail
+      if cand > Float (Temperature_Type'Last) then
+         ret := Temperature_Type'Last;
+      elsif cand < Float (Temperature_Type'First) then
+         ret := Temperature_Type'First;
+      else
+         ret := Temperature_Type (cand);
+      end if;
+      return ret;
    end convertToKelvin;
 
    ---------------------------

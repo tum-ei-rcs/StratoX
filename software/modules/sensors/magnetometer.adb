@@ -1,5 +1,6 @@
 
 with Interfaces; use Interfaces;
+with Bounded_Image; use Bounded_Image;
 
 with HMC5883L; use HMC5883L;
 with HMC5883L.Driver;
@@ -27,9 +28,9 @@ package body Magnetometer with SPARK_Mode is
       --Driver.update_val;
       Driver.getHeading(mag_x, mag_y, mag_z);   -- are These Micro*Tesla?
 
-      Logger.log_console(Logger.TRACE, "Mag: " & Integer'Image(Integer(mag_x)) & ", "
-                 & Integer'Image(Integer(mag_y)) & ", "
-                 & Integer'Image(Integer(mag_z)) );
+      Logger.log_console(Logger.TRACE, "Mag: " & Integer_Img (Integer (mag_x)) & ", "
+                 & Integer_Img (Integer (mag_y)) & ", "
+                 & Integer_Img (Integer (mag_z)));
 
       Self.sample.data(X) := Unit_Type(mag_x) * Micro * Tesla;
       Self.sample.data(Y) := Unit_Type(mag_y) * Micro * Tesla;

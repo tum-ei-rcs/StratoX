@@ -1,5 +1,7 @@
 with Logger;
 with Units;
+with Types;
+with Bounded_Image; use Bounded_Image;
 
 package body Profiler with SPARK_Mode is
 
@@ -54,26 +56,15 @@ package body Profiler with SPARK_Mode is
    end stop;
 
    procedure log(Self : in Profile_Tag) is
-      time_us_flt : constant Float := Float'Floor( Float (Units.To_Time (Self.max_duration)) * 1.0e6);
+      time_us_flt : constant Float := Float (Units.To_Time (Self.max_duration)) * 1.0e6;
       time_us_int : Integer;
+
+      function Sat_Cast_Int is new Types.Saturated_Cast_Int (Integer);
+
    begin
       if CFG_PROFILER_PROFILING and CFG_PROFILER_LOGGING then
-
-         if time_us_flt > Float (Integer'Last) then
-            time_us_int := Integer'Last;
-         elsif time_us_flt < Float (Integer'First) then
-            time_us_int := Integer'First;
-         else
-            time_us_int := Integer (time_us_flt); -- rounding
-         end if;
-
-         declare
-            intimg : constant String := Integer'Image (time_us_int);
-            pragma Assert (Integer'Size = 32);
-            pragma Assume (intimg'Length <= 11);
-         begin
-            Logger.log_console (Logger.INFO, Self.name & " Profile: " & intimg & " us" );
-         end;
+         time_us_int := Sat_Cast_Int (time_us_flt); -- rounding
+         Logger.log_console (Logger.INFO, Self.name & " Profile: " & Integer_Img (time_us_int) & " us" );
       end if;
    end log;
 
