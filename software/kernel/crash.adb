@@ -59,9 +59,9 @@ package body Crash with SPARK_Mode => Off is
       delay until now + Milliseconds(80);
 
       --  DEBUG ONLY: hang here to let us read the console output
-      --loop
-      --   null;
-      --end loop;
+--        loop
+--           null;
+--        end loop;
 
       --  XXX! A last chance handler must always terminate or suspend the
       --  thread that executes the handler. Suspending cannot be used here,

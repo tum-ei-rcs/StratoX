@@ -58,6 +58,10 @@ package body Main with SPARK_Mode => On is
          delay until now + Milliseconds (50);
       end;
 
+      if Config.Software.TEST_MODE_ACTIVE then
+         Logger.log_console (Logger.ERROR, "TEST-DUMMY MODE IS ACTIVE!");
+      end if;
+
       --  start NVRAM (bootcounter...)
       Logger.log_console (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;

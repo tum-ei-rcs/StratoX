@@ -12,7 +12,7 @@ package Config.Software with SPARK_Mode is
 
    DEBUG_MODE_IS_ACTIVE : constant Boolean := True;     
    MAIN_TICK_RATE_MS : constant := 20;   -- Tickrate in Milliseconds
-   
+   TEST_MODE_ACTIVE : constant Boolean := True;
    
    -- Misison
    CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 120.0 * Second;  -- Droptest: 120, Strato: TBD

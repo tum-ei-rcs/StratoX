@@ -6,6 +6,8 @@ with Logger;
 with Profiler;
 with Config.Software; use Config.Software;
 with Units.Numerics; use Units.Numerics;
+with Units;
+with Ada.Numerics.Elementary_Functions;
 
 with ULog;
 
@@ -359,16 +361,29 @@ package body Controller with SPARK_Mode is
               RIGHT => (balanced_elevator + balanced_aileron) * Unit_Type(scale));
    end Elevon_Angles;
 
+   FAKE_ROLL_MAGNITUDE : constant Angle_Type := 20.0 * Degree;
 
    procedure runOneCycle is
       Control_Priority : Control_Priority_Type := EQUAL;
    begin
 
-      -- control
-      control_Pitch;
-      --control_Yaw;
-      G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
-      control_Roll;
+      if not Config.Software.TEST_MODE_ACTIVE then
+         -- control
+         control_Pitch;
+         --control_Yaw;
+         G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
+         control_Roll;
+      else
+         G_Plane_Control.Elevator := Elevator_Angle_Type (0.0);
+         declare
+            now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+            t_abs : constant Time_Type := Units.To_Time (now);
+            sinval : constant Unit_Type := Unit_Type (Ada.Numerics.Elementary_Functions.Sin (0.5 * Float (t_abs)));
+            pragma Assume (sinval in -1.0 .. 1.0);
+         begin
+            G_Plane_Control.Aileron := FAKE_ROLL_MAGNITUDE * sinval;
+         end;
+      end if;
 
       G_state.control_profiler.start;
 
