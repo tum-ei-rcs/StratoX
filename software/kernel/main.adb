@@ -70,12 +70,11 @@ package body Main with SPARK_Mode => On is
       Estimator.initialize;
       Controller.initialize;
 
-      --  wait to satisfy some timing
-      --  TODO XXX FIXME: why? This is too slow for in-air reset.
+      --  wait a bit: UART doesn't seem to write earlier.
       declare
          now : constant Time := Clock;
       begin
-         delay until now + Milliseconds (150); -- reduced from 1500 to 150
+         delay until now + Milliseconds (1500); -- reduced from 1500 to 150
       end;
 
       --  Illustration how to use NVRAM

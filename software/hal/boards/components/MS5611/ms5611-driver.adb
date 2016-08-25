@@ -21,7 +21,7 @@ is
 
    type Conversion_Info_Type is record
       OSR   : OSR_Type;
-      Start : Time_Type := 0.0 * Second;
+      Start : Time_Type;
    end record;
 
    -- the current state of the sensor device
@@ -29,7 +29,7 @@ is
    -- @field Conv_Info_Temp context for state TEMPERATURE_CONVERSION
    -- @field Conv_Info_Pres context for state PRESSURE_CONVERSION
    type Baro_State_Type is record
-      FSM_State      : Baro_FSM_Type := Baro_FSM_Type'First;
+      FSM_State      : Baro_FSM_Type;
       Conv_Info_Temp : Conversion_Info_Type;
       Conv_Info_Pres : Conversion_Info_Type;
    end record;

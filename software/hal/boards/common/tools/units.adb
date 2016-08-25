@@ -122,7 +122,7 @@ package body Units with SPARK_Mode is
 
    function AImage (unit : Angle_Type) return String is
    begin
-      return Integer_Img (Sat_Cast_Int (Float (unit) / Ada.Numerics.Pi * Float(180.0))) & "°";
+      return Integer_Img (Sat_Cast_Int (Float (unit) / Ada.Numerics.Pi * Float(180.0))) & "deg";
    end AImage;
 
    function RImage (unit : Angle_Type) return String is

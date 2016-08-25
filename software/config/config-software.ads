@@ -10,10 +10,7 @@ with Logger;
 --  @summary Configuration of the Software, adjust these parameters to your needs
 package Config.Software with SPARK_Mode is
 
-   DEBUG_MODE_IS_ACTIVE : constant Boolean := True;
-   
-   CFG_IN_AIR_RESTART : constant Boolean := False;
-   
+   DEBUG_MODE_IS_ACTIVE : constant Boolean := True;     
    MAIN_TICK_RATE_MS : constant := 20;   -- Tickrate in Milliseconds
    
    
@@ -24,10 +21,8 @@ package Config.Software with SPARK_Mode is
    
     
    CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;
-   CFG_LOGGER_CALL_SKIP: constant := 10;  
-   
-
-   
+   CFG_LOGGER_CALL_SKIP: constant := 10;  -- prescaler...only every nth message is printed
+      
 
    -- PX4IO Timeout RC  : 2000ms
    -- PX4IO Timeout FMU (no controls) : 500ms
