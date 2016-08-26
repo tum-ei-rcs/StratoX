@@ -276,6 +276,8 @@ package body Estimator with SPARK_Mode is
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
          log_Info;
+         -- FIXME: the GPS does weird things the first seconds after getting a fix. The altitude
+         -- is far too high and then slowly comes back. We should not trust that
          if G_state.gpsinfo.fix = FIX_2D or G_state.gpsinfo.fix = FIX_3D then
             G_pos_buffer.push_back( GPS.Sensor.get_Position );
          end if;

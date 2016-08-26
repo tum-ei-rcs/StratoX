@@ -366,7 +366,7 @@ package body Controller with SPARK_Mode is
          declare
             now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
             t_abs : constant Time_Type := Units.To_Time (now);
-            sinval : constant Unit_Type := Unit_Type (Ada.Numerics.Elementary_Functions.Sin (0.5 * Float (t_abs)));
+            sinval : constant Unit_Type := Unit_Type (Ada.Numerics.Elementary_Functions.Sin (2.0 * Float (t_abs)));
             pragma Assume (sinval in -1.0 .. 1.0);
          begin
             G_Plane_Control.Aileron := FAKE_ROLL_MAGNITUDE * sinval;
