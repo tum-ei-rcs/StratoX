@@ -321,26 +321,25 @@ package body Mission with SPARK_Mode is
                          Elevons(Controller.RIGHT)/2.0 - Elevons(Controller.LEFT)/2.0) );
       
       G_state.body_info.orientation := Estimator.get_Orientation;
-      G_state.body_info.position := Estimator.get_Position;
+      G_state.body_info.position    := Estimator.get_Position;
 
-      -- Controller
+      --  Controller
       Controller.set_Current_Orientation (G_state.body_info.orientation);
       Controller.set_Current_Position (G_state.body_info.position);
-      Controller.runOneCycle; 
-      
+      Controller.runOneCycle;       
             
-      -- Check stable position (not changed for 2 min)
-      if Estimator.get_Stable_Time > 120.0 * Second then
+      --  Land detection
+      if not Config.Software.TEST_MODE_ACTIVE and 
+      then Estimator.get_Stable_Time > 120.0 * Second 
+      then
+         --  stable position (unchanged for 2 min)
          Logger.log(Logger.INFO, "Landed.");
          deactivate;
-      end if;    
-      
-      -- Timeout for Landing
-      if now > G_state.last_state_change + Config.Software.CFG_DESCEND_TIMEOUT then
+      elsif now > (G_state.last_state_change + Config.Software.CFG_DESCEND_TIMEOUT) then
+         --  Timeout for Landing
          Logger.log(Logger.INFO, "Timeout. Landed");
          deactivate;
-      end if;
-      
+      end if;      
       
    end control_Descend;
 
