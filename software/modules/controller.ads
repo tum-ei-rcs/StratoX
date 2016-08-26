@@ -75,7 +75,7 @@ private
                     target_location  : GPS_Loacation_Type)
                     return Heading_Type;
 
-   function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type
-     with Pre => True; -- workaround got GNATprove bug P811-036
+--     function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type
+--       with Pre => True; -- workaround got GNATprove bug P811-036
 
 end Controller;

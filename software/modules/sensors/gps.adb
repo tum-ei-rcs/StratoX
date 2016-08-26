@@ -1,4 +1,5 @@
 with ublox8.Driver; use ublox8;
+with Bounded_Image; use Bounded_Image;
 
 package body GPS with SPARK_Mode,
   Refined_State => (State => (null))
@@ -35,10 +36,23 @@ is
       return Driver.get_Velo;
    end get_Speed;
 
+   function get_Time(Self : GPS_Tag) return GPS_DateTime
+   is
+      pragma Unreferenced (Self);
+   begin
+      return Driver.get_Time;
+   end get_Time;
+
    function get_Num_Sats(Self : GPS_Tag) return Unsigned_8 is
       pragma Unreferenced (Self);
    begin
       return Driver.get_Nsat;
    end get_Num_Sats;
+
+   function Image (tm : GPS_DateTime) return String is
+   begin
+      return Natural_Img ( Natural (tm.year)) & "-" & Unsigned8_Img ( Unsigned_8 (tm.mon)) & "-" & Unsigned8_Img ( Unsigned_8 (tm.day)) & " "
+        & Unsigned8_Img (Unsigned_8 (tm.hour)) & ":" & Unsigned8_Img ( Unsigned_8 (tm.min)) & ":" & Unsigned8_Img ( Unsigned_8 (tm.sec));
+   end Image;
 
 end GPS;

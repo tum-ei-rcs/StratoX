@@ -10,6 +10,7 @@
 
 with Units.Vectors; use Units.Vectors;
 with Units.Numerics; use Units.Numerics;
+with Interfaces;
 
 pragma Elaborate_All(Units.Numerics);
 
@@ -19,7 +20,9 @@ package Units.Navigation with SPARK_Mode is
    -- Date
    subtype Month_Type is Integer range 1 .. 12;-- with Default_Value => 1;
    subtype Day_Of_Month_Type is Integer range 1 .. 31;-- with Default_Value => 1;
-   subtype Year_Type is Integer;-- with Default_Value => 1970;
+   subtype Year_Type is Natural; -- absolute year number
+   subtype Week_Type is Integer;
+   subtype GPS_Time_Of_Week_Type is Interfaces.Unsigned_32; -- milliseconds of the GPS week nav epoch
 
    type Hour_Type is mod 24 with Default_Value => 0;
    type Minute_Type is mod 60 with Default_Value => 0;

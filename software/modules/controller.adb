@@ -257,18 +257,6 @@ package body Controller with SPARK_Mode is
    end control_Pitch;
 
 
-   function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type is
-      result : Angle_Type := To - From;
-   begin
-      if result > 180.0 * Degree then
-         result := result - 360.0 * Degree;
-      elsif result < -180.0 * Degree then
-         result := result + 360.0 * Degree;
-      end if;
-      return result;
-   end delta_Angle;
-
-
    -- 	θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
    -- φ is lat, λ is long
    function Heading(source_location : GPS_Loacation_Type;

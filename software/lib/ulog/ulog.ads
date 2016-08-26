@@ -38,8 +38,12 @@ package ULog with SPARK_Mode is
          txt_last : Integer := 0; -- points to last valid char
       when GPS =>
          --  GPS message
-         gps_week : Interfaces.Integer_16  := 0;
-         gps_msec : Interfaces.Unsigned_64 := 0;
+         gps_year  : Interfaces.Unsigned_16 := 0;
+         gps_month : Interfaces.Unsigned_8 := 0;
+         gps_day  : Interfaces.Unsigned_8  := 0;
+         gps_hour : Interfaces.Unsigned_8  := 0;
+         gps_min  : Interfaces.Unsigned_8  := 0;
+         gps_sec  : Interfaces.Unsigned_8  := 0;
          fix      : Interfaces.Unsigned_8  := 0;
          nsat     : Interfaces.Unsigned_8  := 0;
          lat      : Float                  := 0.0;

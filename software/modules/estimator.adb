@@ -56,11 +56,16 @@ package body Estimator with SPARK_Mode is
                                                 Element_Type => Orientation_Type);
    use IMU_Buffer_Pack;
 
+   type GPS_info is record
+      fix          : GPS_Fix_Type := NO_FIX;
+      gps_speed    : Linear_Velocity_Type := 0.0 * Meter/Second;
+      nsat         : Unsigned_8 := 0;
+      gps_datetime : GPS.GPS_DateTime;
+   end record;
+
    type State_Type is record
       init_time            : Time := Time_First;
-      fix                  : GPS_Fix_Type := NO_FIX;
-      gps_speed            : Linear_Velocity_Type := 0.0 * Meter/Second;
-      nsat                 : Unsigned_8 := 0;
+      gpsinfo              : GPS_info;
       avg_gps_height       : Altitude_Type := 0.0 * Meter;
       max_gps_height       : Altitude_Type := 0.0 * Meter;
       avg_baro_height      : Altitude_Type := 0.0 * Meter;
@@ -182,7 +187,6 @@ package body Estimator with SPARK_Mode is
       GFixS : String := "NO";
       pragma Unreferenced (GFixS);
 
-      now : Time;
    begin
       G_Profiler.start;
 
@@ -241,14 +245,15 @@ package body Estimator with SPARK_Mode is
 
 
       GPS.Sensor.read_Measurement;
-      G_state.fix := GPS.Sensor.get_GPS_Fix;
-      G_state.nsat := GPS.Sensor.get_Num_Sats;
-      G_state.gps_speed := GPS.Sensor.get_Speed;
+      G_state.gpsinfo.fix := GPS.Sensor.get_GPS_Fix;
+      G_state.gpsinfo.nsat := GPS.Sensor.get_Num_Sats;
+      G_state.gpsinfo.gps_speed := GPS.Sensor.get_Speed;
+      G_state.gpsinfo.gps_datetime := GPS.Sensor.get_Time;
       -- FIXME: Sprung durch Baro Offset, falls GPS wegfällt
-      if G_state.fix = FIX_3D then
+      if G_state.gpsinfo.fix = FIX_3D then
          G_Object_Position := GPS.Sensor.get_Position;
          GFixS := "3D";
-      elsif G_state.fix = FIX_2D then
+      elsif G_state.gpsinfo.fix = FIX_2D then
          GFixS := "2D";
          G_Object_Position := GPS.Sensor.get_Position;
          G_Object_Position.Altitude := Len_To_Alt (Barometer.Sensor.get_Altitude);  -- Overwrite Alt
@@ -271,7 +276,7 @@ package body Estimator with SPARK_Mode is
       G_state.logger_calls := Logger_Call_Type'Succ( G_state.logger_calls );
       if G_state.logger_calls = 0 then
          log_Info;
-         if G_state.fix = FIX_2D or G_state.fix = FIX_3D then
+         if G_state.gpsinfo.fix = FIX_2D or G_state.gpsinfo.fix = FIX_3D then
             G_pos_buffer.push_back( GPS.Sensor.get_Position );
          end if;
          G_orientation_buffer.push_back( G_Object_Orientation );
@@ -300,19 +305,21 @@ package body Estimator with SPARK_Mode is
       gps_msg : ULog.Message (ULog.GPS);
       bar_msg : Ulog.Message (ULog.BARO);
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+
    begin
 
       G_state.logger_console_calls := Logger_Call_Type'Succ( G_state.logger_console_calls );
       if G_state.logger_console_calls = 0 then
          Logger.log_console(Logger.DEBUG,
-                            "RPY: " & AImage( G_Object_Orientation.Roll ) &
+                            "Time: " & GPS.Image (G_state.gpsinfo.gps_datetime) &
+                            ", RPY: " & AImage( G_Object_Orientation.Roll ) &
                             ", " & AImage( G_Object_Orientation.Pitch ) &
                             ", " & AImage( G_Object_Orientation.Yaw ) &
                             "   LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
                             ", " & AImage( G_Object_Position.Latitude ) &
                               ", " & Image( get_current_Height ) & "m, Fix: "  &
-                              Integer_Img( GPS_Fix_Type'Pos( G_state.fix ) )  &
-                              " sat: " & Natural_Img (Natural (G_state.nsat)));
+                              Integer_Img( GPS_Fix_Type'Pos( G_state.gpsinfo.fix ) )  &
+                              " sat: " & Natural_Img (Natural (G_state.gpsinfo.nsat)));
 
          --G_Profiler.log;
       end if;
@@ -342,17 +349,34 @@ package body Estimator with SPARK_Mode is
                   pressure => Float (G_state.baro_press),
                   temp => Float (G_state.baro_temp));
 
-      gps_msg := ( Typ => ULog.GPS,
-                   t => now,
-                   gps_week => 0,
-                   gps_msec => 0,
-                   fix      => Unsigned_8 (GPS_Fix_Type'Pos( G_state.fix )),
-                   nsat     => G_state.nsat,
-                   lat      => Float (G_Object_Position.Latitude / Degree),
-                   lon      => Float (G_Object_Position.Longitude / Degree),
-                   alt      => Float (G_Object_Position.Altitude),
-                   vel      => Float (G_state.gps_speed)
-                  );
+      declare
+         gps_year     : constant Year_Type := G_state.gpsinfo.gps_datetime.year;
+         gps_year_u16 : Unsigned_16;
+      begin
+         if gps_year > Natural (Unsigned_16'Last) then
+            gps_year_u16 := Unsigned_16'Last;
+         elsif gps_year < Natural (Unsigned_16'First) then
+            gps_year_u16 := Unsigned_16'First;
+         else
+            gps_year_u16 := Unsigned_16 (gps_year);
+         end if;
+
+         gps_msg := ( Typ => ULog.GPS,
+                      t => now,
+                      gps_year => gps_year_u16,
+                      gps_month => Unsigned_8 (G_state.gpsinfo.gps_datetime.mon),
+                      gps_day  => Unsigned_8 (G_state.gpsinfo.gps_datetime.day),
+                      gps_hour => Unsigned_8 (G_state.gpsinfo.gps_datetime.hour),
+                      gps_min  => Unsigned_8 (G_state.gpsinfo.gps_datetime.min),
+                      gps_sec  => Unsigned_8 (G_state.gpsinfo.gps_datetime.sec),
+                      fix      => Unsigned_8 (GPS_Fix_Type'Pos( G_state.gpsinfo.fix )),
+                      nsat     => G_state.gpsinfo.nsat,
+                      lat      => Float (G_Object_Position.Latitude / Degree),
+                      lon      => Float (G_Object_Position.Longitude / Degree),
+                      alt      => Float (G_Object_Position.Altitude),
+                      vel      => Float (G_state.gpsinfo.gps_speed)
+                     );
+      end;
 
       --  order by priority (log queue might be full)
       Logger.log_sd( Logger.SENSOR, gps_msg );
@@ -401,7 +425,7 @@ package body Estimator with SPARK_Mode is
 
    function get_GPS_Fix return GPS_Fix_Type is
    begin
-      return G_state.fix;
+      return G_state.gpsinfo.fix;
    end get_GPS_Fix;
 
    ---------------------
@@ -410,7 +434,7 @@ package body Estimator with SPARK_Mode is
 
    function get_Num_Sat return Unsigned_8 is
    begin
-      return G_state.nsat;
+      return G_state.gpsinfo.nsat;
    end get_Num_Sat;
 
    -----------------------
@@ -420,7 +444,7 @@ package body Estimator with SPARK_Mode is
    function get_current_Height return Altitude_Type is
       result : Altitude_Type;
    begin
-      if G_state.fix = FIX_3D then
+      if G_state.gpsinfo.fix = FIX_3D then
          result := G_state.avg_gps_height;
       else
          result := G_state.avg_baro_height;
@@ -435,7 +459,7 @@ package body Estimator with SPARK_Mode is
    function get_max_Height return Altitude_Type is
       result : Altitude_Type;
    begin
-      if G_state.fix = FIX_3D then
+      if G_state.gpsinfo.fix = FIX_3D then
          result := G_state.max_gps_height;
       else
          result := G_state.max_baro_height;
@@ -451,7 +475,7 @@ package body Estimator with SPARK_Mode is
       result : Altitude_Type;
       function Sat_Sub_Alt is new Units.Saturated_Subtraction (T => Altitude_Type);
    begin
-      if G_state.fix = FIX_3D then
+      if G_state.gpsinfo.fix = FIX_3D then
          result := Sat_Sub_Alt (G_state.avg_gps_height, G_state.home_pos.Altitude);
       else
          result := Sat_Sub_Alt (G_state.avg_baro_height, G_state.home_baro_alt);

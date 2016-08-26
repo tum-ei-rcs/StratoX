@@ -27,12 +27,14 @@ is
    last_msg_time : Ada.Real_Time.Time := Ada.Real_Time.Time_Last;
    
    G_GPS_Message : GPS_Message_Type := 
-      ( year => 0,
-        month => 1,
-        day => 1,
-        hour => 0,
-        minute => 0,
-        second => 0,
+     (  itow => 0,
+        datetime => (year => Year_Type'First,
+                     mon => Month_Type'First,
+                     day => Day_Of_Month_Type'First,
+                     hour => Hour_Type'First,
+                     min => Minute_Type'First,
+                     sec => Second_Type'First                     
+                    ),
         fix => NO_FIX,
         sats => 0,
         lon => 0.0 * Degree,
@@ -322,9 +324,13 @@ is
    begin
       readFromDevice (data_rx, isValid);
       if isValid then
-         G_GPS_Message.year := Year_Type (HIL.toUnsigned_16 (data_rx (4 .. 5)));
-         G_GPS_Message.month := (if Integer (data_rx (6)) in Month_Type then Month_Type (data_rx (6)) else Month_Type'First);
-         G_GPS_Message.day := (if Integer (data_rx (7)) in Day_Of_Month_Type then Day_Of_Month_Type (data_rx (7)) else Day_Of_Month_Type'First);
+         G_GPS_Message.itow := GPS_Time_Of_Week_Type (Hil.toUnsigned_32 (data_rx (0 .. 3)));
+         G_GPS_Message.datetime.year := Year_Type (HIL.toUnsigned_16 (data_rx (4 .. 5)));
+         G_GPS_Message.datetime.mon := (if Integer (data_rx (6)) in Month_Type then Month_Type (data_rx (6)) else Month_Type'First);
+         G_GPS_Message.datetime.day := (if Integer (data_rx (7)) in Day_Of_Month_Type then Day_Of_Month_Type (data_rx (7)) else Day_Of_Month_Type'First);
+         G_GPS_Message.datetime.hour := (if Integer (data_rx (8)) in Integer (Hour_Type'First) .. Integer (Hour_Type'Last) then Hour_Type (data_rx (8)) else Hour_Type'First);
+         G_GPS_Message.datetime.min := (if Integer (data_rx (9)) in Integer (Minute_Type'First) .. Integer (Minute_Type'Last) then Minute_Type (data_rx (9)) else Minute_Type'First);
+         G_GPS_Message.datetime.sec := (if Integer (data_rx (10)) in Integer (Second_Type'First) .. Integer (Second_Type'Last) then Second_Type (data_rx (10)) else Second_Type'First);
 
          G_GPS_Message.lon := Sat_Cast_Lon (Float (HIL.toInteger_32 (data_rx (24 .. 27))) * 1.0e-7 * Float (Degree));
          G_GPS_Message.lat := Sat_Cast_Lat (Float (HIL.toInteger_32 (data_rx (28 .. 31))) * 1.0e-7 * Float (Degree));
@@ -367,6 +373,11 @@ is
    begin
       return G_GPS_Message.speed;
    end get_Velo;
+   
+   function get_Time return GPS_DateTime_Type is
+   begin
+      return G_GPS_Message.datetime;
+   end get_Time;
    
    function get_Nsat return Unsigned_8 is
    begin

@@ -107,8 +107,12 @@ package body ULog with SPARK_Mode => On is
       Append_Float (ct, "alt", buf, msg.alt);
       Append_Uint8 (ct, "sat", buf, msg.nsat);
       Append_Uint8 (ct, "fix", buf, msg.fix);
-      Append_Uint64 (ct, "ms", buf, msg.gps_msec);
-      Append_Int16 (ct, "wk", buf, msg.gps_week);
+      Append_Uint16 (ct, "yr", buf, msg.gps_year);
+      Append_Uint8 (ct, "mon", buf, msg.gps_month);
+      Append_Uint8 (ct, "day", buf, msg.gps_day);
+      Append_Uint8 (ct, "h", buf, msg.gps_hour);
+      Append_Uint8 (ct, "m", buf, msg.gps_min);
+      Append_Uint8 (ct, "s", buf, msg.gps_sec);
    end Serialize_Ulog_GPS;
    --  pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 

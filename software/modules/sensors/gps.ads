@@ -3,12 +3,15 @@ with Generic_Sensor;
 with Units;
 with Units.Navigation; use Units.Navigation;
 with Interfaces; use Interfaces;
+with ublox8.Driver;
 
 package GPS with SPARK_Mode,
   Abstract_State => State
 is
 
    subtype GPS_Data_Type is GPS_Loacation_Type;
+
+   subtype GPS_DateTime is ublox8.Driver.GPS_DateTime_Type;
 
    package GPS_Sensor is new Generic_Sensor(GPS_Data_Type); use GPS_Sensor;
 
@@ -32,8 +35,12 @@ is
 
    function get_Speed(Self : GPS_Tag) return Units.Linear_Velocity_Type;
 
+   function get_Time(Self : GPS_Tag) return GPS_DateTime;
+
    -- function get_Angular_Velocity (Self : GPS_Tag)
 
+   function Image (tm : GPS_DateTime) return String
+     with Post => Image'Result'Length <= 60;
 
    Sensor : GPS_Tag;
 
