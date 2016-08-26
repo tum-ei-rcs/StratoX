@@ -106,19 +106,6 @@ package body Units with SPARK_Mode is
       return wrap_angle (angle => Angle_Type (diff), min => -180.0 * Degree, max => 180.0 * Degree);
    end delta_Angle;
 
-   -- TODO: equivalence check with Units.delta_angle
-   function delta_Angle_deprecated (From : Angle_Type; To : Angle_Type) return Angle_Type is
-      result : Angle_Type := To - From;
-   begin
-      if result > 180.0 * Degree then
-         result := result - 360.0 * Degree;
-      elsif result < -180.0 * Degree then
-         result := result + 360.0 * Degree;
-      end if;
-      return result;
-   end delta_Angle_deprecated;
-
-
    function Image (unit : Unit_Type) return String is
       first : constant Float  := Float'Truncation (Float (unit));
       rest  : constant String := Integer_Img (Integer ((Float (unit) - first) * Float(10.0)));
