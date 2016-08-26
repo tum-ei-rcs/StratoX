@@ -43,7 +43,6 @@ is
 
    UBLOX_M8N : constant HIL.UART.Device_ID_Type := HIL.Devices.GPS;
 
-
    procedure reset is
    begin
       null;
@@ -110,46 +109,75 @@ is
    end writeToDevice;
 
    subtype UBX_Data is Data_Type (0 .. 91);
+   type Buffer_Wrap_Idx is mod HIL.UART.BUFFER_MAX;
+   
    procedure readFromDevice(data : out UBX_Data; isValid : out Boolean);
    
+   --  FIXME: this is unsynchronized. It reads as much as it can, and then tries to find one message
+   --  if no message, then it discards all. If message found, then remainder is also discarded
    procedure readFromDevice(data : out UBX_Data; isValid : out Boolean) is
-      
-      head : Byte_Array (3 .. 6) := (others => Byte( 0 ));
-      data_rx : Byte_Array (0 .. HIL.UART.BUFFER_MAX - 1) := (others => Byte( 0 ));
+      ubxhead : Byte_Array (3 .. 6);
+      data_rx : Byte_Array (0 .. HIL.UART.BUFFER_MAX - 1);
       message : Byte_Array (0 .. 91) := (others => Byte( 0 )); 
-      check : Byte_Array (1 .. 2) := (others => Byte( 0 ));
-      cks : Fletcher16_Byte.Checksum_Type := (others => Byte( 0 ));
-      type buffer_pointer_Type is mod HIL.UART.BUFFER_MAX;
-      pointer : buffer_pointer_Type := 0;
-      n_read : Natural;
+      check   : Byte_Array (1 .. 2) := (others => Byte( 0 ));
+      cks           : Fletcher16_Byte.Checksum_Type;
+      msg_start_idx : Buffer_Wrap_Idx;
+      n_read        : Natural;
    begin
       isValid := False;
-      data := (others => Byte( 0 ) );  -- EXCEPTION: Bis hier
+      data := (others => Byte( 0 ) );
       
       HIL.UART.read(UBLOX_M8N, data_rx, n_read);
       if n_read > 0 then
-         for i in 1 .. data_rx'Length - 2 loop
-            if data_rx(i) = UBX_SYNC1 and data_rx(i + 1) = UBX_SYNC2 then
-               
+         for i in 0 .. data_rx'Length - 2 loop -- scan for message. FIXME: why start at one?
+            if data_rx (i) = UBX_SYNC1 and data_rx (i + 1) = UBX_SYNC2 then
                declare
                   now : constant Ada.Real_Time.Time := Clock;
                begin
                   last_msg_time := now;
-               end;
+               end;               
+
+               msg_start_idx := Buffer_Wrap_Idx (i);
                
-               --Logger.log_console (Logger.DEBUG, "GPS data: " & Integer'Image (data_rx'Length));
-               pointer := buffer_pointer_Type( i - 1 );
-            
-               head := data_rx(Integer(pointer + 3) .. Integer(pointer + 6));
-            
-               if head(3) = UBX_CLASS_NAV and head(4) = UBX_ID_NAV_PVT and head(5) = UBX_LENGTH_NAV_PVT then 
-               
-                  if (pointer + 7) < (pointer + 100) then
-                     message := data_rx(Integer(pointer + 7) .. Integer(pointer + 98));  -- EXCEPTION: mögliches 0 Array
-                     check := data_rx(Integer(pointer + 99) .. Integer(pointer + 100));         
+               --  get header (bytes 3 .. 6)
+               declare
+                  idx_start : constant Buffer_Wrap_Idx := msg_start_idx + 2;
+                  idx_end   : constant Buffer_Wrap_Idx := msg_start_idx + 5;
+                  pragma Assert (idx_start + 3 = idx_end); -- modulo works as expected
+               begin
+                  if idx_start > idx_end then
+                     -- wrap
+                     ubxhead := data_rx (Integer (idx_start) .. data_rx'Last) 
+                       & data_rx (data_rx'First .. Integer (idx_end));
+                  else                     
+                     -- no wrap
+                     ubxhead := data_rx (Integer (idx_start) .. Integer (idx_end));
                   end if;
+               end;
             
-                  cks := Fletcher16_Byte.Checksum( head & message );
+               if ubxhead (3) = UBX_CLASS_NAV and 
+               then ubxhead (4) = UBX_ID_NAV_PVT and 
+               then ubxhead (5) = UBX_LENGTH_NAV_PVT 
+               then 
+               
+                  --  copy message
+                  declare
+                     idx_datastart : constant Buffer_Wrap_Idx := msg_start_idx + 6;                     
+                     idx_dataend   : constant Buffer_Wrap_Idx := msg_start_idx + 97;                     
+                     idx_crcstart  : constant Buffer_Wrap_Idx := msg_start_idx + 98;
+                     idx_crcend    : constant Buffer_Wrap_Idx := msg_start_idx + 99;
+                  begin
+                     if idx_datastart < idx_crcend then
+                        -- no wrap
+                        message := data_rx (Integer (idx_datastart) .. Integer (idx_dataend)); 
+                        check := data_rx (Integer (idx_crcstart) .. Integer (idx_crcend));         
+                     else
+                        null; -- TODO: implement wrap
+                     end if;
+                  end;
+            
+                  --  checksum the message
+                  cks := Fletcher16_Byte.Checksum (ubxhead & message);
                   if check(1) = cks.ck_a and check(2) = cks.ck_b then
                      Logger.log_console(Logger.TRACE, "UBX valid");
                      data := message;
@@ -161,17 +189,19 @@ is
                      Logger.log_console(Logger.DEBUG, "UBX invalid");
                   end if;
             
-               elsif head(3) = UBX_CLASS_ACK and head(4) = UBX_ID_ACK_ACK and head(5) = UBX_LENGTH_ACK_ACK then
+               elsif ubxhead (3) = UBX_CLASS_ACK and
+               then ubxhead (4) = UBX_ID_ACK_ACK and 
+               then ubxhead (5) = UBX_LENGTH_ACK_ACK 
+               then
                   Logger.log_console(Logger.TRACE, "UBX Ack");
                end if;             
             
-
                exit;            
             end if;
          end loop;
          -- got class 1, id 3, length 16 -> NAV_STATUS
-         Logger.log_console(Logger.TRACE, "UBX msg class " & Integer_Img (Integer (head(3))) & ", id "
-                            & Integer_Img (Integer (head(4))));
+         --  Logger.log_console(Logger.TRACE, "UBX msg class " & Integer_Img (Integer (ubxhead (3))) & ", id "
+         --     & Integer_Img (Integer (ubxhead (4))));
       else
          -- no data
          isValid := False;
