@@ -14,14 +14,14 @@ begin
    Main.initialize;
 
    -- self-checks, unless in air reset
-   LED_Manager.LED_switchOff;
-   Main.perform_Self_Test (Self_Test_Passed);
+   LED_Manager.LED_switchOn;
+   Main.Perform_Self_Test (Self_Test_Passed);
 
    -- finally jump to main, if checks passed
    if Self_Test_Passed then
       Main.run_Loop;
    else
-      LED_Manager.LED_switchOn;
+      LED_Manager.LED_switchOff;
       loop
          null;
       end loop;

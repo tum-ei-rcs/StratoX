@@ -27,8 +27,8 @@ is
    function Check_Density (density : HAL.UInt5) return Boolean is
    begin
       case MEMSIZE_BYTES is
-         when 2**14 => return density = 1;
-         when 2**15 => return density = 2;
+         when 2**14 => return density >= 1;
+         when 2**15 => return density >= 2; -- we allow bigger FRAMs w/o failing
          when others => return False;
       end case;
    end Check_Density;
