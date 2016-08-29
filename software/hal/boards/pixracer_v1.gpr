@@ -1,4 +1,5 @@
 with "../hpl/STM32/stm32f427.gpr"; -- this STM device is on the pixracer board
+with "../../config/config.gpr"
 
 library project Pixracer_V1 is
 
@@ -21,7 +22,7 @@ library project Pixracer_V1 is
                         "stm32_common/sdcard"
 			);
 
-   --package Compiler renames Config.Compiler;
-   --package Builder renames Config.Builder;
+   package Compiler renames Config.Compiler;
+   package Builder renames Config.Builder;
 
 end Pixracer_V1;

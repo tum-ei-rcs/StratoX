@@ -4,25 +4,25 @@ abstract project Config is
 
    for Languages use ("Ada");
    for Source_Dirs use ();
-   type RTS_Profile_Type is ("ravenscar-sfp", "ravenscar-full");
-   RTS   : RTS_Profile_Type := external ("RTS", "ravenscar-sfp");
+   --type RTS_Profile_Type is ("ravenscar-sfp", "ravenscar-full");
+   --RTS   : RTS_Profile_Type := external ("RTS", "ravenscar-sfp");
 
    type Build_Modes is
-      ("debug", "release", "analyze");
-   Build_Mode : Build_Modes := external ("Build_Mode", "debug");
+      ("Debug", "Release", "Analyze");
+   Build_Mode : Build_Modes := external ("Build_Mode", "Debug");
    
 
    package Compiler is
 
       case Build_Mode is
 
-         when "debug" =>
+         when "Debug" =>
             for Default_Switches ("ada") use ("-O0", "-gnatwa", "-gnatQ", "-gnatw.X");
 
-         when "release" =>
+         when "Release" =>
             for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.X");
 
-         when "analyze" =>
+         when "Analyze" =>
 
       end case;
    end Compiler;
@@ -31,15 +31,15 @@ abstract project Config is
 
       case Build_Mode is
 
-         when "debug" =>
+         when "Debug" =>
             for Default_Switches ("ada") use ("-g");
             for Global_Configuration_Pragmas use "gnat.adc";
 
-         when "release" =>
+         when "Release" =>
             for Default_Switches ("ada") use ();
             for Global_Configuration_Pragmas use "gnat.adc";
 
-         when "analyze" =>
+         when "Analyze" =>
             for Global_Compilation_Switches ("Ada") use ("-gnateT=" & "target.atp");
       end case;
    end Builder;

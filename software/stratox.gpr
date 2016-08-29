@@ -1,5 +1,6 @@
 with "hal/boards/pixhawk.gpr";
 with "style.gpr";
+with "config/config.gpr";
 
 project StratoX is
 
@@ -11,21 +12,20 @@ project StratoX is
    for Source_Dirs use ("boot", "config", "driver", "driver/fs", "kernel", "modules", "modules/sensors", "modules/actuators", "lib", "lib/ulog");
    for Object_Dir use "../obj";
    for Exec_Dir use "../obj";
-   type Build_Modes is
-      ("debug", "release", "analyze");
-   Build_Mode : Build_Modes := external ("Build_Mode", "debug");
+   --type Build_Modes is
+   --   ("debug", "release", "analyze");
 
-   case Build_Mode is
+   case Config.Build_Mode is
 
-      when "debug" =>
+      when "Debug" =>
          for Runtime ("ada") use Pixhawk'Runtime ("Ada");
          for Target use "arm-eabi";
 
-      when "release" =>
+      when "Release" =>
          for Runtime ("ada") use Pixhawk'Runtime ("Ada");
          for Target use "arm-eabi";
 
-      when "analyze" =>
+      when "Analyze" =>
 --         for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
          for Runtime ("ada") use Pixhawk'Runtime ("Ada");
          for Target use "arm-eabi";
@@ -33,15 +33,15 @@ project StratoX is
 
    package Compiler is
 
-      case Build_Mode is
+      case Config.Build_Mode is
 
-         when "debug" =>
+         when "Debug" =>
             for Default_Switches ("ada") use ("-O1", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", Style.Style_Switches, "-gnatet=../target-gen.atp");
 
-         when "release" =>
+         when "Release" =>
             for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.Xh.k.o", "-gnatVaimrs", "-gnato", "-gnat12");
 
-         when "analyze" =>
+         when "Analyze" =>
 
       end case;
    end Compiler;
@@ -53,15 +53,15 @@ project StratoX is
    package Builder is
       for Global_Configuration_Pragmas use "gnat.adc";
 
-      case Build_Mode is
+      case Config.Build_Mode is
 
-         when "debug" =>
+         when "Debug" =>
             for Default_Switches ("ada") use ("-g");
 
-         when "release" =>
+         when "Release" =>
             for Default_Switches ("ada") use ( );
 
-         when "analyze" =>
+         when "Analyze" =>
             for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target.atp");
       end case;
    end Builder;
@@ -70,17 +70,17 @@ project StratoX is
       for Communication_Protocol use "remote";
       for Program_Host use "localhost:4242";
 
-      case Build_Mode is
+      case Config.Build_Mode is
 
-         when "debug" =>
+         when "Debug" =>
             for Gnat use "arm-eabi-gnat";
             for Gnatlist use "arm-eabi-gnatls";
             for Debugger_Command use "arm-eabi-gdb";
             for Documentation_Dir use "doc/";
 
-         when "release" =>
+         when "Release" =>
 
-         when "analyze" =>
+         when "Analyze" =>
 
       end case;
    end Ide;

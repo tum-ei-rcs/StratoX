@@ -1,3 +1,5 @@
+with "../../config/config.gpr";
+
 -- this project provides some abstract packages for the HAL.
 library project HAL is
 
