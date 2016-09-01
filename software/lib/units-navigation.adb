@@ -57,22 +57,75 @@ package body Units.Navigation with SPARK_Mode is
    end Heading;
    pragma Unreferenced (Heading);
 
-
-   -- From http://www.movable-type.co.uk/scripts/latlong.html
-   -- a = sin²(Δφ/2) + cos φ1 ⋅ cos φ2 ⋅ sin²(Δλ/2)
+   --  From http://www.movable-type.co.uk/scripts/latlong.html
+   --  based on the numerically largely stable "haversine"
+   --  haversine = sin^2(delta_lat/2) + cos(lat1)*cos(lat2) * sin^2(delta_lon/2)
+   --  c = 2 * atan2 (sqrt (haversine), sqrt (1-haversine))
+   --  d = EARTH_RADIUS * c
    function Distance( source : GPS_Loacation_Type; target: GPS_Loacation_Type ) return Length_Type is
+
+      delta_lat : constant Angle_Type := Angle_Type(target.Latitude) - Angle_Type(source.Latitude);
+      delta_lon : constant Angle_Type := Angle_Type(target.Longitude) - Angle_Type(source.Longitude);
+      dlat_half : constant Angle_Type := delta_lat / Unit_Type (2.0);
+      dlon_half : constant Angle_Type := delta_lon / Unit_Type (2.0);
       haversine : Unit_Type;
-
-      delta_lat : Angle_Type := Angle_Type(target.Latitude) - Angle_Type(source.Latitude);
-      delta_lon : Angle_Type := Angle_Type(target.Longitude) - Angle_Type(source.Longitude);
-
+      sdlat_half : Unit_Type;
+      sdlon_half : Unit_Type;
+      coscos : Unit_Type;
    begin
-      haversine := Sin( delta_lat / Unit_Type(2.0) ) * Sin( delta_lat / Unit_Type(2.0) );    -- SPARK cant prove overflow check. why? Sin postcondition: Sin'Result in -1.0 .. 1.0
-      pragma Assume( haversine <= 1.0 );
-      haversine := haversine +
-                   Cos( source.Latitude ) * Cos( target.Latitude )  *
-                   Sin( delta_lon / Unit_Type(2.0) ) * Sin( delta_lon / Unit_Type(2.0) );
-      return  2.0 * EARTH_RADIUS * Unit_Type( Arctan( Unit_Type( Sqrt( haversine ) ), Unit_Type( Sqrt( Unit_Type(1.0) - haversine) ) ) );
+      --  sin^2(dlat/2): avoid underflow
+      sdlat_half := Sin (dlat_half);
+      if abs(sdlat_half) > Unit_Type (1.0E-7) then
+         sdlat_half := sdlat_half * sdlat_half;
+      else
+         sdlat_half := Unit_Type (0.0);
+      end if;
+
+      --  sin^2(dlon/2): avoid underflow
+      sdlon_half := Sin (dlon_half);
+      if abs(sdlon_half) > Unit_Type (1.0E-7) then
+         sdlon_half := sdlon_half * sdlon_half;
+      else
+         sdlon_half := Unit_Type (0.0);
+      end if;
+
+      --  cos*cos
+      declare
+         cs : constant Unit_Type := Cos (source.Latitude);
+         ct : constant Unit_Type := Cos (target.Latitude);
+      begin
+         coscos := ct * cs;
+         if abs(coscos) < Unit_Type (1.0E-7) then
+            coscos := Unit_Type (0.0);
+         end if;
+      end;
+
+      pragma Assert (sdlat_half >= Unit_Type (0.0));
+      pragma Assert (sdlat_half >= Unit_Type (0.0));
+      pragma Assert (sdlon_half >= Unit_Type (0.0));
+
+      pragma Assert (sdlat_half <= Unit_Type (10.0));
+      pragma Assert (coscos in Unit_Type (-10.0) .. Unit_Type (10.0));
+
+      --  haversine
+      declare
+         cts : Unit_Type;
+      begin
+         --  avoid underflow
+         if abs(coscos) > Unit_Type (1.0E-7) and then abs(sdlon_half) > Unit_Type (1.0E-7) then
+            cts := coscos * sdlon_half;
+         else
+            cts := Unit_Type (0.0);
+         end if;
+         if abs(sdlat_half) > Unit_Type (1.0E-7) and then abs(cts) > Unit_Type (1.0E-7) then
+            haversine := sdlat_half + cts;
+         else
+            haversine := Unit_Type (0.0);
+         end if;
+      end;
+      return  2.0 * EARTH_RADIUS * Unit_Type (Arctan (
+                                              Unit_Type (Sqrt (haversine)),
+                                              Unit_Type( Sqrt (Unit_Type (1.0) - haversine))));
    end Distance;
 
 

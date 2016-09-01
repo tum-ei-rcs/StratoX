@@ -21,7 +21,7 @@ package Units.Numerics with SPARK_Mode is
 
 --  
    function Sin (X : Angle_Type) return Unit_Type 
-   with post => Sin'Result >= -1.0 and Sin'Result <= 1.0;
+   with post => Sin'Result in -1.0 .. 1.0;
 --     
 --    function Sin (X, Cycle : Angle_Type) return Unit_Type;
 --        

@@ -72,6 +72,10 @@ package body ULog with SPARK_Mode => On is
                                         msg : in Message; buf : out HIL.Byte_Array)
      with Pre => msg.Typ = CONTROLLER;
 
+   procedure Serialize_Ulog_Nav (ct : in out ULog.Conversions.Conversion_Tag;
+                                 msg : in Message; buf : out HIL.Byte_Array)
+     with Pre => msg.Typ = NAV;
+
    procedure Serialize_Ulog_Text (ct : in out ULog.Conversions.Conversion_Tag;
                                   msg : in Message; buf : out HIL.Byte_Array)
      with Pre => msg.Typ = TEXT;
@@ -115,6 +119,20 @@ package body ULog with SPARK_Mode => On is
       Append_Uint8 (ct, "s", buf, msg.gps_sec);
    end Serialize_Ulog_GPS;
    --  pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
+
+
+   ------------------------
+   --  Serialize_Ulog_Nav
+   ------------------------
+
+   procedure Serialize_Ulog_Nav (ct : in out ULog.Conversions.Conversion_Tag;
+                                 msg : in Message; buf : out HIL.Byte_Array) is
+   begin
+      Set_Name (ct, "NAV");
+      Append_Float (ct, "dist", buf, msg.home_dist);
+      Append_Float (ct, "crs", buf, msg.home_course);
+      Append_Float (ct, "altd", buf, msg.home_altdiff);
+   end Serialize_Ulog_Nav;
 
 
    ------------------------
@@ -299,6 +317,8 @@ package body ULog with SPARK_Mode => On is
             Serialize_Ulog_Text (ct, msg, bytes);
          when BARO =>
             Serialize_Ulog_Baro (ct, msg, bytes);
+         when NAV =>
+            Serialize_Ulog_Nav (ct, msg, bytes);
          when LOG_QUEUE =>
             Serialize_Ulog_LogQ (ct, msg, bytes);
       end case;

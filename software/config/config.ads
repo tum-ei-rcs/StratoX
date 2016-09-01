@@ -16,27 +16,26 @@ package Config is
    -- Board
    -- -------------------------------
    LED_PIN : constant := 12;
-
    BARO_I2C_ADDRESS : constant := 0;
-
-
-
 
 
    -- Estimator
    -- -------------------------------
-   DEFAULT_LONGITUDE : constant Longitude_Type := 11.60555 * Degree;     -- Englischer Garten
-   DEFAULT_LATITUDE  : constant Latitude_Type := 48.16423 * Degree;
+   DEFAULT_HOME_LONG    : constant Longitude_Type := 11.815031 * Degree; -- east of munich
+   DEFAULT_HOME_LAT     : constant Latitude_Type := 48.192574 * Degree; -- east of munich
+   DEFAULT_HOME_ALT_MSL : constant Altitude_Type := 518.0 * Meter; -- east of munich
 
-   TARGET_AREA_RADIUS : constant Length_Type := 50.0 * Meter;
+   TARGET_AREA_RADIUS : constant Length_Type := 100.0 * Meter;
 
 
    -- Flight
    -- -------------------------------
-   OPTIMAL_PITCH : constant Pitch_Type := -3.0 * Degree;
-   CIRCLE_TRAJECTORY_ROLL : constant Roll_Type := 5.0 * Degree;
+   TARGET_PITCH : constant Pitch_Type := -3.0 * Degree; -- assuming that this pitch eventually results in good airspeed
+   CIRCLE_TRAJECTORY_ROLL : constant Roll_Type := 5.0 * Degree; -- roll angle when circles are requested
 
-
+   -- target attitude limits in controlled flights (symmetric around zero; may be overshot in real world)
+   MAX_ROLL  : constant Roll_Type := 5.0 * Degree;
+   MAX_PITCH : constant Pitch_Type := 20.0 * Degree;
 
    -- Mission
    -- -------------------------------

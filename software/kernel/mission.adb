@@ -30,9 +30,9 @@ package body Mission with SPARK_Mode is
       gps_lock_threshold_time : Time_Type := 0.0 * Second;
       delta_threshold_time : Time_Type := 0.0 * Second;
       target_threshold_time : Time_Type := 0.0 * Second;
-      home           : GPS_Loacation_Type := (Config.DEFAULT_LONGITUDE, 
-                                             Config.DEFAULT_LATITUDE, 
-                                             0.0 * Meter);
+      home           : GPS_Loacation_Type := (Config.DEFAULT_HOME_LONG, 
+                                             Config.DEFAULT_HOME_LAT, 
+                                             Config.DEFAULT_HOME_ALT_MSL);
       body_info     : Body_Type;
       last_call     : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
       last_state_change : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
@@ -51,11 +51,21 @@ package body Mission with SPARK_Mode is
    G_state : State_Type;
    
    Mission_Resumed : Boolean := False;
+   
+
+   -----------------
+   --  subprograms
+   -----------------
+   
      
    function New_Mission_Enabled return Boolean is 
      (G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET);
   
+   
+   
    function Is_Resumed return Boolean is (Mission_Resumed);
+   
+   
    
    procedure start_New_Mission is
    begin
@@ -67,6 +77,8 @@ package body Mission with SPARK_Mode is
          Logger.log(Logger.WARN, "Mission running, cannot start new Mission!");
       end if;
    end start_New_Mission;
+   
+   
    
    procedure load_Mission is
       old_state_val : HIL.Byte;
@@ -107,7 +119,8 @@ package body Mission with SPARK_Mode is
       end if;    
    end load_Mission;
 
-      
+
+   
    procedure handle_Event( event : Mission_Event_Type ) is
    begin
       null;
@@ -115,8 +128,7 @@ package body Mission with SPARK_Mode is
    pragma Unreferenced (handle_Event);
    
    
-   
-   
+      
    procedure next_State is
    begin
       if G_state.mission_state /= Mission_State_Type'Last then
@@ -125,6 +137,7 @@ package body Mission with SPARK_Mode is
          G_state.last_state_change := Ada.Real_Time.Clock;
       end if;
    end next_State;
+   
    
    
    procedure perform_Initialization is
@@ -146,6 +159,8 @@ package body Mission with SPARK_Mode is
       next_State;
    end perform_Initialization;
 
+   
+   
    procedure wait_for_GPSfix is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       
@@ -154,7 +169,7 @@ package body Mission with SPARK_Mode is
       procedure lock_Home is
       begin
          G_state.home := Estimator.get_Position;
-         Estimator.lock_Home(Estimator.get_Position, Estimator.get_Baro_Height);
+         Estimator.lock_Home (Estimator.get_Position, Estimator.get_Baro_Height);
          --G_state.home.Altitude := Estimator.get_current_Height;
          declare
             alt_u16 : constant Unsigned_16 := Sat_Cast_U16 (Float (Estimator.get_Baro_Height));
@@ -163,9 +178,9 @@ package body Mission with SPARK_Mode is
             NVRAM.Store (VAR_HOME_HEIGHT_H, HIL.toBytes (alt_u16)(2));
          end;
          
-         NVRAM.Store( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
-         NVRAM.Store( VAR_GPS_TARGET_LAT_A,  Float( G_state.home.Latitude ) );
-         NVRAM.Store( VAR_GPS_TARGET_ALT_A,  Float( G_state.home.Altitude ) );
+         NVRAM.Store (VAR_GPS_TARGET_LONG_A, Float (G_state.home.Longitude));
+         NVRAM.Store (VAR_GPS_TARGET_LAT_A,  Float (G_state.home.Latitude));
+         NVRAM.Store (VAR_GPS_TARGET_ALT_A,  Float (G_state.home.Altitude));
          
          -- gib laut
          Controller.bark;
@@ -183,7 +198,8 @@ package body Mission with SPARK_Mode is
 
       -- check GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
-         G_state.gps_lock_threshold_time := Sat_Add_Time (G_state.gps_lock_threshold_time, To_Time(now - G_state.last_call)); 
+         G_state.gps_lock_threshold_time := Sat_Add_Time (G_state.gps_lock_threshold_time, 
+                                                          To_Time(now - G_state.last_call)); 
          LED_Manager.LED_switchOn;
          
          if G_state.gps_lock_threshold_time > 10.0 * Second then
@@ -203,56 +219,61 @@ package body Mission with SPARK_Mode is
       
    end wait_for_GPSfix;
 
+   
+   
    procedure wait_For_Arm is
    begin
-      Estimator.update( (0.0*Degree, 0.0*Degree) );
+      Estimator.update ((0.0*Degree, 0.0*Degree));
       next_State;
    end wait_For_Arm;
 
+   
+   
    procedure wait_For_Release is
    begin
       Logger.log(Logger.INFO, "Start Ascending");
       next_State;
    end wait_For_Release;
 
+   
+   
    procedure monitor_Ascend is
-      height : Altitude_Type := 0.0 * Meter;
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
-      -- Estimator
-      Estimator.update( (0.0*Degree, 0.0*Degree) );
+      --  Estimator
+      Estimator.update ((0.0*Degree, 0.0*Degree));
      
-      -- set hold
+      --  set hold
       Controller.set_hold; 
       Controller.sync;
   
-      -- check target height
-      -- FIXME: Sprung von Baro auf GPS hat ausgelöst.
-      --if Estimator.get_current_Height >= G_state.home.Altitude + Config.CFG_TARGET_ALTITUDE_THRESHOLD then
+      --  check target altitude
+      --  FIXME: Sprung von Baro auf GPS hat ausgelöst.
       if Estimator.get_relative_Height >= Config.CFG_TARGET_ALTITUDE_THRESHOLD then
-         G_state.target_threshold_time := Sat_Add_Time (G_state.target_threshold_time, To_Time(now - G_state.last_call));  -- TODO: calc dT     
+         G_state.target_threshold_time := Sat_Add_Time (G_state.target_threshold_time, 
+                                                        To_Time(now - G_state.last_call));  -- TODO: calc dT     
          if G_state.target_threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
-            Logger.log(Logger.INFO, "Target height reached. Detaching...");
-            Logger.log(Logger.INFO, "Target height reached. Detaching...");
+            Logger.log(Logger.INFO, "Target alt reached. Detach");
+            Logger.log(Logger.INFO, "Target alt reached. Detach");
             next_State;
          end if;
       else
          G_state.target_threshold_time := 0.0 * Second;
       end if;
       
-      -- check for accidential drop
+      --  check for accidential drop
       if Estimator.get_current_Height < Estimator.get_max_Height - Config.CFG_DELTA_ALTITUDE_THRESH then
          G_state.delta_threshold_time := Sat_Add_Time (G_state.delta_threshold_time, To_Time(now - G_state.last_call));  -- TODO: calc dT
          if G_state.delta_threshold_time >= Config.CFG_DELTA_ALTITUDE_THRESH_TIME then
-            Logger.log(Logger.INFO, "Unplanned drop detected...");
-            Logger.log(Logger.INFO, "Unplanned drop detected...");
+            Logger.log(Logger.INFO, "Unplanned drop detected");
+            Logger.log(Logger.INFO, "Unplanned drop detected");
             next_State;         
          end if;
       else
          G_state.delta_threshold_time := 0.0 * Second;  -- TODO: calc dT
       end if;
    
-      -- Check Timeout
+      --  Check Timeout
       if now > G_state.last_state_change + Units.To_Time_Span( Config.Software.CFG_ASCEND_TIMEOUT ) then   -- 600
          Logger.log(Logger.INFO, "Timeout Ascend");
          Logger.log(Logger.INFO, "Timeout Ascend");
@@ -261,9 +282,11 @@ package body Mission with SPARK_Mode is
       
    end monitor_Ascend;
    
+   
+   
    procedure perform_Detach is
       isAttached : Boolean := True;
-      start : Ada.Real_Time.Time := Ada.Real_Time.Clock; 
+      start : Ada.Real_Time.Time;
    begin
       Controller.activate;
 
@@ -290,6 +313,7 @@ package body Mission with SPARK_Mode is
             delay until start + Milliseconds(20);
          end loop;
          
+         --  FIXME: "attached" detection
          isAttached := False;
       end loop;
       
@@ -301,6 +325,8 @@ package body Mission with SPARK_Mode is
       next_State;
    end perform_Detach;
 
+   
+   
    procedure control_Descend is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       
@@ -314,7 +340,7 @@ package body Mission with SPARK_Mode is
          -- Buzzer_Manager.Enable;  
       end deactivate;
       
-      Elevons : Controller.Elevon_Angle_Array := Controller.get_Elevons;
+      Elevons : constant Controller.Elevon_Angle_Array := Controller.get_Elevons;
    begin
       -- Estimator
       Estimator.update( (Elevons(Controller.RIGHT)/2.0 + Elevons(Controller.LEFT)/2.0,
@@ -343,6 +369,8 @@ package body Mission with SPARK_Mode is
       
    end control_Descend;
 
+   
+   
    procedure wait_On_Ground is
       command : Console.User_Command_Type;
    begin
@@ -353,7 +381,7 @@ package body Mission with SPARK_Mode is
       -- Console
       Console.read_Command( command );
 
-      case ( command ) is
+      case command is
          when Console.DISARM =>
             Logger.log(Logger.INFO, "Mission Finished");
             next_State;
@@ -366,11 +394,14 @@ package body Mission with SPARK_Mode is
 
    end wait_On_Ground;
 
+   
+   
    procedure wait_For_Reset is
    begin
       null;
    end wait_For_Reset;
 
+      
 
    procedure run_Mission is
    begin

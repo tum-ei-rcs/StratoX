@@ -21,7 +21,7 @@ package body HIL.UART with
    SPARK_Mode => Off
 is  
    
-   procedure configure is 
+   procedure configure with SPARK_Mode => Off is 
    begin
       -- UART 1
       -- STM32.USARTs.Enable( STM32.Device.USART_1 );
@@ -147,7 +147,8 @@ is
    end write;
 
 
-   procedure read (Device : in Device_ID_Type; Data : out Data_Type; n_read : out Natural) is
+   procedure read (Device : in Device_ID_Type; Data : out Data_Type; n_read : out Natural) 
+     with SPARK_Mode => Off is
    begin
       case (Device) is
       when HIL.Devices.GPS =>
@@ -204,7 +205,7 @@ is
          end if;
       end get_Buffer;
 
-      procedure Handle_Interrupt is
+      procedure Handle_Interrupt with SPARK_Mode => Off is 
          data : HAL.UInt9;
       begin
           --  check for data arrival

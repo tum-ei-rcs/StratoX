@@ -32,9 +32,7 @@ package Controller with SPARK_Mode is
 
    procedure set_Target_Position(location : GPS_Loacation_Type);
         
-   procedure set_Current_Position(location : GPS_Loacation_Type);
-        
-   procedure set_Target_Pitch (pitch : Pitch_Type);
+   procedure set_Current_Position(location : GPS_Loacation_Type);        
         
    procedure set_Current_Orientation (orientation : Orientation_Type);
 
@@ -48,10 +46,8 @@ package Controller with SPARK_Mode is
    
    procedure bark;  -- good boy!
    
-   procedure sync;
+   procedure sync with Inline;
    
-   procedure detach;
-
    function get_Elevons return Elevon_Angle_Array;
 
 private
@@ -66,8 +62,7 @@ private
    procedure control_Roll;
    
    procedure control_Pitch;
-   
-   procedure control_Yaw;
+     
 
    function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type; priority : Control_Priority_Type ) return Elevon_Angle_Array;
 

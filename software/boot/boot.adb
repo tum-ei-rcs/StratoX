@@ -11,7 +11,7 @@ procedure boot is
    Self_Test_Passed : Boolean := False;
 begin
 
-   Main.initialize;
+   Main.Initialize;
 
    -- self-checks, unless in air reset
    LED_Manager.LED_switchOn;
@@ -19,7 +19,7 @@ begin
 
    -- finally jump to main, if checks passed
    if Self_Test_Passed then
-      Main.run_Loop;
+      Main.Run_Loop;
    else
       LED_Manager.LED_switchOff;
       loop
