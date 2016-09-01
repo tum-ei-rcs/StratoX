@@ -4,10 +4,10 @@ with Units; use Units;
 with Fletcher16;
 with HIL; use HIL;
 with HIL.Config; use HIL.Config;
-with HIL.UART; use type HIL.UART.Data_Type;
 with HIL.Devices;
+
 with Interfaces; use Interfaces;
-with Bounded_Image; use Bounded_Image;
+--with Bounded_Image; use Bounded_Image;
 
 with Logger;
 
@@ -243,12 +243,12 @@ is
                                           1 => UBX_ID_NAV_PVT,
                                           2 => Byte( 10 ) );  -- rate in multiple of measurement rate: 2 => 2*1Hz
                                           
-      msg_cfg_rate_head : UBX_Header_Array := (1 => UBX_SYNC1,
-                                              2 => UBX_SYNC2,
-                                              3 => UBX_CLASS_CFG,
-                                              4 => UBX_ID_CFG_RATE,
-                                              5 => Byte(3),  -- length
-                                              6 => Byte(0));
+--        msg_cfg_rate_head : UBX_Header_Array := (1 => UBX_SYNC1,
+--                                                 2 => UBX_SYNC2,
+--                                                 3 => UBX_CLASS_CFG,
+--                                                 4 => UBX_ID_CFG_RATE,
+--                                                 5 => Byte(3),  -- length
+--                                                 6 => Byte(0));
                                           
       current_time : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
       pragma Unreferenced (current_time);
@@ -324,7 +324,7 @@ is
    begin
       readFromDevice (data_rx, isValid);
       if isValid then
-         G_GPS_Message.itow := GPS_Time_Of_Week_Type (Hil.toUnsigned_32 (data_rx (0 .. 3)));
+         G_GPS_Message.itow := GPS_Time_Of_Week_Type (HIL.toUnsigned_32 (data_rx (0 .. 3)));
          G_GPS_Message.datetime.year := Year_Type (HIL.toUnsigned_16 (data_rx (4 .. 5)));
          G_GPS_Message.datetime.mon := (if Integer (data_rx (6)) in Month_Type then Month_Type (data_rx (6)) else Month_Type'First);
          G_GPS_Message.datetime.day := (if Integer (data_rx (7)) in Day_Of_Month_Type then Day_Of_Month_Type (data_rx (7)) else Day_Of_Month_Type'First);
@@ -336,8 +336,13 @@ is
          G_GPS_Message.lat := Sat_Cast_Lat (Float (HIL.toInteger_32 (data_rx (28 .. 31))) * 1.0e-7 * Float (Degree));
          G_GPS_Message.alt := Sat_Cast_Alt (Float (HIL.toInteger_32 (data_rx (36 .. 39))) * Float (Milli * Meter));
          G_GPS_Message.sats := Unsigned_8 (data_rx (23));
-         G_GPS_Message.speed := Units.Linear_Velocity_Type ( Float (HIL.toInteger_32 (data_rx (60 .. 63))) / 1000.0);
-
+         declare
+            i32_speed : constant Integer_32 := HIL.toInteger_32 (data_rx (60 .. 63));
+            pragma Annotate (GNATprove, False_Positive, "precondition might fail", "pre of toInteger_32 is valid");
+         begin            
+            G_GPS_Message.speed := Units.Linear_Velocity_Type (Float (i32_speed) / 1000.0);
+         end;
+         
          
          case data_rx(20) is
          when HIL.Byte(2) => G_GPS_Message.fix := FIX_2D;
@@ -404,11 +409,11 @@ is
          now := Clock;
          
          if last_msg_time <= now then
-         declare
+            declare
                msg_age : constant Ada.Real_Time.Time_Span := now - last_msg_time;
             begin
                if msg_age < Seconds (1) then
-                  Status := Success;
+                  Status := SUCCESS;
                   exit Wait_Message_Loop;
                end if;
             end;
@@ -416,9 +421,5 @@ is
       end loop Wait_Message_Loop;
            
    end perform_Self_Check;
-
-
-
-
 
 end ublox8.Driver;
