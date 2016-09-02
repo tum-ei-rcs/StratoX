@@ -57,12 +57,29 @@ package body Units.Navigation with SPARK_Mode is
    end Heading;
    pragma Unreferenced (Heading);
 
+
+
+   function Clip_Unitcircle (X : Unit_Type) return Unit_Type is
+   begin
+      if X < Unit_Type (-1.0) then
+         return Unit_Type (-1.0);
+      elsif X > Unit_Type (1.0) then
+         return Unit_Type (1.0);
+      end if;
+      return X;
+   end Clip_Unitcircle;
+
+
+
    --  From http://www.movable-type.co.uk/scripts/latlong.html
    --  based on the numerically largely stable "haversine"
    --  haversine = sin^2(delta_lat/2) + cos(lat1)*cos(lat2) * sin^2(delta_lon/2)
    --  c = 2 * atan2 (sqrt (haversine), sqrt (1-haversine))
    --  d = EARTH_RADIUS * c
-   function Distance( source : GPS_Loacation_Type; target: GPS_Loacation_Type ) return Length_Type is
+   --  all of the checks below are proven.
+   function Distance (source : GPS_Loacation_Type; target: GPS_Loacation_Type) return Length_Type is
+      EPS : constant := 1.0E-12;
+      pragma Assert (EPS > Float'Small);
 
       delta_lat : constant Angle_Type := Angle_Type(target.Latitude) - Angle_Type(source.Latitude);
       delta_lon : constant Angle_Type := Angle_Type(target.Longitude) - Angle_Type(source.Longitude);
@@ -72,65 +89,77 @@ package body Units.Navigation with SPARK_Mode is
       sdlat_half : Unit_Type;
       sdlon_half : Unit_Type;
       coscos : Unit_Type;
+
    begin
       --  sin^2(dlat/2): avoid underflow
       sdlat_half := Sin (dlat_half);
-      if abs(sdlat_half) > Unit_Type (1.0E-7) then
+      --sdlat_half := Clip_Unitcircle (sdlat_half);
+      if abs(sdlat_half) > EPS then
          sdlat_half := sdlat_half * sdlat_half;
       else
          sdlat_half := Unit_Type (0.0);
       end if;
+      --pragma Assert (Float'Safe_First <= Float (sdlat_half) and Float'Safe_Last >= Float (sdlat_half)); -- OK
+      -- clip inaccuracy overshoots, which helps the provers tremendously
+      sdlat_half := Clip_Unitcircle (sdlat_half); -- sin*sin should only exceed 1.0 by imprecision: OK
 
       --  sin^2(dlon/2): avoid underflow
       sdlon_half := Sin (dlon_half);
-      if abs(sdlon_half) > Unit_Type (1.0E-7) then
+      --sdlon_half := Clip_Unitcircle (sdlon_half);
+      if abs(sdlon_half) > EPS then
          sdlon_half := sdlon_half * sdlon_half;
       else
          sdlon_half := Unit_Type (0.0);
       end if;
+      sdlon_half := Clip_Unitcircle (sdlon_half); -- cos*cos should only exceed 1.0 by imprecision: OK
 
       --  cos*cos
       declare
          cs : constant Unit_Type := Cos (source.Latitude);
          ct : constant Unit_Type := Cos (target.Latitude);
       begin
-         coscos := ct * cs;
-         if abs(coscos) < Unit_Type (1.0E-7) then
+         --pragma Assert (ct in Unit_Type (-1.0) .. Unit_Type (1.0)); -- OK
+         --pragma Assert (cs in Unit_Type (-1.0) .. Unit_Type (1.0)); -- OK
+
+         coscos := ct * cs; -- OK
+         if abs(coscos) < Unit_Type (EPS) then
             coscos := Unit_Type (0.0);
          end if;
+         -- clip inaccuracy overshoots, which helps the provers tremendously
+         coscos := Clip_Unitcircle (coscos); -- cos*cos should only exceed 1.0 by imprecision: OK
       end;
-
-      pragma Assert (sdlat_half >= Unit_Type (0.0));
-      pragma Assert (sdlat_half >= Unit_Type (0.0));
-      pragma Assert (sdlon_half >= Unit_Type (0.0));
-
-      pragma Assert (sdlat_half <= Unit_Type (10.0));
-      pragma Assert (coscos in Unit_Type (-10.0) .. Unit_Type (10.0));
 
       --  haversine
       declare
          cts : Unit_Type;
       begin
          --  avoid underflow
-         if abs(coscos) > Unit_Type (1.0E-7) and then abs(sdlon_half) > Unit_Type (1.0E-7) then
-            cts := coscos * sdlon_half;
+         if abs(coscos) > Unit_Type (EPS) and then abs(sdlon_half) > Unit_Type (EPS)
+         then
+            --pragma Assert (coscos in Unit_Type'Safe_First .. Unit_Type'Safe_Last and sdlon_half in Unit_Type'Safe_First..Unit_Type'Safe_Last); -- OK
+            --  both numbers here are sufficiently different from zero
+            --  both numbers are valid numerics
+            --  both are large enough to avoid underflow
+            cts := coscos * sdlon_half; -- Z3 can prove this steps=default, timeout=60, level=2
          else
             cts := Unit_Type (0.0);
          end if;
-         if abs(sdlat_half) > Unit_Type (1.0E-7) and then abs(cts) > Unit_Type (1.0E-7) then
+         if abs(sdlat_half) > Unit_Type (EPS) and then abs(cts) > Unit_Type (EPS) then
             haversine := sdlat_half + cts;
+            if haversine > Unit_Type (1.0) then
+               haversine := Unit_Type (1.0);
+            end if;
          else
             haversine := Unit_Type (0.0);
          end if;
       end;
-      return  2.0 * EARTH_RADIUS * Unit_Type (Arctan (
-                                              Unit_Type (Sqrt (haversine)),
-                                              Unit_Type( Sqrt (Unit_Type (1.0) - haversine))));
+      declare
+         function Sat_Sub_Unit is new Saturated_Subtraction (Unit_Type);
+         invhav : constant Unit_Type := Sat_Sub_Unit (Unit_Type (1.0), haversine);
+      begin
+         return 2.0 * EARTH_RADIUS * Unit_Type (Arctan (Sqrt (haversine), Sqrt (invhav)));
+      end;
    end Distance;
-
-
---   function "+" (Left : GPS_Loacation_Type; Right : Translation_Vector) return GPS_Loacation_Type
-
 
 
 end Units.Navigation;

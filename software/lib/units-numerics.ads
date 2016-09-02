@@ -30,6 +30,10 @@ package Units.Numerics with SPARK_Mode is
    function Cos (X : Angle_Type) return Unit_Type
    with post => Cos'Result in -1.0 .. 1.0;
    -- @req cosine-x2
+   
+--     function Arcsin (X : Angle_Type) return Unit_Type  
+--       with Post => Arcsin'Result in -90.0*Degree .. 90.0*Degree;
+-- SPARK error
 
 --        
 --     function Cos (X, Cycle : Angle_Type) return Unit_Type;

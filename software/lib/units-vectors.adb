@@ -13,7 +13,7 @@ package body Units.Vectors with SPARK_Mode is
          when X =>
             --  z is veeeery small sometimes: 2E-38. But float'valid passes.
             --  Only after the multiplication the compiler-inserted 'valid
-            --  fails.
+            --  fails, because the result becomes a denormal.
             result (Y) :=  Cos (angle) * vector (Y) - Sin (angle) * vector (Z);
             result (Z) :=  Sin (angle) * vector (Y) + Cos (angle) * vector (Z);
 

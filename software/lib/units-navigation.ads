@@ -89,12 +89,15 @@ package Units.Navigation with SPARK_Mode is
       angular_velocity : Angular_Velocity_Vector;
    end record;
 
+   function Clip_Unitcircle (X : Unit_Type) return Unit_Type
+     with Post => Clip_Unitcircle'Result in Unit_Type (-1.0) .. Unit_Type (1.0);
+
 
    function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type;
 
 
-   -- FIXME: this seems not to work yet
-   function Distance( source : GPS_Loacation_Type; target: GPS_Loacation_Type ) return Length_Type;
+   function Distance (source : GPS_Loacation_Type; target: GPS_Loacation_Type) return Length_Type;
+   --  compute great-circle distance between to Lat/Lon
 
 
    function To_Orientation( rotation : Rotation_Vector ) return Orientation_Type is
