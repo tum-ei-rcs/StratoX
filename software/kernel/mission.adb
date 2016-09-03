@@ -26,16 +26,17 @@ package body Mission with SPARK_Mode is
    type State_Type is record 
       mission_state  : Mission_State_Type := UNKNOWN;
       mission_event  : Mission_Event_Type := NONE;
-      last_call_time : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
-      gps_lock_threshold_time : Time_Type := 0.0 * Second;
-      delta_threshold_time : Time_Type := 0.0 * Second;
-      target_threshold_time : Time_Type := 0.0 * Second;
+      last_call_time : Ada.Real_Time.Time := Ada.Real_Time.Time_First; -- time of last state machine call
+      gps_lock_threshold_time : Time_Type := 0.0 * Second; -- time since last acquisition of GPS lick
+      landed_wait_time : Time_Type := 0.0 * Second; -- time since touchdown
+      dropping_time : Time_Type := 0.0 * Second; -- acc. time of dropping
+      target_altitude_time : Time_Type := 0.0 * Second; -- acc. time since target altitude was reached
       home           : GPS_Loacation_Type := (Config.DEFAULT_HOME_LONG, 
                                              Config.DEFAULT_HOME_LAT, 
                                              Config.DEFAULT_HOME_ALT_MSL);
       body_info     : Body_Type;
       last_call     : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
-      last_state_change : Ada.Real_Time.Time := Ada.Real_Time.Time_First;
+      last_state_change : Ada.Real_Time.Time := Ada.Real_Time.Time_First; -- time of last transition in state machine
    end record;
 
    --------------
@@ -254,25 +255,25 @@ package body Mission with SPARK_Mode is
       --  check target altitude
       --  FIXME: Sprung von Baro auf GPS hat ausgelöst.
       if Estimator.get_relative_Height >= Config.CFG_TARGET_ALTITUDE_THRESHOLD then
-         G_state.target_threshold_time := Sat_Add_Time (G_state.target_threshold_time, 
+         G_state.target_altitude_time := Sat_Add_Time (G_state.target_altitude_time, 
                                                         To_Time(now - G_state.last_call));  -- TODO: calc dT     
-         if G_state.target_threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
+         if G_state.target_altitude_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
             Logger.log(Logger.INFO, "Target alt reached. Detach");
             next_State;
          end if;
       else
-         G_state.target_threshold_time := 0.0 * Second;
+         G_state.target_altitude_time := 0.0 * Second;
       end if;
       
       --  check for accidential drop
       if Estimator.get_current_Height < Estimator.get_max_Height - Config.CFG_DELTA_ALTITUDE_THRESH then
-         G_state.delta_threshold_time := Sat_Add_Time (G_state.delta_threshold_time, To_Time(now - G_state.last_call));  -- TODO: calc dT
-         if G_state.delta_threshold_time >= Config.CFG_DELTA_ALTITUDE_THRESH_TIME then
+         G_state.dropping_time := Sat_Add_Time (G_state.dropping_time, To_Time(now - G_state.last_call));  -- TODO: calc dT
+         if G_state.dropping_time >= Config.CFG_DELTA_ALTITUDE_THRESH_TIME then
             Logger.log(Logger.INFO, "Unplanned drop detected");
             next_State;         
          end if;
       else
-         G_state.delta_threshold_time := 0.0 * Second;  -- TODO: calc dT
+         G_state.dropping_time := 0.0 * Second;  -- TODO: calc dT
       end if;
    
       --  Check Timeout
@@ -375,26 +376,20 @@ package body Mission with SPARK_Mode is
    
    
    procedure wait_On_Ground is
-      command : Console.User_Command_Type;
+      now : constant Ada.Real_Time.Time := Clock;
    begin
-   
-      -- Buzzer_Manager.Tick;
-      next_State;
-   
-      -- Console
-      Console.read_Command( command );
-
-      case command is
-         when Console.DISARM =>
-            Logger.log(Logger.INFO, "Mission Finished");
-            next_State;
-            
-         when others =>
-            null;
-      end case;
+      --  Estimator
+      Estimator.update ((0.0*Degree, 0.0*Degree));
       
-      -- FIXME: turn everything OFF to save power
-
+      -- stay here for a while to log the landing location away
+      G_state.landed_wait_time := Sat_Add_Time (G_state.landed_wait_time, To_Time (now - G_state.last_call));
+      
+      if G_state.landed_wait_time > 60.0 * Second then
+         Logger.log(Logger.INFO, "Mission Finished");
+         next_State;
+         -- FIXME: turn everything OFF to save power
+      end if;
+         
    end wait_On_Ground;
 
    

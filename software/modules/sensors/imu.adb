@@ -83,8 +83,8 @@ is
    
    procedure perform_Kalman_Filtering(Self : IMU_Tag; newAngle : Orientation_Type)
    is
-      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt : constant Time_Type := Units.To_Time( now - G_state.kmLastCall ); 
+      time_of_call : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt : constant Time_Type := Units.To_Time( time_of_call - G_state.kmLastCall ); 
       newRate : Angular_Velocity_Vector := get_Angular_Velocity(Self);
       BIAS_LIMIT : constant Angular_Velocity_Type := 500.0*Degree/Second;
       predAngle : Angle_Vector;
@@ -220,7 +220,7 @@ is
                              2 => ( 1 => G_state.kmPitch.P(2, 1) - G_state.kmPitch.K(2) * G_state.kmPitch.P(1, 1),
                                     2 => G_state.kmPitch.P(2, 2) - G_state.kmPitch.K(2) * G_state.kmPitch.P(1, 2) ) );      
       
-      G_state.kmLastCall := now;      
+      G_state.kmLastCall := time_of_call;      
    end perform_Kalman_Filtering;
    
    

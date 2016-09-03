@@ -148,7 +148,7 @@ package body Units.Navigation with SPARK_Mode is
             --  both are large enough to avoid underflow
             cts := coscos * sdlon_half; -- Z3 can prove this steps=default, timeout=60, level=2
          else
-            cts := Unit_Type (0.0);
+            cts := Unit_Type (0.0); -- this happens likely when target is very close (few meters)
          end if;
          if abs(sdlat_half) > Unit_Type (EPS) and then abs(cts) > Unit_Type (EPS) then
             haversine := sdlat_half + cts;
@@ -159,6 +159,12 @@ package body Units.Navigation with SPARK_Mode is
             haversine := Unit_Type (0.0);
          end if;
       end;
+
+      if haversine = Unit_Type (0.0) then
+         --  numerically too close. return null
+         return 0.0*Meter;
+      end if;
+
       declare
          function Sat_Sub_Unit is new Saturated_Subtraction (Unit_Type);
          invhav : constant Unit_Type := Sat_Sub_Unit (Unit_Type (1.0), haversine);

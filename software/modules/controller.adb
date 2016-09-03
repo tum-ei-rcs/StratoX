@@ -79,7 +79,7 @@ package body Controller with SPARK_Mode is
 
    G_state : State_Type;
 
-   G_Last_Call_Time : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+   G_Last_Pitch_Control : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    G_Last_Roll_Control : Ada.Real_Time.Time := Ada.Real_Time.Clock;
    G_Last_Yaw_Control : Ada.Real_Time.Time := Ada.Real_Time.Clock;
 
@@ -166,7 +166,7 @@ package body Controller with SPARK_Mode is
       nav_msg : ULog.Message (Typ => ULog.NAV);
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
 
-      function Sat_Sub_Alt is new Saturated_Addition (Altitude_Type);
+      function Sat_Sub_Alt is new Saturated_Subtraction (Altitude_Type);
    begin
       G_state.logger_console_calls := Logger_Call_Type'Succ( G_state.logger_console_calls );
       if G_state.logger_console_calls = 0 then
@@ -262,9 +262,9 @@ package body Controller with SPARK_Mode is
    procedure control_Pitch is
       error : constant Angle_Type := ( G_Target_Orientation.Pitch - G_Object_Orientation.Pitch );
       now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Call_Time) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
+      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Pitch_Control) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
    begin
-      G_Last_Call_Time := now;
+      G_Last_Pitch_Control := now;
       Pitch_PID_Controller.step(PID_Pitch, error, dt, G_Plane_Control.Elevator);
    end control_Pitch;
 

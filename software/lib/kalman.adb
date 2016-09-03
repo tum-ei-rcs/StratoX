@@ -94,6 +94,8 @@ is
 
       -- Set P, Covariance Matrix to high values => uncertain about init values
       G.P := Eye( k ) * 10.0;
+      pragma Annotate (GNATprove, False_Positive, "length check might fail", "multiplication with scalar is implemented");
+      
       G.P( map(X_ROLL), map(X_ROLL) ) := ANGLE_PROCESS_VARIANCE;
       G.P( map(X_PITCH), map(X_PITCH) ) := ANGLE_PROCESS_VARIANCE;
       G.P( map(X_YAW), map(X_YAW) ) := ANGLE_PROCESS_VARIANCE;      
@@ -104,6 +106,8 @@ is
       
       -- Process Noise
       G.Q := Eye( k ) * 1.0e-1;
+      pragma Annotate (GNATprove, False_Positive, "length check might fail", "multiplication with scalar is implemented");
+                         
       G.Q( map(X_ROLL), map(X_ROLL) ) := ANGLE_PROCESS_VARIANCE;
       G.Q( map(X_PITCH), map(X_PITCH) ) := ANGLE_PROCESS_VARIANCE * 100.0;
       G.Q( map(X_YAW), map(X_YAW) ) := ANGLE_PROCESS_VARIANCE;
@@ -122,6 +126,8 @@ is
       
       -- Measurement Noise
       G.R := Eye( m ) * 1.0e-3; -- default
+      pragma Annotate (GNATprove, False_Positive, "length check might fail", "multiplication with scalar is implemented");
+      
       G.R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE;
       G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE / 100.0;
       G.R( map(Z_YAW), map(Z_YAW) ) := ANGLE_MEASUREMENT_VARIANCE;
@@ -137,8 +143,8 @@ is
    -------------------------
    
    procedure perform_Filter_Step( u : in Input_Vector; z : in Observation_Vector ) is
-      now : constant Time := Clock;
-      dt  : constant Time_Type := To_Time(now - G.t_last);
+      time_of_call : constant Time := Clock;
+      dt  : constant Time_Type := To_Time(time_of_call - G.t_last);
    begin
       KM_Profiler.start;
       predict(u, dt);
@@ -146,7 +152,8 @@ is
       KM_Profiler.stop;
       --KM_Profiler.log;
       
-      G.t_last := now;          
+      -- some time has passed until now
+      G.t_last := time_of_call;          
    end perform_Filter_Step;
 
    -------------------------
@@ -209,7 +216,7 @@ is
    --  predict_state
    -------------------------   
    
-   procedure predict_state( state : in out State_Vector; input : Input_Vector; dt : Time_Type ) with SPARK_Mode => Off -- see below
+   procedure predict_state( state : in out State_Vector; input : Input_Vector; dt : Time_Type )
    is
       new_state : State_Vector := state;
       
@@ -219,7 +226,17 @@ is
       
    begin
       -- gyro compensation
-      rotate( Cartesian_Vector_Type( compensated_rates ), X , state.orientation.Roll ); -- SPARK error: conversion  between array types that have dofferent element types is not yet supported
+      declare 
+         -- SPARK: conversion  between array types that have different element types is not yet supported
+         cv : Cartesian_Vector_Type := (X => Unit_Type (compensated_rates(X)), 
+                                        Y => Unit_Type (compensated_rates(Y)), 
+                                        Z => Unit_Type (compensated_rates(Z)));
+      begin
+         rotate (cv, X , state.orientation.Roll); 
+         compensated_rates := (X => Angular_Velocity_Type (cv(X)), 
+                               Y => Angular_Velocity_Type (cv(Y)), 
+                               Z => Angular_Velocity_Type (cv(Z)));
+      end;
    
       -- state prediction
       new_state.orientation := state.orientation + (compensated_rates - state.bias) * dt;

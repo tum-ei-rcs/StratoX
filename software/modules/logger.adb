@@ -302,7 +302,7 @@ is
    begin
       log_console (msg_level, message);
       if maxlen > 0 then         
-         if Log_Level'Pos (msg_level) >= Log_Level'Pos (INFO) then
+         if Log_Level'Pos (msg_level) <= Log_Level'Pos (INFO) then
             text_msg.t := now;  
             declare
                idx_t : constant Integer := text_msg.txt'First - 1 + maxlen;
