@@ -26,10 +26,18 @@ is
                           VAR_BOOTCOUNTER,
                           VAR_EXCEPTION_LINE_L,
                           VAR_EXCEPTION_LINE_H,
+                          VAR_EXCEPTION_ADDR_A,
+                          VAR_EXCEPTION_ADDR_B,
+                          VAR_EXCEPTION_ADDR_C,
+                          VAR_EXCEPTION_ADDR_D,
                           VAR_START_TIME_A,
                           VAR_START_TIME_B,
                           VAR_START_TIME_C,
                           VAR_START_TIME_D,
+                          VAR_HIGHWATERMARK_A, -- exec time of main loop in usec
+                          VAR_HIGHWATERMARK_B,
+                          VAR_HIGHWATERMARK_C,
+                          VAR_HIGHWATERMARK_D,
                           VAR_HOME_HEIGHT_L,
                           VAR_HOME_HEIGHT_H,
                           VAR_GPS_TARGET_LONG_A,
@@ -68,10 +76,18 @@ is
       VAR_BOOTCOUNTER  => 0,
       VAR_EXCEPTION_LINE_L => 0,
       VAR_EXCEPTION_LINE_H => 0,
+      VAR_EXCEPTION_ADDR_A => 0,
+      VAR_EXCEPTION_ADDR_B => 0,
+      VAR_EXCEPTION_ADDR_C => 0,
+      VAR_EXCEPTION_ADDR_D => 0,
       VAR_START_TIME_A => 0,
       VAR_START_TIME_B => 0,
       VAR_START_TIME_C => 0,
       VAR_START_TIME_D => 0,
+      VAR_HIGHWATERMARK_A => 0,
+      VAR_HIGHWATERMARK_B => 0,
+      VAR_HIGHWATERMARK_C => 0,
+      VAR_HIGHWATERMARK_D => 0,
       VAR_HOME_HEIGHT_L => 0,
       VAR_HOME_HEIGHT_H => 0,
       VAR_GPS_TARGET_LONG_A => 0,
@@ -110,12 +126,20 @@ is
      with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
    --  same, but with Float convenience conversion. Point to first variable of the quadrupel.
 
+   procedure Load (variable : in Variable_Name; data : out Unsigned_32)
+     with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
+   --  same, but with U32 convenience conversion. Point to first variable of the quadrupel.
+
    procedure Store (variable : in Variable_Name; data : in HIL.Byte);
    --  write variable with given name to NVRAM.
 
    procedure Store (variable : in Variable_Name; data : in Float)
      with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
    --  same, but with Float convenience conversion.  Point to first variable of the quadrupel.
+
+   procedure Store (variable : in Variable_Name; data : in Unsigned_32)
+     with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
+   --  same, but with U32 convenience conversion.  Point to first variable of the quadrupel.
 
    procedure Reset;
    --  explicit reset of NVRAM to defaults; same effect as re-compiling.

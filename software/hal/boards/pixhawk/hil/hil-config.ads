@@ -6,7 +6,7 @@ package HIL.Config is
    PX4IO_BAUD_RATE_HZ : constant := 1_500_000;
 
     -- UBLOX Baudrate: Default: 9_600, PX4-FMU configured: 38_400
-   UBLOX_BAUD_RATE_HZ : constant := 38_400;
+   UBLOX_BAUD_RATE_HZ : constant := 9_600;
 
 
    -- MPU6000

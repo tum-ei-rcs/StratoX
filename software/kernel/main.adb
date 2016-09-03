@@ -19,7 +19,7 @@ with Logger;
 with Config.Software; use Config.Software;
 with Bounded_Image;   use Bounded_Image;
 
-with Mission;
+with Mission;         use Mission;
 with Console;
 with Estimator;
 with Controller;
@@ -81,15 +81,15 @@ package body Main with SPARK_Mode => On is
          delay until now + Milliseconds (1500); -- reduced from 1500 to 150
       end;
 
-      --  Illustration how to use NVRAM
+      --  Dump general boot & crash info
       declare
-         exception_line : HIL.Byte_Array_2 := (0,0);
+         exception_line    : HIL.Byte_Array_2 := (0,0);
+         exception_addr    : Unsigned_32;
+         high_watermark_us : Unsigned_32;
       begin
          NVRAM.Load (NVRAM.VAR_BOOTCOUNTER, num_boots); -- is maintained by the NVRAM itself
          declare
-            strboot : constant String := HIL.Byte'Image (num_boots); -- unconstrained. Use in log_console => proof fail.
-            pragma Assert (HIL.Byte'Size <= 8);
-            pragma Assume (strboot'Length <= 4);
+            strboot : constant String := Unsigned8_Img (num_boots);
          begin
             Logger.log_console (Logger.INFO, ("Boot number: " & strboot));
             Logger.log_console (Logger.INFO, "Build date: " & Buildinfo.Compilation_ISO_Date
@@ -97,12 +97,18 @@ package body Main with SPARK_Mode => On is
          end;
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_L, exception_line(1));
          NVRAM.Load (NVRAM.VAR_EXCEPTION_LINE_H, exception_line(2));
-         Logger.log_console(Logger.WARN, "Last Exception: " & Integer_Img( Integer( HIL.toUnsigned_16( exception_line ) ) ) );
+         NVRAM.Load (NVRAM.VAR_EXCEPTION_ADDR_A, exception_addr);
+         --  write to SD card and console: last crash info
+         Logger.log (Logger.WARN, "Last Exception: line=" &
+                       Integer_Img (Integer (HIL.toUnsigned_16 (exception_line))) &
+                       " addr=" & Unsigned_Img (exception_addr));
+         NVRAM.Load (NVRAM.VAR_HIGHWATERMARK_A, high_watermark_us);
+         Logger.log (Logger.WARN, "High Watermark: " & Unsigned_Img (high_watermark_us));
       end;
 
       Mission.load_Mission;
 
-   end initialize;
+   end Initialize;
 
    -----------------------
    --  Perform_Self_Test
@@ -171,7 +177,7 @@ package body Main with SPARK_Mode => On is
          Logger.log_console (Logger.INFO, "Ublox8 self-check passed");
       end if;
 
-   end perform_Self_Test;
+   end Perform_Self_Test;
 
    --------------
    --  Run_Loop
@@ -180,17 +186,24 @@ package body Main with SPARK_Mode => On is
    procedure Run_Loop is
       msg     : constant String := "Main";
 
-      loop_time_start   : Time      := Clock;
-      loop_duration_max : Time_Span := Milliseconds (0);
-
+      time_next_loop  : Time;
+      time_loop_start : Time;
       Main_Profile : Profile_Tag;
 
-      command : Console.User_Command_Type;
+      --command : Console.User_Command_Type;
 
-      checks_passed : Boolean := False;
+      type skipper is mod 100; -- every 2 seconds one perf log
+      skip : skipper := 0;
+      watermark_high_us : Unsigned_32 := 0;
+      watermark_last_us : Unsigned_32 := 0;
+
+      m_state : Mission.Mission_State_Type;
+
    begin
       Main_Profile.init(name => "Main");
       LED_Manager.LED_blink (LED_Manager.SLOW);
+
+      NVRAM.Load (NVRAM.VAR_HIGHWATERMARK_A, watermark_high_us);
 
       Logger.log_console (Logger.INFO, msg);
 
@@ -203,13 +216,13 @@ package body Main with SPARK_Mode => On is
       -- arm PX4IO
       Controller.activate;
 
+      time_next_loop := Clock;
       loop
-         loop_time_start := Clock;
          Main_Profile.start;
+         time_loop_start := Clock;
+         skip := skip + 1;
 
-
-         -- LED alive
-         --LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
+         -- LED alive: toggle with main loop, which allows to see irregularities
          G_led_counter := LED_Counter_Type'Succ( G_led_counter );
          if G_led_counter < LED_Counter_Type'Last/2 then
             LED_Manager.LED_switchOn;
@@ -217,59 +230,81 @@ package body Main with SPARK_Mode => On is
             LED_Manager.LED_switchOff;
          end if;
 
-
          -- Mission
-         Mission.run_Mission;
+         m_state := Mission.get_state;
+         Mission.run_Mission; -- may switch to next one
 
-         -- Console
-         Console.read_Command( command );
+--           -- Console
+--           Console.read_Command( command );
+--
+--           case ( command ) is
+--              when Console.TEST =>
+--                 perform_Self_Test (checks_passed);
+--                 if not checks_passed then
+--                    Logger.log_console (Logger.ERROR, "Self-checks failed");
+--                 else
+--                    Logger.log_console (Logger.INFO, "Self-checks passed");
+--                 end if;
+--
+--              when Console.STATUS =>
+--                 Estimator.log_Info;
+--                 Controller.log_Info;
+--                 PX4IO.Driver.read_Status;
+--
+--                 Logger.log_console (Logger.INFO, "Profile: " & Integer_Img ( Integer(
+--                                     Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+--
+--              when Console.ARM => Controller.activate;
+--
+--              when Console.DISARM => Controller.deactivate;
+--
+--              when Console.PROFILE =>
+--                 Logger.log_console (Logger.INFO, "Profile: " & Integer_Img ( Integer(
+--                                     Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
+--                 Main_Profile.log;
+--
+--              when others =>
+--                 null;
+--           end case;
 
-         case ( command ) is
-            when Console.TEST =>
-               perform_Self_Test (checks_passed);
-               if not checks_passed then
-                  Logger.log_console (Logger.ERROR, "Self-checks failed");
-               else
-                  Logger.log_console (Logger.INFO, "Self-checks passed");
-               end if;
+         --  Maintain high watermark
 
-            when Console.STATUS =>
-               Estimator.log_Info;
-               Controller.log_Info;
-               PX4IO.Driver.read_Status;
-
-               Logger.log_console (Logger.INFO, "Profile: " & Integer_Img ( Integer(
-                                   Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
-
-            when Console.ARM => Controller.activate;
-
-            when Console.DISARM => Controller.deactivate;
-
-            when Console.PROFILE =>
-               Logger.log_console (Logger.INFO, "Profile: " & Integer_Img ( Integer(
-                                   Float( Units.To_Time(loop_duration_max) ) * 1000.0 ) ) & " ms" );
-               Main_Profile.log;
-
-            when others =>
-               null;
-         end case;
-
-         -- Profile
          Main_Profile.stop;
-         declare
-            now  : constant Time := Clock;
-            diff : constant Time_Span := now - loop_time_start;
-         begin
-            if loop_duration_max < diff then
-               loop_duration_max := diff;
-            end if;
-         end;
+         if m_state /= Mission.DETACHING and then m_state /= Mission.STARTING then
+            --  we measure the loop time, except in detach and start. Because there we screw with timing
+            declare
+               t_watermark_sec  : constant Float := Float (To_Time (Main_Profile.get_Max));
+               t_watermark_usec : constant Float := t_watermark_sec * 1.0E6;
+            begin
+               if t_watermark_usec > 0.0 then
+                  if Float (Unsigned_32'Last) > t_watermark_usec then
+                     watermark_last_us := Unsigned_32 (t_watermark_usec);
+                  else
+                     watermark_last_us := Unsigned_32'Last;
+                  end if;
+                  if watermark_last_us > watermark_high_us then
+                     watermark_high_us := watermark_last_us;
+                     NVRAM.Store (NVRAM.VAR_HIGHWATERMARK_A, watermark_high_us);
+                  end if;
+                  if skip = 0 then
+                     Main_Profile.reset;
+                     Logger.log_console (Logger.DEBUG, "Main Time: cur=" & Unsigned_Img (watermark_last_us)
+                                         & ", high=" & Unsigned_Img (watermark_high_us));
+                  end if;
+               end if;
+            end;
+         else
+            --  recover timing
+            Main_Profile.reset;
+            time_next_loop := time_loop_start;
+         end if;
 
-         -- wait remaining loop time
-         delay until loop_time_start + Milliseconds (MAIN_TICK_RATE_MS);
+         --  wait remaining loop time
+         time_next_loop := time_next_loop + Milliseconds (MAIN_TICK_RATE_MS);
+         delay until time_next_loop;
       end loop;
 
-   end run_Loop;
+   end Run_Loop;
 
 
 end Main;

@@ -298,8 +298,8 @@ is
          writeToDevice(msg_cfg_msg_head, msg_cfg_msg);
          delay_ms( 10 );
       
-      -- set NAV_PVT to 0.2Hz
-         msg_cfg_msg(2) := Byte( 5 );
+      -- limit NAV_PVT rate to every second time (=0.5Hz)
+         msg_cfg_msg(2) := Byte( 2 );
          msg_cfg_msg(1) := UBX_ID_NAV_PVT;
          writeToDevice(msg_cfg_msg_head, msg_cfg_msg);  -- implemented for ubx7+ modules only
          delay_ms( 10 );    

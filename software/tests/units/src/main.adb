@@ -145,17 +145,28 @@ begin
 
    Put_Line ("Distance test");
    declare
+
+      function Head2Int (h : Heading_Type) return Integer is
+         ret : Integer;
+      begin
+         ret := Integer (Float (h) * 180.0 / 3.14159);
+         return ret;
+      end Head2Int;
+
       s, t  : GPS_Loacation_Type;
       d : Length_Type;
+      c : Heading_Type;
    begin
       s := (Latitude => 48.149825 * Degree, Longitude => 11.567860 * Degree, Altitude => 520.0 * Meter); -- TUM
       t := (Latitude => 48.138912 * Degree, Longitude => 11.572811 * Degree, Altitude => 520.0 * Meter); -- Frauenkirche
-      d := Units.Navigation.Distance (source => s, target => t);
-      Put_Line ("TUM -> Frauenkirche: " & d'Img & " meter"); -- 1.3km
+      d := Distance (source => s, target => t);
+      c := Bearing (source_location => s, target_location => t);
+      Put_Line ("TUM -> Frauenkirche: " & d'Img & " meter & compass=" & Head2Int (c)'Img); -- 1.3km
 
       s := (Latitude => 48.139618 * Degree, Longitude => 11.570907 * Degree, Altitude => 520.0 * Meter); -- TUM
-      d := Units.Navigation.Distance (source => s, target => t);
-      Put_Line ("Frauenkirche -> Michaelskirche: " & d'Img & " meter"); -- 161m
+      d := Distance (source => s, target => t);
+      c := Bearing (source_location => s, target_location => t);
+      Put_Line ("Frauenkirche -> Michaelskirche: " & d'Img & " meter & compass=" & Head2Int(c)'Img); -- 161m
 
       --  smoke test
       t := s;
@@ -173,7 +184,9 @@ begin
                t.Latitude := lat_t;
                t.Longitude := lon_t;
                d := Distance (s, t);
-               Put_Line ("S=" & Float(s.Latitude)'Img & "," & Float(s.Longitude)'Img  & ", T=" & Float(t.Latitude)'Img & "," & Float(t.Longitude)'Img & " => " & Float (d)'Img);
+               c := Bearing (s, t);
+               Put_Line ("S=" & Float(s.Latitude)'Img & "," & Float(s.Longitude)'Img  & ", T=" & Float(t.Latitude)'Img & ","
+                         & Float(t.Longitude)'Img & " => d=" & Float (d)'Img & ", crs=" & Head2Int (c)'Img);
 
                exit inc2 when lon_t > s.Longitude + Longitude_Type (var);
                lon_t := lon_t + Longitude_Type (STEP);

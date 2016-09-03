@@ -44,7 +44,8 @@ package Controller with SPARK_Mode is
    
    procedure set_detach;
    
-   procedure bark;  -- good boy!
+   procedure bark;  -- good boy! 
+   --  don't use this when time is critical. It will consume 400msec!
    
    procedure sync with Inline;
    
@@ -66,8 +67,5 @@ private
 
    function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type; priority : Control_Priority_Type ) return Elevon_Angle_Array;
 
-   function Heading(source_location : GPS_Loacation_Type;
-                    target_location  : GPS_Loacation_Type)
-                    return Heading_Type;
 
 end Controller;

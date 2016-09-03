@@ -99,6 +99,10 @@ package Units.Navigation with SPARK_Mode is
    function Distance (source : GPS_Loacation_Type; target: GPS_Loacation_Type) return Length_Type;
    --  compute great-circle distance between to Lat/Lon
 
+   function Bearing (source_location : GPS_Loacation_Type; target_location  : GPS_Loacation_Type) return Heading_Type
+     with Post => Bearing'Result in 0.0 * Degree .. 360.0 * Degree;
+   --  compute course (initial bearing, forward azimuth) from source to target location
+
 
    function To_Orientation( rotation : Rotation_Vector ) return Orientation_Type is
    (  wrap_Angle( rotation(X), Roll_Type'First, Roll_Type'Last ),

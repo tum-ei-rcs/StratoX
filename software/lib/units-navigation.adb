@@ -29,32 +29,38 @@ package body Units.Navigation with SPARK_Mode is
    end Heading;
 
 
-   -- θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
-   -- φ is lat, λ is long
-   function Heading(source_location : GPS_Loacation_Type;
-                    target_location  : GPS_Loacation_Type)
-                    return Heading_Type is
+   --  phi=atan2(sin(delta_lon) * cos (lat2), cos lat1 * sin lat2 - sin lat1 * cos(lat2) * cos (delta_lon)
+   function Bearing (source_location : GPS_Loacation_Type; target_location  : GPS_Loacation_Type) return Heading_Type is
       result : Angle_Type := 0.0 * Degree;
+      a1, a2 : Unit_Type;
    begin
-      -- calculate angle between -180° and 180°
-      if source_location.Longitude /= target_location.Longitude or source_location.Latitude /= target_location.Latitude then
-         result := Arctan( Sin( delta_Angle( source_location.Longitude,
-                                           target_location.Longitude ) ) *
-                         Cos( target_location.Latitude ),
-                         Cos( source_location.Latitude ) * Sin( target_location.Latitude ) -
-                         Sin( source_location.Latitude ) * Cos( target_location.Latitude ) *
-                         Cos( delta_Angle( source_location.Longitude,
-                                      target_location.Longitude ) ),
-                     DEGREE_360
-                        );
+      -- calculate angle between -180 .. 180 Degree
+      if source_location.Longitude /= target_location.Longitude or
+        source_location.Latitude /= target_location.Latitude
+      then
+         a1 := Sin (delta_Angle (source_location.Longitude, target_location.Longitude)) * Cos (target_location.Latitude);
+         declare
+            cs  : Unit_Type := Cos (source_location.Latitude) * Sin (target_location.Latitude);
+            scc  : Unit_Type := Sin (source_location.Latitude) * Cos(target_location.Latitude);
+            cd  : Unit_Type := Cos (delta_Angle (source_location.Longitude, target_location.Longitude));
+         begin
+            cs := Clip_Unitcircle (cs); -- this really helps the solvers
+
+            scc := Clip_Unitcircle (scc);
+            cd  := Clip_Unitcircle (cd);
+            scc := scc * cd;
+            scc := Clip_Unitcircle (scc);
+            a2  := cs - scc;
+         end;
+         result := Arctan (Y => a1, X => a2, Cycle => DEGREE_360);
       end if;
 
-      -- Constrain to Heading_Type
+      --  shift to Heading_Type
       if result < 0.0 * Degree then
          result := result + Heading_Type'Last;
       end if;
       return Heading_Type( result );
-   end Heading;
+   end Bearing;
    pragma Unreferenced (Heading);
 
 

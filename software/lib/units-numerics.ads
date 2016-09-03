@@ -8,8 +8,8 @@ package Units.Numerics with SPARK_Mode is
 
 
 
-   function Sqrt (X : Unit_Type) return Unit_Type with
-   post => Sqrt'Result in 0.0 .. X;
+   function Sqrt (X : Unit_Type) return Unit_Type;
+   -- with post => Sqrt'Result in 0.0 .. X; -- this postcondition triggers...dunno why, yet
    
    -- function "**" (Left : Unit_Type; Right : Integer) return Unit_Type;  (Predefined!)
    

@@ -68,9 +68,10 @@ is
                                                                            Target => Byte_Array_4); 
 
    -- little endian (lowest byte first)
-   -- FAILS  (unsigned arg, unconstrained return)
    function toBytes(uint : in Unsigned_16) return Byte_Array is
-      (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
+     (1 => Unsigned_8( uint mod 2**8 ), 2 => Unsigned_8 ( uint / 2**8 ) );
+   
+   
       
    function toBytes( source : in Float) return Byte_Array_4 is
       (From_Float_To_Byte_Array( source ) )
@@ -86,12 +87,16 @@ is
       + Unsigned_16( bytes( bytes'First + 1 ) ) * 2**8 )
    with Pre => bytes'Length = 2;
       
-
    function toUnsigned_32( bytes : Byte_Array) return Unsigned_32
    is
       (Unsigned_32( bytes( bytes'First ) ) + Unsigned_32( bytes'First + 1 ) * 2**8 + Unsigned_32( bytes'First + 2 ) * 2**16 + Unsigned_32( bytes'First + 3 ) * 2**24 )
    with Pre => bytes'Length = 4;
 
+   function Bytes_To_Unsigned32 is new Ada.Unchecked_Conversion (Source => Byte_Array_4,
+                                                                 Target => Unsigned_32); 
+   
+   function Unsigned32_To_Bytes is new Ada.Unchecked_Conversion (Source => Unsigned_32,
+                                                     Target => Byte_Array_4);
 
 
    function From_Byte_To_Integer_8 is new Ada.Unchecked_Conversion (Source => Byte,

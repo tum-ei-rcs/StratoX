@@ -12,12 +12,12 @@ package Config.Software with SPARK_Mode is
 
    DEBUG_MODE_IS_ACTIVE : constant Boolean := True;     
    MAIN_TICK_RATE_MS : constant := 20;   -- Tickrate in Milliseconds
-   TEST_MODE_ACTIVE : constant Boolean := True;
+   TEST_MODE_ACTIVE : constant Boolean := False;
    
    -- Misison
    CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 120.0 * Second;  -- Droptest: 120, Strato: TBD
-   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 1800.0 * Second;     -- Droptest: 600, Strato: 30m
-   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 1800.0 * Second;   -- Droptest: 360, Strato: 30m
+   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 60.0 * Second;     -- Droptest: 600, Strato: 1800
+   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 300.0 * Second;   -- Droptest: 360, Strato: 1800
    
     
    CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;

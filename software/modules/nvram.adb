@@ -94,13 +94,21 @@ is
    function Hdr_To_Address return HIL.NVRAM.Address is (0);
    --  header's address is fixed at beginning of NVRAM
 
+   -----------------
+   --  Make_Header
+   -----------------
+
    procedure Make_Header (newhdr : out NVRAM_Header) is
-      build_date : constant String := Compilation_ISO_Date & Compilation_Time;
+      build_date : constant String := Short_Datetime;
       crc        : constant Fletcher16_String.Checksum_Type :=
         Fletcher16_String.Checksum (build_date);
    begin
       newhdr := (ck_a => crc.ck_a, ck_b => crc.ck_b);
    end Make_Header;
+
+   ------------------
+   --  Write_Header
+   ------------------
 
    procedure Write_Header (hdr : in NVRAM_Header) is
       Unused_Header : NVRAM_Header;
@@ -112,6 +120,10 @@ is
       HIL.NVRAM.Write_Byte (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => hdr.ck_b);
    end Write_Header;
 
+   -----------------
+   --  Read_Header
+   -----------------
+
    procedure Read_Header (framhdr : out NVRAM_Header) is
       Unused_Header : NVRAM_Header;
       --  GNATprove from SPARK 2017 onwards can do this:
@@ -122,8 +134,16 @@ is
       HIL.NVRAM.Read_Byte (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => framhdr.ck_b);
    end Read_Header;
 
+   -----------------
+   --  Get_Default
+   -----------------
+
    function Get_Default (var : in Variable_Name) return HIL.Byte
    is (Variable_Defaults (var));
+
+   --------------------
+   --  Clear_Contents
+   --------------------
 
    procedure Clear_Contents is
    begin
@@ -135,6 +155,10 @@ is
          end;
       end loop;
    end Clear_Contents;
+
+   -----------------------
+   --  Validate_Contents
+   -----------------------
 
    procedure Validate_Contents is
       hdr_fram : NVRAM_Header;
@@ -150,9 +174,17 @@ is
       end if;
    end Validate_Contents;
 
+   ---------------------
+   --  Var_To_Address
+   ---------------------
+
    function Var_To_Address (var : in Variable_Name) return HIL.NVRAM.Address
    is (HIL.NVRAM.Address ((NVRAM_Header'Size + 7) / 8) -- ceiling bit -> bytes
        + Variable_Name'Pos (var));
+
+   ------------
+   --  Init
+   ------------
 
    procedure Init is
       num_boots : HIL.Byte;
@@ -168,10 +200,18 @@ is
       end if;
    end Init;
 
+   ----------------
+   --  Self_Check
+   ----------------
+
    procedure Self_Check (Status : out Boolean) is
    begin
       HIL.NVRAM.Self_Check (Status);
    end Self_Check;
+
+   --------------
+   --  Load
+   --------------
 
    procedure Load (variable : Variable_Name; data : out HIL.Byte) is
    begin
@@ -189,13 +229,28 @@ is
       data := HIL.toFloat (bytes);
    end Load;
 
+   procedure Load (variable : in Variable_Name; data : out Unsigned_32) is
+      bytes : Byte_Array_4 := (others => 0); -- needs init, because SPARK cannot prove via call
+   begin
+      for index in Natural range 0 .. 3 loop
+         HIL.NVRAM.Read_Byte (addr => Var_To_Address (
+                              Variable_Name'Val (Variable_Name'Pos( variable ) + index )),
+                              byte => bytes(bytes'First + index));
+      end loop;
+      data := HIL.Bytes_To_Unsigned32 (bytes);
+   end Load;
+
+   ------------
+   --  Store
+   ------------
+
    procedure Store (variable : Variable_Name; data : in HIL.Byte) is
    begin
       HIL.NVRAM.Write_Byte (addr => Var_To_Address (variable), byte => data);
    end Store;
 
    procedure Store (variable : in Variable_Name; data : in Float) is
-      bytes : constant Byte_Array_4 := HIL.toBytes (data );
+      bytes : constant Byte_Array_4 := HIL.toBytes (data);
    begin
       for index in Natural range 0 .. 3 loop
          HIL.NVRAM.Write_Byte (addr => Var_To_Address (
@@ -203,6 +258,20 @@ is
                                byte => bytes(bytes'First + index));
       end loop;
    end Store;
+
+   procedure Store (variable : in Variable_Name; data : in Unsigned_32) is
+      bytes : constant Byte_Array_4 := HIL.Unsigned32_To_Bytes (data);
+   begin
+      for index in Natural range 0 .. 3 loop
+         HIL.NVRAM.Write_Byte (addr => Var_To_Address (
+                               Variable_Name'Val (Variable_Name'Pos( variable ) + index )),
+                               byte => bytes(bytes'First + index));
+      end loop;
+   end Store;
+
+   ------------
+   --  Reset
+   ------------
 
    procedure Reset is
       hdr_this : NVRAM_Header;

@@ -150,6 +150,9 @@ package body Controller with SPARK_Mode is
    procedure set_Target_Position (location : GPS_Loacation_Type) is
    begin
       G_Target_Position := location;
+      Logger.log (Logger.SENSOR, "Home=" & Integer_Img ( Integer (1000.0 * Float (G_Target_Position.Latitude) * 180.0/3.14159))
+                  & ", " & Integer_Img ( Integer (1000.0 * Float (G_Target_Position.Longitude) * 180.0/3.14159))
+                  & ", " & Integer_Img ( Sat_Cast_Int ( Float (G_Target_Position.Altitude))));
    end set_Target_Position;
 
    procedure set_Current_Orientation (orientation : Orientation_Type) is
@@ -172,7 +175,7 @@ package body Controller with SPARK_Mode is
                               ", " & AImage( G_Target_Position.Latitude ) &
                               ", " & Image( G_Target_Position.Altitude ) &
                               ", d=" & Integer_Img (Sat_Cast_Int ( Float (G_state.distance_to_target))) &
-                              ", crs=" & Integer_Img (Sat_Cast_Int ( Float (G_Target_Orientation.Yaw))));
+                              ", crs=" & AImage (G_Target_Orientation.Yaw));
 
          Logger.log_console(Logger.DEBUG,
                             "TY: " & AImage( G_Target_Orientation.Yaw ) &
@@ -180,7 +183,7 @@ package body Controller with SPARK_Mode is
                             "   Elev: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) )
                            );
 
-         G_state.control_profiler.log;
+         --G_state.control_profiler.log;
       end if;
 
       -- log to SD
@@ -267,45 +270,6 @@ package body Controller with SPARK_Mode is
 
 
 
-   -- 	θ = atan2( sin Δλ ⋅ cos φ2 , cos φ1 ⋅ sin φ2 − sin φ1 ⋅ cos φ2 ⋅ cos Δλ )
-   -- φ is lat, λ is long
-   function Heading(source_location : GPS_Loacation_Type;
-                    target_location  : GPS_Loacation_Type)
-                    return Heading_Type is
-      result : Angle_Type := 0.0 * Degree;
-   begin
-      if source_location.Longitude /= target_location.Longitude
-        or source_location.Latitude /= target_location.Latitude
-      then
---           Logger.log_console(Logger.TRACE, "Calculating Heading: ");
---           Logger.log_console(Logger.TRACE,
---                      "Source LLA" & AImage( source_location.Longitude ) &
---                   ", " & AImage( source_location.Latitude ) &
---                   ", " & Image( source_location.Altitude ) );
---                    Logger.log_console(Logger.TRACE,
---                      "Target LLA" & AImage( target_location.Longitude ) &
---                   ", " & AImage( target_location.Latitude ) &
---                   ", " & Image( target_location.Altitude ) );
-         result := Arctan( Sin( delta_Angle( source_location.Longitude,
-                                           target_location.Longitude ) ) *
-                         Cos( target_location.Latitude ),
-                         Cos( source_location.Latitude ) * Sin( target_location.Latitude ) -
-                         Sin( source_location.Latitude ) * Cos( target_location.Latitude ) *
-                         Cos( delta_Angle( source_location.Longitude,
-                                      target_location.Longitude ) ),
-                     DEGREE_360
-                        );
-      end if;
-
-      -- Constrain to Heading_Type
-      if result < 0.0 * Degree then
-         result := result + Heading_Type'Last;
-      end if;
-      return Heading_Type( result );
-   end Heading;
-
-
-
    procedure Compute_Target_Pitch is
    begin
       --  we cannot afford a (fail-safe) airspeed sensor, thus we rely on the polar:
@@ -342,7 +306,7 @@ package body Controller with SPARK_Mode is
       if have_my_pos and then have_home_pos then
          --  compute relative location to target
          G_state.distance_to_target := Distance (G_Object_Position, G_Target_Position);
-         G_Target_Orientation.Yaw := Yaw_Type (Heading (G_Object_Position, G_Target_Position));
+         G_Target_Orientation.Yaw := Yaw_Type (Bearing (G_Object_Position, G_Target_Position));
 
          if G_state.distance_to_target > Config.TARGET_AREA_RADIUS then
             --  some distance towards target => compute bearing and deduce roll

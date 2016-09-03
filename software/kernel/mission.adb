@@ -95,21 +95,23 @@ package body Mission with SPARK_Mode is
          G_state.mission_state := Mission_State_Type'First;
       end if;
       if G_state.mission_state = UNKNOWN or G_state.mission_state = WAITING_FOR_RESET then
+         --  new mission
          start_New_Mission;
          Mission_Resumed := False;
       else
-         -- Baro
+         --  resume after reset: load values
+         --  Baro
          NVRAM.Load( VAR_HOME_HEIGHT_L, height(1) );
          pragma Annotate (GNATprove, False_Positive, """height"" might not be initialized", "it is done right here");
          NVRAM.Load( VAR_HOME_HEIGHT_H, height(2) );
          baro_height := Sat_Cast_Alt (Float (Unit_Type (HIL.toUnsigned_16 (height)) * Meter));
          
-         -- GPS
+         --  GPS
          NVRAM.Load( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
          NVRAM.Load( VAR_GPS_TARGET_LAT_A,  Float( G_state.home.Latitude ) );
          NVRAM.Load( VAR_GPS_TARGET_ALT_A,  Float( G_state.home.Altitude ) );
          
-         -- lock Home
+         --  re-lock Home
          Logger.log(Logger.DEBUG, "Home Alt: " & Image(G_state.home.Altitude) );  
          Estimator.lock_Home( G_state.home, baro_height );
          Controller.set_Target_Position( G_state.home );
@@ -133,7 +135,7 @@ package body Mission with SPARK_Mode is
    begin
       if G_state.mission_state /= Mission_State_Type'Last then
          G_state.mission_state := Mission_State_Type'Succ(G_state.mission_state);         
-         NVRAM.Store( VAR_MISSIONSTATE, Mission_State_Type'Pos( G_state.mission_state ) );
+         NVRAM.Store( VAR_MISSIONSTATE, HIL.Byte (Mission_State_Type'Pos (G_state.mission_state)));
          G_state.last_state_change := Ada.Real_Time.Clock;
       end if;
    end next_State;
@@ -160,6 +162,8 @@ package body Mission with SPARK_Mode is
    end perform_Initialization;
 
    
+   type skipper is mod 50;
+   skip : skipper := 0;
    
    procedure wait_for_GPSfix is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
@@ -181,10 +185,8 @@ package body Mission with SPARK_Mode is
          NVRAM.Store (VAR_GPS_TARGET_LONG_A, Float (G_state.home.Longitude));
          NVRAM.Store (VAR_GPS_TARGET_LAT_A,  Float (G_state.home.Latitude));
          NVRAM.Store (VAR_GPS_TARGET_ALT_A,  Float (G_state.home.Altitude));
-         
-         -- gib laut
-         Controller.bark;
-         
+         Controller.set_Target_Position (G_state.home);
+                  
       end lock_Home;     
       
    begin
@@ -196,13 +198,21 @@ package body Mission with SPARK_Mode is
       Controller.set_hold;
       Controller.sync;
 
-      -- check GPS lock
+      -- check duration of GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
-         G_state.gps_lock_threshold_time := Sat_Add_Time (G_state.gps_lock_threshold_time, 
-                                                          To_Time(now - G_state.last_call)); 
-         LED_Manager.LED_switchOn;
+         declare 
+            dt : constant Time_Type := To_Time (now - G_state.last_call);
+         begin            
+            G_state.gps_lock_threshold_time := Sat_Add_Time (G_state.gps_lock_threshold_time, dt);          
+            skip := skip + 1;
+            if skip = 0 then
+               Logger.log_console (Logger.DEBUG, "dt=" & Integer_Img (Integer (1000.0*Float(dt))) 
+                                   & ", fix time=" & Integer_Img ( Integer (1000.0*Float (G_state.gps_lock_threshold_time))));
+            end if;
+         end;
+--         LED_Manager.LED_switchOn;
          
-         if G_state.gps_lock_threshold_time > 10.0 * Second then
+         if G_state.gps_lock_threshold_time > 30.0 * Second then
             lock_Home;
             Logger.log(Logger.INFO, "Mission Ready");
             next_State;
@@ -211,8 +221,10 @@ package body Mission with SPARK_Mode is
          G_state.gps_lock_threshold_time := 0.0 * Second;
       end if;
 
-      -- FOR TEST
-      if now > G_state.last_state_change + Config.Software.CFG_GPS_LOCK_TIMEOUT then
+      -- FOR TEST ONLY: skip to next state after a timeout
+      if Config.Software.TEST_MODE_ACTIVE and then
+        now > G_state.last_state_change + Config.Software.CFG_GPS_LOCK_TIMEOUT 
+      then
          lock_Home;
          next_State;
       end if;
@@ -221,19 +233,21 @@ package body Mission with SPARK_Mode is
 
    
    
-   procedure wait_For_Arm is
+   procedure perform_Start is
    begin
       Estimator.update ((0.0*Degree, 0.0*Degree));
+      Controller.bark;
       next_State;
-   end wait_For_Arm;
+   end perform_Start;
 
    
    
-   procedure wait_For_Release is
+   procedure wait_For_Ascend is
    begin
+      -- TODO: ascend detection
       Logger.log(Logger.INFO, "Start Ascending");
       next_State;
-   end wait_For_Release;
+   end wait_For_Ascend;
 
    
    
@@ -284,6 +298,9 @@ package body Mission with SPARK_Mode is
    
    
    
+   function get_state return Mission_State_Type is (G_state.mission_state);
+   
+   
    procedure perform_Detach is
       isAttached : Boolean := True;
       start : Ada.Real_Time.Time;
@@ -317,7 +334,6 @@ package body Mission with SPARK_Mode is
          isAttached := False;
       end loop;
       
-      Controller.set_Target_Position( G_state.home );
       Estimator.reset_log_calls;    
       Estimator.reset;
       
@@ -413,11 +429,11 @@ package body Mission with SPARK_Mode is
          when WAITING_FOR_GPS =>
             wait_for_GPSfix;
             
-         when WAITING_FOR_ARM =>
-            wait_For_Arm;
+         when STARTING =>
+            perform_Start;
             
-         when WAITING_FOR_RELEASE =>
-            wait_For_Release;
+         when WAITING_FOR_ASCEND =>
+            wait_For_Ascend;
             
          when ASCENDING =>
             monitor_Ascend;               

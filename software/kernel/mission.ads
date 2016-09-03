@@ -7,8 +7,8 @@ package Mission with SPARK_Mode is
       UNKNOWN,
       INITIALIZING,
       WAITING_FOR_GPS,
-      WAITING_FOR_ARM,
-      WAITING_FOR_RELEASE,
+      STARTING,
+      WAITING_FOR_ASCEND,
       ASCENDING,
       DETACHING,
       DESCENDING,
@@ -35,6 +35,8 @@ package Mission with SPARK_Mode is
    procedure run_Mission;
    
    function Is_Resumed return Boolean;
+   
+   function get_state return Mission_State_Type;
 
 private
    
@@ -42,13 +44,13 @@ private
 
    procedure wait_for_GPSfix;
 
-   procedure wait_For_Arm;
+   procedure perform_Start; -- screws with timing
    
-   procedure wait_For_Release;
+   procedure wait_For_Ascend;
 
    procedure monitor_Ascend with Pre => True; -- workaround got GNATprove bug P811-036
    
-   procedure perform_Detach;
+   procedure perform_Detach; -- screws with timing   
 
    procedure control_Descend;
 
