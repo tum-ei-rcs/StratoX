@@ -162,8 +162,6 @@ package body Mission with SPARK_Mode is
    end perform_Initialization;
 
    
-   type skipper is mod 50;
-   skip : skipper := 0;
    
    procedure wait_for_GPSfix is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
@@ -200,19 +198,11 @@ package body Mission with SPARK_Mode is
 
       -- check duration of GPS lock
       if Estimator.get_GPS_Fix = FIX_3D then
-         declare 
-            dt : constant Time_Type := To_Time (now - G_state.last_call);
-         begin            
-            G_state.gps_lock_threshold_time := Sat_Add_Time (G_state.gps_lock_threshold_time, dt);          
-            skip := skip + 1;
-            if skip = 0 then
-               Logger.log_console (Logger.DEBUG, "dt=" & Integer_Img (Integer (1000.0*Float(dt))) 
-                                   & ", fix time=" & Integer_Img ( Integer (1000.0*Float (G_state.gps_lock_threshold_time))));
-            end if;
-         end;
+                
+         G_state.gps_lock_threshold_time := Sat_Add_Time (G_state.gps_lock_threshold_time, To_Time (now - G_state.last_call));
 --         LED_Manager.LED_switchOn;
          
-         if G_state.gps_lock_threshold_time > 30.0 * Second then
+         if G_state.gps_lock_threshold_time > 60.0 * Second then
             lock_Home;
             Logger.log(Logger.INFO, "Mission Ready");
             next_State;
@@ -268,7 +258,6 @@ package body Mission with SPARK_Mode is
                                                         To_Time(now - G_state.last_call));  -- TODO: calc dT     
          if G_state.target_threshold_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
             Logger.log(Logger.INFO, "Target alt reached. Detach");
-            Logger.log(Logger.INFO, "Target alt reached. Detach");
             next_State;
          end if;
       else
@@ -280,7 +269,6 @@ package body Mission with SPARK_Mode is
          G_state.delta_threshold_time := Sat_Add_Time (G_state.delta_threshold_time, To_Time(now - G_state.last_call));  -- TODO: calc dT
          if G_state.delta_threshold_time >= Config.CFG_DELTA_ALTITUDE_THRESH_TIME then
             Logger.log(Logger.INFO, "Unplanned drop detected");
-            Logger.log(Logger.INFO, "Unplanned drop detected");
             next_State;         
          end if;
       else
@@ -289,7 +277,6 @@ package body Mission with SPARK_Mode is
    
       --  Check Timeout
       if now > G_state.last_state_change + Units.To_Time_Span( Config.Software.CFG_ASCEND_TIMEOUT ) then   -- 600
-         Logger.log(Logger.INFO, "Timeout Ascend");
          Logger.log(Logger.INFO, "Timeout Ascend");
          next_State;
       end if;
@@ -420,7 +407,13 @@ package body Mission with SPARK_Mode is
       
 
    procedure run_Mission is
+      this_task_begin : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      --  this *MUST* be taken before executing the code below,
+      --  otherwise the code below will measure the difference between
+      --  loop budget and time taken by itself...which is of course
+      --  shorter than the loop rate.
    begin
+      
       case (G_state.mission_state) is
          when UNKNOWN => null;
          when INITIALIZING => 
@@ -451,8 +444,7 @@ package body Mission with SPARK_Mode is
             wait_For_Reset;
             
       end case;
-      
-      G_state.last_call := Ada.Real_Time.Clock;
+      G_state.last_call := this_task_begin;
    end run_Mission;
 
 end Mission;
