@@ -357,8 +357,6 @@ package body Estimator with SPARK_Mode is
       begin
          if gps_year > Natural (Unsigned_16'Last) then
             gps_year_u16 := Unsigned_16'Last;
-         elsif gps_year < Natural (Unsigned_16'First) then
-            gps_year_u16 := Unsigned_16'First;
          else
             gps_year_u16 := Unsigned_16 (gps_year);
          end if;
@@ -501,7 +499,7 @@ package body Estimator with SPARK_Mode is
    --  estimate orientation based only on acceleration data
    function Orientation(acc_vector : Linear_Acceleration_Vector) return Orientation_Type is
       angles : Orientation_Type;
-      g_length : Float := 0.0;
+      g_length : Float;
       gravity_vector : Linear_Acceleration_Vector := acc_vector;
 
       function Sat_Sub_LinAcc is new Saturated_Subtraction (Linear_Acceleration_Type);

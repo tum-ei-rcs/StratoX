@@ -21,11 +21,11 @@ is
 
    --overriding
    procedure initialize (Self : in out GPS_Tag);
-     --with Global => (Output => GPS_Sensor.Sensor_State);
+   --with Global => (Output => GPS_Sensor.Sensor_State);
 
    --overriding
    procedure read_Measurement(Self : in out GPS_Tag);
-     --with Global => (In_Out => GPS_Sensor.Sensor_State);
+   --with Global => (In_Out => GPS_Sensor.Sensor_State);
 
    function get_Position(Self : GPS_Tag) return GPS_Data_Type;
 

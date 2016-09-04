@@ -39,7 +39,7 @@ is
 --
    --overriding
    procedure initialize (Self : in out IMU_Tag);
-     --with Global => (Output => IMU_Sensor.Sensor_State);
+   --with Global => (Output => IMU_Sensor.Sensor_State);
    -- with Global => (Input => (MPU6000.Driver.State, Ada.Real_Time.Clock_Time), In_Out => IMU.State);
 
    --overriding

@@ -11,7 +11,7 @@
 with Units; use Units;
 with Units.Navigation; use Units.Navigation;
 
-package Config is
+package Config with SPARK_Mode is
 
    -- Board
    -- -------------------------------
@@ -24,9 +24,9 @@ package Config is
    DEFAULT_HOME_LONG    : constant Longitude_Type := 11.815031 * Degree; -- east of munich
    DEFAULT_HOME_LAT     : constant Latitude_Type := 48.192574 * Degree; -- east of munich
    DEFAULT_HOME_ALT_MSL : constant Altitude_Type := 518.0 * Meter; -- east of munich
+   TARGET_AREA_RADIUS   : constant Length_Type := 50.0 * Meter; -- final: 50...100.
 
-   TARGET_AREA_RADIUS : constant Length_Type := 100.0 * Meter;
-
+   pragma Assert (TARGET_AREA_RADIUS >= 20.0 * Meter); -- below 15m the navigation is too imprecise
 
    -- Flight
    -- -------------------------------

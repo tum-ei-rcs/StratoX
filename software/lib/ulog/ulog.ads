@@ -68,8 +68,10 @@ package ULog with SPARK_Mode is
          magY     : Float := 0.0;
          magZ     : Float := 0.0;
       when CONTROLLER =>
+         ctrl_mode    : Interfaces.Unsigned_8 := 0;
          target_yaw   : Float := 0.0;
          target_roll  : Float := 0.0;
+         target_pitch : Float := 0.0;
          elevon_left  : Float := 0.0;
          elevon_right : Float := 0.0;
       when NAV =>

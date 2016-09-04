@@ -20,7 +20,7 @@ with Config.Software; use Config.Software;
 with Bounded_Image;   use Bounded_Image;
 
 with Mission;         use Mission;
-with Console;
+--  with Console;
 with Estimator;
 with Controller;
 with LED_Manager;
@@ -157,8 +157,8 @@ package body Main with SPARK_Mode => On is
          passed := Status;
       end;
       if not passed then
-         Logger.log_console (Logger.ERROR, "PX4IO self-check failed");
-         return;
+         Logger.log_console (Logger.ERROR, "PX4IO self-check failed; continuing anyway");
+         --return; -- this happens a lot
       else
          Logger.log_console (Logger.INFO, "PX4IO self-check passed");
       end if;

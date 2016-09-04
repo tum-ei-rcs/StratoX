@@ -5,9 +5,10 @@ with Generic_PID_Controller;
 with Logger;
 with Profiler;
 with Config.Software; use Config.Software;
-with Units.Numerics; use Units.Numerics;
+--with Units.Numerics; use Units.Numerics;
 with Ada.Numerics.Elementary_Functions;
 with Bounded_Image; use Bounded_Image;
+with Interfaces; use Interfaces;
 with ULog;
 
 
@@ -24,13 +25,25 @@ package body Controller with SPARK_Mode is
 
    type Logger_Call_Type is mod Config.Software.CFG_LOGGER_CALL_SKIP with Default_Value => 0;
 
+   type Control_Mode_T is (MODE_UNKNOWN,
+                           MODE_POSHOLD,  -- impossible to perform homing...holding position
+                           MODE_HOMING, -- currently steering towards home
+                           MODE_COURSEHOLD, -- temporarily lost navigation; hold last known course
+                           MODE_ARRIVED); -- close enough to home
+
    type State_Type is record
+      --  logging info
       logger_calls : Logger_Call_Type;
       logger_console_calls : Logger_Call_Type;
       control_profiler : Profiler.Profile_Tag;
-      distance_to_target : Length_Type := 0.0 * Meter;
+
       detach_animation_time : Time_Type := 0.0 * Second;
-      once_had_my_pos : Boolean := False;
+
+      --  homimg information:
+      once_had_my_pos  : Boolean := False;
+      distance_to_home : Length_Type := 0.0 * Meter;
+      course_to_home   : Yaw_Type := 0.0 * Degree;
+      controller_mode  : Control_Mode_T := MODE_UNKNOWN;
    end record;
 
    --------------------
@@ -75,6 +88,7 @@ package body Controller with SPARK_Mode is
    G_Target_Position    : GPS_Loacation_Type := (0.0 * Degree, 0.0 * Degree, 0.0 * Meter);
 
    G_Target_Orientation : Orientation_Type := (0.0 * Degree, Config.TARGET_PITCH, 0.0 * Degree);
+   G_Target_Orientation_Prev : Orientation_Type := G_Target_Orientation;
 
 
    G_state : State_Type;
@@ -91,13 +105,44 @@ package body Controller with SPARK_Mode is
    --  PROTOTYPES
    --------------------
 
-   procedure Limit_Target_Attitude with Inline;
-   procedure Compute_Target_Pitch with Inline, Pre => True;
-   function Have_My_Position return Boolean;
-   function Have_Home_Position return Boolean;
-   procedure Compute_Target_Roll with
-     Contract_Cases => (not Have_My_Position => G_Target_Orientation.Yaw = G_Target_Orientation.Yaw'Old,
-                        others => True);
+   procedure Limit_Target_Attitude with Inline,
+     Global => (In_Out => (G_Target_Orientation));
+
+   function Have_My_Position return Boolean with
+     Global => (Input => G_Object_Position);
+
+   function Have_Home_Position return Boolean with
+     Global => (Input => G_Target_Position);
+
+   procedure Update_Homing with
+     Global => (Input => (G_Object_Position, G_Target_Position),
+                In_Out => (G_state)),
+     Depends => (G_state => (G_state, G_Object_Position, G_Target_Position));
+   --  update distance and bearing to home coordinate, and decide what to do
+
+   procedure Compute_Target_Attitude with
+     Global => (Input => (G_state, G_Object_Orientation, Ada.Real_Time.Clock_Time),
+                In_Out => (G_Last_Yaw_Control, PID_Yaw, G_Target_Orientation_Prev),
+                Output => (G_Target_Orientation)),
+--       Depends => (G_Last_Yaw_Control => (G_Last_Yaw_Control, G_state, Ada.Real_Time.Clock_Time),
+--                   G_Target_Orientation => (G_state, PID_Yaw, G_Object_Orientation, G_Target_Orientation_Prev,
+--                                            G_Last_Yaw_Control, Ada.Real_Time.Clock_Time),
+--                   PID_Yaw => (PID_Yaw, G_Object_Orientation, G_Last_Yaw_Control, G_Target_Orientation_Prev,
+--                               G_state, Ada.Real_Time.Clock_Time),
+--                   G_Target_Orientation_Prev => (G_Target_Orientation_Prev, G_state, PID_Yaw,
+--                                                 Ada.Real_Time.Clock_Time, G_Object_Orientation, G_Last_Yaw_Control)),
+     Contract_Cases => ((G_state.controller_mode = MODE_COURSEHOLD) =>
+                            G_Target_Orientation.Yaw = G_Target_Orientation_Prev.Yaw,
+                        (G_state.controller_mode = MODE_HOMING) =>
+                            G_Target_Orientation.Yaw = G_state.course_to_home,
+                        (G_state.controller_mode not in MODE_HOMING | MODE_COURSEHOLD) =>
+                            G_Target_Orientation.Yaw = G_Object_Orientation.Yaw,
+                        others => True),
+     Post => G_Target_Orientation_Prev = G_Target_Orientation;
+
+   --  decide vehicle attitude depending on mode
+   --  contract seems extensive, but it enforces that the attitude is always updated, and that
+   --  homing works.
 
    --------------------
    --  BODIES
@@ -124,9 +169,10 @@ package body Controller with SPARK_Mode is
 
 
       G_state.control_profiler.init("Control");
-      Logger.log(Logger.DEBUG, "Controller initialized");
+      Logger.log_console(Logger.DEBUG, "Controller initialized");
 
    end initialize;
+
 
 
    procedure activate is
@@ -135,16 +181,19 @@ package body Controller with SPARK_Mode is
    end activate;
 
 
+
    procedure deactivate is
    begin
       Servo.deactivate;
    end deactivate;
 
 
+
    procedure set_Current_Position(location : GPS_Loacation_Type) is
    begin
       G_Object_Position := location;
    end set_Current_Position;
+
 
 
    procedure set_Target_Position (location : GPS_Loacation_Type) is
@@ -155,10 +204,13 @@ package body Controller with SPARK_Mode is
                   & ", " & Integer_Img ( Sat_Cast_Int ( Float (G_Target_Position.Altitude))));
    end set_Target_Position;
 
+
+
    procedure set_Current_Orientation (orientation : Orientation_Type) is
    begin
       G_Object_Orientation := orientation;
    end set_Current_Orientation;
+
 
 
    procedure log_Info is
@@ -171,11 +223,11 @@ package body Controller with SPARK_Mode is
       G_state.logger_console_calls := Logger_Call_Type'Succ( G_state.logger_console_calls );
       if G_state.logger_console_calls = 0 then
          Logger.log_console(Logger.DEBUG,
-                            "Home L" & AImage( G_Target_Position.Longitude ) &
-                              ", " & AImage( G_Target_Position.Latitude ) &
-                              ", " & Image( G_Target_Position.Altitude ) &
-                              ", d=" & Integer_Img (Sat_Cast_Int ( Float (G_state.distance_to_target))) &
-                              ", crs=" & AImage (G_Target_Orientation.Yaw));
+                            "Pos " & AImage( G_Object_Position.Longitude ) &
+                              ", " & AImage( G_Object_Position.Latitude ) &
+                              ", " & Image( G_Object_Position.Altitude ) &
+                              ", d=" & Integer_Img (Sat_Cast_Int ( Float (G_state.distance_to_home))) &
+                              ", crs=" & AImage (G_state.course_to_home));
 
          Logger.log_console(Logger.DEBUG,
                             "TY: " & AImage( G_Target_Orientation.Yaw ) &
@@ -187,14 +239,16 @@ package body Controller with SPARK_Mode is
       -- log to SD
       controller_msg := ( Typ => ULog.CONTROLLER,
                           t => now,
-                          target_yaw => Float( G_Target_Orientation.Yaw ),
-                          target_roll => Float( G_Target_Orientation.Roll ),
-                          elevon_left => Float( G_Elevon_Angles(LEFT) ),
-                          elevon_right => Float( G_Elevon_Angles(RIGHT) ) );
+                          target_yaw => Float (G_Target_Orientation.Yaw),
+                          target_roll => Float (G_Target_Orientation.Roll),
+                          target_pitch => Float (G_Target_Orientation.Pitch),
+                          elevon_left => Float (G_Elevon_Angles(LEFT)),
+                          elevon_right => Float (G_Elevon_Angles(RIGHT)),
+                          ctrl_mode => Unsigned_8 (Control_Mode_T'Pos (G_state.controller_mode)));
       nav_msg := ( Typ => ULog.NAV,
                    t=> now,
-                   home_dist => Float (G_state.distance_to_target),
-                   home_course => Float (G_Target_Orientation.Yaw),
+                   home_dist => Float (G_state.distance_to_home),
+                   home_course => Float (G_state.course_to_home),
                    home_altdiff => Float (Sat_Sub_Alt (G_Object_Position.Altitude, G_Target_Position.Altitude)));
       Logger.log_sd (Logger.INFO, controller_msg);
       Logger.log_sd (Logger.SENSOR, nav_msg);
@@ -247,9 +301,9 @@ package body Controller with SPARK_Mode is
 
 
    procedure control_Roll is
-      error : constant Angle_Type := ( G_Target_Orientation.Roll - G_Object_Orientation.Roll );
+      error : constant Angle_Type := (G_Target_Orientation.Roll - G_Object_Orientation.Roll);
       now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Roll_Control) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
+      dt    : constant Time_Type := Time_Type (Float((now - G_Last_Roll_Control) / Ada.Real_Time.Milliseconds(1)) * 1.0e-3);
    begin
       G_Last_Roll_Control := now;
       Roll_PID_Controller.step (PID_Roll, error, dt, G_Plane_Control.Aileron);
@@ -258,24 +312,13 @@ package body Controller with SPARK_Mode is
 
 
    procedure control_Pitch is
-      error : constant Angle_Type := ( G_Target_Orientation.Pitch - G_Object_Orientation.Pitch );
+      error : constant Angle_Type := (G_Target_Orientation.Pitch - G_Object_Orientation.Pitch);
       now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt    : constant Time_Type := Time_Type( Float( (now - G_Last_Pitch_Control) / Ada.Real_Time.Milliseconds(1) ) * 1.0e-3 );
+      dt    : constant Time_Type := Time_Type (Float((now - G_Last_Pitch_Control) / Ada.Real_Time.Milliseconds(1)) * 1.0e-3);
    begin
       G_Last_Pitch_Control := now;
-      Pitch_PID_Controller.step(PID_Pitch, error, dt, G_Plane_Control.Elevator);
+      Pitch_PID_Controller.step (PID_Pitch, error, dt, G_Plane_Control.Elevator);
    end control_Pitch;
-
-
-
-   procedure Compute_Target_Pitch is
-   begin
-      --  we cannot afford a (fail-safe) airspeed sensor, thus we rely on the polar:
-      --  assuming that a certain pitch angle results in stable flight
-      G_Target_Orientation.Pitch := Config.TARGET_PITCH;
-      pragma Assert (G_Target_Orientation.Pitch < 0.0 * Degree); -- as long as this is constant, assert nose down
-   end Compute_Target_Pitch;
-
 
 
    function Have_Home_Position return Boolean is
@@ -292,10 +335,9 @@ package body Controller with SPARK_Mode is
 
 
 
-   procedure Compute_Target_Roll is
-      error : Angle_Type;
-      now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      dt    : constant Time_Type := Time_Type (Float ((now - G_Last_Yaw_Control) / Ada.Real_Time.Milliseconds(1)) * 1.0e-3);
+
+
+   procedure Update_Homing is
       have_my_pos   : constant Boolean := Have_My_Position;
       have_home_pos : constant Boolean := Have_Home_Position;
    begin
@@ -303,36 +345,93 @@ package body Controller with SPARK_Mode is
 
       if have_my_pos and then have_home_pos then
          --  compute relative location to target
-         G_state.distance_to_target := Distance (G_Object_Position, G_Target_Position);
-         G_Target_Orientation.Yaw := Yaw_Type (Bearing (G_Object_Position, G_Target_Position));
+         G_state.distance_to_home := Distance (G_Object_Position, G_Target_Position);
+         G_state.course_to_home := Yaw_Type (Bearing (G_Object_Position, G_Target_Position));
 
-         if G_state.distance_to_target > Config.TARGET_AREA_RADIUS then
-            --  some distance towards target => compute bearing and deduce roll
-
-            --  PID controller to turn relative bearing to roll angle
-            error := delta_Angle (G_Object_Orientation.Yaw, G_Target_Orientation.Yaw);
-            Yaw_PID_Controller.step (PID_Yaw, error, dt, G_Target_Orientation.Roll);
-            G_Last_Yaw_Control := now;
+         --  pos hold or homing, depending on distance
+         if G_state.distance_to_home < Config.TARGET_AREA_RADIUS then
+            --  we are at home
+            G_state.controller_mode := MODE_ARRIVED;
          else
-            --  close to target => hold position
-            G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;
+            --  some distance to target
+            if G_state.controller_mode = MODE_ARRIVED then
+               --  hysteresis if we already had arrived
+               if G_state.distance_to_home > 2.0*Config.TARGET_AREA_RADIUS then
+                  G_state.controller_mode := MODE_HOMING;
+               else
+                  G_state.controller_mode := MODE_ARRIVED;
+               end if;
+            else
+               --  otherwise immediate homing
+               G_state.controller_mode := MODE_HOMING;
+            end if;
          end if;
 
       elsif have_home_pos and then (not have_my_pos and G_state.once_had_my_pos) then
          --  temporarily don't have my position => keep old bearing
-         null;
+         G_state.controller_mode := MODE_COURSEHOLD;
+
       else
+
          pragma Assert (not have_home_pos or not G_state.once_had_my_pos);
-         --  don't know where to go => hold position (circle other way around)
-         G_Target_Orientation.Roll := -Config.CIRCLE_TRAJECTORY_ROLL;
+         --  don't know where to go => hold position
+         G_state.controller_mode := MODE_POSHOLD;
       end if;
-   end Compute_Target_Roll;
+   end Update_Homing;
+
+
+
+   procedure Compute_Target_Attitude is
+      error : Angle_Type;
+      now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      dt    : constant Time_Type := Time_Type (Float ((now - G_Last_Yaw_Control) / Ada.Real_Time.Milliseconds(1)) * 1.0e-3);
+
+   begin
+      ------------
+      --  Pitch
+      ------------
+
+      --  we cannot afford a (fail-safe) airspeed sensor, thus we rely on the polar:
+      --  assuming that a certain pitch angle results in stable flight
+      G_Target_Orientation.Pitch := Config.TARGET_PITCH;
+      pragma Assert (G_Target_Orientation.Pitch < 0.0 * Degree); -- as long as this is constant, assert nose down
+
+      ---------------
+      --  Roll, Yaw
+      ---------------
+
+      case G_state.controller_mode is
+         when MODE_UNKNOWN | MODE_POSHOLD =>
+            --  circle right when we have no target
+            G_Target_Orientation.Roll := -Config.CIRCLE_TRAJECTORY_ROLL;
+            G_Target_Orientation.Yaw := G_Object_Orientation.Yaw;
+
+         when MODE_HOMING | MODE_COURSEHOLD =>
+            --  control yaw by setting roll
+            if G_state.controller_mode = MODE_HOMING then
+               G_Target_Orientation.Yaw := G_state.course_to_home;
+            else
+               G_Target_Orientation.Yaw := G_Target_Orientation_Prev.Yaw;
+            end if;
+            error := delta_Angle (G_Object_Orientation.Yaw, G_Target_Orientation.Yaw);
+            Yaw_PID_Controller.step (PID_Yaw, error, dt, G_Target_Orientation.Roll);
+            G_Last_Yaw_Control := now;
+
+         when MODE_ARRIVED =>
+            --  circle left when we are there
+            G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;
+            G_Target_Orientation.Yaw := G_Object_Orientation.Yaw;
+
+      end case;
+      G_Target_Orientation_Prev := G_Target_Orientation;
+
+   end Compute_Target_Attitude;
 
 
 
    function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type;
                            priority : Control_Priority_Type ) return Elevon_Angle_Array is
-      balance : Float range 0.0 .. 2.0 := 1.0;
+      balance : Float range 0.0 .. 2.0;-- := 1.0;
       scale : Float range 0.0 .. 1.0 := 1.0;
       balanced_elevator : Elevator_Angle_Type;
       balanced_aileron  : Aileron_Angle_Type;
@@ -373,22 +472,22 @@ package body Controller with SPARK_Mode is
       Control_Priority : Control_Priority_Type := EQUAL;
    begin
 
+      Update_Homing;
+      Compute_Target_Attitude;
+
+      --  TEST: overwrite roll with a fixed value
+      -- G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
+
+      --  evelope protection
+      Limit_Target_Attitude;
+
+      --  compute elevon position
       if not Config.Software.TEST_MODE_ACTIVE then
-         --  the actual flight controller
-
-         Compute_Target_Pitch;
-         Compute_Target_Roll;
-
-         --  TEST: overwrite roll with a fixed value
-         G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;  -- TEST: Omakurve
-
-         --  evelope protection
-         Limit_Target_Attitude;
-
          control_Pitch;
          control_Roll;
+
       else
-         --  fake rudder waving for ground tests
+         --  fake elevon waving for ground tests
          G_Plane_Control.Elevator := Elevator_Angle_Type (0.0);
          declare
             now   : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;

@@ -191,8 +191,10 @@ package body ULog with SPARK_Mode => On is
                                         msg : in Message; buf : out HIL.Byte_Array) is
    begin
       Set_Name (ct, "Ctrl");
+      Append_Uint8 (ct, "mode", buf, msg.ctrl_mode);
       Append_Float (ct, "TarYaw", buf, msg.target_yaw);
       Append_Float (ct, "TarRoll", buf, msg.target_roll);
+      Append_Float (ct, "TarPitch", buf, msg.target_pitch);
       Append_Float (ct, "EleL", buf, msg.elevon_left);
       Append_Float (ct, "EleR", buf, msg.elevon_right);
    end Serialize_Ulog_Controller;
@@ -310,7 +312,7 @@ package body ULog with SPARK_Mode => On is
          when IMU =>
             Serialize_Ulog_IMU (ct, msg, bytes);
          when MAG =>
-            Serialize_Ulog_MAG (ct, msg, bytes);
+            Serialize_Ulog_Mag (ct, msg, bytes);
          when CONTROLLER =>
             Serialize_Ulog_Controller (ct, msg, bytes);
          when TEXT =>
