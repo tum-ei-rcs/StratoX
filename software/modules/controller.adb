@@ -150,8 +150,8 @@ package body Controller with SPARK_Mode is
    procedure set_Target_Position (location : GPS_Loacation_Type) is
    begin
       G_Target_Position := location;
-      Logger.log (Logger.SENSOR, "Home=" & Integer_Img ( Integer (1000.0 * Float (G_Target_Position.Latitude) * 180.0/3.14159))
-                  & ", " & Integer_Img ( Integer (1000.0 * Float (G_Target_Position.Longitude) * 180.0/3.14159))
+      Logger.log (Logger.SENSOR, "Home=" & Integer_Img ( Integer (100000.0 * To_Degree (G_Target_Position.Latitude)))
+                  & ", " & Integer_Img ( Integer (100000.0 * To_Degree (G_Target_Position.Longitude)))
                   & ", " & Integer_Img ( Sat_Cast_Int ( Float (G_Target_Position.Altitude))));
    end set_Target_Position;
 
@@ -182,8 +182,6 @@ package body Controller with SPARK_Mode is
                             ", TR: " & AImage( G_Target_Orientation.Roll ) &
                             "   Elev: " & AImage( G_Elevon_Angles(LEFT) ) & ", " & AImage( G_Elevon_Angles(RIGHT) )
                            );
-
-         --G_state.control_profiler.log;
       end if;
 
       -- log to SD

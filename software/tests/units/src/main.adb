@@ -157,6 +157,15 @@ begin
       d : Length_Type;
       c : Heading_Type;
    begin
+
+      --  bug from walking around:
+      s := (Latitude => 48.174572 * Degree, Longitude => 11.526941 * Degree, Altitude => 520.0 * Meter); -- W1
+      t := (Latitude => 48.174511 * Degree, Longitude => 11.528549 * Degree, Altitude => 520.0 * Meter); -- W0
+      d := Distance (source => s, target => t);
+      c := Bearing (source_location => s, target_location => t);
+      Put_Line ("W0 -> W1, should be 112m/84deg: " & d'Img & " meter & compass=" & Head2Int(c)'Img); -- 161m
+
+      --  some nice points
       s := (Latitude => 48.149825 * Degree, Longitude => 11.567860 * Degree, Altitude => 520.0 * Meter); -- TUM
       t := (Latitude => 48.138912 * Degree, Longitude => 11.572811 * Degree, Altitude => 520.0 * Meter); -- Frauenkirche
       d := Distance (source => s, target => t);
@@ -167,6 +176,9 @@ begin
       d := Distance (source => s, target => t);
       c := Bearing (source_location => s, target_location => t);
       Put_Line ("Frauenkirche -> Michaelskirche: " & d'Img & " meter & compass=" & Head2Int(c)'Img); -- 161m
+
+      return;
+
 
       --  smoke test
       t := s;

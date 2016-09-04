@@ -17,7 +17,7 @@ package Config.Software with SPARK_Mode is
    -- Misison
    CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 120.0 * Second;  -- Droptest: 120, Strato: TBD
    CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 60.0 * Second;     -- Droptest: 600, Strato: 1800
-   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 300.0 * Second;   -- Droptest: 360, Strato: 1800
+   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 360.0 * Second;   -- Droptest: 360, Strato: 1800. Blockwalk: 360
    
     
    CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;

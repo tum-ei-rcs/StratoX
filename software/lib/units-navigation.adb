@@ -147,17 +147,19 @@ package body Units.Navigation with SPARK_Mode is
             --  both numbers are valid numerics
             --  both are large enough to avoid underflow
             cts := coscos * sdlon_half; -- Z3 can prove this steps=default, timeout=60, level=2
+            cts := Clip_Unitcircle (cts);
          else
             cts := Unit_Type (0.0); -- this happens likely when target is very close (few meters)
          end if;
-         if abs(sdlat_half) > Unit_Type (EPS) and then abs(cts) > Unit_Type (EPS) then
-            haversine := sdlat_half + cts;
-            if haversine > Unit_Type (1.0) then
-               haversine := Unit_Type (1.0);
-            end if;
-         else
-            haversine := Unit_Type (0.0);
+
+         --  avoid underflow
+         if abs(sdlat_half) < Unit_Type (EPS) then
+            sdlat_half := Unit_Type (0.0);
          end if;
+         if abs(cts) < Unit_Type (EPS) then
+            cts := Unit_Type (0.0);
+         end if;
+         haversine := sdlat_half + cts;
       end;
 
       if haversine = Unit_Type (0.0) then
