@@ -10,6 +10,7 @@ with Ada.Numerics.Elementary_Functions;
 with Bounded_Image; use Bounded_Image;
 with Interfaces; use Interfaces;
 with ULog;
+with Types; use Types;
 
 
 with Ada.Real_Time; use Ada.Real_Time;
@@ -139,15 +140,14 @@ package body Controller with SPARK_Mode is
                             G_Target_Orientation.Yaw = G_Object_Orientation.Yaw,
                         others => True),
      Post => G_Target_Orientation_Prev = G_Target_Orientation;
-
    --  decide vehicle attitude depending on mode
    --  contract seems extensive, but it enforces that the attitude is always updated, and that
    --  homing works.
 
-   --------------------
-   --  BODIES
-   --------------------
 
+   ----------------
+   --  initialize
+   ----------------
 
    procedure initialize is
    begin
@@ -173,28 +173,36 @@ package body Controller with SPARK_Mode is
 
    end initialize;
 
-
+   --------------
+   --  activate
+   --------------
 
    procedure activate is
    begin
       Servo.activate;
    end activate;
 
-
+   ----------------
+   --  deactivate
+   ----------------
 
    procedure deactivate is
    begin
       Servo.deactivate;
    end deactivate;
 
-
+   --------------------------
+   --  set_Current_Position
+   --------------------------
 
    procedure set_Current_Position(location : GPS_Loacation_Type) is
    begin
       G_Object_Position := location;
    end set_Current_Position;
 
-
+   -------------------------
+   --  set_Target_Position
+   -------------------------
 
    procedure set_Target_Position (location : GPS_Loacation_Type) is
    begin
@@ -204,14 +212,18 @@ package body Controller with SPARK_Mode is
                   & ", " & Integer_Img ( Sat_Cast_Int ( Float (G_Target_Position.Altitude))));
    end set_Target_Position;
 
-
+   -----------------------------
+   --  set_Current_Orientation
+   -----------------------------
 
    procedure set_Current_Orientation (orientation : Orientation_Type) is
    begin
       G_Object_Orientation := orientation;
    end set_Current_Orientation;
 
-
+   --------------
+   --  log_Info
+   --------------
 
    procedure log_Info is
       controller_msg : ULog.Message (Typ => ULog.CONTROLLER);
@@ -255,7 +267,9 @@ package body Controller with SPARK_Mode is
 
    end log_Info;
 
-
+   --------------
+   --  set_hold
+   --------------
 
    procedure set_hold is
    begin
@@ -264,7 +278,9 @@ package body Controller with SPARK_Mode is
       Servo.set_Angle(Servo.RIGHT_ELEVON, 38.0 * Degree );
    end set_hold;
 
-
+   ----------------
+   --  set_detach
+   ----------------
 
    procedure set_detach is
    begin
@@ -272,14 +288,18 @@ package body Controller with SPARK_Mode is
       Servo.set_Angle(Servo.RIGHT_ELEVON, -40.0 * Degree );
    end set_detach;
 
-
+   ----------
+   --  sync
+   ----------
 
    procedure sync is
    begin
       PX4IO.Driver.sync_Outputs;
    end sync;
 
-
+   ----------
+   --  bark
+   ----------
 
    procedure bark is
       angle : constant Servo.Servo_Angle_Type := 35.0 * Degree;
@@ -298,7 +318,9 @@ package body Controller with SPARK_Mode is
       end loop;
    end bark;
 
-
+   ------------------
+   --  control_Roll
+   ------------------
 
    procedure control_Roll is
       error : constant Angle_Type := (G_Target_Orientation.Roll - G_Object_Orientation.Roll);
@@ -309,7 +331,9 @@ package body Controller with SPARK_Mode is
       Roll_PID_Controller.step (PID_Roll, error, dt, G_Plane_Control.Aileron);
    end control_Roll;
 
-
+   -------------------
+   --  control_Pitch
+   -------------------
 
    procedure control_Pitch is
       error : constant Angle_Type := (G_Target_Orientation.Pitch - G_Object_Orientation.Pitch);
@@ -320,22 +344,27 @@ package body Controller with SPARK_Mode is
       Pitch_PID_Controller.step (PID_Pitch, error, dt, G_Plane_Control.Elevator);
    end control_Pitch;
 
+   ------------------------
+   --  Have_Home_Position
+   ------------------------
 
    function Have_Home_Position return Boolean is
    begin
       return G_Target_Position.Longitude /= 0.0 * Degree and G_Target_Position.Latitude /= 0.0 * Degree;
    end Have_Home_Position;
 
-
+   ----------------------
+   --  Have_My_Position
+   ----------------------
 
    function Have_My_Position return Boolean is
    begin
       return G_Object_Position.Longitude /= 0.0 * Degree and G_Object_Position.Latitude /= 0.0 * Degree;
    end Have_My_Position;
 
-
-
-
+   -------------------
+   --  Update_Homing
+   -------------------
 
    procedure Update_Homing is
       have_my_pos   : constant Boolean := Have_My_Position;
@@ -379,7 +408,9 @@ package body Controller with SPARK_Mode is
       end if;
    end Update_Homing;
 
-
+   -----------------------------
+   --  Compute_Target_Attitude
+   -----------------------------
 
    procedure Compute_Target_Attitude is
       error : Angle_Type;
@@ -427,7 +458,9 @@ package body Controller with SPARK_Mode is
 
    end Compute_Target_Attitude;
 
-
+   ------------------
+   --  Elevon_Angles
+   ------------------
 
    function Elevon_Angles( elevator : Elevator_Angle_Type; aileron : Aileron_Angle_Type;
                            priority : Control_Priority_Type ) return Elevon_Angle_Array is
@@ -458,6 +491,9 @@ package body Controller with SPARK_Mode is
               RIGHT => (balanced_elevator + balanced_aileron) * Unit_Type(scale));
    end Elevon_Angles;
 
+   ---------------------------
+   --  Limit_Target_Attitude
+   ---------------------------
 
    procedure Limit_Target_Attitude is
       function Sat_Pitch is new Saturate (Pitch_Type);
@@ -467,6 +503,9 @@ package body Controller with SPARK_Mode is
       G_Target_Orientation.Pitch := Sat_Pitch (val => G_Target_Orientation.Pitch, min => -Config.MAX_PITCH, max => Config.MAX_PITCH);
    end Limit_Target_Attitude;
 
+   -----------------
+   --  runOneCycle
+   -----------------
 
    procedure runOneCycle is
       Control_Priority : Control_Priority_Type := EQUAL;
@@ -528,7 +567,9 @@ package body Controller with SPARK_Mode is
 
    end runOneCycle;
 
-
+   ----------------
+   --  get_Elevons
+   ----------------
 
    function get_Elevons return Elevon_Angle_Array is
    begin

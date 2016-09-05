@@ -166,9 +166,7 @@ package body Mission with SPARK_Mode is
    
    procedure wait_for_GPSfix is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
-      
-      function Sat_Cast_U16 is new Saturated_Cast_Mod (Unsigned_16);
-      
+                  
       procedure lock_Home is
       begin
          G_state.home := Estimator.get_Position;

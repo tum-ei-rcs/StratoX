@@ -1,4 +1,4 @@
--- Institution: Technische Universität München
+-- Institution: Technische Universitaet Muenchen
 -- Department:  Realtime Computer Systems (RCS)
 -- Project:     StratoX
 -- Module:      PX4IO Driver
@@ -16,8 +16,8 @@ with Units; use Units;
 with Config; use Config;
 with Interfaces; use Interfaces;
 
-package PX4IO.Driver 
-with SPARK_Mode
+package PX4IO.Driver with SPARK_Mode,
+  Abstract_State => (Servo_Wish, Servo_State, Servo_Settings)
 is
 
    
@@ -27,7 +27,7 @@ is
    SERVO_PULSE_LENGTH_LIMIT_MIN : constant := Unsigned_16 ( CFG_SERVO_PULSE_LENGTH_LIMIT_MIN / (1.0 * Micro * Second) ); -- Integer of Microseconds
    SERVO_PULSE_LENGTH_LIMIT_MAX : constant := Unsigned_16 ( CFG_SERVO_PULSE_LENGTH_LIMIT_MAX / (1.0 * Micro * Second) );
 
-   G_Pulse : Unsigned_16 := SERVO_PULSE_LENGTH_LIMIT_MIN;
+   --G_Pulse : Unsigned_16 := SERVO_PULSE_LENGTH_LIMIT_MIN;
 
    type Servo_Type is (LEFT_ELEVON, RIGHT_ELEVON); 
    
@@ -49,11 +49,17 @@ is
    
    procedure read_Status;
 
-   procedure set_Servo_Angle(servo : Servo_Type; angle : Servo_Angle_Type);
+   procedure Set_Servo_Angle (servo : Servo_Type; angle : Servo_Angle_Type) with
+     Global => (Input => Servo_Settings,
+                In_Out => Servo_Wish); -- FIXME: why does SPARK force IN mode here?
+     
 
-   procedure set_Motor_Speed( speed : Motor_Speed_Type );
+   --  procedure set_Motor_Speed( speed : Motor_Speed_Type );
    
-   procedure sync_Outputs;
+   procedure sync_Outputs ;
+--     with
+--       Global => (Input => (Servo_Wish),
+--                  Output => Servo_State);
 
 private
    subtype Page_Type is HIL.Byte;
@@ -61,9 +67,10 @@ private
    
    subtype Data_Type is HIL.UART.Data_Type;
    
-   function valid_Package( data : in Data_Type ) return Boolean;
+   function valid_Package( data : in Data_Type ) return Boolean with
+     Pre => 2 in data'Range;
    
    procedure write(page : Page_Type; offset : Offset_Type; data : Data_Type; retries : Natural := 2) 
-   with pre => data'Length mod 2 = 0 and data'Length <= 64;
+   with Pre => data'Length mod 2 = 0 and data'Length <= 64;
 
 end PX4IO.Driver;

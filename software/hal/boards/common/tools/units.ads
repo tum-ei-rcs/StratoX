@@ -259,11 +259,6 @@ package Units with
    GRAVITY_CONSTANT : constant Linear_Acceleration_Type := 127_137.6 * Kilo * Meter / (Hour**2);
 
    --------------------------
-   --  helpers functions
-   --------------------------
-   function Sat_Cast_Int is new Types.Saturated_Cast_Int (Integer);
-
-   --------------------------
    --  Conversion functions
    --------------------------
 
@@ -279,7 +274,7 @@ package Units with
         (Float ((rtime) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
 
     function To_Time_Span(time : Time_Type) return Ada.Real_Time.Time_Span is
-     ( Ada.Real_Time.Microseconds (Sat_Cast_Int (Float (time) / Float(1.0e-6))));
+     ( Ada.Real_Time.Microseconds (Types.Sat_Cast_Int (Float (time) / Float(1.0e-6))));
 
      function To_Degree(angle : Angle_Type) return Float is
      (Float (angle / Degree));
@@ -289,7 +284,7 @@ package Units with
    -------------------------------------------------------------
 
    function "+"( Left : Ada.Real_Time.Time; Right : Time_Type ) return Ada.Real_Time.Time is
-   ( Left + Ada.Real_Time.Microseconds (Sat_Cast_Int (Float (Right) / Float(1.0e-6))));
+   ( Left + Ada.Real_Time.Microseconds (Types.Sat_Cast_Int (Float (Right) / Float(1.0e-6))));
 
 
    function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type

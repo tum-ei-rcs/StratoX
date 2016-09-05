@@ -1,6 +1,6 @@
 with Logger;
 with Units;
-with Types;
+with Types; use Types;
 with Bounded_Image; use Bounded_Image;
 
 package body Profiler with SPARK_Mode is
@@ -58,8 +58,6 @@ package body Profiler with SPARK_Mode is
    procedure log(Self : in Profile_Tag) is
       time_us_flt : constant Float := Float (Units.To_Time (Self.max_duration)) * 1.0e6;
       time_us_int : Integer;
-
-      function Sat_Cast_Int is new Types.Saturated_Cast_Int (Integer);
 
    begin
       if CFG_PROFILER_PROFILING and CFG_PROFILER_LOGGING then

@@ -1,4 +1,4 @@
-package body Types with SPARK_Mode is
+package body Generic_Types with SPARK_Mode is
 
    ------------------------
    --  Saturated_Cast_Int
@@ -36,4 +36,21 @@ package body Types with SPARK_Mode is
       return ret;
    end Saturated_Cast_Mod;
 
-end Types;
+   ------------------
+   --  Saturate_Mod
+   ------------------
+
+   function Saturate_Mod (val : T; min : T; max : T) return T is
+      ret : T;
+   begin
+      if val < min then
+         ret := min;
+      elsif val > max then
+         ret := max;
+      else
+         ret := val;
+      end if;
+      return ret;
+   end Saturate_Mod;
+
+end Generic_Types;
