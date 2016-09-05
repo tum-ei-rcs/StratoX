@@ -38,6 +38,8 @@ is
                           VAR_HIGHWATERMARK_B,
                           VAR_HIGHWATERMARK_C,
                           VAR_HIGHWATERMARK_D,
+                          VAR_SERVO_LEFT,
+                          VAR_SERVO_RIGHT,
                           VAR_HOME_HEIGHT_L,
                           VAR_HOME_HEIGHT_H,
                           VAR_GPS_TARGET_LONG_A,
@@ -88,6 +90,8 @@ is
       VAR_HIGHWATERMARK_B => 0,
       VAR_HIGHWATERMARK_C => 0,
       VAR_HIGHWATERMARK_D => 0,
+      VAR_SERVO_LEFT => 0,
+      VAR_SERVO_RIGHT => 0,
       VAR_HOME_HEIGHT_L => 0,
       VAR_HOME_HEIGHT_H => 0,
       VAR_GPS_TARGET_LONG_A => 0,
@@ -122,6 +126,9 @@ is
    procedure Load (variable : in Variable_Name; data : out HIL.Byte);
    --  read variable with given name from NVRAM and return value
 
+   procedure Load (variable : Variable_Name; data : out Integer_8);
+   --  same, but for 8bit signed Integer
+
    procedure Load (variable : in Variable_Name; data : out Float)
      with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
    --  same, but with Float convenience conversion. Point to first variable of the quadrupel.
@@ -131,6 +138,9 @@ is
    --  same, but with U32 convenience conversion. Point to first variable of the quadrupel.
 
    procedure Store (variable : in Variable_Name; data : in HIL.Byte);
+   --  write variable with given name to NVRAM.
+
+   procedure Store (variable : in Variable_Name; data : in Integer_8);
    --  write variable with given name to NVRAM.
 
    procedure Store (variable : in Variable_Name; data : in Float)

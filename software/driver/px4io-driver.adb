@@ -1,5 +1,4 @@
 
-
 with PX4IO.Protocol; use PX4IO.Protocol;
 with Ada.Real_Time; use Ada.Real_Time;
 with CRC8;
@@ -33,9 +32,7 @@ is
 
    G_Servo_Angle_Left  : Servo_Angle_Type := Angle_Type (0.0);
    G_Servo_Angle_Right : Servo_Angle_Type := Angle_Type (0.0);
-  
-   --G_Motor_Speed : Motor_Speed_Type := Angular_Velocity_Type (0.0);
-   
+    
    G_state : State_Type;
    
    -----------------
@@ -57,8 +54,8 @@ is
                                        3 => HIL.Byte( page ),
                                        4 => HIL.Byte( offset )
                                        ) & data;
-      Data_RX : HIL.UART.Data_Type (1 .. 4);-- := (others => 0);
-      valid   : Boolean;-- := False;
+      Data_RX : HIL.UART.Data_Type (1 .. 4);
+      valid   : Boolean;
       curr_retry : Natural := 0;
       n_read : Natural;
    begin
@@ -142,8 +139,8 @@ is
    -----------------
    
    procedure modify_set(page : Page_Type; offset : Offset_Type; set_mask : HIL.Unsigned_16_Mask) is
-      Data   : Data_Type(1 .. 2);-- := ( others => 0 );
-      Status : Unsigned_16;-- := 0;
+      Data   : Data_Type(1 .. 2);
+      Status : Unsigned_16;
    begin
       read(page, offset, Data, 10);
       Status := HIL.toUnsigned_16( Data );
@@ -157,8 +154,8 @@ is
    -----------------   
    
    procedure modify_clear(page : Page_Type; offset : Offset_Type; clear_mask : HIL.Unsigned_16_Mask) is
-      Data   : Data_Type(1 .. 2);-- := ( others => 0 );
-      Status : Unsigned_16;-- := 0;
+      Data   : Data_Type(1 .. 2);
+      Status : Unsigned_16;
    begin
       read(page, offset, Data, 10);
       Status := HIL.toUnsigned_16( Data );
@@ -174,7 +171,6 @@ is
    procedure handle_Error(msg : String) is
    begin
       Logger.log_console(Logger.ERROR, msg);
-      null;
    end handle_Error;
 
    -----------------
@@ -192,8 +188,9 @@ is
    --  initialize
    -----------------
    
-   procedure initialize is
-      protocol_version : Data_Type(1 .. 2);-- := (others => 0); 
+   procedure initialize (init_left : Servo_Angle_Type;
+                         init_right : Servo_Angle_Type) is
+      protocol_version : Data_Type(1 .. 2);
       
       
       procedure delay_us( us : Natural ) is
@@ -211,71 +208,67 @@ is
       delay_profiler : Profiler.Profile_Tag;
       
    begin
-      Logger.log_console(Logger.DEBUG, "Probe PX4IO");
+      Logger.log_console (Logger.DEBUG, "Probe PX4IO");
       for i in Integer range 1 .. 3 loop
-         read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_PROTOCOL_VERSION, protocol_version);
+         read (PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_PROTOCOL_VERSION, protocol_version);
          if protocol_version(1) = 4 then
-            Logger.log_console(Logger.DEBUG, "PX4IO alive");
+            Logger.log_console (Logger.DEBUG, "PX4IO alive");
             exit;
          elsif i = 3 then
-            handle_Error("PX4IO: Wrong Protocol: " & Unsigned8_Img (protocol_version(1)));
+            handle_Error ("PX4IO: Wrong Protocol: " & Unsigned8_Img (protocol_version(1)));
          end if;
       end loop;
     
-      -- set debug level to 5
-      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_SET_DEBUG, HIL.toBytes ( Unsigned_16(5) ) );
+      --  set debug level to 5 FIXME: is this still required?
+      write (PX4IO_PAGE_SETUP, PX4IO_P_SETUP_SET_DEBUG, HIL.toBytes (Unsigned_16(5)));
       --delay until Clock + Milliseconds ( 2 ); -- delay until or Clock makes SPARK conk out      
 
+      --  safety on (for config after reboot)
+      write (PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, HIL.toBytes (PX4IO_FORCE_SAFETY_MAGIC)); -- force into armed state
 
-
-      -- safety on (for config after reboot)
-      write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_ON, HIL.toBytes (PX4IO_FORCE_SAFETY_MAGIC ) ); -- force into armed state
-
-
-      -- clear all Alarms
-      write(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, (1 .. 2 => HIL.Byte ( 255 ) ) );   -- PX4IO clears Bits with 1 (inverted)
+      --  clear all Alarms
+      write (PX4IO_PAGE_STATUS, PX4IO_P_STATUS_ALARMS, (1 .. 2 => HIL.Byte (255)));   -- PX4IO clears Bits with 1 (inverted)
       
-      delay_profiler.init("DelayProf");
+      delay_profiler.init ("DelayProf");
       delay_profiler.start;
       
       
-      -- clear status flags
-      modify_clear(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
-                   PX4IO_P_STATUS_FLAGS_FAILSAFE or 
-                   PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED );
+      --  clear status flags
+      modify_clear (PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
+                    PX4IO_P_STATUS_FLAGS_FAILSAFE or 
+                      PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED);
                    
-      -- set Mixer OK
-      modify_set(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
+      --  set Mixer OK
+      modify_set (PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, 
                   PX4IO_P_STATUS_FLAGS_MIXER_OK or
-                  PX4IO_P_STATUS_FLAGS_INIT_OK
-                  );
+                    PX4IO_P_STATUS_FLAGS_INIT_OK);
             
       
-      -- disarm before setup (exactly as in original PX4 code)
-      modify_clear(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
-		PX4IO_P_SETUP_ARMING_FMU_ARMED or
-                PX4IO_P_SETUP_ARMING_FAILSAFE_CUSTOM or -- was 1 if failsafe
-		PX4IO_P_SETUP_ARMING_INAIR_RESTART_OK or
-		PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE_OK or
-		PX4IO_P_SETUP_ARMING_ALWAYS_PWM_ENABLE or
-                PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE or
-                PX4IO_P_SETUP_ARMING_TERMINATION_FAILSAFE or -- was 1 during failsafe
-                PX4IO_P_SETUP_ARMING_LOCKDOWN );
+      --  disarm before setup (exactly as in original PX4 code)
+      modify_clear (PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
+                    PX4IO_P_SETUP_ARMING_FMU_ARMED or
+                      PX4IO_P_SETUP_ARMING_FAILSAFE_CUSTOM or -- was 1 if failsafe
+                        PX4IO_P_SETUP_ARMING_INAIR_RESTART_OK or
+                          PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE_OK or
+                            PX4IO_P_SETUP_ARMING_ALWAYS_PWM_ENABLE or
+                              PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE or
+                                PX4IO_P_SETUP_ARMING_TERMINATION_FAILSAFE or -- was 1 during failsafe
+                                  PX4IO_P_SETUP_ARMING_LOCKDOWN );
       --delay until Clock + Milliseconds ( 2 );
       
-      -- clear termination and failsafe twice, because px4io requires two steps for clearing both
+      --  clear termination and failsafe twice, because px4io requires two steps for clearing both
 --        modify_clear(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
 --                     PX4IO_P_SETUP_ARMING_FORCE_FAILSAFE or
 --                     PX4IO_P_SETUP_ARMING_TERMINATION_FAILSAFE );
 --        
       
-      -- disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
+      --  disable RC (should cause PX4IO_P_STATUS_FLAGS_INIT_OK)
       modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED);       
       
-      -- read the setup
+      --  read the setup
       read_Status;
     
-      -- read some senseless values because original PX4 is doing it
+      --  read some useless values because original PX4 is doing it
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_HARDWARE_VERSION, Data);
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_ACTUATOR_COUNT, Data);
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_CONTROL_COUNT, Data);
@@ -283,40 +276,44 @@ is
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_MAX_TRANSFER, Data);   -- substract -2 (because PX4 is doing it)
 --        read(PX4IO_PAGE_CONFIG, PX4IO_P_CONFIG_RC_INPUT_COUNT, Data);
       --delay until Clock + Milliseconds ( 2 );
-       
-      
-     
+                  
 
+      --  setup arming
+      modify_set (PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
+                  PX4IO_P_SETUP_ARMING_IO_ARM_OK or  
+                    PX4IO_P_SETUP_ARMING_FMU_ARMED or
+                    --PX4IO_P_SETUP_ARMING_INAIR_RESTART_OK or
+                  --PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE_OK or
+                    PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED --or  -- disable RC, 
+                  --PX4IO_P_SETUP_ARMING_ALWAYS_PWM_ENABLE 
+                 );
 
-      -- setup arming
-      modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, 
-             PX4IO_P_SETUP_ARMING_IO_ARM_OK or  
-             PX4IO_P_SETUP_ARMING_FMU_ARMED or
-             --PX4IO_P_SETUP_ARMING_INAIR_RESTART_OK or
-             --PX4IO_P_SETUP_ARMING_MANUAL_OVERRIDE_OK or
-             PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED --or  -- disable RC, 
-             --PX4IO_P_SETUP_ARMING_ALWAYS_PWM_ENABLE 
-         );
-
-      -- FMU armed
+      --  FMU armed
       --modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_FMU_ARMED);
       
-      -- RC off
+      --  RC off
       --modify_set(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_ARMING, PX4IO_P_SETUP_ARMING_RC_HANDLING_DISABLED);
-      
-      
 
-      -- safety off
+      --  safety off
       write(PX4IO_PAGE_SETUP, PX4IO_P_SETUP_FORCE_SAFETY_OFF, HIL.toBytes (PX4IO_FORCE_SAFETY_MAGIC ) ); -- force into armed state
-
 
       delay_profiler.stop;
 
-      -- give IO some values (should enable PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED )
+      --  time to apply stuff
+      declare
+         now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      begin
+         delay until now + Milliseconds (10);
+      end;
+      
+      --  give IO some values (should enable PX4IO_P_STATUS_FLAGS_FMU_INITIALIZED )
+      --  this makes the elevons move which may be fatal during ascend, 
+      --  so we have to respect the user's wish, 
+      Set_Servo_Angle (servo => LEFT_ELEVON, angle => init_left);
+      Set_Servo_Angle (servo => RIGHT_ELEVON, angle => init_right);
       sync_Outputs;
 
       delay_profiler.log;
-
    end initialize;
    
    -----------------
@@ -324,7 +321,7 @@ is
    -----------------
    
    procedure read_Status is
-      Status : Data_Type (1 .. 2); -- := (others => 0);
+      Status : Data_Type (1 .. 2);
    begin
       read(PX4IO_PAGE_STATUS, PX4IO_P_STATUS_FLAGS, Status);
       Logger.log_console(Logger.DEBUG, "PX4IO Status: " & 
@@ -356,17 +353,7 @@ is
             
       end case;
    end Set_Servo_Angle;
-   
-   ---------------------
-   --  set_Motor_Speed
-   ---------------------   
---     
---     procedure set_Motor_Speed( speed : Motor_Speed_Type ) is
---     begin
---           G_Motor_Speed := speed;  
---     end set_Motor_Speed;
-   
-   
+     
    ---------------------
    --  servo_Duty_Cycle
    ---------------------      
@@ -381,16 +368,7 @@ is
                                      max => 2_000);
    end servo_Duty_Cycle;
 
-   -----------------
-   --  esc_PWM
-   -----------------
-   
---     function esc_PWM(speed : in Motor_Speed_Type) return Unsigned_16
---     is
---     begin
---        return Unsigned_16(speed); -- Todo
---     end esc_PWM;
-   
+
    -----------------
    --  arm
    -----------------

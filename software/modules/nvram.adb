@@ -6,9 +6,10 @@ with Interfaces; use Interfaces;
 with HIL.NVRAM;  use HIL.NVRAM;
 with HIL;        use HIL;
 with Buildinfo;  use Buildinfo;
+with Ada.Unchecked_Conversion;
 with Fletcher16;
 
-package body NVRAM with SPARK_Mode => On,   -- Somehow this package includes interrupts, which are accesses
+package body NVRAM with SPARK_Mode => On,
    Refined_State => (Memory_State => null)
 is
 
@@ -218,6 +219,14 @@ is
       HIL.NVRAM.Read_Byte (addr => Var_To_Address (variable), byte => data);
    end Load;
 
+   procedure Load (variable : Variable_Name; data : out Integer_8) is
+      tmp : HIL.Byte;
+      function Byte_To_Int8 is new Ada.Unchecked_Conversion (HIL.Byte, Integer_8);
+   begin
+      HIL.NVRAM.Read_Byte (addr => Var_To_Address (variable), byte => tmp);
+      data := Byte_To_Int8 (tmp);
+   end Load;
+
    procedure Load (variable : in Variable_Name; data : out Float) is
       bytes : Byte_Array_4 := (others => 0); -- needs init, because SPARK cannot prove via call
    begin
@@ -247,6 +256,12 @@ is
    procedure Store (variable : Variable_Name; data : in HIL.Byte) is
    begin
       HIL.NVRAM.Write_Byte (addr => Var_To_Address (variable), byte => data);
+   end Store;
+
+   procedure Store (variable : in Variable_Name; data : in Integer_8) is
+      function Int8_To_Byte is new Ada.Unchecked_Conversion (Integer_8, HIL.Byte);
+   begin
+      HIL.NVRAM.Write_Byte (addr => Var_To_Address (variable), byte => Int8_To_Byte (data));
    end Store;
 
    procedure Store (variable : in Variable_Name; data : in Float) is

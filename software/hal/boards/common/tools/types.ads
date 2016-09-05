@@ -14,5 +14,6 @@ package Types with SPARK_Mode is
    function Limit_Unsigned16 is new Saturate_Mod (Unsigned_16);
    
    function Sat_Cast_Int is new Saturated_Cast_Int (Integer);
+   function Sat_Cast_Int8 is new Saturated_Cast_Int (Integer_8);
    function Sat_Cast_U16 is new Saturated_Cast_Mod (Unsigned_16);
 end Types;

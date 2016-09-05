@@ -273,9 +273,9 @@ package body Controller with SPARK_Mode is
 
    procedure set_hold is
    begin
-      -- hold glider in position
-      Servo.set_Angle(Servo.LEFT_ELEVON, 38.0 * Degree );
-      Servo.set_Angle(Servo.RIGHT_ELEVON, 38.0 * Degree );
+      --  hold glider in position
+      Servo.Set_Critical_Angle (Servo.LEFT_ELEVON, 38.0 * Degree );
+      Servo.Set_Critical_Angle (Servo.RIGHT_ELEVON, 38.0 * Degree );
    end set_hold;
 
    ----------------
@@ -284,8 +284,8 @@ package body Controller with SPARK_Mode is
 
    procedure set_detach is
    begin
-      Servo.set_Angle(Servo.LEFT_ELEVON, -40.0 * Degree );
-      Servo.set_Angle(Servo.RIGHT_ELEVON, -40.0 * Degree );
+      Servo.Set_Critical_Angle (Servo.LEFT_ELEVON, -40.0 * Degree );
+      Servo.Set_Critical_Angle (Servo.RIGHT_ELEVON, -40.0 * Degree );
    end set_detach;
 
    ----------

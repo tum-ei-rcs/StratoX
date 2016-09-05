@@ -1,15 +1,12 @@
--- Institution: Technische Universitaet Muenchen
--- Department:  Realtime Computer Systems (RCS)
--- Project:     StratoX
--- Module:      PX4IO Driver
+--  Institution: Technische Universitaet Muenchen
+--  Department:  Real-Time Computer Systems (RCS)
+--  Project:     StratoX
+--  Module:      PX4IO Driver
 --
--- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--           Martin Becker (becker@rcs.ei.tum.de)
 --
--- Description: Driver for the PX4IO co-processor
--- 
--- ToDo:
--- [ ] Implementation
-
+--  @summary Driver for the PX4IO co-processor
 with HIL; use HIL;
 with HIL.UART;
 with Units; use Units;
@@ -19,7 +16,6 @@ with Interfaces; use Interfaces;
 package PX4IO.Driver with SPARK_Mode,
   Abstract_State => (Servo_Wish, Servo_State, Servo_Settings)
 is
-
    
    MOTOR_SPEED_LIMIT_MIN : constant := CFG_MOTOR_SPEED_LIMIT_MIN;
    MOTOR_SPEED_LIMIT_MAX : constant := CFG_MOTOR_SPEED_LIMIT_MAX;
@@ -38,8 +34,8 @@ is
       MOTOR_SPEED_LIMIT_MIN .. MOTOR_SPEED_LIMIT_MAX;
    
 
-   -- init
-   procedure initialize;
+   procedure initialize (init_left : Servo_Angle_Type;
+                         init_right : Servo_Angle_Type);
    
    procedure Self_Check (result : out Boolean);
    
@@ -52,14 +48,12 @@ is
    procedure Set_Servo_Angle (servo : Servo_Type; angle : Servo_Angle_Type) with
      Global => (Input => Servo_Settings,
                 In_Out => Servo_Wish); -- FIXME: why does SPARK force IN mode here?
-     
-
-   --  procedure set_Motor_Speed( speed : Motor_Speed_Type );
-   
+       
    procedure sync_Outputs ;
 --     with
 --       Global => (Input => (Servo_Wish),
 --                  Output => Servo_State);
+
 
 private
    subtype Page_Type is HIL.Byte;

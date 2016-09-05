@@ -251,7 +251,7 @@ package body Mission with SPARK_Mode is
       Controller.sync;
   
       --  check target altitude
-      --  FIXME: Sprung von Baro auf GPS hat ausgelöst.
+      --  FIXME: Sprung von Baro auf GPS hat ausgeloest.
       if Estimator.get_relative_Height >= Config.CFG_TARGET_ALTITUDE_THRESHOLD then
          G_state.target_altitude_time := Sat_Add_Time (G_state.target_altitude_time, 
                                                         To_Time(now - G_state.last_call));  -- TODO: calc dT     
