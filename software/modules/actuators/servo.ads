@@ -21,11 +21,11 @@ package Servo with SPARK_Mode is
   
    procedure deactivate;
    
-   procedure Set_Critical_Angle (servo: Servo_Type; angle : Servo_Angle_Type);
+   procedure Set_Critical_Angle (which: Servo_Type; angle : Servo_Angle_Type);
    --  call this if the angle is vital at this very moment. It will be restored 
    --  immediately after a potential in-air reset. this procedure is a bit slower
 
-   procedure Set_Angle (servo: Servo_Type; angle : Servo_Angle_Type);
+   procedure Set_Angle (which: Servo_Type; angle : Servo_Angle_Type);
    --  call this for all other angles, which is faster.
 
    procedure sync;

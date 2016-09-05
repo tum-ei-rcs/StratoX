@@ -83,13 +83,15 @@ is
 
    function toUnsigned_16( bytes : Byte_Array) return Unsigned_16
    is
-      (Unsigned_16( bytes( bytes'First ) ) 
-      + Unsigned_16( bytes( bytes'First + 1 ) ) * 2**8 )
+      ( Unsigned_16 (bytes (bytes'First    )) 
+      + Unsigned_16 (bytes (bytes'First + 1)) * 2**8)
    with Pre => bytes'Length = 2;
       
-   function toUnsigned_32( bytes : Byte_Array) return Unsigned_32
-   is
-      (Unsigned_32( bytes( bytes'First ) ) + Unsigned_32( bytes'First + 1 ) * 2**8 + Unsigned_32( bytes'First + 2 ) * 2**16 + Unsigned_32( bytes'First + 3 ) * 2**24 )
+   function toUnsigned_32( bytes : Byte_Array) return Unsigned_32 is
+     (  Unsigned_32 (bytes (bytes'First    ))
+      + Unsigned_32 (bytes (bytes'First + 1)) * 2**8 
+      + Unsigned_32 (bytes (bytes'First + 2)) * 2**16 
+      + Unsigned_32 (bytes (bytes'First + 3)) * 2**24)
    with Pre => bytes'Length = 4;
 
    function Bytes_To_Unsigned32 is new Ada.Unchecked_Conversion (Source => Byte_Array_4,

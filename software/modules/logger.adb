@@ -16,9 +16,11 @@ with NVRAM;
 with Buildinfo;
 with HIL.Devices;
 with HIL.UART;
+with HIL.Random;
 with Interfaces; use Interfaces;
 with Ada.Unchecked_Conversion;
 with Ada.Real_Time; use Ada.Real_Time;
+with Bounded_Image;
 with ULog;
 
 --  force elaboration of those before the logging task starts
@@ -353,15 +355,18 @@ is
 
    procedure Start_SDLog is
       num_boots : HIL.Byte;
+      rand32 : Unsigned_32;
    begin
       NVRAM.Load (variable => NVRAM.VAR_BOOTCOUNTER, data => num_boots);
+      HIL.Random.Get_Unsigned (rand32);
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
          bootstr     : constant String := HIL.Byte'Image (num_boots);
          pragma Assert (HIL.Byte'Size <= 8);
          pragma Assume (bootstr'First = 1 and bootstr'Length < 4); 
-            -- Byte'Last is 255, and strings always start at index one
-         fname       : constant String := bootstr(bootstr'First .. bootstr'Last) & ".log";
+         rnd         : constant Unsigned_8 := Unsigned_8 (16#FF# and rand32);
+         rndstr      : constant String := Bounded_Image.Unsigned8_Img (rnd);
+         fname       : constant String := bootstr(bootstr'First .. bootstr'Last) & "_" & rndstr & ".log";
          BUFLEN      : constant := 128; -- header is around 90 bytes long
          bytes       : HIL.Byte_Array (1 .. BUFLEN);
          len         : Natural;
@@ -374,7 +379,7 @@ is
             log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
             With_SDLog := False;
          else
-            log_console (Logger.INFO, "Log name: " & buildstring & "/" & fname);
+            log_console (Logger.WARN, "Log name: " & buildstring & "/" & fname);
             With_SDLog := True;
             --  write file header (ULog message definitions)
             ULog.Init;

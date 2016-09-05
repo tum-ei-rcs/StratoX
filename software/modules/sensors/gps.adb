@@ -36,6 +36,12 @@ is
       return Driver.get_Velo;
    end get_Speed;
 
+   function get_Pos_Accuracy(Self : GPS_Tag) return Units.Length_Type is
+      pragma Unreferenced (Self);
+   begin
+      return Driver.get_Vertical_Accuracy; -- vertical is always worse than horizontal
+   end get_Pos_Accuracy;
+
    function get_Time(Self : GPS_Tag) return GPS_DateTime
    is
       pragma Unreferenced (Self);

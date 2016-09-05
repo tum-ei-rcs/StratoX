@@ -3,7 +3,7 @@ with Interfaces; use Interfaces;
 with PX4IO.Driver; use PX4IO;
 with NVRAM;
 with Types;
-with Units;
+with Logger;
 
 package body Servo with SPARK_Mode is
 
@@ -37,23 +37,26 @@ package body Servo with SPARK_Mode is
       NVRAM.Load (NVRAM.VAR_SERVO_RIGHT, nright);
 
       --  init and move servos to given angle
-      Last_Critical.left  := Sat_Cast_ServoAngle (Float (nleft));
-      Last_Critical.right := Sat_Cast_ServoAngle (Float (nright));
-      Driver.initialize (Last_Critical.left, Last_Critical.right);
+      Last_Critical.left  := Sat_Cast_ServoAngle (Float (Unit_Type (nleft) * Degree));
+      Last_Critical.right := Sat_Cast_ServoAngle (Float (Unit_Type (nright) * Degree));
+      Logger.log_console (Logger.DEBUG, "Servo restore: " &
+                            AImage (Last_Critical.left) & " / "  &
+                            AImage (Last_Critical.right));
+      Driver.initialize (init_left => Last_Critical.left, init_right => Last_Critical.right);
    end initialize;
 
    ------------------------
    --  Set_Angle
    ------------------------
 
-   procedure Set_Angle (servo : Servo_Type; angle : Servo_Angle_Type) is
+   procedure Set_Angle (which : Servo_Type; angle : Servo_Angle_Type) is
    begin
-      case(servo) is
+      case which is
          when LEFT_ELEVON =>
-            Driver.set_Servo_Angle (Driver.LEFT_ELEVON, angle);
+            Driver.Set_Servo_Angle (Driver.LEFT_ELEVON, angle);
 
          when RIGHT_ELEVON =>
-            Driver.set_Servo_Angle (Driver.RIGHT_ELEVON, angle);
+            Driver.Set_Servo_Angle (Driver.RIGHT_ELEVON, angle);
       end case;
    end Set_Angle;
 
@@ -61,17 +64,17 @@ package body Servo with SPARK_Mode is
    --  Set_Critical_Angle
    ------------------------
 
-   procedure Set_Critical_Angle (servo : Servo_Type; angle : Servo_Angle_Type) is
+   procedure Set_Critical_Angle (which : Servo_Type; angle : Servo_Angle_Type) is
    begin
-      set_Angle (servo, angle);
+      Set_Angle (which, angle);
 
       --  backup to NVRAM, if it has changed
-      case servo is
+      case which is
 
          when LEFT_ELEVON =>
             if angle /= Last_Critical.left then
                declare
-                  pos : constant Integer_8 := Types.Sat_Cast_Int8 (Float (angle));
+                  pos : constant Integer_8 := Types.Sat_Cast_Int8 (To_Degree (angle));
                begin
                   NVRAM.Store (NVRAM.VAR_SERVO_LEFT, pos);
                   Last_Critical.left := angle;
@@ -81,7 +84,7 @@ package body Servo with SPARK_Mode is
          when RIGHT_ELEVON =>
             if angle /= Last_Critical.right then
                declare
-                  pos : constant Integer_8 := Types.Sat_Cast_Int8 (Float (angle));
+                  pos : constant Integer_8 := Types.Sat_Cast_Int8 (To_Degree (angle));
                begin
                   NVRAM.Store (NVRAM.VAR_SERVO_RIGHT, pos);
                   Last_Critical.right := angle;

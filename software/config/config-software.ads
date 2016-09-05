@@ -14,11 +14,12 @@ package Config.Software with SPARK_Mode is
    MAIN_TICK_RATE_MS : constant := 20;   -- Tickrate in Milliseconds
    TEST_MODE_ACTIVE : constant Boolean := False;
    
-   -- Misison
+   --  Mission
    CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 120.0 * Second;  -- Droptest: 120, Strato: TBD
    CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 60.0 * Second;     -- Droptest: 600, Strato: 1800
    CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 360.0 * Second;   -- Droptest: 360, Strato: 1800. Blockwalk: 360
    
+   POSITION_LEAST_ACCURACY : constant Units.Length_Type := 20.0 * Meter; --  the worst accepted accuracy for mission start
     
    CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;
    CFG_LOGGER_CALL_SKIP: constant := 10;  -- prescaler...only every nth message is printed

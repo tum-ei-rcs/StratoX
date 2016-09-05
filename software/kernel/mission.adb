@@ -196,7 +196,9 @@ package body Mission with SPARK_Mode is
       Controller.sync;
 
       -- check duration of GPS lock
-      if Estimator.get_GPS_Fix = FIX_3D then
+      if Estimator.get_GPS_Fix = FIX_3D and then 
+        Estimator.get_Pos_Accuracy < Config.Software.POSITION_LEAST_ACCURACY 
+      then
                 
          G_state.gps_lock_threshold_time := Sat_Add_Time (G_state.gps_lock_threshold_time, To_Time (now - G_state.last_call));
 --         LED_Manager.LED_switchOn;

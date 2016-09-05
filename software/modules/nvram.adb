@@ -193,7 +193,7 @@ is
       HIL.NVRAM.Init;
       Validate_Contents;
 
-      --  maintain boot counter
+      --  maintain boot counter: FIXME: for some unknown reason this isn't reliable. Does the FRAM fail sometimes?
       Load (VAR_BOOTCOUNTER, num_boots);
       if num_boots < HIL.Byte'Last then
          num_boots := num_boots + 1;

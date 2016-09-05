@@ -41,6 +41,8 @@ package Estimator with SPARK_Mode is
    
    function get_GPS_Fix return GPS_Fix_Type;
    
+   function get_Pos_Accuracy return Length_Type;
+   
    function get_Num_Sat return Unsigned_8;
    
    function get_current_Height return Altitude_Type;

@@ -40,6 +40,7 @@ is
         lon => 0.0 * Degree,
         lat => 0.0 * Degree,
         alt => 0.0 * Meter,
+        vacc => 100.0 * Meter,
         speed => 0.0 * Meter / Second );
 
 
@@ -188,14 +189,15 @@ is
                      end if;
                   else
                      data := (others => Byte( 0 ));
-                     Logger.log_console(Logger.DEBUG, "UBX invalid");
+                     -- Logger.log_console(Logger.DEBUG, "UBX invalid");
                   end if;
             
                elsif ubxhead (3) = UBX_CLASS_ACK and
                then ubxhead (4) = UBX_ID_ACK_ACK and 
                then ubxhead (5) = UBX_LENGTH_ACK_ACK 
                then
-                  Logger.log_console(Logger.TRACE, "UBX Ack");
+                  null; 
+                  -- Logger.log_console(Logger.TRACE, "UBX Ack");
                end if;             
             
                exit;            
@@ -321,6 +323,7 @@ is
       function Sat_Cast_Lat is new Units.Saturated_Cast (Latitude_Type);
       function Sat_Cast_Lon is new Units.Saturated_Cast (Longitude_Type);
       function Sat_Cast_Alt is new Units.Saturated_Cast (Altitude_Type);
+      function Sat_Cast_Length is new Units.Saturated_Cast (Length_Type);
    begin
       readFromDevice (data_rx, isValid);
       if isValid then
@@ -335,6 +338,8 @@ is
          G_GPS_Message.lon := Sat_Cast_Lon (Float (HIL.toInteger_32 (data_rx (24 .. 27))) * 1.0e-7 * Float (Degree));
          G_GPS_Message.lat := Sat_Cast_Lat (Float (HIL.toInteger_32 (data_rx (28 .. 31))) * 1.0e-7 * Float (Degree));
          G_GPS_Message.alt := Sat_Cast_Alt (Float (HIL.toInteger_32 (data_rx (36 .. 39))) * Float (Milli * Meter));
+         G_GPS_Message.vacc := Sat_Cast_Length (Float (HIL.toUnsigned_32 (data_rx (44 .. 47))) * Float (Milli*Meter));
+         pragma Annotate (GNATprove, False_Positive, "precondition might fail", "pre of toUnsigned_32 is valid");
          G_GPS_Message.sats := Unsigned_8 (data_rx (23));
          declare
             i32_speed : constant Integer_32 := HIL.toInteger_32 (data_rx (60 .. 63));
@@ -378,6 +383,11 @@ is
    begin
       return G_GPS_Message.speed;
    end get_Velo;
+   
+   function get_Vertical_Accuracy return Length_Type is
+   begin
+      return G_GPS_Message.vacc;
+   end get_Vertical_Accuracy;
    
    function get_Time return GPS_DateTime_Type is
    begin

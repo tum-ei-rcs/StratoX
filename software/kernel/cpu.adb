@@ -9,6 +9,7 @@ with HIL.SPI;
 with HIL.Clock;
 with HIL.UART;
 with HIL.I2C;
+with HIL.Random;
 with Ada.Real_Time; use Ada.Real_Time;
 
 
@@ -21,6 +22,7 @@ package body CPU with SPARK_Mode is
 
       --  Configure GPIO
       HIL.Clock.configure;
+      HIL.Random.initialize;
       HIL.UART.configure;
       HIL.GPIO.configure;
       HIL.SPI.configure;

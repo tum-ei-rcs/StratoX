@@ -33,6 +33,8 @@ is
 
    function get_Num_Sats(Self : GPS_Tag) return Unsigned_8;
 
+   function get_Pos_Accuracy(Self : GPS_Tag) return Units.Length_Type;
+
    function get_Speed(Self : GPS_Tag) return Units.Linear_Velocity_Type;
 
    function get_Time(Self : GPS_Tag) return GPS_DateTime;

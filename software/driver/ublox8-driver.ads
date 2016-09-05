@@ -37,6 +37,7 @@ is
       lat : Latitude_Type;
       alt : Altitude_Type;
       speed : Units.Linear_Velocity_Type;
+      vacc : Units.Length_Type; -- vertical accuracy estimate
    end record;
 
    procedure reset;
@@ -62,6 +63,9 @@ is
 
    function get_Time return GPS_DateTime_Type;
    --  read most recent time stamp
+
+   function get_Vertical_Accuracy return Units.Length_Type;
+   --  read most recent accuracy estimate
 
    procedure perform_Self_Check (Status : out Error_Type);
    --  test communication with GPS (ignoring fix state)

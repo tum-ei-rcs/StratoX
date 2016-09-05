@@ -24,6 +24,7 @@ with Barometer;
 with Magnetometer;
 
 with Units;          use Units;
+with Types;
 
 with Logger;
 with ULog;
@@ -58,9 +59,11 @@ package body Estimator with SPARK_Mode is
 
    type GPS_info is record
       fix          : GPS_Fix_Type := NO_FIX;
-      gps_speed    : Linear_Velocity_Type := 0.0 * Meter/Second;
+      gps_speed    : Linear_Velocity_Type := 0.0 * Meter/Second; -- 2D projected ground speed
       nsat         : Unsigned_8 := 0;
       gps_datetime : GPS.GPS_DateTime;
+      vacc         : Units.Length_Type := 100.0 * Meter; -- vertical accuracy
+      had_good_accuracy : Boolean := False;
    end record;
 
    type State_Type is record
@@ -248,19 +251,31 @@ package body Estimator with SPARK_Mode is
       G_state.gpsinfo.fix := GPS.Sensor.get_GPS_Fix;
       G_state.gpsinfo.nsat := GPS.Sensor.get_Num_Sats;
       G_state.gpsinfo.gps_speed := GPS.Sensor.get_Speed;
+      G_state.gpsinfo.vacc := GPS.Sensor.get_Pos_Accuracy;
       G_state.gpsinfo.gps_datetime := GPS.Sensor.get_Time;
-      -- FIXME: Sprung durch Baro Offset, falls GPS wegfällt
+
+      --  this is for GPS startup: trust in it only when it reached the accuracy goal once
+      G_state.gpsinfo.had_good_accuracy := G_state.gpsinfo.had_good_accuracy or
+        G_state.gpsinfo.vacc < Config.Software.POSITION_LEAST_ACCURACY;
+
+      -- FIXME: Sprung durch Baro Offset, falls GPS wegfaellt
       if G_state.gpsinfo.fix = FIX_3D then
          G_Object_Position := GPS.Sensor.get_Position;
+         --  overwrite/ignore altitude when too shabby at boot. Note position is consumed (we have no alternative)
+         if not G_state.gpsinfo.had_good_accuracy then
+            G_Object_Position.Altitude := Len_to_Alt (Barometer.Sensor.get_Altitude);
+         end if;
          GFixS := "3D";
       elsif G_state.gpsinfo.fix = FIX_2D then
          GFixS := "2D";
          G_Object_Position := GPS.Sensor.get_Position;
-         G_Object_Position.Altitude := Len_To_Alt (Barometer.Sensor.get_Altitude);  -- Overwrite Alt
+         G_Object_Position.Altitude := Len_to_Alt (Barometer.Sensor.get_Altitude);  -- Overwrite Alt (too imprecise)
       else
          GFixS := "NO";
-         G_Object_Position.Altitude := Len_To_Alt (Barometer.Sensor.get_Altitude);
+         G_Object_Position.Altitude := Len_to_Alt (Barometer.Sensor.get_Altitude);
       end if;
+
+
 
       --  perform Kalman filtering
       G_state.kmObservations := ( G_Object_Position, G_state.avg_baro_height, Acc_Orientation, G_imu.Gyro, abs(G_imu.Acc) );
@@ -317,11 +332,12 @@ package body Estimator with SPARK_Mode is
                             ", RPY: " & AImage( G_Object_Orientation.Roll ) &
                             ", " & AImage( G_Object_Orientation.Pitch ) &
                             ", " & AImage( G_Object_Orientation.Yaw ) &
-                            "   LG,LT,AL: " & AImage( G_Object_Position.Longitude ) &
+                            "   LG,LT,A: " & AImage( G_Object_Position.Longitude ) &
                             ", " & AImage( G_Object_Position.Latitude ) &
                               ", " & Image( get_current_Height ) & "m, Fix: "  &
-                              Integer_Img( GPS_Fix_Type'Pos( G_state.gpsinfo.fix ) )  &
-                              " sat: " & Natural_Img (Natural (G_state.gpsinfo.nsat)));
+                              Unsigned8_Img( GPS_Fix_Type'Pos( G_state.gpsinfo.fix ) )  &
+                              " sat: " & Unsigned8_Img (G_state.gpsinfo.nsat) &
+                              " acc: " & Natural_Img (Types.Sat_Cast_Natural (Float (G_state.gpsinfo.vacc))));
 
          --G_Profiler.log;
       end if;
@@ -404,10 +420,7 @@ package body Estimator with SPARK_Mode is
    --  get_Orientation
    ---------------------
 
-   function get_Orientation return Orientation_Type is
-   begin
-      return G_Object_Orientation;
-   end get_Orientation;
+   function get_Orientation return Orientation_Type is (G_Object_Orientation);
 
    ---------------------
    --  get_Position
@@ -420,22 +433,22 @@ package body Estimator with SPARK_Mode is
    end get_Position;
 
    ---------------------
+   --  get_Pos_Accuracy
+   ---------------------
+
+   function get_Pos_Accuracy return Units.Length_Type is (G_state.gpsinfo.vacc);
+
+   ---------------------
    --  get_GPS_Fix
    ---------------------
 
-   function get_GPS_Fix return GPS_Fix_Type is
-   begin
-      return G_state.gpsinfo.fix;
-   end get_GPS_Fix;
+   function get_GPS_Fix return GPS_Fix_Type is (G_state.gpsinfo.fix);
 
    ---------------------
    --  get_Num_Sat
    ---------------------
 
-   function get_Num_Sat return Unsigned_8 is
-   begin
-      return G_state.gpsinfo.nsat;
-   end get_Num_Sat;
+   function get_Num_Sat return Unsigned_8 is (G_state.gpsinfo.nsat);
 
    -----------------------
    --  get_current_Height

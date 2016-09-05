@@ -406,6 +406,7 @@ package body Controller with SPARK_Mode is
          --  don't know where to go => hold position
          G_state.controller_mode := MODE_POSHOLD;
       end if;
+
    end Update_Homing;
 
    -----------------------------
@@ -509,9 +510,15 @@ package body Controller with SPARK_Mode is
 
    procedure runOneCycle is
       Control_Priority : Control_Priority_Type := EQUAL;
+      oldmode : constant Control_Mode_T := G_state.controller_mode;
    begin
 
       Update_Homing;
+
+      if G_state.controller_mode /= oldmode then
+         Logger.log_console (Logger.DEBUG, "Homing mode=" & Unsigned8_Img (Control_Mode_T'Pos (G_state.controller_mode)));
+      end if;
+
       Compute_Target_Attitude;
 
       --  TEST: overwrite roll with a fixed value
