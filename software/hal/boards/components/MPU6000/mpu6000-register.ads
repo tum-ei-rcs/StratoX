@@ -9,7 +9,7 @@
 -- 
 with HIL; use HIL;
 
-private package MPU6000.Register with SPARK_Mode => Off is
+private package MPU6000.Register with SPARK_Mode is
 
    type Address_Type is new HIL.Byte;
 
