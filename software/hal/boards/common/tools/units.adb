@@ -16,6 +16,18 @@ package body Units with SPARK_Mode is
       return avg;
    end average;
 
+
+   function Clip_Unitcircle (X : Unit_Type) return Unit_Type is
+   begin
+      if X < Unit_Type (-1.0) then
+         return Unit_Type (-1.0);
+      elsif X > Unit_Type (1.0) then
+         return Unit_Type (1.0);
+      end if;
+      return X;
+   end Clip_Unitcircle;
+
+
    --function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is
    -- ( Angle_Type'Remainder( (angle - min - (max-min)/2.0) , (max-min) ) + (max+min)/2.0 );
    function wrap_angle (angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type is

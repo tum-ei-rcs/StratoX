@@ -106,6 +106,9 @@ package Units.Vectors with SPARK_Mode is
       ( ( Left(X) * Right, Left(Y) * Right, Left(Z) * Right ) );
 
 
+   function Unit_Square (val : Unit_Type) return Unit_Type with
+     Post => Unit_Square'Result >= Unit_Type (0.0);
+   --  numerically safe power val*val
 
    procedure rotate(vector : in out Cartesian_Vector_Type; axis : Cartesian_Coordinates_Type; angle : Angle_Type);
 
@@ -141,12 +144,15 @@ package Units.Vectors with SPARK_Mode is
 
    -- n×n Identity Matrix
    function Eye( n : Natural ) return Unit_Matrix;
+   -- with Pre => n > 0;
 
    -- n×n Matrix with all elements 1.0
    function Ones( n : Natural ) return Unit_Matrix;
+   -- with Pre => n > 0;
 
    -- n×n Matrix with all elements 0.0
    function Zeros( n : Natural ) return Unit_Matrix;
+   -- with Pre => n > 0;
 
 
    procedure setOnes( A : in out Unit_Matrix; first : Natural; last : Natural);

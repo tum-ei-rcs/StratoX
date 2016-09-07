@@ -310,6 +310,9 @@ package Units with
 
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type;
 
+   function Clip_Unitcircle (X : Unit_Type) return Unit_Type
+     with Post => Clip_Unitcircle'Result in Unit_Type (-1.0) .. Unit_Type (1.0);
+
    function integrate(x : Unit_Type'Base; dt : Time_Type) return Unit_Type'Base is
      ( x * dt );
    --  Experimental generic integration (return value looses its units)

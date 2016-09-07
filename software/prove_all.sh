@@ -19,7 +19,7 @@ else
 	TIMEOU=auto
 	PROVERS=cvc4,altergo,z3
 	PROOF=per_check
-	STEPS=100
+	STEPS=10
 	# if you use --level=n, then this overwrites and sets a combination of prover, proof and steps
 fi
 

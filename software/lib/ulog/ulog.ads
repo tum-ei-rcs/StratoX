@@ -50,9 +50,11 @@ package ULog with SPARK_Mode is
          lon      : Float                  := 0.0;
          alt      : Float                  := 0.0;
          vel      : Float                  := 0.0;
+         pos_acc  : Float                  := 0.0;
       when BARO =>
-         pressure : Float := 0.0;
-         temp     : Float := 0.0;
+         pressure  : Float := 0.0;
+         temp      : Float := 0.0;
+         press_alt : Float := 0.0;
       when IMU =>
          accX     : Float := 0.0;
          accY     : Float := 0.0;

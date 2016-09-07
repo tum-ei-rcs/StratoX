@@ -64,19 +64,6 @@ package body Units.Navigation with SPARK_Mode is
    pragma Unreferenced (Heading);
 
 
-
-   function Clip_Unitcircle (X : Unit_Type) return Unit_Type is
-   begin
-      if X < Unit_Type (-1.0) then
-         return Unit_Type (-1.0);
-      elsif X > Unit_Type (1.0) then
-         return Unit_Type (1.0);
-      end if;
-      return X;
-   end Clip_Unitcircle;
-
-
-
    --  From http://www.movable-type.co.uk/scripts/latlong.html
    --  based on the numerically largely stable "haversine"
    --  haversine = sin^2(delta_lat/2) + cos(lat1)*cos(lat2) * sin^2(delta_lon/2)

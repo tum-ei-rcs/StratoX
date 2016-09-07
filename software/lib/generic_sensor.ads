@@ -20,7 +20,7 @@ with Generic_Signal;
 generic
    type Data_Type is private; 
 package Generic_Sensor with SPARK_Mode
-  --,Abstract_State => Sensor_State -- implementations may have a state
+--,Abstract_State => Sensor_State -- implementations may have a state
 is
 
    package Sensor_Signal is new Generic_Signal( Data_Type );
@@ -46,7 +46,7 @@ is
    end record;
 
    --procedure initialize(Self : in out Sensor_Tag) is abstract;
-     --with Global => (Output => Sensor_State);
+   --with Global => (Output => Sensor_State);
 --       with Global => (Output => MS5611.Driver.Coefficients,
 --                             In_Out => ( 
 --                                        Ada.Real_Time.Clock_Time,

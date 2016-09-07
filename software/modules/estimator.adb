@@ -77,6 +77,7 @@ package body Estimator with SPARK_Mode is
       baro_calls           : Baro_Call_Type := 0;
       baro_press           : Pressure_Type := 0.0 * Pascal;
       baro_temp            : Temperature_Type := CELSIUS_0;
+      baro_alt             : Units.Length_Type := 0.0 * Meter;
       logger_calls         : Logger_Call_Type := 0; -- counter for log ratio
       logger_console_calls : Logger_Call_Type := 0;
       stable_Time          : Time_Type := 0.0 * Second;
@@ -242,6 +243,7 @@ package body Estimator with SPARK_Mode is
          end;
          G_state.baro_temp := Barometer.Sensor.get_Temperature;
          G_state.baro_press := Barometer.Sensor.get_Pressure;
+         G_state.baro_alt := Barometer.Sensor.get_Altitude;
          Height_Buffer_Pack.push_back( G_height_buffer, Len_to_Alt (Barometer.Sensor.get_Altitude));
          update_Max_Height;
       end if;
@@ -320,7 +322,7 @@ package body Estimator with SPARK_Mode is
       imu_msg : ULog.Message (ULog.IMU);
       mag_msg : ULog.Message (ULog.MAG);
       gps_msg : ULog.Message (ULog.GPS);
-      bar_msg : Ulog.Message (ULog.BARO);
+      bar_msg : ULog.Message (ULog.BARO);
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
 
    begin
@@ -365,7 +367,8 @@ package body Estimator with SPARK_Mode is
       bar_msg := (Typ => ULog.BARO,
                   t => now,
                   pressure => Float (G_state.baro_press),
-                  temp => Float (G_state.baro_temp));
+                  temp => Float (G_state.baro_temp),
+                  press_alt => Float (G_state.baro_alt));
 
       declare
          gps_year     : constant Year_Type := G_state.gpsinfo.gps_datetime.year;
@@ -390,7 +393,8 @@ package body Estimator with SPARK_Mode is
                       lat      => Float (G_Object_Position.Latitude / Degree),
                       lon      => Float (G_Object_Position.Longitude / Degree),
                       alt      => Float (G_Object_Position.Altitude),
-                      vel      => Float (G_state.gpsinfo.gps_speed)
+                      vel      => Float (G_state.gpsinfo.gps_speed),
+                      pos_acc  => Float (G_state.gpsinfo.vacc)
                      );
       end;
 
