@@ -25,7 +25,7 @@ package HIL.Timers with SPARK_Mode => Off is
 
    procedure Enable (t : in out HIL_Timer; ch : HIL.Timers.HIL_Timer_Channel);
 
-   procedure Disable (t : in out HIL_Timer);
+   procedure Disable (t : in out HIL_Timer; ch : HIL.Timers.HIL_Timer_Channel);
 
    procedure Configure_OC_Toggle
      (This      : in out HIL_Timer;

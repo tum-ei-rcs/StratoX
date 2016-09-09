@@ -16,8 +16,10 @@ package body HIL.Buzzer is
       case HIL.Config.BUZZER_PORT is
          when HIL.Config.BUZZER_USE_AUX5 =>
             HIL.Timers.Initialize (HIL.Devices.Timers.Timer_Buzzer_Aux);
+
          when HIL.Config.BUZZER_USE_PORT =>
             HIL.Timers.Initialize (HIL.Devices.Timers.Timer_Buzzer_Port);
+
       end case;
    end Initialize;
 
@@ -27,18 +29,22 @@ package body HIL.Buzzer is
          when HIL.Config.BUZZER_USE_AUX5 =>
             HIL.Timers.Enable (t => HIL.Devices.Timers.Timer_Buzzer_Aux,
                                ch => HIL.Devices.Timers.Timerchannel_Buzzer_Aux);
+
          when HIL.Config.BUZZER_USE_PORT =>
             HIL.Timers.Enable (t => HIL.Devices.Timers.Timer_Buzzer_Port,
                                ch => HIL.Devices.Timers.Timerchannel_Buzzer_Port);
+
       end case;
    end Enable;
 
    procedure Disable is begin
       case HIL.Config.BUZZER_PORT is
          when HIL.Config.BUZZER_USE_AUX5 =>
-            HIL.Timers.Disable (t => HIL.Devices.Timers.Timer_Buzzer_Aux);
+            HIL.Timers.Disable (t => HIL.Devices.Timers.Timer_Buzzer_Aux,
+                                ch => HIL.Devices.Timers.Timerchannel_Buzzer_Aux);
          when HIL.Config.BUZZER_USE_PORT =>
-            HIL.Timers.Disable (t => HIL.Devices.Timers.Timer_Buzzer_Port);
+            HIL.Timers.Disable (t => HIL.Devices.Timers.Timer_Buzzer_Port,
+                                ch => HIL.Devices.Timers.Timerchannel_Buzzer_Port);
       end case;
    end Disable;
 

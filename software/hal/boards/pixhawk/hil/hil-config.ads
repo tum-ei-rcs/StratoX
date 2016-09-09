@@ -9,7 +9,7 @@ package HIL.Config is
    UBLOX_BAUD_RATE_HZ : constant := 9_600;
 
    type Buzzer_Out_T is (BUZZER_USE_PORT, BUZZER_USE_AUX5);
-   BUZZER_PORT : constant Buzzer_Out_T := BUZZER_USE_PORT; -- Pixlite: BUZZER_USE_AUX5. Pixhawk: BUZZER_USE_PORT
+   BUZZER_PORT : constant Buzzer_Out_T := BUZZER_USE_AUX5; -- Pixlite: BUZZER_USE_AUX5. Pixhawk: BUZZER_USE_PORT
 
    -- MPU6000
    MPU6000_SAMPLE_RATE_HZ : constant := 100;

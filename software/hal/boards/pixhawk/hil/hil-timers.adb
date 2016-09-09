@@ -12,8 +12,6 @@ with STM32.Device; use STM32.Device;
 --  Target-specific implementation of HIL for Timers. Pixhawk.
 package body HIL.Timers with SPARK_Mode => Off is
 
-   Used_Channel : Timer_Channel;
-
    procedure Initialize (t : in out HIL_Timer) is
    begin
       STM32.Timers.Enable (t);
@@ -21,18 +19,16 @@ package body HIL.Timers with SPARK_Mode => Off is
 
    procedure Enable (t : in out HIL_Timer; ch : HIL.Timers.HIL_Timer_Channel) is
    begin
-      Used_Channel := ch;
-
       if not STM32.Timers.Enabled (t) then
          STM32.Timers.Enable (t);
       end if;
-      STM32.Timers.Enable_Channel (t, Used_Channel);
+      STM32.Timers.Enable_Channel (t, ch);
    end Enable;
 
-   procedure Disable (t : in out HIL_Timer) is
+   procedure Disable (t : in out HIL_Timer; ch : HIL.Timers.HIL_Timer_Channel) is
    begin
       -- STM32.Timers.Disable (t); -- we cannot disable the timer when channel is active
-      STM32.Timers.Disable_Channel (t, Used_Channel); -- so we just let the timer do it's thing and disable the channel
+      STM32.Timers.Disable_Channel (t, ch); -- so we just let the timer do it's thing and disable the channel
    end Disable;
 
    procedure Calculate_Prescaler_and_Period (f : in Frequency_Type; Prescaler : out Short; Period : out Word) is
@@ -43,7 +39,8 @@ package body HIL.Timers with SPARK_Mode => Off is
       -- => period = TIM_CLK / (2*f (prescaler+1)) - 1
       Prescaler := 0;
       period := Word (Float (TIM_CLK) / (2.0 * Float (f) * Float (Prescaler+1)));
-      -- smallest: 1Hz => 84000000 < Word'Last
+      -- smallest@32bit: 1Hz => 84_000_000 <= Word'Last;
+      -- smallest@16bit: 1.281khz => 65_335 <= Short'Last;
       -- largest: 1MHz => 84
    end Calculate_Prescaler_and_Period;
 
@@ -58,15 +55,13 @@ package body HIL.Timers with SPARK_Mode => Off is
       Prescaler     : Short;
       Period        : Word;
    begin
-      --  1. select clk source (internal is default)
-
-      -- 4. disable preload
-      STM32.Timers.Set_Autoreload_Preload (This, False);
-
-      --  2. write ARR and CCRx to set event period. Counter decrements
-      --  until zero, then starts at value=Period again.
+      --  TIM2 and TIM5 are 32bit-auto-reload and 16bit prescaler
+      --  TIM3 and TIM4 are 16bit-auto-reload and 16bit prescaler
       Calculate_Prescaler_and_Period (Frequency, Prescaler, Period);
-      -- FIXME: timers limited to 16bit, except timer 2 and 5
+      if Period >= 2**16 then
+         Period := 2**16-1;
+      end if;
+
       STM32.Timers.Configure (This,
                               Prescaler => Prescaler,
                               Period => Period,
@@ -74,15 +69,21 @@ package body HIL.Timers with SPARK_Mode => Off is
                               Counter_Mode => Counter_Mode,
                               Repetitions => Reps);
 
-      --  3. configure output mode: toggle channel output every time we reach zero
-      declare
-         Value : Word := Period / 2;
-      begin
-         STM32.Timers.Configure_Channel_Output (This, Channel, Toggle, Enable, Value, High);
-      end ;
+      --  3. configure output mode: toggle channel output every time we reach the value
+      STM32.Timers.Configure_Channel_Output (This => This,
+                                                Channel => Channel,
+                                                Mode => Toggle,
+                                                State => Enable,
+                                                Pulse => Period,
+                                                Polarity => High);
+
+      -- 4. disable preload
+      STM32.Timers.Set_Autoreload_Preload (This, False);
 
       -- 5. finally enable channel
       STM32.Timers.Enable_Channel (This, Channel);
+
+      STM32.Timers.Enable (This);
    end Configure_OC_Toggle;
 
    --  procedure Set_Counter (This : in out HIL_Timer;  Value : Word) renames STM32.Timers.Set_Counter;

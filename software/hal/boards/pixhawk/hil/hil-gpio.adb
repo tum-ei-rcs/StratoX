@@ -128,11 +128,17 @@ is
                                                         Output_Type => Push_Pull,
                                                         Speed => Speed_2MHz,
                                                         Resistors => Floating );
-      Config_Out_Buz : constant GPIO_Port_Configuration := (
-                                                            Mode => Mode_AF,
-                                                            Output_Type => Push_Pull,
-                                                            Speed => Speed_50MHz,
-                                                            Resistors => Floating);
+      Config_Out_Buz_PORT : constant GPIO_Port_Configuration := (
+                                                                 Mode => Mode_AF, -- essential
+                                                                 Output_Type => Push_Pull,
+                                                                 Speed => Speed_50MHz,
+                                                                 Resistors => Floating);
+
+      Config_Out_Buz_AUX : constant GPIO_Port_Configuration := (
+                                                                 Mode => Mode_AF, -- essential
+                                                                 Output_Type => Push_Pull,
+                                                                 Speed => Speed_2MHz,
+                                                                 Resistors => Floating);
       Point      : GPIO_Point := STM32.Device.PE12;
    begin
       --  configure LED
@@ -142,11 +148,11 @@ is
       case HIL.Config.BUZZER_PORT is
          when HIL.Config.BUZZER_USE_AUX5 =>
             --  allow timer 4 to control buzzer
-            Configure_IO (Points => (1 => STM32.Device.PD13), Config => Config_Out_Buz);
+            Configure_IO (Points => (1 => STM32.Device.PD13), Config => Config_Out_Buz_AUX);
             Configure_Alternate_Function (Points => (1 => STM32.Device.PD13), AF => GPIO_AF_TIM4);
          when HIL.Config.BUZZER_USE_PORT =>
             --  allow timer 2 to control buzzer
-            Configure_IO (Points => (1 => STM32.Device.PA15), Config => Config_Out_Buz);
+            Configure_IO (Points => (1 => STM32.Device.PA15), Config => Config_Out_Buz_PORT);
             Configure_Alternate_Function (Points => (1 => STM32.Device.PA15), AF => GPIO_AF_TIM2);
       end case;
 

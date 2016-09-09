@@ -207,11 +207,8 @@ package body Main with SPARK_Mode => On is
 
       Logger.log_console (Logger.INFO, msg);
 
-      -- beep ever 10 seconds for one second at 1kHz.
-      Buzzer_Manager.Set_Freq (1000.0 * Hertz);
-      Buzzer_Manager.Set_Timing (period => 5.0 * Second, length => 0.2 * Second);
-      --Buzzer_Manager.Set_Song( "The Final Countdown" );
-      Buzzer_Manager.Enable;
+      --  beep to indicate main loop starts now
+      Buzzer_Manager.Beep (f => 2000.0*Hertz, Reps => 2, Period => 1.0*Second, Length => 0.2*Second);
 
       -- arm PX4IO
       Controller.activate;

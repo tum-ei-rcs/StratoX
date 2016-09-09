@@ -10,8 +10,7 @@ with Units; use Units;
 with Bounded_Image; use Bounded_Image;
 
 with Console; use Console;
---  with Buzzer_Manager;
-with LED_Manager;
+with Buzzer_Manager;
 with Logger;
 --  with ULog;
 
@@ -144,7 +143,6 @@ package body Mission with SPARK_Mode is
    
    
    procedure perform_Initialization is
-      -- The_Final_Countdown : Buzzer_Manager.Song_Type := ();
    begin
       G_state.last_state_change := Ada.Real_Time.Clock;
       G_state.body_info.orientation := (0.0 * Degree, 0.0 * Degree, 0.0 * Degree);
@@ -154,11 +152,6 @@ package body Mission with SPARK_Mode is
       -- Controller.set_hold;
       
       Logger.log(Logger.INFO, "Mission Initialized");
-      -- beep ever 10 seconds for one second at 1kHz.
-      -- Buzzer_Manager.Set_Freq (1000.0 * Hertz);
-      -- Buzzer_Manager.Set_Timing (period => 5.0 * Second, length => 1.0 * Second);
-      -- Buzzer_Manager.Set_Song(The_Final_Countdown)
-      -- Buzzer_Manager.Enable;  
       next_State;
    end perform_Initialization;
 
@@ -183,6 +176,8 @@ package body Mission with SPARK_Mode is
          NVRAM.Store (VAR_GPS_TARGET_LAT_A,  Float (G_state.home.Latitude));
          NVRAM.Store (VAR_GPS_TARGET_ALT_A,  Float (G_state.home.Altitude));
          Controller.set_Target_Position (G_state.home);
+         
+         Buzzer_Manager.Beep (f => 1000.0*Hertz, Reps => 1, Period => 1.0*Second, Length => 0.8*Second);
                   
       end lock_Home;     
       
@@ -338,10 +333,8 @@ package body Mission with SPARK_Mode is
       begin
          Controller.deactivate;
          next_State;  
-         -- beep ever 10 seconds for one second at 1kHz.
-         -- Buzzer_Manager.Set_Freq (1000.0 * Hertz);
-         -- Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
-         -- Buzzer_Manager.Enable;  
+         --  beep forever; once every 4 seconds
+         Buzzer_Manager.Beep (f => 1000.0*Hertz, Reps => 0, Period => 4.0*Second, Length => 0.5*Second);
       end deactivate;
       
       Elevons : constant Controller.Elevon_Angle_Array := Controller.get_Elevons;

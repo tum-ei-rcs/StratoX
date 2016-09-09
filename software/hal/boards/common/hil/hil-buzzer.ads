@@ -15,7 +15,9 @@ package HIL.Buzzer with SPARK_Mode is
 
    procedure Disable;
 
+   function Valid_Frequency (f : Units.Frequency_Type) return Boolean is (f in 1.0 .. 1_000_000.0);
+
    procedure Set_Frequency (Frequency : Units.Frequency_Type)
-     with Pre => Frequency in 1.0 .. 1_000_000.0;
+     with Pre => Valid_Frequency (Frequency);
 
 end HIL.Buzzer;
