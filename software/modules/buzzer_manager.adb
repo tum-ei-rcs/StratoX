@@ -1,16 +1,14 @@
---  Institution: Technische Universität München
+--  Institution: Technische Universitaet Muenchen
 --  Department:  Realtime Computer Systems (RCS)
 --  Project:     StratoX
 --
 --  Authors: Martin Becker (becker@rcs.ei.tum.de)
-with HIL.Timers; use HIL.Timers;
-with HIL.Devices;
-with HIL.Devices.Timers;
+with HIL.Buzzer;
 with Ada.Real_Time; use Ada.Real_Time;
 
 --  @summary
 --  Interface to use a buzzer/beeper.
-package body Buzzer_Manager is
+package body Buzzer_Manager with SPARK_Mode is
 
    type state is (BOFF, BINIT, BDUTY, BWAIT);
 
@@ -38,10 +36,10 @@ package body Buzzer_Manager is
       if cur_state /= newstate then
          case newstate is
             when BDUTY =>
-               HIL.Timers.Enable (HIL.Devices.Timers.Timer_Buzzer);
+               HIL.Buzzer.Enable;
                t_next := now + Milliseconds (Integer (cur_length * 1000.0));
             when others =>
-               HIL.Timers.Disable (HIL.Devices.Timers.Timer_Buzzer);
+               HIL.Buzzer.Disable;
                t_next := now + Milliseconds (Integer (cur_pause * 1000.0));
          end case;
          cur_state := newstate;
@@ -67,7 +65,8 @@ package body Buzzer_Manager is
 
    procedure Initialize is
    begin
-      Reconfigure_Hardware_Timer; -- apply defaults
+      HIL.Buzzer.Initialize;
+      Reconfigure_Buzzer; -- apply defaults
    end Initialize;
 
    procedure Disable is
@@ -76,13 +75,11 @@ package body Buzzer_Manager is
       Change_State (BOFF, now);
    end Disable;
 
-   procedure Reconfigure_Hardware_Timer is
+   procedure Reconfigure_Buzzer is
    begin
-      Configure_OC_Toggle (This => HIL.Devices.Timers.Timer_Buzzer,
-                           Channel => HIL.Devices.Timers.Timerchannel_Buzzer,
-                           Frequency => cur_freq);
+      HIL.Buzzer.Set_Frequency (cur_freq);
       is_configured := True;
-   end Reconfigure_Hardware_Timer;
+   end Reconfigure_Buzzer;
 
    function Tone_To_Frequency (tone : Tone_Type) return Frequency_Type is
       f : Frequency_Type;
@@ -118,7 +115,7 @@ package body Buzzer_Manager is
    procedure Set_Freq (f : in Frequency_Type) is
    begin
       cur_freq := f;
-      Reconfigure_Hardware_Timer;
+      Reconfigure_Buzzer;
    end Set_Freq;
 
    procedure Set_Timing (period : in Time_Type; length : in Time_Type) is

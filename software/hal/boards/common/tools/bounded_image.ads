@@ -7,6 +7,8 @@ pragma Elaborate_All (Generic_Bounded_Image);
 --  overapproximating the length, otherwise we would need a
 --  separate body for each data type. This is tight enough
 --  in most cases.
+--  Also note that the intrinsic Image functions return with a leading
+--  space, which is why
 package Bounded_Image with SPARK_Mode is
 
    function Integer_Img is new Generic_Bounded_Image.Image_32 (Integer) with Inline;

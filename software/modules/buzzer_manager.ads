@@ -7,7 +7,7 @@ with Units; use Units;
 
 --  @summary
 --  Interface to use a buzzer/beeper.
-package Buzzer_Manager is
+package Buzzer_Manager with SPARK_Mode is
 
    subtype T_Name is Character
      with Static_Predicate => T_Name in 'a' .. 'g'; -- c,d,e,f,g,a,b
@@ -51,6 +51,6 @@ package Buzzer_Manager is
    --  define how often and how long the beep appears
 
 private
-   procedure Reconfigure_Hardware_Timer;
+   procedure Reconfigure_Buzzer;
 
 end Buzzer_Manager;

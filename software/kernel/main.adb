@@ -208,10 +208,10 @@ package body Main with SPARK_Mode => On is
       Logger.log_console (Logger.INFO, msg);
 
       -- beep ever 10 seconds for one second at 1kHz.
-      --Buzzer_Manager.Set_Freq (1000.0 * Hertz);
-      --Buzzer_Manager.Set_Timing (period => 10.0 * Second, length => 1.0 * Second);
+      Buzzer_Manager.Set_Freq (1000.0 * Hertz);
+      Buzzer_Manager.Set_Timing (period => 5.0 * Second, length => 0.2 * Second);
       --Buzzer_Manager.Set_Song( "The Final Countdown" );
-      --Buzzer_Manager.Enable;
+      Buzzer_Manager.Enable;
 
       -- arm PX4IO
       Controller.activate;
@@ -229,6 +229,8 @@ package body Main with SPARK_Mode => On is
          else
             LED_Manager.LED_switchOff;
          end if;
+
+         Buzzer_Manager.Tick;
 
          -- Mission
          m_state := Mission.get_state;

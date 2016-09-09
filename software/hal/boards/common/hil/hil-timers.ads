@@ -21,7 +21,9 @@ package HIL.Timers with SPARK_Mode => Off is
    subtype HIL_Timer is HIL.Devices.Timers.HIL_Timer; -- expose type
    subtype HIL_Timer_Channel is HIL.Devices.Timers.HIL_Timer_Channel;
 
-   procedure Enable (t : in out HIL_Timer);
+   procedure Initialize (t : in out HIL_Timer);
+
+   procedure Enable (t : in out HIL_Timer; ch : HIL.Timers.HIL_Timer_Channel);
 
    procedure Disable (t : in out HIL_Timer);
 

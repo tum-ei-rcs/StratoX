@@ -4,6 +4,7 @@
 --
 -- Authors: Emanuel Regnath (emanuel.regnath@tum.de)
 with STM32.Device;
+with HIL.Config;
 
 --  @summary
 --  Target-specific mapping for HIL of Clock
@@ -33,8 +34,15 @@ is
       STM32.Device.Enable_Clock( STM32.Device.USART_7 );   -- SER 5
  
       -- Timers
-      -- STM32.Device.Enable_Clock (STM32.Device.Timer_2);
-      -- STM32.Device.Reset (STM32.Device.Timer_2); -- wiithout this not reliable
+      case HIL.Config.BUZZER_PORT is
+         when HIL.Config.BUZZER_USE_AUX5 =>
+            STM32.Device.Enable_Clock (STM32.Device.Timer_4); -- AUX buzzer
+            STM32.Device.Reset (STM32.Device.Timer_4); -- without this not reliable
+         when HIL.Config.BUZZER_USE_PORT =>            
+            STM32.Device.Enable_Clock (STM32.Device.Timer_2); -- regular buzzer port
+            STM32.Device.Reset (STM32.Device.Timer_2); -- without this not reliable
+      end case;
+
       
       STM32.Device.Reset( STM32.Device.GPIO_A );
       STM32.Device.Reset( STM32.Device.GPIO_B );

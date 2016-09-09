@@ -361,9 +361,7 @@ is
       HIL.Random.Get_Unsigned (rand32);
       declare
          buildstring : constant String := Buildinfo.Short_Datetime;
-         bootstr     : constant String := HIL.Byte'Image (num_boots);
-         pragma Assert (HIL.Byte'Size <= 8);
-         pragma Assume (bootstr'First = 1 and bootstr'Length < 4); 
+         bootstr     : constant String := Bounded_Image.Unsigned8_Img (num_boots);
          rnd         : constant Unsigned_8 := Unsigned_8 (16#FF# and rand32);
          rndstr      : constant String := Bounded_Image.Unsigned8_Img (rnd);
          fname       : constant String := bootstr(bootstr'First .. bootstr'Last) & "_" & rndstr & ".log";

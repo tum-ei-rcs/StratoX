@@ -6,6 +6,7 @@
 with STM32.GPIO;  use STM32.GPIO;
 with STM32.Device;
 with STM32.Board;
+with HIL.Config;
 
 --  @summary
 --  Target-specific mapping for HIL of GPIO in Pixhawk board
@@ -134,12 +135,20 @@ is
                                                             Resistors => Floating);
       Point      : GPIO_Point := STM32.Device.PE12;
    begin
-      -- configure LED
+      --  configure LED
       Configure_IO( Points => (1 => map(RED_LED)), Config => Config_Out );
 
-      -- FIXME: this doesn't belong here.
-      -- Configure_IO (Points => (1 => STM32.Device.PA15), Config => Config_Out_Buz);
-      -- Configure_Alternate_Function (Points => (1 => STM32.Device.PA15), AF => GPIO_AF_TIM2); -- allow timer 2 to control buzzer
+      --  buzzer setup
+      case HIL.Config.BUZZER_PORT is
+         when HIL.Config.BUZZER_USE_AUX5 =>
+            --  allow timer 4 to control buzzer
+            Configure_IO (Points => (1 => STM32.Device.PD13), Config => Config_Out_Buz);
+            Configure_Alternate_Function (Points => (1 => STM32.Device.PD13), AF => GPIO_AF_TIM4);
+         when HIL.Config.BUZZER_USE_PORT =>
+            --  allow timer 2 to control buzzer
+            Configure_IO (Points => (1 => STM32.Device.PA15), Config => Config_Out_Buz);
+            Configure_Alternate_Function (Points => (1 => STM32.Device.PA15), AF => GPIO_AF_TIM2);
+      end case;
 
       -- configure SPI 1
       Configure_IO( Points => (SPI1_SCK, SPI1_MISO, SPI1_MOSI), Config => Config_SPI1 );

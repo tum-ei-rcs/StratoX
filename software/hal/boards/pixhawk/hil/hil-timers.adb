@@ -5,21 +5,34 @@
 -- Authors: Martin Becker (becker@rcs.ei.tum.de>
 with STM32.Timers; use STM32.Timers;
 with System.OS_Interface;
+with STM32.GPIO; use STM32.GPIO;
+with STM32.Device; use STM32.Device;
 
 --  @summary
 --  Target-specific implementation of HIL for Timers. Pixhawk.
 package body HIL.Timers with SPARK_Mode => Off is
 
-   procedure Enable (t : in out HIL_Timer) is
+   Used_Channel : Timer_Channel;
+
+   procedure Initialize (t : in out HIL_Timer) is
    begin
       STM32.Timers.Enable (t);
-      STM32.Timers.Enable_Channel (t, Channel_1);
+   end Initialize;
+
+   procedure Enable (t : in out HIL_Timer; ch : HIL.Timers.HIL_Timer_Channel) is
+   begin
+      Used_Channel := ch;
+
+      if not STM32.Timers.Enabled (t) then
+         STM32.Timers.Enable (t);
+      end if;
+      STM32.Timers.Enable_Channel (t, Used_Channel);
    end Enable;
 
    procedure Disable (t : in out HIL_Timer) is
    begin
       -- STM32.Timers.Disable (t); -- we cannot disable the timer when channel is active
-      STM32.Timers.Disable_Channel (t, Channel_1); -- so we just let the timer do it's thing and disable the channel
+      STM32.Timers.Disable_Channel (t, Used_Channel); -- so we just let the timer do it's thing and disable the channel
    end Disable;
 
    procedure Calculate_Prescaler_and_Period (f : in Frequency_Type; Prescaler : out Short; Period : out Word) is
@@ -53,6 +66,7 @@ package body HIL.Timers with SPARK_Mode => Off is
       --  2. write ARR and CCRx to set event period. Counter decrements
       --  until zero, then starts at value=Period again.
       Calculate_Prescaler_and_Period (Frequency, Prescaler, Period);
+      -- FIXME: timers limited to 16bit, except timer 2 and 5
       STM32.Timers.Configure (This,
                               Prescaler => Prescaler,
                               Period => Period,

@@ -23,6 +23,7 @@ package body Generic_Bounded_Image with SPARK_Mode is
    begin
       declare
          ret : String (1 .. max) := res (res'First .. res'First - 1 + max);
+         --ret : String (1 .. max) := res (res'Last - max + 1 .. res'Last);
       begin
          return ret;
       end;
