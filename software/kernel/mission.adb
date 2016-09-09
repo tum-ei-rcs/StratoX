@@ -44,6 +44,12 @@ package body Mission with SPARK_Mode is
    
    function Sat_Add_Time is new Saturated_Addition (Time_Type);
    
+   -----------
+   --  Specs
+   -----------
+   
+   procedure Enter_State (state : Mission_State_Type);
+   
    -------------
    --  states
    -------------
@@ -72,7 +78,7 @@ package body Mission with SPARK_Mode is
       if New_Mission_Enabled then
          NVRAM.Reset;
          G_state.mission_state := INITIALIZING;
-         Logger.log(Logger.INFO, "New Mission.");
+         Logger.log(Logger.INFO, "New Mission.");         
       else
          Logger.log(Logger.WARN, "Mission running, cannot start new Mission!");
       end if;
@@ -98,6 +104,7 @@ package body Mission with SPARK_Mode is
          --  new mission
          start_New_Mission;
          Mission_Resumed := False;
+                  
       else
          --  resume after reset: load values
          --  Baro
@@ -118,7 +125,12 @@ package body Mission with SPARK_Mode is
          
          Logger.log(Logger.INFO, "Continue Mission at " & Integer_Img (Mission_State_Type'Pos (G_state.mission_state)));
          Mission_Resumed := True;
+         
+         -- beep thrice to indicate mission is continued (overwritten in case the state entry wants otherwise)
+         Buzzer_Manager.Beep (f => 2000.0*Hertz, Reps => 3, Period => 0.5*Second, Length => 0.2*Second);         
       end if;    
+      
+      Enter_State (G_state.mission_state);
    end load_Mission;
 
 
@@ -134,9 +146,10 @@ package body Mission with SPARK_Mode is
    procedure next_State is
    begin
       if G_state.mission_state /= Mission_State_Type'Last then
-         G_state.mission_state := Mission_State_Type'Succ(G_state.mission_state);         
+         G_state.mission_state := Mission_State_Type'Succ(G_state.mission_state);
          NVRAM.Store( VAR_MISSIONSTATE, HIL.Byte (Mission_State_Type'Pos (G_state.mission_state)));
          G_state.last_state_change := Ada.Real_Time.Clock;
+         Enter_State (G_state.mission_state);
       end if;
    end next_State;
    
@@ -176,9 +189,7 @@ package body Mission with SPARK_Mode is
          NVRAM.Store (VAR_GPS_TARGET_LAT_A,  Float (G_state.home.Latitude));
          NVRAM.Store (VAR_GPS_TARGET_ALT_A,  Float (G_state.home.Altitude));
          Controller.set_Target_Position (G_state.home);
-         
-         Buzzer_Manager.Beep (f => 1000.0*Hertz, Reps => 1, Period => 1.0*Second, Length => 0.8*Second);
-                  
+                                    
       end lock_Home;     
       
    begin
@@ -325,6 +336,25 @@ package body Mission with SPARK_Mode is
    end perform_Detach;
 
    
+   procedure Enter_State (state : Mission_State_Type) is 
+   begin
+      case state is 
+         when INITIALIZING =>
+            --  beep once to indicate fresh mission starts now
+            Buzzer_Manager.Beep (f => 2000.0*Hertz, Reps => 2, Period => 1.5*Second, Length => 0.2*Second);
+            
+         when STARTING =>
+            --  beep long once to indiate mission starts now
+            Buzzer_Manager.Beep (f => 1000.0*Hertz, Reps => 1, Period => 2.0*Second, Length => 1.0*Second);
+            
+         when WAITING_FOR_RESET | WAITING_ON_GROUND =>
+            --  beep infinitly to make someone pick me up
+            Buzzer_Manager.Beep (f => 1000.0*Hertz, Reps => 0, Period => 4.0*Second, Length => 0.5*Second);
+                        
+         when others =>
+            null;
+      end case;
+   end Enter_State;
    
    procedure control_Descend is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
@@ -334,7 +364,6 @@ package body Mission with SPARK_Mode is
          Controller.deactivate;
          next_State;  
          --  beep forever; once every 4 seconds
-         Buzzer_Manager.Beep (f => 1000.0*Hertz, Reps => 0, Period => 4.0*Second, Length => 0.5*Second);
       end deactivate;
       
       Elevons : constant Controller.Elevon_Angle_Array := Controller.get_Elevons;
@@ -379,6 +408,7 @@ package body Mission with SPARK_Mode is
       
       if G_state.landed_wait_time > 60.0 * Second then
          Logger.log(Logger.INFO, "Mission Finished");
+         --  beep once to indicate fresh mission starts now
          next_State;
          -- FIXME: turn everything OFF to save power
       end if;

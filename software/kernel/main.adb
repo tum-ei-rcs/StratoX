@@ -207,10 +207,7 @@ package body Main with SPARK_Mode => On is
 
       Logger.log_console (Logger.INFO, msg);
 
-      --  beep to indicate main loop starts now
-      Buzzer_Manager.Beep (f => 2000.0*Hertz, Reps => 2, Period => 1.0*Second, Length => 0.2*Second);
-
-      -- arm PX4IO
+      --  arm PX4IO
       Controller.activate;
 
       time_next_loop := Clock;
@@ -227,9 +224,10 @@ package body Main with SPARK_Mode => On is
             LED_Manager.LED_switchOff;
          end if;
 
+         --  do not use the buzzer here...just call tick. The only one who may buzzer is mission.adb
          Buzzer_Manager.Tick;
 
-         -- Mission
+         --  Mission
          m_state := Mission.get_state;
          Mission.run_Mission; -- may switch to next one
 

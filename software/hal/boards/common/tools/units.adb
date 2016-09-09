@@ -143,9 +143,9 @@ package body Units with SPARK_Mode is
    function Saturated_Cast (val : Float) return T is
       ret : T;
    begin
-      if val > Float (T'Last) then
+      if val >= Float (T'Last) then
          ret := T'Last;
-      elsif val < Float (T'First) then
+      elsif val <= Float (T'First) then
          ret := T'First;
       else
          ret := T (val);
