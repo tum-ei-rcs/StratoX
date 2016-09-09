@@ -11,10 +11,10 @@ abstract project Config is
       case My_Build_Mode is
 
          when "Release" =>
-            for Default_Switches ("ada") use ("-g", "-O2", "-gnatp", "-gnatn");
+            for Default_Switches ("ada") use ("-g", "-O2", "-gnatp", "-gnatn"); -- gnatp: suppress all checks, gnatn: inlining
 
          when "Debug" =>
-            for Default_Switches ("ada") use ("-g", "-O0", "-gnata", "-fcallgraph-info=su");
+            for Default_Switches ("ada") use ("-g", "-O0", "-gnata", "-fcallgraph-info=su"); -- gnata: enable assertions
 
          when others =>
 

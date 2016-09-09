@@ -15,7 +15,7 @@ with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Numerics;
 with Types;
 
-pragma Elaborate_All (Types);
+pragma Elaborate_All (Types); -- TODO: is this required?
 package Units with
      Spark_Mode is
 

@@ -21,6 +21,5 @@ package HIL.Devices.Timers with SPARK_Mode is
    Timer_Buzzer_Aux : STM32.Timers.Timer renames STM32.Device.Timer_4;
    Timerchannel_Buzzer_Aux : STM32.Timers.Timer_Channel renames STM32.Timers.Channel_2;
 
-   -- FIXME: how do we switch this?
 
 end HIL.Devices.Timers;

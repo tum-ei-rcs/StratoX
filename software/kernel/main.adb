@@ -78,7 +78,7 @@ package body Main with SPARK_Mode => On is
       declare
          now : constant Time := Clock;
       begin
-         delay until now + Milliseconds (1500); -- reduced from 1500 to 150
+         delay until now + Milliseconds (1000); -- reduced from 1500
       end;
 
       --  Dump general boot & crash info

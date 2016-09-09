@@ -146,6 +146,7 @@ is
       time_of_call : constant Time := Clock;
       dt  : constant Time_Type := To_Time(time_of_call - G.t_last);
    begin
+	-- FIXME: protect against dt=0?
       KM_Profiler.start;
       predict(u, dt);
       update(z, dt);

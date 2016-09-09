@@ -17,10 +17,10 @@ abstract project Config is
       case Build_Mode is
 
          when "Debug" =>
-            for Default_Switches ("ada") use ("-O0", "-gnatwa", "-gnatQ", "-gnatw.X");
+            for Default_Switches ("ada") use ("-O0", "-gnatwa", "-gnatw.X");
 
          when "Release" =>
-            for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.X");
+            for Default_Switches ("ada") use ("-O2", "-gnatw.X");
 
          when "Analyze" =>
 
