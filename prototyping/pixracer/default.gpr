@@ -1,4 +1,5 @@
 with "../../software/hal/boards/pixracer_v1.gpr";
+with "../../config/config.gpr";
 
 project Default is
 
@@ -10,38 +11,35 @@ project Default is
    for Source_Dirs use ("src", "src/config", "src/driver", "src/driver/fs", "src/modules", "src/lib", "src/lib/ulog");
    for Object_Dir use "obj";
    for Exec_Dir use "obj";
-   type Build_Modes is
-      ("debug", "release", "analyze");
-   Build_Mode : Build_Modes := external ("Build_Mode", "debug");
 
-   case Build_Mode is
+   case Config.Build_Mode is
 
-      when "debug" =>
+      when "Debug" =>
          for Runtime ("ada") use Pixracer_V1'Runtime ("Ada");
          for Target use "arm-eabi";
 
-      when "release" =>
+      when "Release" =>
          for Runtime ("ada") use Pixracer_V1'Runtime ("Ada");
          for Target use "arm-eabi";
 
-      when "analyze" =>
-         for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
-         for Excluded_Source_Files use ("generic_vector3d.ads", "genereic_quaternions.ads", "generic_quaternions.adb");
+      when "Analyze" =>
+         --for Excluded_Source_Dirs use ("hal/hpl", "hal/hal");
+         --for Excluded_Source_Files use ("generic_vector3d.ads", "genereic_quaternions.ads", "generic_quaternions.adb");
          for Runtime ("ada") use Pixracer_V1'Runtime ("Ada");
          for Target use "arm-eabi";
    end case;
 
    package Compiler is
 
-      case Build_Mode is
+      case Config.Build_Mode is
 
-         when "debug" =>
-            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyakyM100", "-gnat12", "-gnata", "-gnatet=../target-gen.atp", "-fcallgraph-info=su,da");
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", "-gnatet=../target-gen.atp");
 
-         when "release" =>
-            for Default_Switches ("ada") use ("-O2", "-gnatQ", "-gnatw.Xh.k.o", "-gnatVaimrs", "-gnato", "-gnat12");
+         when "Release" =>
+            for Default_Switches ("ada") use ("-O2", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnato", "-gnatyak", "-gnat12", "-gnatet=../target-gen.atp");
 
-         when "analyze" =>
+         when "Analyze" =>
 
       end case;
    end Compiler;
@@ -58,16 +56,16 @@ project Default is
       for Global_Configuration_Pragmas use "gnat.adc";
       for Switches ("buildinfo.adb") use ("-f"); -- force recompilation, to have build string correct
 
-      case Build_Mode is
+      case Config.Build_Mode is
 
-         when "debug" =>
+         when "Debug" =>
             for Default_Switches ("ada") use ("-g");
 
-         when "release" =>
-            for Default_Switches ("ada") use ();
+         when "Release" =>
+            for Default_Switches ("ada") use ( );
 
-         when "analyze" =>
-            for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target-gen.atp");
+         when "Analyze" =>
+             for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target.atp");
       end case;
    end Builder;
 
@@ -75,46 +73,35 @@ project Default is
       for Communication_Protocol use "remote";
       for Program_Host use "localhost:4242";
 
-      case Build_Mode is
+      case Config.Build_Mode is
 
-         when "debug" =>
+         when "Debug" =>
             for Gnat use "arm-eabi-gnat";
             for Gnatlist use "arm-eabi-gnatls";
             for Debugger_Command use "arm-eabi-gdb";
             for Documentation_Dir use "doc/";
 
-         when "release" =>
+         when "Release" =>
 
-         when "analyze" =>
-            for Gnat use "arm-eabi-gnat";
-            for Gnatlist use "arm-eabi-gnatls";
-            for Debugger_Command use "arm-eabi-gdb";
+         when "Analyze" =>
+
       end case;
    end Ide;
 
    package Prove is
       -- switches for gnat2why et. al.
 
-      for Switches use ("--timeout=5", "--RTS=" & Pixracer_V1'Runtime ("Ada"), "--verbose", "--level=2", "-j2", "-d"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
+      for Switches use ("--pedantic", "-j2", "--level=1", "--RTS=" & Pixracer_V1'Runtime ("Ada"), "--verbose", "-k"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
+
    end Prove;
 
    package Check is
       for Default_Switches ("ada") use ("-o", "check/gnatcheck.out", "-rules", "-from=coding_standard.rules");
    end Check;
 
-   package Pretty_Printer is
+   -- pretty printer
+   --package Pretty_Printer renames Style.Pretty_Printer;
 
-      case Build_Mode is
-
-         when "debug" =>
-            for Default_Switches ("ada") use ("-M100");
-
-         when "release" =>
-
-         when "analyze" =>
-
-      end case;
-   end Pretty_Printer;
 
 end Default;
 

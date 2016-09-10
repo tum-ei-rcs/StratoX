@@ -23,6 +23,9 @@ package HIL.Devices with SPARK_Mode is
    subtype Device_Type_LED is Device_Type_GPIO range RED_LED .. BLU_LED;
 
    -- INTERRUPT PRIOS, ALL AT ONE PLACE. Must decide who wins here.
-   --IRQ_PRIO_UART_LOG : constant := 251; -- if this is too low, we lose input/output
-   IRQ_PRIO_SDIO     : constant := 250; -- sdcard: only affects performance (=DMA finish/Start signaling)
+   IRQ_PRIO_UART4    : constant := 251; -- must be higher, because too low could result in loss of data
+   IRQ_PRIO_UART_LOG : constant := 249;
+   IRQ_PRIO_SDIO     : constant := 250; -- sdcard: can be lower. only affects throughput, not data integrity.
+
+
 end HIL.Devices;

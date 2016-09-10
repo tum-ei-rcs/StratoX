@@ -1,5 +1,5 @@
 with "../hpl/STM32/stm32f427.gpr"; -- this STM device is on the adaracer board
-with "../../config/config.gpr"
+with "../../config/config.gpr";
 
 library project Adaracer_V1 is
 

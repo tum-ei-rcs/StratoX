@@ -72,59 +72,19 @@ package body Main is
 
 
    procedure Run_Loop is
-      --  data    : HIL.SPI.Data_Type (1 .. 3)  := (others => 0);
-      --  data_rx : HIL.UART.Data_Type (1 .. 1) := (others => 0);
       loop_time_start   : Time      := Clock;
 
-      --      gleich : Ada.Real_Time.Time;
-      --      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6));
       type prescaler is mod 100;
       p : prescaler := 0;
 
       type prescaler_gps is mod 20;
       pg : prescaler_gps := 0;
-      mgps : ULog.Message (ULog.GPS);
    begin
       LED_Manager.Set_Color ((HIL.Devices.RED_LED => False, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
---        Buzzer_Manager.Set_Timing (period => 0.5 * Second, length => 0.1 * Second); -- gapless
---        Buzzer_Manager.Enable;
---
---        gleich := Clock;
---        for x in 1 .. song'Length loop
---           Buzzer_Manager.Set_Tone (song (x));
---           Buzzer_Manager.Tick;
---           gleich := gleich + Milliseconds(250);
---           delay until gleich;
---           Buzzer_Manager.Tick;
---        end loop;
---        Buzzer_Manager.Disable;
-
-      --  gps initial
-      mgps.lat := 48.15;
-      mgps.lon := 11.583;
-      mgps.alt := 560.0;
-      mgps.gps_week := 1908;
-      mgps.gps_msec := 0;
-      mgps.fix := 0;
-      mgps.nsat := 8;
-
       loop
          loop_time_start := Clock;
-
---           p := p + 1;
---           if p = 0 then
---              Logger.log_console (Logger.INFO, "Logfile size " & SDLog.Logsize'Img & " B");
---           end if;
-
-         pg := pg + 1;
-         if pg = 0 then
-            mgps.t := Ada.Real_Time.Clock;
-            mgps.lat := mgps.lat - 0.1;
-            mgps.gps_msec := mgps.gps_msec + 100;
-            --Logger.log_sd (msg_level => Logger.SENSOR, message => mgps);
-         end if;
 
          --  LED heartbeat
          LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
