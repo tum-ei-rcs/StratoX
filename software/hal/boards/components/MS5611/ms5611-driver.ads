@@ -7,8 +7,7 @@
 with Units;
 
 --  @summary Driver for the Barometer MS5611-01BA03
-package MS5611.Driver with
-  SPARK_Mode,
+package MS5611.Driver with SPARK_Mode,
   Abstract_State => (State, Coefficients),
   Initializes => (State, Coefficients) -- all have defaults in the body
 is
@@ -19,16 +18,15 @@ is
 
    subtype Time_Type is Units.Time_Type;
 
-   --  FIXME: this is critical: those suzbtypes don't have 0.0 in their range, thus a constraint error
+   --  FIXME: this is critical: those subtypes don't have 0.0 in their range, thus a constraint error
    --  is raised whenever an object of those is declared without initialization.
    subtype Temperature_Type is
      Units.Temperature_Type range 233.15 .. 358.15;  -- (-)40 .. 85degC, limits from datasheet
    subtype Pressure_Type is
      Units.Pressure_Type range 1000.0 .. 120000.0;   -- 10 .. 1200 mbar, limits from datasheet
 
-   -- this influences the measurement noise/precision and conversion time
-   type OSR_Type is (
-                     OSR_256, -- 0.012degC/0.065mbar, <0.6ms
+   --  this influences the measurement noise/precision and conversion time
+   type OSR_Type is (OSR_256, -- 0.012degC/0.065mbar, <0.6ms
                      OSR_512,
                      OSR_1024,
                      OSR_2048,
@@ -41,22 +39,22 @@ is
    procedure Init;
    --  initialize the device, get chip-specific compensation values
 
-   procedure Update_Val;
+   procedure Update_Val (have_update : out Boolean);
    --  trigger measurement update. Should be called periodically.
 
    function Get_Temperature return Temperature_Type;
-   -- get temperature from buffer
-   -- @return the last known temperature measurement
+   --  get temperature from buffer
+   --  @return the last known temperature measurement
 
    function Get_Pressure return Pressure_Type;
-   -- get barometric pressure from buffer
-   -- @return the last known pressure measurement
+   --  get barometric pressure from buffer
+   --  @return the last known pressure measurement
 
    procedure Self_Check (Status : out Error_Type);
-   -- implements the self-check of the barometer.
-   -- It checks the measured altitude for validity by
-   -- comparing them to altitude_offset. Furthermore it can adapt
-   -- the takeoff altitude.
-   -- @param Status returns the result of self check
+   --  implements the self-check of the barometer.
+   --  It checks the measured altitude for validity by
+   --  comparing them to altitude_offset. Furthermore it can adapt
+   --  the takeoff altitude.
+   --  @param Status returns the result of self check
 
 end MS5611.Driver;

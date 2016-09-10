@@ -14,8 +14,10 @@ is
 
    --overriding
    procedure read_Measurement(Self : in out Barometer_Tag) is
+      have_new : Boolean;
    begin
-      Driver.Update_Val;
+      Driver.Update_Val (have_new);
+      pragma Unreferenced (have_new); -- not sure what the side effects are if we only sample on new data
       Self.sample.data.pressure := Driver.Get_Pressure;
       Self.sample.data.temperature := Driver.Get_Temperature;
    end read_Measurement;
@@ -42,7 +44,7 @@ is
       h0   : constant Length_Type := t_ref / t_coeff;
       prel : constant Unit_Type := pressure / p_ref;
       comp : constant Unit_Type := prel**exp_frac;
-      neg  : constant Unit_Type := 1.0 - comp; -- FIXME: overflow check might fail
+      neg  : constant Unit_Type := 1.0 - comp;
    begin
       return h0 * neg; -- FIXME: overflow check might fail
    end Altitude;

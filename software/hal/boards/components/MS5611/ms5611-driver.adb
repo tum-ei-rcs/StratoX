@@ -1,33 +1,41 @@
+--  Institution: Technische Universitaet Muenchen
+--  Department:  Realtime Computer Systems (RCS)
+--  Project:     StratoX
 --
+--  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+--           Martin Becker (becker@rcs.ei.tum.de)
 with Units;            use Units;
 with Units.Operations; use Units.Operations;
 with MS5611.Register;  use MS5611.Register;
 with Ada.Real_Time;    use Ada.Real_Time;
-use type Units.Unit_Type;
-with HIL.SPI;   
+with HIL.SPI;
 
-package body MS5611.Driver with 
-SPARK_Mode,
-Refined_State => (State => (G_Baro_State, temperature_raw, temperature, pressure_raw, pressure),
-                  Coefficients => (G_sens_t1, G_off_t1, G_tcs, G_tco, G_t_ref, G_tempsens, dT, SENS, OFF, TEMP))
+--  @summary Driver for the Barometer MS5611-01BA03
+package body MS5611.Driver with SPARK_Mode,
+  Refined_State => (State => (G_Baro_State, temperature_raw, temperature, pressure_raw, pressure),
+                    Coefficients => (G_sens_t1, G_off_t1, G_tcs, G_tco, G_t_ref, G_tempsens, dT, SENS, OFF, TEMP))
 is
 
    type Data_Array is array (Natural range <>) of HIL.Byte with
         Component_Size => 8;
 
-   -- baro device states
+   --  baro device states
    type Baro_FSM_Type is
-     (NOT_INITIALIZED, READY, TEMPERATURE_CONVERSION, PRESSURE_CONVERSION) with Default_Value => NOT_INITIALIZED;
+     (NOT_INITIALIZED,
+      READY,
+      TEMPERATURE_CONVERSION,
+      PRESSURE_CONVERSION)
+     with Default_Value => NOT_INITIALIZED;
 
    type Conversion_Info_Type is record
       OSR   : OSR_Type;
       Start : Time_Type;
    end record;
 
-   -- the current state of the sensor device
-   -- @field FSM_State what the device is currently doing
-   -- @field Conv_Info_Temp context for state TEMPERATURE_CONVERSION
-   -- @field Conv_Info_Pres context for state PRESSURE_CONVERSION
+   --  the current state of the sensor device
+   --  @field FSM_State what the device is currently doing
+   --  @field Conv_Info_Temp context for state TEMPERATURE_CONVERSION
+   --  @field Conv_Info_Pres context for state PRESSURE_CONVERSION
    type Baro_State_Type is record
       FSM_State      : Baro_FSM_Type;
       Conv_Info_Temp : Conversion_Info_Type;
@@ -43,13 +51,13 @@ is
    type Conversion_ID_Type is (D1, D2);
    type Conversion_Data_Type is mod 2**24 with Size => 24;
 
-   
-   subtype Sens_T1_Type is Float range 0.0 .. Float((2**16 - 1) * 2**15);
-   subtype Off_T1_Type is Float range 0.0 .. Float((2**16 - 1) * 2**16);
-   subtype TCS_Type is Float range 0.0 .. Float(2**16 - 1) / Float(2**8);
-   subtype TCO_Type is Float range 0.0 .. Float(2**16 - 1) / Float(2**7);
-   subtype T_Ref_Type is Float range 0.0 .. Float((2**16 - 1) * 2**8);
-   subtype Tempsens_Type is Float range 0.0 .. Float(2**16 - 1) / Float(2**23);
+
+   subtype Sens_T1_Type is Float range 0.0 .. Float ((2**16 - 1) * 2**15);
+   subtype Off_T1_Type is Float range 0.0 .. Float ((2**16 - 1) * 2**16);
+   subtype TCS_Type is Float range 0.0 .. Float (2**16 - 1) / Float (2**8);
+   subtype TCO_Type is Float range 0.0 .. Float (2**16 - 1) / Float (2**7);
+   subtype T_Ref_Type is Float range 0.0 .. Float ((2**16 - 1) * 2**8);
+   subtype Tempsens_Type is Float range 0.0 .. Float (2**16 - 1) / Float (2**23);
 
 
    subtype DT_Type is Float range -16776960.9 .. 16777216.9;
@@ -65,15 +73,15 @@ is
    function Sat_Cast_OffType is new Units.Saturated_Cast (OFF_Type);
    function Sat_Cast_TEMPType is new Units.Saturated_Cast (TEMP_Type);
    function Sat_Cast_SensType is new Units.Saturated_Cast (Sense_Type);
-   
+
    function Sat_Add_OffType is new Units.Saturated_Addition (OFF_Type);
    function Sat_Add_SensType is new Units.Saturated_Addition (Sense_Type);
    function Sat_Add_TempType is new Units.Saturated_Addition (TEMP_Type);
-   
+
    function Sat_Sub_TempType is new Units.Saturated_Subtraction (TEMP_Type);
    function Sat_Sub_OffType is new Units.Saturated_Subtraction (OFF_Type);
    function Sat_Sub_SensType is new Units.Saturated_Subtraction (Sense_Type);
-   
+
    ----------------------
    --  PROTOTYPES
    ----------------------
@@ -85,7 +93,7 @@ is
 
    procedure compensateTemperature;
 
-   function conversion_Finished(state : Baro_State_Type;
+   function conversion_Finished (state : Baro_State_Type;
                                 conv_time : Conversion_Time_LUT_Type;
                                 now : Time) return Boolean;
 
@@ -100,6 +108,24 @@ is
    --  @param arg_sense raw sense data
    --  @param arg_offset calibration offset
    --  @return barometric pressure
+
+   procedure writeToDevice (Device : Device_Type; data : in Data_Array);
+   procedure selectDevice (Device : Device_Type);
+   procedure deselectDevice (Device : Device_Type);
+
+   procedure transferWithDevice (Device  :        Device_Type;
+                                 data_tx : in     Data_Array;
+                                 data_rx :    out Data_Array);
+
+   procedure read_coefficient (Device     :     Device_Type;
+                               coeff_id   :     Coefficient_ID_Type;
+                               coeff_data : out Coefficient_Data_Type);
+   procedure read_adc (Device : Device_Type; adc_value : out Conversion_Data_Type);
+
+
+   -------------
+   --  LUTS
+   -------------
 
    --  maximum conversion times (taken from the datasheet)
    Conversion_Time_LUT : constant Conversion_Time_LUT_Type :=
@@ -140,14 +166,14 @@ is
 
    G_CELSIUS_0 : constant := 273.15;
 
-   -- Glue Code
-   -- the following procedures access the Hardware Interface Layer (HIL)
-   
+   --  Glue Code
+   --  the following procedures access the Hardware Interface Layer (HIL)
+
 
    ----------------------
    --  selectDevice
    ----------------------
-   
+
    procedure selectDevice (Device : Device_Type) is
    begin
       if Device = Baro then
@@ -158,7 +184,7 @@ is
    ----------------------
    --  deselectDevice
    ----------------------
-   
+
    procedure deselectDevice (Device : Device_Type) is
    begin
       if Device = Baro then
@@ -169,18 +195,18 @@ is
    ----------------------
    --  writeToDevice
    ----------------------
-   
+
    procedure writeToDevice (Device : Device_Type; data : in Data_Array) is
    begin
       selectDevice (Device);
       HIL.SPI.write (HIL.SPI.Barometer, HIL.SPI.Data_Type (data));
       deselectDevice (Device);
    end writeToDevice;
-   
+
    ----------------------
    --  transferWithDevice
    ----------------------
-   
+
    procedure transferWithDevice
      (Device  :        Device_Type;
       data_tx : in     Data_Array;
@@ -195,21 +221,10 @@ is
       deselectDevice (Device);
    end transferWithDevice;
 
---     -- This is where the magic occurs.
---     Function Convert( Data : In Data_Array ) Return Coefficient_Data_Type is
---        Result : Coefficient_Data_Type;
---        For Result'Address use Data'Address;
---        Pragma Import( Convention => Ada, Entity => Result );
---        Pragma Inline( Convert );
---     begin
---        Return Result;
---     end Convert;
-
    ----------------------
    --  read_coefficient
    ----------------------
-   
-   -- reads a PROM coefficient value
+
    procedure read_coefficient
      (Device     :     Device_Type;
       coeff_id   :     Coefficient_ID_Type;
@@ -237,7 +252,7 @@ is
       coeff_data :=
         Coefficient_Data_Type (Data_RX (3)) +
         Coefficient_Data_Type (Data_RX (2)) * (2**8);
-      -- coeff_data := Convert( data(1 .. 2) );
+      --  coeff_data := Convert( data(1 .. 2) );
    end read_coefficient;
 
    ----------------------
@@ -261,21 +276,26 @@ is
    ----------------------
    --  reset
    ----------------------
-   
-   procedure reset is
+
+   procedure Reset is
    begin
       writeToDevice (Baro, (1 => HIL.Byte (CMD_RESET)));
-   end reset;
+   end Reset;
+
+   -------------
+   --  Init
+   -------------
 
    --  This function sequentially initializes the barometer.
-   --  Therefore, the barometer is reset, the PROM-Coefficients are read and the starting-height (altitude_offset) is calculated.
-   procedure init is
+   --  Therefore, the barometer is reset, the PROM-Coefficients are read and
+   --  the takeoff altitude (altitude_offset) is calculated.
+   procedure Init is
       c1 : Coefficient_Data_Type;
       c2 : Coefficient_Data_Type;
       c3 : Coefficient_Data_Type;
       c4 : Coefficient_Data_Type;
       c5 : Coefficient_Data_Type;
-      c6 : Coefficient_Data_Type;            
+      c6 : Coefficient_Data_Type;
    begin
       read_coefficient (Baro, COEFF_SENS_T1, c1);
       G_sens_t1 := Float (c1) * Float (2**15);
@@ -297,16 +317,16 @@ is
 
       G_Baro_State.FSM_State := READY;
 
-   end init;
-   
+   end Init;
+
 
    ----------------------
    --  start_conversion
    ----------------------
-   
+
    procedure start_conversion (ID : Conversion_ID_Type; OSR : OSR_Type) is
       data : Data_Array (1 .. 1) := (others => 0);
-      now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       case (ID) is
          when D1 =>
@@ -323,7 +343,7 @@ is
                   data (1) := HIL.Byte (CMD_D1_CONV_4096);
             end case;
             G_Baro_State.Conv_Info_Pres.OSR := OSR;
-            G_Baro_State.Conv_Info_Pres.Start := Units.To_Time( now );
+            G_Baro_State.Conv_Info_Pres.Start := Units.To_Time (now);
          when D2 =>
             case (OSR) is
                when OSR_256 =>
@@ -338,7 +358,7 @@ is
                   data (1) := HIL.Byte (CMD_D2_CONV_4096);
             end case;
             G_Baro_State.Conv_Info_Temp.OSR := OSR;
-            G_Baro_State.Conv_Info_Temp.Start := Units.To_Time( now );
+            G_Baro_State.Conv_Info_Temp.Start := Units.To_Time (now);
       end case;
       writeToDevice (Baro, data);
 
@@ -347,43 +367,41 @@ is
    ----------------------
    --  self_check
    ----------------------
-   
-   procedure self_check (Status : out Error_Type) is
-      c3 : Coefficient_Data_Type;
+
+   procedure Self_Check (Status : out Error_Type) is
+      later : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+      have_update : Boolean;
    begin
-      -- check if initialized
---        if G_Baro_State.FSM_State /= READY then
---           Status := FAILURE;
---        end if;
 
-      -- read coefficient again and check equality
-      read_coefficient (Baro, COEFF_SENS_T1, c3);
-      if Float (c3) /= G_tcs then
-         Status := FAILURE;
-      else
-         -- read D2
-         start_conversion (D2, OSR_256);
+      Wait_Value_Loop :
+      for k in 0 .. 4 loop
+         Update_Val (have_update);
+         exit Wait_Value_Loop when have_update;
 
-         -- todo check
-         Status := SUCCESS;
-      end if;
-   end self_check;
+         later := later + Milliseconds (100); -- easily enough
+         delay until later;
+      end loop Wait_Value_Loop;
+
+      Status := (if have_update then SUCCESS else FAILURE);
+   end Self_Check;
 
    ----------------------
    --  conversion_Finished
    ----------------------
-   
-   function conversion_Finished(state     : Baro_State_Type;
-                                conv_time : Conversion_Time_LUT_Type;
-                                now       : Time) return Boolean
+
+   function conversion_Finished (state     : Baro_State_Type;
+                                 conv_time : Conversion_Time_LUT_Type;
+                                 now       : Time) return Boolean
    is
       result : Boolean;
    begin
-      case(state.FSM_State) is
+      case (state.FSM_State) is
          when TEMPERATURE_CONVERSION =>
-            result := ( Sum_Time (state.Conv_Info_Temp.Start, conv_time(state.Conv_Info_Temp.OSR)) < Units.To_Time( now) );
+            result := (Sum_Time (state.Conv_Info_Temp.Start,
+                       conv_time (state.Conv_Info_Temp.OSR)) < Units.To_Time (now));
          when PRESSURE_CONVERSION =>
-            result := ( Sum_Time (state.Conv_Info_Pres.Start, conv_time(state.Conv_Info_Pres.OSR)) < Units.To_Time( now) );
+            result := (Sum_Time (state.Conv_Info_Pres.Start,
+                       conv_time (state.Conv_Info_Pres.OSR)) < Units.To_Time (now));
          when others =>
             result := False;
       end case;
@@ -393,7 +411,7 @@ is
    ------------------------------------
    --  calculateTemperatureDifference
    ------------------------------------
-   
+
    function calculateTemperatureDifference
      (Temp_Raw : Conversion_Data_Type;
       T_Ref    : Float) return DT_Type
@@ -405,15 +423,15 @@ is
    ----------------------
    --  convertToKelvin
    ----------------------
-   
+
    function convertToKelvin (thisTemp : in TEMP_Type) return Temperature_Type is
       ret  : Temperature_Type := Temperature_Type'First; -- init required, otherwise constraint error!
-      cand : Float := Float (G_CELSIUS_0) + Float (thisTemp) / 100.0;
-      
-      --function Sat_Cast_Temperature is new Units.Saturated_Cast (Temperature_Type);
-      
-      -- cannot use Sat_Cast here, because that builds on units, 
-      -- which requires default value of 0.0, which isn't in Temperature_Type'Range
+      cand : constant Float := Float (G_CELSIUS_0) + Float (thisTemp) / 100.0;
+
+      --  function Sat_Cast_Temperature is new Units.Saturated_Cast (Temperature_Type);
+
+      --  cannot use Sat_Cast here, because that builds on units,
+      --  which requires default value of 0.0, which isn't in Temperature_Type'Range
    begin
       if cand > Float (Temperature_Type'Last) then
          ret := Temperature_Type'Last;
@@ -428,12 +446,12 @@ is
    ---------------------------
    --  compensateTemperature
    ---------------------------
-   
-   -- compensates values according to datasheet
+
+   --  compensates values according to datasheet
    procedure compensateTemperature is
       T2    : TEMP_Type  := 0.0;
       OFF2  : OFF_Type   := 0.0;
-      SENS2 : Sense_Type := 0.0;            
+      SENS2 : Sense_Type := 0.0;
    begin
       if TEMP < TEMP_Type (2000.0) then
          T2    := Sat_Cast_TEMPType (dT**2 / Float (2**31));
@@ -453,7 +471,7 @@ is
    ----------------------
    --  calculatePressure
    ----------------------
-   
+
    function calculatePressure
      (arg_pressure_raw : Conversion_Data_Type;
       arg_sense        : Sense_Type;
@@ -468,29 +486,31 @@ is
    ----------------------
    --  get_temperature
    ----------------------
-   
-   function get_temperature return Temperature_Type is
+
+   function Get_Temperature return Temperature_Type is
    begin
       return temperature;
-   end get_temperature;
+   end Get_Temperature;
 
    ----------------------
    --  get_pressure
    ----------------------
-   
-   function get_pressure return Pressure_Type is
+
+   function Get_Pressure return Pressure_Type is
    begin
       return pressure;
-   end get_pressure;
+   end Get_Pressure;
 
    ----------------------
    --  update_val
    ----------------------
-   
-   procedure update_val is
+
+   procedure Update_Val (have_update : out Boolean) is
    begin
-      -- Barometer takes 10ms (8.2ms) for one conversion, barometer_update_val gets called every main_loop (5ms)
-      -- read conversion value every second to make sure barometer timing constraint is not violated
+      --  Barometer takes 10ms (8.2ms) for one conversion, barometer_update_val gets called every main_loop (5ms)
+      --  read conversion value every second to make sure barometer timing constraint is not violated
+      have_update := False;
+
       case G_Baro_State.FSM_State is
 
          when NOT_INITIALIZED =>
@@ -501,16 +521,16 @@ is
             G_Baro_State.FSM_State := TEMPERATURE_CONVERSION;
 
          when TEMPERATURE_CONVERSION =>
-            -- ToDo check time
+            --  ToDo check time
             declare
-               t_abs : Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12 (Clock cannot be a direct parameter)               
+               t_abs : constant Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12
             begin
-               if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
+               if conversion_Finished (G_Baro_State, Conversion_Time_LUT, t_abs) then
                   read_adc (Baro, temperature_raw);
-                  if temperature_raw /= 0 then            
+                  if temperature_raw /= 0 then
                      dT   := calculateTemperatureDifference (temperature_raw, G_t_ref);
-                     TEMP := Sat_Add_TempType (2000.0, Sat_Cast_TEMPType (dt * G_tempsens));                     
-                     OFF  := Sat_Add_OFFType (G_off_t1, Sat_Cast_OffType (G_tco * dT));
+                     TEMP := Sat_Add_TempType (2000.0, Sat_Cast_TEMPType (dT * G_tempsens));
+                     OFF  := Sat_Add_OffType (G_off_t1, Sat_Cast_OffType (G_tco * dT));
                      SENS := Sat_Add_SensType (G_sens_t1, Sat_Cast_SensType (G_tcs * dT));
                      compensateTemperature;
                      temperature := convertToKelvin (TEMP);
@@ -525,12 +545,13 @@ is
 
          when PRESSURE_CONVERSION =>
             declare
-               t_abs : Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12 (Clock cannot be a direct parameter)
+               t_abs : constant Ada.Real_Time.Time := Clock; -- see SPARK RM 7.1.3-12
             begin
-               if conversion_Finished(G_Baro_State, Conversion_Time_LUT, t_abs) then
+               if conversion_Finished (G_Baro_State, Conversion_Time_LUT, t_abs) then
                   read_adc (Baro, pressure_raw);
                   if pressure_raw /= 0 then
                      pressure := calculatePressure (pressure_raw, SENS, OFF);
+                     have_update := True;
                      start_conversion (D2, OSR_4096);
                      G_Baro_State.FSM_State := TEMPERATURE_CONVERSION;
                   else
@@ -542,6 +563,6 @@ is
 
       end case;
 
-   end update_val;
-   
+   end Update_Val;
+
 end MS5611.Driver;
