@@ -23,7 +23,7 @@ package body ms5611.driver  with
       return Temperature_Type (G_CELSIUS_0 + thisTemp / 100.0);  -- SPARK Range Check might fail
    end convertToKelvin;
 
-   procedure update_val is
+   procedure Update_Val (have_update : out Boolean) is
    begin
 --        cur_press := Pressure_Type (Simulation.CSV_here.Get_Column ("Press"));
 --        declare

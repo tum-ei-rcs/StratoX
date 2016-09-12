@@ -61,6 +61,8 @@ begin
    init_state.bias(X) := 2.0*Degree/Second;
    init_state.bias(Y) := 2.6*Degree/Second;
    Kalman.reset( init_state );
+   Estimator.update( (0.0*Degree, 0.0*Degree) );
+
 
 
    next := Clock;

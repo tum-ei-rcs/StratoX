@@ -118,6 +118,7 @@ package body ULog with SPARK_Mode => On is
       Append_Uint8 (ct, "m", buf, msg.gps_min);
       Append_Uint8 (ct, "s", buf, msg.gps_sec);
       Append_Float (ct, "acc", buf, msg.pos_acc);
+      Append_Float (ct, "v", buf, msg.vel);
    end Serialize_Ulog_GPS;
    --  pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
 

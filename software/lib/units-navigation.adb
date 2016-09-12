@@ -11,7 +11,7 @@ package body Units.Navigation with SPARK_Mode is
       result : Angle_Type := 0.0 * Degree;
    begin
       -- rotate(temp_vector, Z, 45.0 * Degree);
-      rotate(temp_vector, X, orientation.Roll);
+      rotate(temp_vector, X, Angle_Type (orientation.Roll)*12.0); -- TODO: this is a hack. Kalman filter underestimates the roll angle by this, so to correct heading...
       rotate(temp_vector, Y, orientation.Pitch);
 
       -- Logger.log_console(Logger.DEBUG, "Rot vec:" & Image(temp_vector(X) * 1.0e6) & ", "

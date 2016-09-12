@@ -26,7 +26,11 @@ is
       end if;
    end log;
 
-   procedure log_console (msg_level : Log_Level; message : Message_Type) is null;
+   procedure log_console (msg_level : Log_Level; message : Message_Type) is
+   begin
+      log (msg_level, message);
+   end log_console;
+
    procedure log_sd (msg_level : Log_Level; message : ULog.Message) is null;
 
    procedure log_ulog(level : Log_Level; msg : ULog.Message) is null;

@@ -11,8 +11,8 @@ project Default is
 
    HAL_Packages := ("hil.ads", "hal.ads", "hil-spi.ads", "hil.adb", "hil-uart.ads");
         
-   Original_Files := ("estimator.adb", "estimator.ads", "units.adb", "units.ads", "units-numerics.ads", 
-                      "units-numerics.adb", "units-navigation.ads", "units-navigation.adb", "generic_signal.ads", 
+   Original_Files := ("estimator.adb", "estimator.ads", "units.adb", "units.ads", "units-numerics.ads", "types.ads", 
+                      "units-numerics.adb", "units-navigation.ads", "units-navigation.adb", "generic_signal.ads", "generic_types.ads", "bounded_image.ads", "generic_bounded_image.ads", "generic_bounded_image.adb", "generic_types.adb",
                       "generic_sensor.ads", "generic_queue.ads", "generic_queue.adb", "profiler.ads", "profiler.adb", "units-vectors.ads", "units-vectors.adb",
                       "imu.ads", "imu.adb", "barometer.ads", "barometer.adb", "gps.ads", "gps.adb", 
                       "magnetometer.ads", "magnetometer.adb", "hmc5883l.ads", "hmc5883l-driver.ads",

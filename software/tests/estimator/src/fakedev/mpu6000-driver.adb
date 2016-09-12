@@ -16,6 +16,8 @@ is
    --  MPU6000 self test.
    procedure Self_Test (Test_Status : out Boolean) is null;
 
+   procedure Self_Test_Extended (Test_Status : out Boolean) is null;
+
    --  Reset the MPU6000 device.
    --  A small delay of ~50ms may be desirable after triggering a reset.
    procedure Reset is null;

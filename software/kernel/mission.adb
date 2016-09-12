@@ -380,13 +380,15 @@ package body Mission with SPARK_Mode is
       Controller.set_Current_Position (G_state.body_info.position);
       Controller.runOneCycle;       
             
-      --  Land detection
+      --  Land detection (not in test mode) or timeout
       if not Config.Software.TEST_MODE_ACTIVE and 
-      then Estimator.get_Stable_Time > 120.0 * Second 
+      then now > (G_state.last_state_change + Config.Software.CFG_LANDED_STABLE_TIME) and
+      then Estimator.get_Stable_Time > Config.Software.CFG_LANDED_STABLE_TIME
       then
          --  stable position (unchanged for 2 min)
          Logger.log(Logger.INFO, "Landed.");
          deactivate;
+         
       elsif now > (G_state.last_state_change + Config.Software.CFG_DESCEND_TIMEOUT) then
          --  Timeout for Landing
          Logger.log(Logger.INFO, "Timeout. Landed");

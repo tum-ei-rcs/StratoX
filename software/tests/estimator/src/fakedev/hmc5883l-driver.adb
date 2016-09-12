@@ -67,8 +67,11 @@ is
 
    -- DATA* registers
    procedure getHeading(x : out Integer_16; y : out Integer_16; z : out Integer_16) is
+      SCALE_MAG : constant := 1.0e6; -- Tesla -> microtesla (raw data is uT)
    begin
-      -- TODO
+      x := Integer_16 (Simulation.CSV_here.Get_Column ("magX") * SCALE_MAG);
+      y := Integer_16 (Simulation.CSV_here.Get_Column ("magY") * SCALE_MAG);
+      z := Integer_16 (Simulation.CSV_here.Get_Column ("magZ") * SCALE_MAG);
       null;
    end;
 

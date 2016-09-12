@@ -9,7 +9,7 @@ package body HIL.UART is
       null;
    end write;
 
-   procedure read (Device : in Device_ID_Type; Data : out Data_Type) is
+   procedure read (Device : in Device_ID_Type; Data : out Data_Type; n_read : out Natural) is
    begin
       null;
    end;

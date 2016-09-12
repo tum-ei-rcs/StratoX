@@ -239,7 +239,7 @@ is
                                Z => Angular_Velocity_Type (cv(Z)));
       end;
    
-      -- state prediction
+      -- state prediction: it seems as roll angle is only 1/10 of what it should be
       new_state.orientation := state.orientation + (compensated_rates - state.bias) * dt;
       new_state.rates(X) := state.rates(X) + (input.Aileron - G.u.Aileron)/Second * ELEVON_TO_GYRO * dt;
       new_state.rates(Y) := state.rates(Y) + (input.Elevator - G.u.Elevator)/Second * ELEVON_TO_GYRO * dt;

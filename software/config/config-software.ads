@@ -14,12 +14,28 @@ package Config.Software with SPARK_Mode is
    MAIN_TICK_RATE_MS : constant := 20;   -- Tickrate in Milliseconds
    TEST_MODE_ACTIVE : constant Boolean := False;
    
+   -------------
    --  Mission
-   CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 120.0 * Second;  -- Droptest: 120, Strato: TBD
-   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 600.0 * Second;     -- Droptest: 600, Strato: 1800
-   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 360.0 * Second;   -- Droptest: 360, Strato: 1800. Blockwalk: 360
+   -------------
    
-   POSITION_LEAST_ACCURACY : constant Units.Length_Type := 20.0 * Meter; --  the worst accepted accuracy for mission start
+   CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 120.0 * Second;  
+   --  when TEST_MODE_ACTIVE and that much time has passed, we continue even w/o GPS fix.   
+   
+   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 1800.0 * Second;     
+   --  we unhitch unconditionally when that much time has passed since mission start (longbeep).
+   --  Droptest: 600, Strato: 1800
+   
+   CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 3600.0 * Second;   
+   --  when TEST_MODE_ACTIVE and this much time has passed since unhitch,
+   --  we unconditionally assume landed. Note that there is also a landing detection.
+   --  Droptest: 360, Strato: 3600. Blockwalk: 360
+   
+   CFG_LANDED_STABLE_TIME : constant Units.Time_Type := 300.0 * Second;
+   --  when that much time has passed during descent w/o movement, we assume landed.
+   
+   POSITION_LEAST_ACCURACY : constant Units.Length_Type := 20.0 * Meter; 
+   --  the mission will not start unless the position estimate is at least that accurate
+   --  the worst accepted accuracy for mission start
     
    CFG_LOGGER_LEVEL_UART : constant Logger.Log_Level := Logger.DEBUG;
    CFG_LOGGER_CALL_SKIP: constant := 10;  -- prescaler...only every nth message is printed

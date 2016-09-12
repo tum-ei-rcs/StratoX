@@ -222,9 +222,13 @@ package body Estimator with SPARK_Mode is
 
       Magnetometer.Sensor.read_Measurement;
       G_mag := Magnetometer.Sensor.get_Sample.data;
+      G_Object_Orientation.Yaw := Heading (G_mag, G_Object_Orientation);
 
-      -- Logger.log_console(Logger.DEBUG, "Mag (uT):" & Image(Mag(X) * 1.0e6) & ", " & Image(Mag(Y) * 1.0e6) & ", " & Image(Mag(Z) * 1.0e6) );
-      G_Object_Orientation.Yaw := Heading(G_mag, G_Object_Orientation);
+      --Logger.log_console(Logger.DEBUG, "Mag (uT):" & Image(G_Mag(X) * 1.0e6) &
+      --                     ", " & Image(G_Mag(Y) * 1.0e6) &
+      --                     ", " & Image(G_Mag(Z) * 1.0e6) &
+      --                     ", Yaw=" & Float'Image (To_Degree (G_Object_Orientation.Yaw)));
+
 
 
 
@@ -260,7 +264,7 @@ package body Estimator with SPARK_Mode is
       G_state.gpsinfo.had_good_accuracy := G_state.gpsinfo.had_good_accuracy or
         G_state.gpsinfo.vacc < Config.Software.POSITION_LEAST_ACCURACY;
 
-      -- FIXME: Sprung durch Baro Offset, falls GPS wegfaellt
+      -- FIXME: Sprung durch Baro Offset, falls GPS wegfaellt (QNH muss eingearbeitet werden)
       if G_state.gpsinfo.fix = FIX_3D then
          G_Object_Position := GPS.Sensor.get_Position;
          --  overwrite/ignore altitude when too shabby at boot. Note position is consumed (we have no alternative)
@@ -285,6 +289,7 @@ package body Estimator with SPARK_Mode is
 
       G_Object_Orientation.Roll := Kalman.get_States.orientation.Roll;
       G_Object_Orientation.Pitch := Kalman.get_States.orientation.Pitch;
+      -- G_Object_Orientation.Yaw := Kalman.get_States.orientation.Yaw; -- new: not active, although it is looking quiet good
 
       --  update stable measurements
       check_stable_Time;
