@@ -334,6 +334,7 @@ is
                            dt : Time_Type ) is
                            
       BIAS_LIMIT : constant Angular_Velocity_Type := 50.0 * Degree/Second;
+      EPS: constant := 1.0E-12;
    begin
       if dt > Time_Type (0.0) then 
          -- update state
@@ -348,9 +349,31 @@ is
                                                    Pitch_Type'First, Pitch_Type'Last );
          states.orientation.Yaw := wrap_Angle( states.orientation.Yaw + K( map(X_YAW), map(Z_YAW) ) * residual.delta_acc_ori(Z),
                                                Yaw_Type'First, Yaw_Type'Last);
-         states.rates(X) := states.rates(X) + K( map(X_ROLL_RATE), map(Z_ROLL_RATE) ) * residual.delta_gyr_rates(X);
-         states.rates(Y) := states.rates(Y) + K( map(X_PITCH_RATE), map(Z_PITCH_RATE) ) * residual.delta_gyr_rates(Y);
-         states.rates(Z) := states.rates(Z) + K( map(X_YAW_RATE), map(Z_YAW_RATE) ) * residual.delta_gyr_rates(Z);
+         
+         
+         --  avoid underflow
+         if abs (states.rates(X)) < Angular_Velocity_Type (EPS) then
+            states.rates(X) := Angular_Velocity_Type (0.0);
+         end if;
+         if abs (Float (residual.delta_gyr_rates(X))) > EPS then 
+            states.rates(X) := states.rates(X) + K( map(X_ROLL_RATE), map(Z_ROLL_RATE) ) * residual.delta_gyr_rates(X);
+         end if;         
+         
+         if abs (states.rates(Y)) < Angular_Velocity_Type (EPS) then
+            states.rates(Y) := Angular_Velocity_Type (0.0);
+         end if;
+         if abs (Float (residual.delta_gyr_rates(Y))) > EPS then 
+            states.rates(Y) := states.rates(Y) + K( map(X_PITCH_RATE), map(Z_PITCH_RATE) ) * residual.delta_gyr_rates(Y);
+         end if;
+         
+         if abs (states.rates(Z)) < Angular_Velocity_Type (EPS) then
+            states.rates(Z) := Angular_Velocity_Type (0.0);
+         end if;
+         if abs (Float (residual.delta_gyr_rates(Z))) > EPS then 
+            states.rates(Z) := states.rates(Z) + K( map(X_YAW_RATE), map(Z_YAW_RATE) ) * residual.delta_gyr_rates(Z);
+         end if;
+         
+         
          states.bias(X) := states.bias(X) + K( map(X_ROLL_BIAS), map(Z_ROLL) ) * residual.delta_acc_ori(X) / dt;
          states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
          states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;

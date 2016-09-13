@@ -148,7 +148,6 @@ package body Mission with SPARK_Mode is
       if G_state.mission_state /= Mission_State_Type'Last then
          G_state.mission_state := Mission_State_Type'Succ(G_state.mission_state);
          NVRAM.Store( VAR_MISSIONSTATE, HIL.Byte (Mission_State_Type'Pos (G_state.mission_state)));
-         G_state.last_state_change := Ada.Real_Time.Clock;
          Enter_State (G_state.mission_state);
       end if;
    end next_State;
@@ -260,11 +259,11 @@ package body Mission with SPARK_Mode is
   
       --  check target altitude
       --  FIXME: Sprung von Baro auf GPS hat ausgeloest.
-      if Estimator.get_relative_Height >= Config.CFG_TARGET_ALTITUDE_THRESHOLD then
+      if Estimator.get_relative_Height >= Config.CFG_TARGET_ALTITUDE then
          G_state.target_altitude_time := Sat_Add_Time (G_state.target_altitude_time, 
                                                         To_Time(now - G_state.last_call));  -- TODO: calc dT     
-         if G_state.target_altitude_time >= Config.CFG_TARGET_ALTITUDE_THRESHOLD_TIME then
-            Logger.log(Logger.INFO, "Target alt reached. Detach");
+         if G_state.target_altitude_time >= Config.CFG_TARGET_ALTITUDE_TIME then
+            Logger.log(Logger.INFO, "Target alt reached");
             next_State;
          end if;
       else
@@ -354,6 +353,7 @@ package body Mission with SPARK_Mode is
          when others =>
             null;
       end case;
+      G_state.last_state_change := Ada.Real_Time.Clock;
    end Enter_State;
    
    procedure control_Descend is

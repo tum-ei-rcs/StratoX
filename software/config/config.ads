@@ -39,8 +39,11 @@ package Config with SPARK_Mode is
 
    -- Mission
    -- -------------------------------
-   CFG_TARGET_ALTITUDE_THRESHOLD : constant Altitude_Type := 100.0 * Meter;
-   CFG_TARGET_ALTITUDE_THRESHOLD_TIME : constant := 6.0 * Second;
+   CFG_TARGET_ALTITUDE      : constant Altitude_Type := 6100.0 * Meter; -- 20_000ft
+   --  when reaching this relative altitude, we detach
+
+   CFG_TARGET_ALTITUDE_TIME : constant := 6.0 * Second;
+   --  after so much time at target altitude the detach happens
 
    CFG_DELTA_ALTITUDE_THRESH : constant Altitude_Type := 20.0 * Meter;  -- Diff
    CFG_DELTA_ALTITUDE_THRESH_TIME : constant := 2.0 * Second;
