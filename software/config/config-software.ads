@@ -21,9 +21,9 @@ package Config.Software with SPARK_Mode is
    CFG_GPS_LOCK_TIMEOUT : constant Units.Time_Type := 120.0 * Second;  
    --  when TEST_MODE_ACTIVE and that much time has passed, we continue even w/o GPS fix.   
    
-   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 1800.0 * Second;     
+   CFG_ASCEND_TIMEOUT : constant Units.Time_Type := 2700.0 * Second;     
    --  we unhitch unconditionally when that much time has passed since mission start (longbeep).
-   --  Droptest: 600, Strato: 1800
+   --  Droptest: 600, Strato: 2700 (45')
    
    CFG_DESCEND_TIMEOUT : constant Units.Time_Type := 3600.0 * Second;   
    --  when TEST_MODE_ACTIVE and this much time has passed since unhitch,
