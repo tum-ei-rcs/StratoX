@@ -434,7 +434,7 @@ package body Controller with SPARK_Mode is
 
       case G_state.controller_mode is
          when MODE_UNKNOWN | MODE_POSHOLD =>
-            --  circle right when we have no target
+            --  circle left when we have no target
             G_Target_Orientation.Roll := -Config.CIRCLE_TRAJECTORY_ROLL;
             G_Target_Orientation.Yaw := G_Object_Orientation.Yaw;
 
@@ -450,7 +450,7 @@ package body Controller with SPARK_Mode is
             G_Last_Yaw_Control := now;
 
          when MODE_ARRIVED =>
-            --  circle left when we are there
+            --  circle right when we are there
             G_Target_Orientation.Roll := Config.CIRCLE_TRAJECTORY_ROLL;
             G_Target_Orientation.Yaw := G_Object_Orientation.Yaw;
 
