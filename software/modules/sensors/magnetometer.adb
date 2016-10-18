@@ -4,11 +4,10 @@ with Bounded_Image; use Bounded_Image;
 
 with HMC5883L; use HMC5883L;
 with HMC5883L.Driver;
---with HMC5883L.Register;
+
 
 with Logger;
 with Interfaces; use Interfaces;
---with Units.Vectors;
 
 package body Magnetometer with SPARK_Mode is
 
@@ -26,7 +25,7 @@ package body Magnetometer with SPARK_Mode is
    begin
       null;
       --Driver.update_val;
-      Driver.getHeading(mag_x, mag_y, mag_z);   -- are These Micro*Tesla?
+      Driver.getHeading(mag_x, mag_y, mag_z);   -- raw values in micro tesla
 
       Logger.log_console(Logger.TRACE, "Mag: " & Integer_Img (Integer (mag_x)) & ", "
                  & Integer_Img (Integer (mag_y)) & ", "
@@ -37,7 +36,6 @@ package body Magnetometer with SPARK_Mode is
       Self.sample.data(Z) := Unit_Type(mag_z) * Micro * Tesla;
       -- page 13/19: LSB/Gauss  230 .. 1370, 1090 default
 
-      -- Self.sample.data.heading := Heading(Self.sample.data.magnetic_vector, );
    end read_Measurement;
 
 

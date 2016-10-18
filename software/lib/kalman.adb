@@ -47,6 +47,7 @@ is
    BIAS_PROCESS_VARIANCE  : constant := 1.0e-12;  -- trust in prev bias (really slow bias drift?)
       
    ANGLE_MEASUREMENT_VARIANCE : constant := 6.0e-3;  -- 3.0e-2 dont trust in angle measurement (acc arctan)
+   MAG_MEASUREMENT_VARIANCE : constant := 1.0e-1;  -- trust magnetometer
    RATE_MEASUREMENT_VARIANCE : constant := 1.0e-4;   -- 1.0e-3 trust rate measurement
 
 
@@ -98,7 +99,7 @@ is
       
       G.P( map(X_ROLL), map(X_ROLL) ) := ANGLE_PROCESS_VARIANCE;
       G.P( map(X_PITCH), map(X_PITCH) ) := ANGLE_PROCESS_VARIANCE;
-      G.P( map(X_YAW), map(X_YAW) ) := ANGLE_PROCESS_VARIANCE;      
+      G.P( map(X_YAW), map(X_YAW) ) := ANGLE_PROCESS_VARIANCE;      -- Prediction is gyro itegral
       
       G.P( map(X_ROLL_BIAS), map(X_ROLL_BIAS) ) := BIAS_PROCESS_VARIANCE;   -- we are sure about the bias 
       G.P( map(X_PITCH_BIAS), map(X_PITCH_BIAS) ) := BIAS_PROCESS_VARIANCE;   -- we are sure about the bias 
@@ -129,8 +130,8 @@ is
       pragma Annotate (GNATprove, False_Positive, "length check might fail", "multiplication with scalar is implemented");
       
       G.R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE;
-      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE / 100.0;
-      G.R( map(Z_YAW), map(Z_YAW) ) := ANGLE_MEASUREMENT_VARIANCE;
+      G.R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE / 100.0;   -- for pitch, accmeter is more reliable
+      G.R( map(Z_YAW), map(Z_YAW) ) := MAG_MEASUREMENT_VARIANCE;   -- magnetometer vector, quite accurate
       
       G.R( map(Z_ROLL_RATE), map(Z_ROLL_RATE) ) := RATE_MEASUREMENT_VARIANCE;
       G.R( map(Z_PITCH_RATE), map(Z_PITCH_RATE) ) := RATE_MEASUREMENT_VARIANCE;
@@ -241,8 +242,10 @@ is
    
       -- state prediction: it seems as roll angle is only 1/10 of what it should be
       new_state.orientation := state.orientation + (compensated_rates - state.bias) * dt;
+      --new_state.orientation.Yaw := new_state.orientation.Yaw + new_state.orientation.Roll * 0.1;
       new_state.rates(X) := state.rates(X) + (input.Aileron - G.u.Aileron)/Second * ELEVON_TO_GYRO * dt;
       new_state.rates(Y) := state.rates(Y) + (input.Elevator - G.u.Elevator)/Second * ELEVON_TO_GYRO * dt;
+      new_state.rates(Z) := state.rates(Z);
       new_state.bias := state.bias;
       new_state.pos := state.pos; -- + state.ground_speed * dt;
       new_state.air_speed(X) := state.air_speed(X) - state.orientation.Pitch * PITCH_TO_AIRSPEED;
@@ -288,7 +291,7 @@ is
    begin
       return ( Left.gps_pos   - Right.gps_pos, 
                Left.baro_alt  - Right.baro_alt,
-               Left.acc_ori   - Right.acc_ori,
+               Left.acc_ori   - Right.acc_ori,  -- problem: should be delta angle
                Left.gyr_rates - Right.gyr_rates );
    end "-";
    
@@ -309,7 +312,6 @@ is
          samples.gps_pos := states.pos;
          samples.gyr_rates := states.rates;
          samples.acc_ori := states.orientation;
-         --samples.mag_ori := states.orientation;
          return samples;
       end measurement_transition;
       

@@ -141,7 +141,7 @@ package Units.Navigation with SPARK_Mode is
 
 
    function "-" (Left, Right : Orientation_Type) return Rotation_Vector is
-   ( delta_Angle(Right.Roll, Left.Roll), Left.Pitch - Right.Pitch, Left.Yaw - Right.Yaw );
+   ( delta_Angle(Right.Roll, Left.Roll), Left.Pitch - Right.Pitch, delta_Angle(Right.Yaw, Left.Yaw) );
 
 
 

@@ -222,7 +222,8 @@ package body Estimator with SPARK_Mode is
 
       Magnetometer.Sensor.read_Measurement;
       G_mag := Magnetometer.Sensor.get_Sample.data;
-      G_Object_Orientation.Yaw := Heading (G_mag, G_Object_Orientation);
+      Acc_Orientation.Yaw := Heading (G_mag, G_Object_Orientation);
+      G_Object_Orientation.Yaw := Acc_Orientation.Yaw; -- copy for kalman filter
 
       --Logger.log_console(Logger.DEBUG, "Mag (uT):" & Image(G_Mag(X) * 1.0e6) &
       --                     ", " & Image(G_Mag(Y) * 1.0e6) &
@@ -289,7 +290,7 @@ package body Estimator with SPARK_Mode is
 
       G_Object_Orientation.Roll := Kalman.get_States.orientation.Roll;
       G_Object_Orientation.Pitch := Kalman.get_States.orientation.Pitch;
-      -- G_Object_Orientation.Yaw := Kalman.get_States.orientation.Yaw; -- new: not active, although it is looking quiet good
+      G_Object_Orientation.Yaw := Kalman.get_States.orientation.Yaw; -- new: not active, although it is looking quiet good
 
       --  update stable measurements
       check_stable_Time;

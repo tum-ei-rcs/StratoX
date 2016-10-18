@@ -189,6 +189,11 @@ private
    
    
    --  Update
+   
+   -- estimates the covariance of the accelerometer. If the length of the 
+   -- acceleration vector deviates from the gravity vector length the sensor 
+   -- is subject to additional forces and we should increase the assumed 
+   -- measurement variance (less trust)
    procedure estimate_observation_noise_cov( R : in out Observation_Noise_Covariance_Matrix; 
                                              states : State_Vector;
                                              samples : Observation_Vector

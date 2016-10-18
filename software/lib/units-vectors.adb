@@ -1,5 +1,7 @@
 with Units.Numerics; use Units.Numerics;
 
+pragma Elaborate_All(Units);
+
 package body Units.Vectors with SPARK_Mode is
 
    EPS : constant := 1.0E-12;
