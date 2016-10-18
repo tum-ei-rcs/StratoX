@@ -1,0 +1,11 @@
+
+-- gnatprove -Phello.gpr hello.adb
+
+
+project sitest is
+
+	for Source_Dirs use (".", "tools", "lib");
+	for Object_Dir use "obj";
+    for Exec_Dir use ".";
+    for Main use ("dimension_test.adb");
+end sitest;
