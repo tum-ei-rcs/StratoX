@@ -8,6 +8,8 @@
 with Interfaces;    use Interfaces;
 with Generic_Types; use Generic_Types;
 
+pragma Elaborate_All(Generic_Types);
+
 --  @summary: Common used type definitions and functions
 package Types with SPARK_Mode is
    
