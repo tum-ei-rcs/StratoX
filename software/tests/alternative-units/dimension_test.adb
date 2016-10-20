@@ -4,6 +4,7 @@ with Units.Vectors; use Units.Vectors;
 
 
 with CoSy; use CoSy;
+use CoSy.Electric_Field_Pack;
 
 with System.Dim.Float_IO;
 with Ada.Text_IO; use Ada.Text_IO;
@@ -24,7 +25,12 @@ procedure Dimension_Test is
 
 
     -- make position addition illegal (pragma?)
-    -- function "+"(Left, Right : Position_Type) return Position_Type is null;
+    function "+"(Left, Right : Position_Type) return Position_Type is abstract;
+    pragma Obsolescent("+");
+    
+    -- pragma Compile_Time_Error(boolean_EXPRESSION, static_string_EXPRESSION);
+    -- ghost code inside function?
+
 
     function "+"(Left : Position_Type; Right : Translation_Type) return Position_Type is 
     ( Position_Type( Length_Type(Left) + Length_Type(Right) ) );
@@ -44,8 +50,9 @@ procedure Dimension_Test is
 
     el_field : Electric_Field_Pack.Unit_Vector := ( 
                 Electric_Field_Pack.Unit_X_Type( 2.0*Volt/Meter ),
-                2.0*Volt/Meter,
-                2.0*Volt/Meter );
+                Electric_Field_Pack.Unit_Y_Type( 2.0*Volt/Meter ),
+                Electric_Field_Pack.Unit_Z_Type( 2.0*Volt/Meter ) );
+
 
     el_field2 : Electric_Field_Vector2;
 
@@ -67,10 +74,15 @@ procedure Dimension_Test is
 
     -- generic integral
     generic
-        -- type Integrand_Type is private;   -- ERROR: expected type "Unit_Type"
-        type Integrand_Type is new Unit_Type;   -- ERROR: invalid operand types for operator "*"
-        type Integration_Type is new Unit_Type; 
-        type Integrated_Type is new Unit_Type;    
+        -- type Integrand_Type is private;         -- ERROR: expected type "Unit_Type"
+        -- subtype Integrand_Type is Unit_Type;    -- ERROR: subtype declaration not allowed as generic parameter declaration
+        -- type Integrand_Type is new Unit_Type;   -- ERROR: invalid operand types for operator "*"
+        -- type Integrated_Type is new Unit_Type;    
+        -- type Integration_Type is new Unit_Type; 
+        
+        type Integrand_Type is digits <>;    -- ERROR: invalid operand types for operator "*"
+        type Integration_Type is digits <>;
+        type Integrated_Type is digits <>;
     function generic_integral( x : Integrand_Type; t : Integration_Type ) return Integrated_Type;
     
 
@@ -78,6 +90,7 @@ procedure Dimension_Test is
     begin
         --return x * t;    -- Problem: incompatible types, new destroys unit information
         return Integrated_Type( Unit_Type(x) * Unit_Type(t) );   -- possible, but no unit protection
+        -- return Integrated_Type( x * t );
     end generic_integral;
 
     function velocity_integral is new generic_integral(Linear_Velocity_Type, Time_Type, Length_Type);
@@ -94,7 +107,7 @@ procedure Dimension_Test is
 
         type Unit_Tag is tagged record
             value : Unit_Type'Base;
-        end record   -- aspect "Dimension_System" must apply to numeric derived type declaration
+        end record;   -- aspect "Dimension_System" must apply to numeric derived type declaration
    --     with Dimension_System =>
    --      ((Unit_Name => Meter, Unit_Symbol => 'm', Dim_Symbol => 'L'),
    --       (Unit_Name => Kilogram, Unit_Symbol => "kg", Dim_Symbol => 'M'),
@@ -132,8 +145,10 @@ begin
     -----------------------------------------
     distance := distance + 1.0*Meter;    -- legal
     pos_one := pos_one + distance;       -- legal
+    distance := pos_one - pos_two;       -- legal
     --pos_one := distance + pos_one;       -- illegal, keep order ✔
-    pos_one := pos_one + pos_two;        -- TODO: make this illegal
+    pos_one := pos_one + pos_two;        -- illegal, abstract error (nasty)
+    
 
 
     Put("Distance: "); Put(distance); New_Line;

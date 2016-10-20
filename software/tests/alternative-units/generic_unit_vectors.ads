@@ -10,9 +10,13 @@ package Generic_Unit_Vectors with SPARK_Mode is
   --subtype Unit_X is Unit_Comp_Type with Dimension => (Symbol => 'm', Meter => 1, others => 0);
 
 
-  subtype Unit_X_Type is Unit;
-  subtype Unit_Y_Type is Unit;
-  subtype Unit_Z_Type is Unit;
+  -- subtype Unit_X_Type is Unit;
+  -- subtype Unit_Y_Type is Unit;
+  -- subtype Unit_Z_Type is Unit;
+
+  type Unit_X_Type is new Unit;
+  type Unit_Y_Type is new Unit;
+  type Unit_Z_Type is new Unit;
 
 
   ------------------------------
@@ -45,9 +49,19 @@ package Generic_Unit_Vectors with SPARK_Mode is
   generic
   function addition(Left, Right : Unit_Vector) return Unit_Vector;
 
+  function "+"(Left, Right : Unit_X_Type) return Unit_X_Type is
+  ( Unit_X_Type( Unit(Left) + Unit(Right) ) );
+
+  function "+"(Left, Right : Unit_Y_Type) return Unit_Y_Type is
+  ( Unit_Y_Type( Unit(Left) + Unit(Right) ) );
+
   -- Global Pragma Unreferenced/Obs
-  -- function "+"(Left : Unit_X_Type; Right : Unit_Y_Type) return Unit_X_Type is
-  -- (Unit_X_Type(Left));
+  function "+"(Left : Unit_X_Type; Right : Unit_Y_Type) return Unit_X_Type is
+  abstract;
+  --(Unit_X_Type(Left));
   --pragma Obsolescent ("+");
+
+
+
 
 end Generic_Unit_Vectors;
