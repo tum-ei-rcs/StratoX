@@ -3,6 +3,9 @@
 set datafile separator ";"
 set termoption dashed
 
+# set terminal epslatex color
+# set output './bild.tex'
+
 # estimate: time,roll,pitch,yaw,alt,head    solid lines
 # rawdata: time,...pitch@31, roll@34, yaw@38    dashed lines
 plot 'estimate.csv' using 1:2 with lines lt 1 lc rgb 'red' title columnhead, \

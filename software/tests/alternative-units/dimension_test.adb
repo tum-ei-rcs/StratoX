@@ -26,8 +26,11 @@ procedure Dimension_Test is
 
     -- make position addition illegal (pragma?)
     function "+"(Left, Right : Position_Type) return Position_Type is abstract;
-    pragma Obsolescent("+");
-    
+    pragma Obsolescent("+", "Dont use it", Ada_05);
+    -- ToDo: Check unreferenced pragma
+    -- vl hilft inline?
+
+
     -- pragma Compile_Time_Error(boolean_EXPRESSION, static_string_EXPRESSION);
     -- ghost code inside function?
 
@@ -44,7 +47,7 @@ procedure Dimension_Test is
 
 
     -----------------------------------------
-    -- Spartial Dimension Protection
+    -- Spatial Dimension Protection
     -----------------------------------------
 
 
@@ -71,6 +74,11 @@ procedure Dimension_Test is
         -- X := X * X;   -- not possible
     end area;
 
+
+    procedure integral( x : Unit_Type'Base; dt : Unit_Type'Base; y : out Unit_Type'Base) is
+    begin
+        y := x * dt;   -- no unit protection
+    end integral;
 
     -- generic integral
     generic
@@ -105,6 +113,10 @@ procedure Dimension_Test is
     package Unit_Class is
         -- type UnitTest_Tag is tagged Float;  -- ERROR: missing "record"
 
+        subtype Unit_Subtype is Unit_Type with Dimension => (others => 1);
+        --subtype Length_Subtype is Unit_Subtype with Dimension => ( Meter => 1, others => 0);
+        -- ERROR: parent type of "Length_Subtype" lacks dimension system
+
         type Unit_Tag is tagged record
             value : Unit_Type'Base;
         end record;   -- aspect "Dimension_System" must apply to numeric derived type declaration
@@ -132,7 +144,29 @@ procedure Dimension_Test is
     use Unit_Class;
 
 
+    -----------------------------------------
+    -- Prefix
+    -----------------------------------------
+    type Prefix is digits 10 range 1.0e-10 .. 1.0e10;
+    subtype Quantity_Type is Unit_Type;
+    -- subtype Prefix is Unit_Type;
+    MyMilli : Prefix := 1.0e-3;
 
+    function "*"( Left : Float; Right : Prefix ) return Unit_Type is
+    ( Unit_Type( Left * Float(Right) ));
+
+    function "*"( Left, Right : Prefix ) return Prefix is abstract;
+    -- Todo: Compiler warning: Consider rewriting the prefix expression
+
+
+    function "*"( Left : Unit_Type; Right : Prefix ) return Unit_Type is abstract;
+
+
+    function "/"( Left : Unit_Type; Right : Prefix ) return Unit_Type is abstract;
+    function "/"( Left : Prefix; Right : Unit_Type ) return Unit_Type is abstract;
+
+    -- function "*"( Left : Prefix; Right : Unit_Type ) return Unit_Type is
+    -- ( Unit_Type(Left) * Right ); -- loss of Units
 
 
 --============================================================
@@ -143,25 +177,26 @@ begin
     -----------------------------------------
     -- Absolute/Relative Tests
     -----------------------------------------
-    distance := distance + 1.0*Meter;    -- legal
+    distance := distance + 3.0*Meter;    -- legal
     pos_one := pos_one + distance;       -- legal
     distance := pos_one - pos_two;       -- legal
-    --pos_one := distance + pos_one;       -- illegal, keep order ✔
-    pos_one := pos_one + pos_two;        -- illegal, abstract error (nasty)
+    -- my_velocity := pos_one / my_duration; -- illegal ✔
+    -- pos_one := distance + pos_one;       -- illegal, keep order ✔
+    -- pos_one := pos_one + pos_two;        -- illegal, abstract error (nasty)
     
 
-
+    Put("Position 1: "); Put(Unit_Type(pos_one)); New_Line;
     Put("Distance: "); Put(distance); New_Line;
 
     -----------------------------------------
-    -- Spartial Dimension Protection
+    -- Spatial Dimension Protection
     -----------------------------------------
 
     pos3d(X) := pos3d(X) + pos3d(Y);  -- should be illegal
 
-    -- seperate types required, array vector not possible
+    -- separate types required, array vector not possible
 
-    el_field.x := el_field.x + el_field.y;
+    -- el_field.x := el_field.x + el_field.y;
 
     el_field := el_field + el_field;
 
@@ -171,7 +206,10 @@ begin
     -----------------------------------------
     -- Generics Tests
     -----------------------------------------
-    distance := velocity_integral(my_velocity, my_duration);
+
+    integral( my_duration, my_duration, distance );
+
+    -- distance := velocity_integral(my_velocity, my_duration);
     Put("Distance: "); Put(distance); New_Line;
 
     -----------------------------------------
@@ -179,5 +217,22 @@ begin
     -----------------------------------------
     dist_c1 := dist_c1 + dist_c2;
     Put("Class Distance: "); Put(dist_c1.value);
+
+
+
+    -----------------------------------------
+    -- Prefix
+    -----------------------------------------
+    my_duration := 1.0 * MyMilli * Second;  -- legal
+    my_duration := 1.0 * (1.0 * MyMilli * Second);  -- legal, problem
+    -- my_duration := MyMilli * Second; -- illegal, value required
+    my_duration := MyMilli * 1.0 * Second; -- illegal ✔
+    -- my_duration := 1.0 * Second * MyMilli; -- illegal ✔
+    -- my_duration := (1.0 * MyMilli) / Second; -- illegal ✔
+    -- my_duration := (1.0 * MyMilli) * (Unit_Type(1.0) / Second);
+    my_duration := 1.0 * MyMilli * MyMilli * Second; -- illegal
+
+    my_velocity := 1.0 * Meter / (1.0 * MyMilli * Second);
+
 
 end Dimension_Test;
