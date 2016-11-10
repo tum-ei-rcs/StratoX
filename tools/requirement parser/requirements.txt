@@ -7,5 +7,14 @@ when state = detached, the glider shall fly with descend_rate <= 5000.0 mm*s^-1.
 
 
 SafetyReq S2
-when state = detached, the glider shall fly with roll_rate < 10.0 deg*s^-1.
+when state = detached, the glider shall fly with roll_rate < 10.0e1 deg² * s**-1*Mg^-1.
+
+SafetyReq S2
+when state = detached, the glider shall fly with test < 2.0 km²⋅uK⁻².
+
+SafetyReq S2
+when state = detached, the glider shall fly with test < 2.0 T.
+
+SafetyReq S2
+when state = detached, the glider shall fly with 2.0 millimeter * second^-1.
 

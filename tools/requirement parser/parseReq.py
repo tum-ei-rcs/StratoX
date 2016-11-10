@@ -5,18 +5,6 @@
 # command line: 
 
 
-# Unit System
-rePrefix = '([pnumkMGTP])?'
-reBaseUnit = '(m|g|s|A|K|deg)'
-reExp = '(?:\^(-?\d\d?))?'
-# reDerivedUnit = '(?:N|Pa|W)'  # erstmal nicht
-
-reDim = rePrefix+reBaseUnit+reExp
-
-reNum = '(\d+\.\d+) '
-reDims = '('+reDim+'(?:\*'+reDim+')*)' # + '(?:/' + reDimMul + ')?'
-
-reQuantity = reNum + reDims + '(?=[ .,;)]|$)'
 
 
 # Requirement Structure Elements
@@ -56,16 +44,6 @@ class Requirement:
 	def __init__(self, id):
 		self.id = id
 
-class Unit_Type:
-	val = 0.0
-	exp = 0
-	m = 0
-	kg = 0
-	s = 0
-	A = 0
-	K = 0
-	deg = 0
-
 
 
 def readInputFile( fileName ):
@@ -95,7 +73,7 @@ def parseRequirements(text):
 		gReqs.append(myreq)
 		printReq(myreq)
 
-		parseQuantity(myreq.constraint)  # check constraints for units
+		UnitParser.parseQuantity(myreq.constraint)  # check constraints for units
 		
 	return text
 
@@ -114,68 +92,6 @@ def printAllReq():
 	for req in gReqs:
 		printReq(req)
 
-def printQuantity(quantity):
-	print "Value:                  " + repr(quantity.val) + " * 10^" + repr(quantity.exp)
-	print "Units (m,kg,s,A,K,deg): (" + repr(quantity.m) + ", " + repr(quantity.kg) + ", " + repr(quantity.s) + ", " + repr(quantity.A) + ", " + repr(quantity.K) + ", " + repr(quantity.deg) + ")"
-	print ""
-
-
-def parseQuantity(text):
-	matches = re.findall(reQuantity, text, re.DOTALL)
-	for match in matches:
-		myQuantity = Unit_Type()
-		myQuantity.val = float(match[0])
-		parseDimension(myQuantity, match[1])
-		printQuantity(myQuantity)
-
-
-def parseDimension(quantity, text):
-	matches = re.findall(reDim, text, re.DOTALL)
-	for match in matches:
-		quantity = setExponent(quantity, match[0], match[1])
-		quantity = setDimension(quantity, match[1], match[2])
-	return quantity
-
-
-def setExponent(quantity, prefixstr, dimstr):
-
-	if (prefixstr == 'p'):
-		quantity.exp += -12
-	elif (prefixstr == 'n'):
-		quantity.exp += -9
-	elif (prefixstr == 'u'):
-		quantity.exp += -6
-	elif (prefixstr == 'm'):
-		quantity.exp += -3
-	elif (prefixstr == 'k'):
-		quantity.exp += 3
-	elif (prefixstr == 'M'):
-		quantity.exp += 6
-	elif (prefixstr == 'G'):
-		quantity.exp += 9
-
-	if (dimstr == 'g'):
-		quantity.exp += -3
-	return quantity
-
-
-def setDimension(quantity, dimstr, expstr):
-	if (expstr == ''):
-		expstr = '1'
-	exp = int(expstr)
-	if (dimstr == 'm'):
-		quantity.m += exp
-	elif (dimstr == 'g'):
-		quantity.kg += exp
-	elif (dimstr == 's'):
-		quantity.s += exp
-	elif (dimstr == 'A'):
-		quantity.A += exp
-	elif (dimstr == 'K'):
-		quantity.K += exp
-	elif (dimstr == 'deg'):
-		quantity.deg += exp
-	return quantity
 
 
 
@@ -242,6 +158,7 @@ import fileinput
 import sys
 import os
 import re
+import UnitParser
 from collections import namedtuple
 
 
@@ -249,7 +166,7 @@ from collections import namedtuple
 # check arguments
 args = sys.argv[1:]
 if len(args) == 0:
-	print "Usage: python parseReq.py FILES"
+	print("Usage: python parseReq.py FILES")
 	sys.exit(0)
 
 # setupLogging(1, "parseReq", logging.DEBUG)
