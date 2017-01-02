@@ -1,5 +1,5 @@
 
-package body Generic_PID_Controller with SPARK_Mode => Off is
+package body Generic_PID_Controller with SPARK_Mode => On is
 
 
    procedure initialize( Pid : out Pid_Object; 
@@ -22,13 +22,6 @@ package body Generic_PID_Controller with SPARK_Mode => Off is
       Pid.Output_Limit_Low := Output_Limit_Low;
       Pid.Output_Limit_High := Output_Limit_High;
    end initialize;
-
-
-
-   procedure test(a : PID_Data_Type; b : in out PID_Data_Type) is
-   begin
-      b := a + b;
-   end test;
 
 
 

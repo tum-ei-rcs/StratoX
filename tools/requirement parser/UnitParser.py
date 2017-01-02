@@ -9,7 +9,7 @@ import re
 
 # Control
 FLAG_DERIVED=True
-FLAG_FULL_NAMES=True
+FLAG_FULL_NAMES=False
 
 
 # Unit System

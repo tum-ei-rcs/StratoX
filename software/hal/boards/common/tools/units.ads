@@ -288,10 +288,10 @@ package Units with
 
 
    function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
-     with Pre => min <= 0.0 * Radian and then
+     with Pre => min <= Angle_Type(0.0) and then
      max >= 0.0 * Radian and then
      max > min and then
-     max <= Angle_Type'Last / 2.0 and then
+     -- max <= Angle_Type'Last / 2.0 and then
      min >= Angle_Type'First / 2.0,
      Post => Float (wrap_angle'Result) >= Float (min) and Float (wrap_angle'Result) <= Float (max);
    --  wrap angle between two values

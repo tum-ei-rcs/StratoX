@@ -52,7 +52,7 @@ package body Units with SPARK_Mode is
             wr := angle;
          elsif angle < min then
             off := (min - angle);
-            d_flt := Float (off / span); -- overflow check might fail
+            d_flt := Float (off / span); -- overflow check might fail, if span is really small
             d_int := Float'Floor (d_flt);
             frac  := Float (d_flt - d_int);
             f64 := Interfaces.IEEE_Float_64 (frac) * Interfaces.IEEE_Float_64 (span);

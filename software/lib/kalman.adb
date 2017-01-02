@@ -222,7 +222,7 @@ is
    is
       new_state : State_Vector := state;
       
-      ELEVON_TO_GYRO : constant Frequency_Type := 0.5 * Hertz;
+      ELEVON_TO_GYRO : constant Frequency_Type := 0.5 * Hertz;  -- FIXME: needs own type with (1/s)^2
       PITCH_TO_AIRSPEED : constant := 0.5 * Meter / ( Degree * Second );
       compensated_rates : Angular_Velocity_Vector := state.rates;
       

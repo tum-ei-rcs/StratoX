@@ -42,7 +42,7 @@ is
 
 
 procedure writeByteToDevice(register : Unsigned_8; data : Unsigned_8) is
-   data_tx : HIL.I2C.Data_Type(1 .. 2) := (1 => Byte( register ), 2 => Byte( data ) );
+   data_tx : constant HIL.I2C.Data_Type(1 .. 2) := (1 => Byte( register ), 2 => Byte( data ) );
 begin
    HIL.I2C.write(HIL.I2C.MAGNETOMETER, data_tx);
 end writeByteToDevice;

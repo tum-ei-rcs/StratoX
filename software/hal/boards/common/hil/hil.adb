@@ -24,8 +24,8 @@ is
                          start_index : Unsigned_8_Bit_Index;
                          length : Positive;
                          value : Integer) is
-      bits_mask  : Unsigned_8 := (2**length - 1) * 2**Natural(start_index);
-      value_mask : Unsigned_8 := Unsigned_8( value * 2**Natural(start_index) );
+      bits_mask  : constant Unsigned_8 := (2**length - 1) * 2**Natural(start_index);
+      value_mask : constant Unsigned_8 := Unsigned_8( value * 2**Natural(start_index) );
    begin
       register := (register and not bits_mask ) or (bits_mask or value_mask);
    end write_Bits;
@@ -33,8 +33,8 @@ is
    function read_Bits( register : in Unsigned_8;
                         start_index : Unsigned_8_Bit_Index;
                         length      : Positive) return Unsigned_8 is
-      bits_mask  : Unsigned_8 := (2**length - 1) * 2**Natural(start_index);
-      value : Unsigned_8 := (bits_mask and register) / 2**Natural(start_index);
+      bits_mask  : constant Unsigned_8 := (2**length - 1) * 2**Natural(start_index);
+      value : constant Unsigned_8 := (bits_mask and register) / 2**Natural(start_index);
    begin
       return value;
    end read_Bits;

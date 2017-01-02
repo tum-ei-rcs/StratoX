@@ -29,8 +29,6 @@ is
    subtype PID_Integral_Type is PID_Data_Type range PID_INTEGRAL_LIMIT_LOW.. PID_INTEGRAL_LIMIT_HIGH;
        
 
-   procedure test(a : PID_Data_Type; b : in out PID_Data_Type);
-
    -- init
    procedure initialize(Pid : out Pid_Object; 
                         Kp  : PID_Coefficient_Type; 

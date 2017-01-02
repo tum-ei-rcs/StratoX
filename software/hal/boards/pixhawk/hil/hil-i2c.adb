@@ -17,7 +17,7 @@ package body HIL.I2C with
    SPARK_Mode => Off
 is
 
-   ADDR_HMC5883L : HAL.I2C.I2C_Address := HMC5883L.Register.HMC5883L_ADDRESS;
+   ADDR_HMC5883L :constant  HAL.I2C.I2C_Address := HMC5883L.Register.HMC5883L_ADDRESS;
 
    procedure initialize is
       Config : constant STM32.I2C.I2C_Configuration := (
@@ -32,6 +32,7 @@ is
    begin
       STM32.Device.Reset(STM32.Device.I2C_1);
       STM32.I2C.Configure(STM32.Device.I2C_1, Config);
+      -- is_Init := True;
    end initialize;
 
    procedure write (Device : in Device_Type; Data : in Data_Type) is
