@@ -121,10 +121,25 @@ package body Controller with SPARK_Mode is
      Depends => (G_state => (G_state, G_Object_Position, G_Target_Position));
    --  update distance and bearing to home coordinate, and decide what to do
 
+
+   function Have_Course return Boolean is
+      ( Have_Home_Position and G_state.once_had_my_pos );
+
+   function FR_poshold_iff_no_course return Boolean is
+     (    (Have_Course and G_state.controller_mode /= MODE_POSHOLD) or
+          (not Have_Course and G_state.controller_mode = MODE_POSHOLD) ) with Ghost;
+
+   function FR_arrive_iff_near_target return Boolean is
+      (  (G_state.distance_to_home < Config.TARGET_AREA_RADIUS and G_state.controller_mode = MODE_ARRIVED) or
+         (G_state.distance_to_home >= Config.TARGET_AREA_RADIUS and G_state.distance_to_home <= 2.0*Config.TARGET_AREA_RADIUS)  or
+         (G_state.distance_to_home > 2.0*Config.TARGET_AREA_RADIUS and G_state.controller_mode /= MODE_ARRIVED) ) with Ghost;
+
+
+
    procedure Compute_Target_Attitude with
-     Global => (Input => (G_state, G_Object_Orientation, Ada.Real_Time.Clock_Time),
-                In_Out => (G_Last_Yaw_Control, PID_Yaw, G_Target_Orientation_Prev),
-                Output => (G_Target_Orientation)),
+     Global => (Input => (G_state, G_Object_Orientation, Ada.Real_Time.Clock_Time, G_Target_Position),
+                In_Out => (G_Last_Yaw_Control, PID_Yaw, G_Target_Orientation_Prev, G_Target_Orientation),
+                Output => null ),
 --       Depends => (G_Last_Yaw_Control => (G_Last_Yaw_Control, G_state, Ada.Real_Time.Clock_Time),
 --                   G_Target_Orientation => (G_state, PID_Yaw, G_Object_Orientation, G_Target_Orientation_Prev,
 --                                            G_Last_Yaw_Control, Ada.Real_Time.Clock_Time),
@@ -139,7 +154,7 @@ package body Controller with SPARK_Mode is
                         (G_state.controller_mode not in MODE_HOMING | MODE_COURSEHOLD) =>
                             G_Target_Orientation.Yaw = G_Object_Orientation.Yaw,
                         others => True),
-     Post => G_Target_Orientation_Prev = G_Target_Orientation;
+     Post => G_Target_Orientation_Prev = G_Target_Orientation and FR_arrive_iff_near_target;
    --  decide vehicle attitude depending on mode
    --  contract seems extensive, but it enforces that the attitude is always updated, and that
    --  homing works.
