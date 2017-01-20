@@ -9,10 +9,10 @@
 with Generic_Signal;
 
 --  those are required for LSP
---  with MS5611.Driver;
---  with ublox8.Driver;
---  with MPU6000.Driver;
---  with HMC5883L.Driver;
+    with MS5611.Driver;
+with ublox8.Driver;
+with MPU6000.Driver;
+with HMC5883L.Driver;
 
 --  @summary Generic sensor template. No dispatching here!
 --  FIXME: for the sake of polymorphism, dispatching should
@@ -45,11 +45,8 @@ is
       sample : Sample_Type; -- sensor-specific, most recent measurement
    end record;
 
-   --procedure initialize(Self : in out Sensor_Tag) is abstract;
-   --with Global => (Output => Sensor_State);
---       with Global => (Output => MS5611.Driver.Coefficients,
---                             In_Out => ( 
---                                        Ada.Real_Time.Clock_Time,
+   procedure initialize(Self : in out Sensor_Tag) is null with Global => (Output => (MS5611.Driver.Coefficients, MS5611.Driver.State));
+--                      In_Out => ( Ada.Real_Time.Clock_Time,
 --                                        MS5611.Driver.State, ublox8.Driver.State, MPU6000.Driver.State, HMC5883L.Driver.State));
 --          
    --  trigger start of the measurement
