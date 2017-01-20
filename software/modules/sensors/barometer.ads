@@ -1,5 +1,7 @@
 with Generic_Sensor;
 with Units; use Units;
+with MS5611.Driver;
+
 
 package Barometer with SPARK_Mode,
   Abstract_State => (States_Beyond_Sensor_Template)
@@ -16,8 +18,8 @@ is
       null;
    end record;
 
-   --overriding
-   procedure initialize (Self : in out Barometer_Tag);
+   overriding
+   procedure initialize (Self : in out Barometer_Tag) with Global => (Output => (MS5611.Driver.Coefficients, MS5611.Driver.State));
 
    --overriding
    procedure read_Measurement(Self : in out Barometer_Tag);

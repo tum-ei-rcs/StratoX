@@ -130,9 +130,11 @@ package body Controller with SPARK_Mode is
           (not Have_Course and G_state.controller_mode = MODE_POSHOLD) ) with Ghost;
 
    function FR_arrive_iff_near_target return Boolean is
-      (  (G_state.distance_to_home < Config.TARGET_AREA_RADIUS and G_state.controller_mode = MODE_ARRIVED) or
+     ( if (Have_Home_Position and Have_My_Position) then
+        (G_state.distance_to_home < Config.TARGET_AREA_RADIUS and G_state.controller_mode = MODE_ARRIVED) or
          (G_state.distance_to_home >= Config.TARGET_AREA_RADIUS and G_state.distance_to_home <= 2.0*Config.TARGET_AREA_RADIUS)  or
-         (G_state.distance_to_home > 2.0*Config.TARGET_AREA_RADIUS and G_state.controller_mode /= MODE_ARRIVED) ) with Ghost;
+          (G_state.distance_to_home > 2.0*Config.TARGET_AREA_RADIUS and G_state.controller_mode /= MODE_ARRIVED)
+      else True ) with Ghost;
 
 
 
@@ -154,7 +156,7 @@ package body Controller with SPARK_Mode is
                         (G_state.controller_mode not in MODE_HOMING | MODE_COURSEHOLD) =>
                             G_Target_Orientation.Yaw = G_Object_Orientation.Yaw,
                         others => True),
-     Post => G_Target_Orientation_Prev = G_Target_Orientation and FR_arrive_iff_near_target;
+     Post => G_Target_Orientation_Prev = G_Target_Orientation and FR_poshold_iff_no_course;
    --  decide vehicle attitude depending on mode
    --  contract seems extensive, but it enforces that the attitude is always updated, and that
    --  homing works.
