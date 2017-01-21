@@ -93,7 +93,7 @@ project StratoX is
    package Prove is
       -- switches for gnat2why et. al.
 
-      for Switches use ("--pedantic", "-j2", "--level=1", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "-k"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
+      for Switches use ("--pedantic", "-j2", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "-k"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
 
    end Prove;
 
