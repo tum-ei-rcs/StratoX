@@ -1,10 +1,10 @@
 #!/bin/bash
+# 
+# runs gnatprove while saving the logs, and then runs a Python script over it to extract statistics.
 #
-OBJ=../obj/gnatprove
-
+OBJ=../obj/gnatprove # logfiles are also put in here
 
 TIME="/usr/bin/time -v"
-OUTDIR=../obj/gnatprove # where gnatprove generates its logs and reports
 PROVEOPTS="--pedantic -v" # warns if arithmetic operations could be reorderd, which may refute a proof
 if [ "`hostname`" == "rr-u1204-1" ]; then
 	# server
