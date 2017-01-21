@@ -9,7 +9,7 @@ PROVEOPTS="--pedantic -v" # warns if arithmetic operations could be reorderd, wh
 if [ "`hostname`" == "rr-u1204-1" ]; then
 	# server
 	CORES=0 # auto
-	TIMEOU=10000 # make it high, because cvc4 seems to deadlock when timeout triggers
+	TIMEOU=100 # make it high, because cvc4 seems to deadlock when timeout trigger. seems to be seconds per VC.
 	PROVERS=cvc4,z3,altergo,mathsat,gappa
 	PROOF=per_check:all
 	STEPS=1000
