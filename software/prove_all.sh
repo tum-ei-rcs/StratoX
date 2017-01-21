@@ -10,7 +10,7 @@ if [ "`hostname`" == "rr-u1204-1" ]; then
 	# server
 	CORES=0 # auto
 	TIMEOU=10000 # make it high, because cvc4 seems to deadlock when timeout triggers
-	PROVERS=mathsat,cvc4,z3,altergo
+	PROVERS=cvc4,z3,altergo,mathsat,gappa
 	PROOF=per_check:all
 	STEPS=1000
 else
