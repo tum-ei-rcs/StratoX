@@ -19,6 +19,7 @@ import texttable
 #######################################
 
 KNOWN_SORT_CRITERIA = ('alpha', 'coverage', 'success', 'props', 'subs', 'skip');
+OWN_FOLDERS = ('hal/boards/common/tools', 'hal/boards/components', 'boot', 'config', 'driver', 'kernel', 'lib', 'modules');
 
 #######################################
 #     FUNCTION DEFINITIONS
@@ -31,6 +32,16 @@ def file2unit(filename):
 
     unitname = os.path.splitext(filename)[0]
     return unitname.lower()
+
+
+def is_own_application_unit( unitname ):
+	# dirty hack
+	other_unit_substrings = ["stm32", "cortex", "media_reader", "fat_filesystem", "a-", "hal-"]
+	return not any(substring in unitname for substring in other_unit_substrings)
+	
+
+
+
 
 def get_stdout_stats(inputfile):
     """
@@ -222,15 +233,43 @@ def get_totals(reportunits, buildunits, sorting):
             else:
                 mergedunits[u] = uinfo
         
+    # OWN UNITS
+    print("Own units:")
+    ownunits = {}
+    for u,uinfo in mergedunits.iteritems():
+    	if is_own_application_unit( u ):
+    		print(u + ": " + str(uinfo))
+    		ownunits[u]=uinfo
+
+    own_subs = sum([v["subs"] for k,v in ownunits.iteritems()])
+    own_props = sum([v["props"] for k,v in ownunits.iteritems()])
+    own_proven = sum([v["proven"] for k,v in ownunits.iteritems()])
+    own_skip = sum([v["skip"] for k,v in ownunits.iteritems()])
+    own_cov = sum([v["coverage"] for k,v in ownunits.iteritems()]) / len(ownunits)
+    own_sub_cov = float(own_subs - own_skip) / own_subs
+    own_success = 100*(float(own_proven) / own_props)
+    own_totals = {"units" : len(ownunits), "unit_cov" : own_cov, "sub_cov" : own_sub_cov, "props" : own_props, "proven":own_proven, "success" : own_success, "subs": own_subs}
+  
+    
+    print("\nOwn totals:" + str(own_totals))
+    print("\n")
+    
+
+
     ## TOTALS
     n = len(mergedunits)
     total_subs = sum([v["subs"] for k,v in mergedunits.iteritems()])
     total_props = sum([v["props"] for k,v in mergedunits.iteritems()])
     total_proven = sum([v["proven"] for k,v in mergedunits.iteritems()])
+    total_skip = sum([v["skip"] for k,v in mergedunits.iteritems()])
     total_cov = sum([v["coverage"] for k,v in mergedunits.iteritems()]) / n
+    total_sub_cov = float(total_subs - total_skip) / total_subs
     total_success = 100*(float(total_proven) / total_props)
-    totals = {"units" : n, "coverage" : total_cov, "props" : total_props, "proven":total_proven, "success" : total_success, "subs": total_subs}
-    
+    totals = {"units" : n, "unit_cov" : total_cov, "sub_cov" : total_sub_cov, "props" : total_props, "proven":total_proven, "success" : total_success, "subs": total_subs}
+  
+
+
+
     #################
     #  SORT
     #################
