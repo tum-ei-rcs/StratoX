@@ -115,26 +115,43 @@ package body Controller with SPARK_Mode is
    function Have_Home_Position return Boolean with
      Global => (Input => G_Target_Position);
 
-   procedure Update_Homing with
-     Global => (Input => (G_Object_Position, G_Target_Position),
-                In_Out => (G_state)),
-     Depends => (G_state => (G_state, G_Object_Position, G_Target_Position));
-   --  update distance and bearing to home coordinate, and decide what to do
-
 
    function Have_Course return Boolean is
-      ( Have_Home_Position and G_state.once_had_my_pos );
+      ( Have_Home_Position and (G_state.once_had_my_pos or Have_My_Position) );
 
    function FR_poshold_iff_no_course return Boolean is
      (    (Have_Course and G_state.controller_mode /= MODE_POSHOLD) or
-          (not Have_Course and G_state.controller_mode = MODE_POSHOLD) ) with Ghost;
+          (not Have_Course and G_state.controller_mode = MODE_POSHOLD) ) with
+   Ghost;
+   --Contract_Cases => ((Have_Course and G_state.controller_mode /= MODE_POSHOLD) => FR_poshold_iff_no_course'Result,
+   --                   (not Have_Course and G_state.controller_mode = MODE_POSHOLD) => FR_poshold_iff_no_course'Result);
 
    function FR_arrive_iff_near_target return Boolean is
      ( if (Have_Home_Position and Have_My_Position) then
         (G_state.distance_to_home < Config.TARGET_AREA_RADIUS and G_state.controller_mode = MODE_ARRIVED) or
-         (G_state.distance_to_home >= Config.TARGET_AREA_RADIUS and G_state.distance_to_home <= 2.0*Config.TARGET_AREA_RADIUS)  or
-          (G_state.distance_to_home > 2.0*Config.TARGET_AREA_RADIUS and G_state.controller_mode /= MODE_ARRIVED)
+        (G_state.distance_to_home >= Config.TARGET_AREA_RADIUS and G_state.distance_to_home <= 2.0*Config.TARGET_AREA_RADIUS)  or
+        (G_state.distance_to_home > 2.0*Config.TARGET_AREA_RADIUS and G_state.controller_mode /= MODE_ARRIVED)
       else True ) with Ghost;
+   --  Contract_Cases => ((Have_Home_Position and Have_My_Position and G_state.distance_to_home < Config.TARGET_AREA_RADIUS and G_state.controller_mode = MODE_ARRIVED) => FR_arrive_iff_near_target'Result,
+   --                     (Have_Home_Position and Have_My_Position and G_state.distance_to_home >= Config.TARGET_AREA_RADIUS and G_state.distance_to_home <= 2.0*Config.TARGET_AREA_RADIUS) => FR_arrive_iff_near_target'Result,
+   --                     (Have_Home_Position and Have_My_Position and G_state.distance_to_home > 2.0*Config.TARGET_AREA_RADIUS and G_state.controller_mode /= MODE_ARRIVED) => FR_arrive_iff_near_target'Result,
+   --                    others => FR_arrive_iff_near_target'Result );
+   -- Pre => G_state.distance_to_home >= 0.1*Meter and G_state.distance_to_home < 100.0*Kilo*Meter;
+
+
+
+     procedure Update_Homing with
+     Global => (Input => (G_Object_Position, G_Target_Position),
+                In_Out => (G_state)),
+     Depends => (G_state => (G_state, G_Object_Position, G_Target_Position)),
+     Contract_Cases => ( -- Have_Course => G_state.controller_mode /= MODE_POSHOLD,
+                        not Have_Course => G_state.controller_mode = MODE_POSHOLD,
+                        (Have_Home_Position and Have_My_Position and Distance (G_Object_Position, G_Target_Position) < Config.TARGET_AREA_RADIUS) => G_state.controller_mode = MODE_ARRIVED,
+                         (Have_Home_Position and Have_My_Position and Distance (G_Object_Position, G_Target_Position) > 2.0*Config.TARGET_AREA_RADIUS) => G_state.controller_mode = MODE_HOMING,
+                         (Have_Home_Position and not Have_My_Position and G_state.once_had_my_pos) => G_state.controller_mode = MODE_COURSEHOLD
+                       ),
+     Post => G_state.controller_mode /= MODE_UNKNOWN and FR_arrive_iff_near_target and FR_poshold_iff_no_course;
+   --  update distance and bearing to home coordinate, and decide what to do
 
 
 
