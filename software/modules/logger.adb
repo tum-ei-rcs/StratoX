@@ -29,7 +29,7 @@ pragma Elaborate_All (Ulog);
 
 --  @summary Simultaneously writes to UART, and SD card.
 package body Logger with SPARK_Mode,
-  Refined_State => (LogState => (queue_ulog, Logging_Task, logger_level, With_SDLog))
+  Refined_State => (LogState => (queue_ulog, Logging_Task, logger_level))
 is
 
    --  the type for the queue buffer
@@ -111,7 +111,7 @@ is
 
    queue_ulog   : Ulog_Queue_T;
    logger_level : Log_Level := DEBUG;
-   With_SDLog   : Boolean := False;
+   --With_SDLog   : Boolean := False;
 
    --------------
    --  LOG TASK
@@ -240,11 +240,13 @@ is
             up : constant Unsigned_16 := Unsigned_16 (len);
             subtype SD_Data_ULog is SDLog.SDLog_Data (1 .. up);
             function To_FileData is new Ada.Unchecked_Conversion (Bytes_ULog, SD_Data_ULog);
-            buf_last : constant Integer := buf'First - 1 + len;
+            buf_last : constant Integer := buf'First + (len - 1);
             n_wr : Integer;
             pragma Unreferenced (n_wr);
          begin
-            SDLog.Write_Log (To_FileData (buf (buf'First .. buf_last)), n_wr);
+            if SDLog.Is_Open then -- defensive programming. We should not get here w/o opened log
+               SDLog.Write_Log (To_FileData (buf (buf'First .. buf_last)), n_wr);
+            end if;
          end;
       end if;
    end Write_Bytes_To_SD;
@@ -308,7 +310,7 @@ is
             text_msg.t := now;  
             declare
                idx_t : constant Integer := text_msg.txt'First - 1 + maxlen;
-               idx_m : constant Integer := message'First - 1 + maxlen;
+               idx_m : constant Integer := message'First + (maxlen - 1);
             begin
                text_msg.txt(text_msg.txt'First .. idx_t) := message (message'First .. idx_m);
                text_msg.txt_last := idx_m;
@@ -375,12 +377,9 @@ is
          if not log_started
          then
             log_console (Logger.ERROR, "Cannot create logfile: " & buildstring & "/" & fname);
-            With_SDLog := False;
          else
             log_console (Logger.WARN, "Log name: " & buildstring & "/" & fname);
-            With_SDLog := True;
             --  write file header (ULog message definitions)
-            ULog.Init;
             Get_Ulog_Defs_Loop :
             loop
                ULog.Get_Header_Ulog (bytes, len, valid);

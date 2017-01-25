@@ -233,7 +233,7 @@ package body ULog with SPARK_Mode => On is
          if msg.txt_last > txt'Last then
             len := txt'Length;
          elsif msg.txt_last >= txt'First and then msg.txt_last <= txt'Last then
-            len := msg.txt_last - txt'First + 1;
+            len := (msg.txt_last - txt'First) + 1;
          else
             len := 0;
          end if;
@@ -246,7 +246,7 @@ package body ULog with SPARK_Mode => On is
          if msg.txt_last > txt'Last then
             len := txt'Length;
          elsif msg.txt_last >= txt'First and then msg.txt_last <= txt'Last then
-            len := msg.txt_last - txt'First + 1;
+            len := (msg.txt_last - txt'First) + 1;
          else
             len := 0;
          end if;
@@ -448,16 +448,5 @@ package body ULog with SPARK_Mode => On is
       end if;
 
    end Get_Header_Ulog;
-
-   ----------
-   --  Init
-   ----------
-
-   procedure Init is
-   begin
-      All_Defs := False;
-      Hdr_Def  := False;
-      Next_Def := Message_Type'First;
-   end Init;
 
 end ULog;

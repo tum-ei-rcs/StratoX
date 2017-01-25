@@ -112,7 +112,7 @@ package body ULog.Conversions with SPARK_Mode is
       slen : constant Integer := (if s'Length > tmp'Length then tmp'Length else s'Length);
    begin
       if slen > 0 then
-         tmp (tmp'First .. tmp'First - 1 + slen) := s (s'First .. s'First - 1 + slen);
+         tmp (tmp'First .. tmp'First + (slen - 1)) := s (s'First .. s'First + (slen - 1));
       end if;
       t.Name := To_Name (tmp);
    end Set_Name;
@@ -152,7 +152,7 @@ package body ULog.Conversions with SPARK_Mode is
          --  this means the buffer can take all of it
          declare
             idx_l : constant Integer := buf'First + fill;
-            idx_h : constant Integer := idx_l - 1 + tlen;
+            idx_h : constant Integer := idx_l + (tlen - 1);
          begin
             buf (idx_l .. idx_h) := tail;
          end;
@@ -191,7 +191,7 @@ package body ULog.Conversions with SPARK_Mode is
          end if;
          declare
             idx_lbl_lo : constant Integer := t.Label_Collect.Labels'First + t.Label_Collect.Length;
-            idx_lbl_hi : constant Integer := idx_lbl_lo + label'Length - 1;
+            idx_lbl_hi : constant Integer := idx_lbl_lo + (label'Length - 1);
             idx_fmt  : constant Integer := t.Format_Collect.Format'First + t.Format_Collect.Length;
             subtype VarString is String (1 .. label'Length);
             subtype VarBytes is HIL.Byte_Array (1 .. label'Length);
@@ -353,7 +353,7 @@ package body ULog.Conversions with SPARK_Mode is
       len : constant Integer := (if slen > tmp'Length then tmp'Length else slen);
    begin
       if len > 0 then
-         tmp (tmp'First .. tmp'First - 1 + len) := tail (tail'First .. tail'First - 1 + len);
+         tmp (tmp'First .. tmp'First + (len - 1)) := tail (tail'First .. tail'First + (len - 1));
       end if;
       Add_Labeled (t, label, 'Z', buf, To_Byte64 (tmp));
    end Append_String64;

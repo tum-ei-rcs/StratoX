@@ -110,9 +110,6 @@ package ULog with SPARK_Mode is
    --  @return If true, you must keep calling this. If false, then all message defs have been
    --  delivered
 
-   procedure Init;
-   --  initialize this package before use
-
 private
 
    subtype ULog_Label  is HIL.Byte_Array (1 .. 64);

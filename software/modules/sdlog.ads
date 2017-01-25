@@ -12,19 +12,23 @@ is
 
    subtype SDLog_Data is FAT_Filesystem.Directories.Files.File_Data;
 
-   procedure Init;
+   procedure Init with
+     Post => Is_Open = False;
    --  initialize the SD log
 
-   procedure Close;
+   procedure Close with
+     Post => Is_Open = False;
    --  closes the SD log
 
    procedure Start_Logfile (dirname : String; filename : String; ret : out Boolean);
    --  @summary create new logfile
 
-   procedure Write_Log (Data : SDLog_Data; n_written : out Integer);
+   procedure Write_Log (Data : SDLog_Data; n_written : out Integer) with
+     Pre => Is_Open;
    --  @summary write bytes to logfile
 
-   procedure Write_Log (S : String; n_written : out Integer);
+   procedure Write_Log (S : String; n_written : out Integer) with
+     Pre => Is_Open;
    --  convenience function for Write_Log (File_Data)
 
    procedure Flush_Log;

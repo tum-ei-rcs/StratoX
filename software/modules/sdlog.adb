@@ -7,11 +7,12 @@ with FAT_Filesystem.Directories.Files; use FAT_Filesystem.Directories.Files;
 with Media_Reader.SDCard;              use Media_Reader.SDCard;
 
 --  @summary top-level package for reading/writing to SD card
+--           minimal package with pointer stuff
 package body SDLog with SPARK_Mode => Off is
 
-   SD_Controller   : aliased SDCard_Controller;
-   FS              : FAT_Filesystem_Access := null;
-   fh_log          : FAT_Filesystem.Directories.Files.File_Handle;
+   SD_Controller   : aliased SDCard_Controller; -- limited type; FS needs a pointer to this
+   FS              : FAT_Filesystem_Access := null; -- pointer
+   fh_log          : FAT_Filesystem.Directories.Files.File_Handle; -- private type
 
    -------------------
    --  Close_Filesys
@@ -19,11 +20,8 @@ package body SDLog with SPARK_Mode => Off is
 
    procedure Close is
    begin
-      if not SD_Initialized then
-         return;
-      end if;
-
       Close (FS);
+      log_open := False;
    end Close;
 
    -------------------
@@ -34,6 +32,8 @@ package body SDLog with SPARK_Mode => Off is
       Status     : FAT_Filesystem.Status_Code;
    begin
       SD_Initialized := False;
+      log_open := False;
+
       SD_Controller.Initialize;
 
       if not SD_Controller.Card_Present then
