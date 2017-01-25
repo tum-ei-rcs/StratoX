@@ -52,9 +52,10 @@ package body Units with SPARK_Mode is
             wr := angle;
          elsif angle < min then
             off := (min - angle);
-            d_flt := Float (off / span); -- overflow check might fail, if span is really small
+            -- pragma Assert (span >= 1.0e-3 * Radian);
+            d_flt := Float (off / span); -- overflow check might fail, if span is really small or if span is really large
             d_int := Float'Floor (d_flt);
-            frac  := Float (d_flt - d_int);
+            frac  := d_flt - d_int;
             f64 := Interfaces.IEEE_Float_64 (frac) * Interfaces.IEEE_Float_64 (span);
             --pragma Assert (f64 >= 0.0);
             if f64 < Interfaces.IEEE_Float_64 (Angle_Type'Last) and f64 >= Interfaces.IEEE_Float_64 (Angle_Type'First) then
@@ -67,7 +68,7 @@ package body Units with SPARK_Mode is
             off := angle - max;
             d_flt := Float (off / span); -- overflow check might fail
             d_int := Float'Floor (d_flt);
-            frac  := Float (d_flt - d_int);
+            frac  := d_flt - d_int;
             pragma Assert (frac >= 0.0);
             f64 := Interfaces.IEEE_Float_64 (frac) * Interfaces.IEEE_Float_64 (span);
             --pragma Assert (f64 >= 0.0); -- this fails. why? both span and frac are positive

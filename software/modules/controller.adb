@@ -173,7 +173,7 @@ package body Controller with SPARK_Mode is
                         (G_state.controller_mode not in MODE_HOMING | MODE_COURSEHOLD) =>
                             G_Target_Orientation.Yaw = G_Object_Orientation.Yaw,
                         others => True),
-     Post => G_Target_Orientation_Prev = G_Target_Orientation and FR_poshold_iff_no_course;
+     Post => G_Target_Orientation_Prev = G_Target_Orientation;
    --  decide vehicle attitude depending on mode
    --  contract seems extensive, but it enforces that the attitude is always updated, and that
    --  homing works.

@@ -18,8 +18,8 @@ is
       null;
    end record;
 
-   overriding
-   procedure initialize (Self : in out Barometer_Tag) with Global => (Output => (MS5611.Driver.Coefficients, MS5611.Driver.State));
+   --overriding
+   procedure initialize (Self : in out Barometer_Tag); -- with Global => (Output => (MS5611.Driver.Coefficients, MS5611.Driver.State));
 
    --overriding
    procedure read_Measurement(Self : in out Barometer_Tag);
