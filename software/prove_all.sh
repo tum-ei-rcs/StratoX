@@ -17,7 +17,7 @@ else
 	# laptop etc.
 	CORES=2
 	TIMEOU=auto
-	PROVERS=mathsat,cvc4,altergo,z3
+	PROVERS=cvc4,altergo,z3
 	PROOF=per_check
 	STEPS=10
 	# if you use --level=n, then this overwrites and sets a combination of prover, proof and steps
