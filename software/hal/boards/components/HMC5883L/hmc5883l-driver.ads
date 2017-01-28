@@ -12,7 +12,8 @@ with Interfaces; use Interfaces;
 
 package HMC5883L.Driver with
 SPARK_Mode,
-Abstract_State => State
+  Abstract_State => State,
+    Initializes => State
 is
 
    procedure initialize;

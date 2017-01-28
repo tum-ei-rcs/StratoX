@@ -45,7 +45,7 @@ is
       sample : Sample_Type; -- sensor-specific, most recent measurement
    end record;
 
-   procedure initialize(Self : in out Sensor_Tag) is null with Global => (Output => (MS5611.Driver.Coefficients, MS5611.Driver.State));
+--   procedure initialize(Self : in out Sensor_Tag) is null with Global => (Output => (MS5611.Driver.Coefficients, MS5611.Driver.State));
 --                      In_Out => ( Ada.Real_Time.Clock_Time,
 --                                        MS5611.Driver.State, ublox8.Driver.State, MPU6000.Driver.State, HMC5883L.Driver.State));
 --          

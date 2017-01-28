@@ -26,17 +26,17 @@ package HIL.I2C with SPARK_Mode => On is
    is_Init : Boolean := False with Ghost;
 
    procedure initialize with 
-     Pre => is_Init = False, 
-     Post => is_Init = True;
+     --Pre => is_Init = False, 
+     Post => is_Init;
 
    procedure write (Device : in Device_Type; Data : in Data_Type) with 
-     Pre => is_Init = True;
+     Pre => is_Init;
 
    procedure read (Device : in Device_Type; Data : out Data_Type) with 
-     Pre => is_Init = True;
+     Pre => is_Init;
 
    procedure transfer (Device : in Device_Type; Data_TX : in Data_Type; Data_RX : out Data_Type) with 
-     Pre => is_Init = True;
+     Pre => is_Init;
 
  
 end HIL.I2C;

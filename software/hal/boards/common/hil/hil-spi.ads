@@ -15,24 +15,32 @@ is
    type Device_ID_Type is new HIL.Devices.Device_Type_SPI;
 
    type Data_Type is array (Natural range <>) of Byte;
+   
+   is_Init : Boolean := False with Ghost;
 
-   procedure configure;
+   procedure configure with
+     Post => is_Init;
 
-   procedure select_Chip (Device : Device_ID_Type);
+   procedure select_Chip (Device : Device_ID_Type) with 
+     Pre => is_Init;
 
-   procedure deselect_Chip (Device : Device_ID_Type); 
+   procedure deselect_Chip (Device : Device_ID_Type) with
+     Pre => is_Init;
    -- with Global => (Input => (Deselect));
 
-   procedure write (Device : Device_ID_Type; Data : Data_Type);
+   procedure write (Device : Device_ID_Type; Data : Data_Type) with
+     Pre => is_Init;
    --  send byte array to device
    
-   procedure read (Device : in Device_ID_Type; Data : out Data_Type);
+   procedure read (Device : in Device_ID_Type; Data : out Data_Type) with
+     Pre => is_Init;
    --  read byte array from device
 
    procedure transfer
      (Device  : in     Device_ID_Type;
       Data_TX : in     Data_Type;
-      Data_RX :    out Data_Type);
+      Data_RX :    out Data_Type) with
+     Pre => is_Init;
    --  combining sequential write and read, for those devices where CS must stay
    --  asserted between command and response.
    

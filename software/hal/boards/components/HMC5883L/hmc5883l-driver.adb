@@ -34,7 +34,7 @@ with HIL.I2C; use HIL.I2C;
 with HIL; use HIL;
 with Ada.Unchecked_Conversion;
 
-package body HMC5883L.Driver with
+package body HMC5883L.Driver with -- SPARK_Mode,
 Refined_State => (State => (buffer, mode))
 is
 

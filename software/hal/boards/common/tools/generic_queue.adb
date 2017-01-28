@@ -182,7 +182,7 @@ package body Generic_Queue with SPARK_Mode => Off is
    begin
       if not Self.Empty then
          if Self.index_head <= Self.index_tail-1 then  -- no wrap
-            elements(1 .. Self.Length) := Element_Array( Self.Buffer( Self.index_head .. Self.index_tail-1) );
+            elements(1 .. Self.Length) := Element_Array( Self.Buffer( Self.index_head .. Self.index_tail-1) );  -- non-SPARK: conversion between array types not supported
          else
             elements(1 .. Self.Length) := Element_Array( Self.Buffer( Self.index_head .. Index_Type'Last) & Self.Buffer( Index_Type'First .. Self.index_tail-1) );
          end if;
