@@ -18,8 +18,6 @@ REPO=~/async/StratoX.git
 (
     cd $REPO
     mkdir -p $LOGDIR
-    REVS=$(git rev-list --date-order "$1")    
-    echo "revs=$REVS"
     while read -r rev; do
         CDATE=$(git log -1 $rev --format="%cd" --date=iso | sed 's/ /_/g')
         CSUBJ=$(git log -1 $rev --format="%s")
@@ -28,7 +26,7 @@ REPO=~/async/StratoX.git
         echo " "
         $PROVESCRIPT $CDATE $LOGDIR
     
-    done < <(git rev-list --date-order "$1")
+    done < <(git rev-list --reverse --date-order "$1")
     git checkout master
 )
 exit 0
