@@ -1,0 +1,144 @@
+sorting: coverage,success
+exclude: 
+Using folders: ['../obj/gnatprove', '../software/hal/lib/obj/gnatprove', '../software/hal/boards/obj/pixhawk/gnatprove', '../software/hal/hpl/STM32/obj/stm32f42x/gnatprove']
+              unit                   subs     success      skip     flows_su    proven    coverage    props     suppress     spec   
+                                                                     ccess                                         ed               
+===================================================================================================================================
+main                                      3        100          0        100         39        100         39          0          0 
+hil.random                                2        100          0        100          0        100          0          0          0 
+px4io.driver                             18        100          0        100        122        100        122          0          0 
+console                                   2        100          0        100          3        100          3          0          0 
+hil.uart                                  1        100          0        100          0        100          0          0          0 
+hil.nvram                                 4        100          0        100          0        100          0          0          0 
+helper                                    3        100          0        100          0        100          0          0          0 
+gps                                      13        100          0        100         13        100         13          0          0 
+servo                                     8        100          0        100         10        100         10          0          0 
+magnetometer                              6        100          0        100         18        100         18          0          0 
+units.numerics                            1        100          0        100          1        100          1          0          0 
+bounded_image                            10        100          0        100         30        100         30          0          0 
+cpu                                       2        100          0        100          0        100          0          0          0 
+mission                                  24       98.9          0        100         89        100         90          0          0 
+ublox8.driver                            27       93.9          0        100         92        100         98          2          0 
+buzzer_manager                           12       91.7          0        100         11        100         12          0          0 
+units                                    23       83.0          0        100         78        100         94          0          0 
+units.navigation                         17       82.4          0        100        108        100        131          0          0 
+barometer                                10       81.8          0        100          9        100         11          0          0 
+types                                    10         80          0        100          4        100          5          0          0 
+hil.devices.nvram                         9       76.2          0        100         16        100         21          0          0 
+ms5611.driver                            44       73.1          0        100        128        100        175          0          0 
+controller                               42       69.1          0       86.9        114        100        165          0          0 
+kalman                                   17         65          0        100         91        100        140          3          0 
+imu                                      19       42.8          0        100         59        100        138          0          0 
+units.vectors                            26       62.6          0        100         57       96.2         91          0          1 
+profiler                                 14        100          0        100         13       92.9         13          0          1 
+nvram                                    26        100          0        100         15       92.3         15          0          2 
+ulog                                     12        100          0        100        135       91.7        135          0          1 
+estimator                                35       87.6          0        100        120       91.4        137          0          3 
+logger                                   19       98.3          0       99.2         59       89.5         60          1          2 
+mystrings                                 7        100          0        100         16       85.7         16          0          1 
+mpu6000.driver                           28       74.6          0        100        126       78.6        169          0          6 
+ulog.conversions                         43        100          0        100         63       74.4         63          0         11 
+hil                                      22       92.6          0        100         25       72.7         27          0          6 
+buildinfo                                 3        100          0        100         15       33.3         15          0          2 
+hil.buzzer                                5        100          0        100          0         20          0          0          4 
+stm32.gpio                               20        100         20        100          0          0          0          0          0 
+hil.spi                                   0        100          0        100          0          0          0          0          0 
+stm32_svd.exti                            0        100          0        100          0          0          0          0          0 
+mpu6000.register                          0        100          0        100          1          0          1          0          0 
+stm32.i2c                                18        100         18        100          0          0          0          0          0 
+stm32.sdmmc                              37        100         37        100          0          0          0          0          0 
+stm32_svd.usart                           0        100          0        100          0          0          0          0          0 
+led_manager                              10        100         10        100          0          0          0          0          0 
+stm32.rng                                14        100         14        100          0          0          0          0          0 
+media_reader.sdcard                       8        100          8        100          0          0          0          0          0 
+hil.config                                0        100          0        100          0          0          0          0          0 
+hil.devices.timers                        0        100          0        100          0          0          0          0          0 
+fat_filesystem.directories                5        100          5        100          0          0          0          0          0 
+hil.i2c                                   0        100          0        100          0          0          0          0          0 
+crash                                     0        100          0        100          0          0          0          0          0 
+stm32_svd.pwr                             0        100          0        100          0          0          0          0          0 
+stm32_svd.dac                             0        100          0        100          0          0          0          0          0 
+stm32_svd.rcc                             0        100          0        100          0          0          0          0          0 
+media_reader.sdcard.config                2        100          2        100          0          0          0          0          0 
+stm32.usarts                             30        100         30        100          0          0          0          0          0 
+stm32.rcc                                28        100         28        100          0          0          0          0          0 
+cortex_m.cache                            4        100          4        100          0          0          0          0          0 
+fat_filesystem.directories.files          8        100          8        100          0          0          0          0          0 
+led                                       3        100          0        100          0          0          0          0          3 
+fat_filesystem                           43        100         43        100          0          0          0          0          0 
+hmc5883l.register                         0        100          0        100          0          0          0          0          0 
+stm32_svd.syscfg                          0        100          0        100          0          0          0          0          0 
+hil.devices                               0        100          0        100          0          0          0          0          0 
+stm32_svd                                 0        100          0        100          0          0          0          0          0 
+stm32.dac                                29        100         29        100          0          0          0          0          0 
+stm32.device                              0        100          0        100          0          0          0          0          0 
+stm32                                     0        100          0        100          0          0          0          0          0 
+stm32_svd.sdio                            0        100          0        100          0          0          0          0          0 
+hil.timers                                0        100          0        100          0          0          0          0          0 
+media_reader                              3        100          3        100          0          0          0          0          0 
+hmc5883l.driver                          28        100          7        100          0          0          0          0         21 
+stm32.adc                                65        100         65        100          0          0          0          0          0 
+units.operations                          2        100          2        100          0          0          0          0          0 
+ms5611.register                           0        100          0        100          0          0          0          0          0 
+stm32_svd.dma                             0        100          0        100          0          0          0          0          0 
+px4io                                     0        100          0        100          0          0          0          0          0 
+stm32_svd.i2c                             0        100          0        100          0          0          0          0          0 
+ublox8.protocol                           0        100          0        100          0          0          0          0          0 
+generic_bounded_image                     0        100          0        100          0          0          0          0          0 
+ublox8                                    0        100          0        100          0          0          0          0          0 
+hmc5883l                                  0        100          0        100          0          0          0          0          0 
+config.software                           0        100          0        100          0          0          0          0          0 
+stm32_svd.gpio                            0        100          0        100          0          0          0          0          0 
+stm32.rng.polling                         2        100          2        100          0          0          0          0          0 
+stm32.timers                            102        100        102        100          0          0          0          0          0 
+stm32.syscfg                              6        100          6        100          0          0          0          0          0 
+stm32.board                               4        100          4        100          0          0          0          0          0 
+hil.clock                                 0        100          0        100          0          0          0          0          0 
+boot                                      0        100          0        100          0          0          0          0          0 
+stm32.spi                                41        100         41        100          0          0          0          0          0 
+cortex_m                                  0        100          0        100          0          0          0          0          0 
+stm32_svd.spi                             0        100          0        100          0          0          0          0          0 
+config                                    0        100          0        100          1          0          1          0          0 
+mpu6000                                   0        100          0        100          0          0          0          0          0 
+hil.gpio                                  0        100          0        100          0          0          0          0          0 
+config.tasking                            0        100          0        100          0          0          0          0          0 
+px4io.protocol                            0        100          0        100         54          0         54          0          0 
+stm32.dma                                42        100         42        100          0          0          0          0          0 
+generic_types                             0        100          0        100          0          0          0          0          0 
+sdlog                                     0        100          0        100          0          0          0          0          0 
+stm32_svd.rng                             0        100          0        100          0          0          0          0          0 
+crc8                                      1        100          0        100          1          0          1          0          1 
+stm32.exti                                7        100          7        100          0          0          0          0          0 
+stm32_svd.adc                             0        100          0        100          0          0          0          0          0 
+ms5611                                    0        100          0        100          0          0          0          0          0 
+TOTALS:
+{'flows': 1617,
+ 'flows_proven': 1595,
+ 'flows_success': 98.63945578231292,
+ 'flows_suppressed': 29,
+ 'props': 2114,
+ 'proven': 1736,
+ 'rules': {u'ALIASING': {'cnt': 16, 'proven': 16},
+           u'UNINITIALIZED': {'cnt': 1601, 'proven': 1579},
+           u'VC_ASSERT': {'cnt': 15, 'proven': 15},
+           u'VC_CEILING_PRIORITY_PROTOCOL': {'cnt': 1, 'proven': 1},
+           u'VC_COMPLETE_CONTRACT_CASES': {'cnt': 1, 'proven': 0},
+           u'VC_CONTRACT_CASE': {'cnt': 8, 'proven': 8},
+           u'VC_DISCRIMINANT_CHECK': {'cnt': 66, 'proven': 65},
+           u'VC_DISJOINT_CONTRACT_CASES': {'cnt': 2, 'proven': 2},
+           u'VC_DIVISION_CHECK': {'cnt': 73, 'proven': 66},
+           u'VC_INDEX_CHECK': {'cnt': 42, 'proven': 42},
+           u'VC_LENGTH_CHECK': {'cnt': 173, 'proven': 163},
+           u'VC_OVERFLOW_CHECK': {'cnt': 539, 'proven': 309},
+           u'VC_POSTCONDITION': {'cnt': 25, 'proven': 22},
+           u'VC_PRECONDITION': {'cnt': 315, 'proven': 232},
+           u'VC_RANGE_CHECK': {'cnt': 853, 'proven': 810},
+           u'VC_TASK_TERMINATION': {'cnt': 1, 'proven': 1}},
+ 'skip': 537,
+ 'sub_cov': 52.435783879539414,
+ 'subs': 1129,
+ 'success': 82.11920529801324,
+ 'suppressed': 6,
+ 'unit_cov': 31.950023631980645,
+ 'units': 107}
+Note: 'subs' includes generic instances

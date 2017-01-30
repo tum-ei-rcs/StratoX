@@ -49,6 +49,7 @@ def get_stdout_stats(inputfile):
         l = 0
         for line in f:
             l = l + 1
+                        
             # new unit?
             match = re.search(r'^([^\s:]+):(\d+):(\d+).*', line, re.MULTILINE)
             if match:
@@ -62,8 +63,8 @@ def get_stdout_stats(inputfile):
                     unitinfo = {"props":0, "proven":0}
                     if unit: units[unit]=unitinfo
 
-            match = re.search(r'^.*: (medium|high|low): .*$', line, re.MULTILINE)
-            if match:
+            match = re.search(r'^.*: (medium|high|low): (.*)$', line, re.MULTILINE)
+            if match:                
                 unitinfo["props"] = unitinfo["props"] + 1
 
             match = re.search(r'^.*: info: .*$', line, re.MULTILINE)
@@ -340,6 +341,8 @@ def main(argv):
         sorting = KNOWN_SORT_CRITERIA
     print "sorting: " + ",".join(sorting)
     print "exclude: " + ",".join(exclude)
+    print "WARNING: this script is deprecated. Use gnatprove_unitstats.py"
+    print "Known issues: 'props' includes some flow proofs"
                     
     inputfile = args[0]
     if len(args) > 1: buildlogfile = args[1]

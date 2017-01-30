@@ -31,40 +31,43 @@ def file2unit(filename):
     unitname = unitname.replace("-",".")
     return unitname.lower()
 
-def get_json_data(folder):
+def get_json_data(folders):
     """
     Parses all *.spark files in the given directory and
     creates statistics for them
     """
     d={}
-    for filename in glob.glob(os.path.join(folder, '*.spark')):
-        unit = file2unit(os.path.splitext(os.path.basename(filename))[0])
-        try:
-            with open(filename) as f:
-                contents = json.load(f)
-        except:
-            contents = {}
+    for folder in folders:
+        prefix = "" # file2unit(folder)
+        if prefix: prefix = prefix + "."
+        for filename in glob.glob(os.path.join(folder, '*.spark')):
+            unit = prefix + file2unit(os.path.splitext(os.path.basename(filename))[0])
+            try:
+                with open(filename) as f:
+                    contents = json.load(f)
+            except:
+                contents = {}
 
-        # we get three sections:
-        # 1) "spark" : that gives us the coverage. list of dicts.
-        #              each item has {"spark": <all|spec>, "name" : <name>, "sloc" : [{"file": .., "line": ..}]}.
-        #              If <name>=unit, then it's the package itself. Package with spark=spec means body not in SPARK mode
-        #
-        # 2) "flow" : flow analysis results. list of dicts.
-        #             each item has {"file": .., "line": .., "col": .., "rule": .., "severity": .., "entity": {"name": .., "sloc": [{}]}, "tracefile": .., "msg_id": .., "how_proved": ..}
-        #
-        # 3) "proof" : prover results. list of dicts
-        #             each item has the same as flow, but additionally {"cntexmp":{}, "suppressed" : <string>}. Here, rule=<VC_PRECONDITION|VC_DISCRIMINANT_CHECK|...>
-        #
-        # 4) "assumptions" : not interesting here. we remove it.
-        #
-        # Thus, coverage comes from "spark", success comes from "proof"
+            # we get three sections:
+            # 1) "spark" : that gives us the coverage. list of dicts.
+            #              each item has {"spark": <all|spec>, "name" : <name>, "sloc" : [{"file": .., "line": ..}]}.
+            #              If <name>=unit, then it's the package itself. Package with spark=spec means body not in SPARK mode
+            #
+            # 2) "flow" : flow analysis results. list of dicts.
+            #             each item has {"file": .., "line": .., "col": .., "rule": .., "severity": .., "entity": {"name": .., "sloc": [{}]}, "tracefile": .., "msg_id": .., "how_proved": ..}
+            #
+            # 3) "proof" : prover results. list of dicts
+            #             each item has the same as flow, but additionally {"cntexmp":{}, "suppressed" : <string>}. Here, rule=<VC_PRECONDITION|VC_DISCRIMINANT_CHECK|...>
+            #
+            # 4) "assumptions" : not interesting here. we remove it.
+            #
+            # Thus, coverage comes from "spark", success comes from "proof"
 
-        try:
-            contents.pop("assumptions", None)
-        except:
-            pass
-        d[unit] = contents
+            try:
+                contents.pop("assumptions", None)
+            except:
+                pass
+            d[unit] = contents
     return d
 
 def get_statistics(jsondata, sorting, exclude):
@@ -114,7 +117,7 @@ def get_statistics(jsondata, sorting, exclude):
         abstract_units[u]["props"] = n
         abstract_units[u]["rules"] = rule_stats
         abstract_units[u]["proven"] = p
-        abstract_units[u]["success"] = (100*float(p) / n) if n > 0 else 0
+        abstract_units[u]["success"] = (100*float(p) / n) if n > 0 else 100.0
         abstract_units[u]["suppressed"] = ig
 
         # GET SUCCESS of FLOW
@@ -135,7 +138,7 @@ def get_statistics(jsondata, sorting, exclude):
         abstract_units[u]["flows"] = n
         abstract_units[u]["flows_proven"] = f
         abstract_units[u]["flows_suppressed"] = ig
-        abstract_units[u]["flows_success"] = (100*float(f) / n) if n > 0 else 0
+        abstract_units[u]["flows_success"] = (100*float(f) / n) if n > 0 else 100.0
         # merge rules
         for r,s in rule_stats.iteritems():
             if not r in abstract_units[u]["rules"]:
@@ -234,7 +237,7 @@ def print_table(units,filtercols):
     print tab.draw()
 
 def print_usage():
-    print __file__ + " [OPTION] <gnatprove folder>"
+    print __file__ + " [OPTION] (<gnatprove folder>)+"
     print ''
     print 'OPTIONS:'
     print '   --sort=s[,s]*'
@@ -248,7 +251,7 @@ def print_usage():
     print '          pretty-print output'
 
 def main(argv):
-    gfolder = None
+    gfolders = []
     sorting = []
     exclude = []
     table = False
@@ -295,10 +298,10 @@ def main(argv):
     print "sorting: " + ",".join(sorting)
     print "exclude: " + ",".join(exclude)
 
-    gfolder = args[0]
+    gfolders = args
 
-    print "Using folder: " + gfolder
-    jsondata = get_json_data (gfolder)
+    print "Using folders: " + str(gfolders)
+    jsondata = get_json_data (gfolders)
     if not jsondata: return 1
 
     totals,abstract_units = get_statistics (jsondata, sorting=sorting, exclude=exclude)
@@ -323,6 +326,7 @@ def main(argv):
     else:
         print "TOTALS: " + str(totals)
 
+    print "Note: 'subs' includes generic instances"
     return 0
 
 if __name__ == "__main__":
