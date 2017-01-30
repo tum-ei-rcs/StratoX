@@ -67,7 +67,7 @@ if [ "`hostname`" == "rr-u1204-1" ]; then
 else
 	# laptop etc.
 	CORES=2
-	TIMEOU=auto
+	TIMEOU=10
 	PROVERS=cvc4,altergo,z3
 	PROOF=per_check
 	STEPS=10

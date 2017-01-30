@@ -3,7 +3,7 @@
 # This script parses GNATprove output and gives per-file coverage statistics,
 # as well as overall statistics
 #
-# (C) 2016 TU Muenchen, RCS, Martin Becker <becker@rcs.ei.tum.de>
+# (C) 2016-2017 TU Muenchen, RCS, Martin Becker <becker@rcs.ei.tum.de>
 
 import sys, getopt, os, inspect, time, math, re, datetime, numpy;
 import pprint;
@@ -19,7 +19,6 @@ import texttable
 #######################################
 
 KNOWN_SORT_CRITERIA = ('alpha', 'coverage', 'success', 'props', 'subs', 'skip');
-OWN_FOLDERS = ('hal/boards/common/tools', 'hal/boards/components', 'boot', 'config', 'driver', 'kernel', 'lib', 'modules');
 
 #######################################
 #     FUNCTION DEFINITIONS
@@ -34,20 +33,11 @@ def file2unit(filename):
     return unitname.lower()
 
 
-def is_own_application_unit( unitname ):
-	# dirty hack
-	other_unit_substrings = ["stm32", "cortex", "media_reader", "fat_filesystem", "a-", "hal-"]
-	return not any(substring in unitname for substring in other_unit_substrings)
-	
-
-
-
-
 def get_stdout_stats(inputfile):
     """
     parse output of stdout from gnatprove
     XXX! output comes twice. First for flow analysis, then again for proof.
-    this parser overwrites the flow part.
+    this parser keeps the lastest outputs, i.e., overwriting flow information.
     """
     if os.stat(inputfile).st_size == 0: return None
 
@@ -173,7 +163,7 @@ def get_report_stats(inputfile):
         print "ERROR reading file " + inputfile
         return None
 
-def get_totals(reportunits, buildunits, sorting):
+def get_totals(reportunits, buildunits, sorting, exclude):
     if not reportunits: return None
 
     #################
@@ -232,29 +222,14 @@ def get_totals(reportunits, buildunits, sorting):
                 mergedunits[u] = do_merge(mergedunits[u], uinfo)
             else:
                 mergedunits[u] = uinfo
-        
-    # OWN UNITS
-    print("Own units:")
-    ownunits = {}
-    for u,uinfo in mergedunits.iteritems():
-    	if is_own_application_unit( u ):
-    		print(u + ": " + str(uinfo))
-    		ownunits[u]=uinfo
 
-    own_subs = sum([v["subs"] for k,v in ownunits.iteritems()])
-    own_props = sum([v["props"] for k,v in ownunits.iteritems()])
-    own_proven = sum([v["proven"] for k,v in ownunits.iteritems()])
-    own_skip = sum([v["skip"] for k,v in ownunits.iteritems()])
-    own_cov = sum([v["coverage"] for k,v in ownunits.iteritems()]) / len(ownunits)
-    own_sub_cov = float(own_subs - own_skip) / own_subs
-    own_success = 100*(float(own_proven) / own_props)
-    own_totals = {"units" : len(ownunits), "unit_cov" : own_cov, "sub_cov" : own_sub_cov, "props" : own_props, "proven":own_proven, "success" : own_success, "subs": own_subs}
-  
-    
-    print("\nOwn totals:" + str(own_totals))
-    print("\n")
-    
 
+    ################
+    # FILTER UNITS
+    ################    
+    if exclude:
+        tmp = mergedunits
+        mergedunits = {u: uinfo for u,uinfo in tmp.iteritems() if not any(substring in u for substring in exclude) }
 
     ## TOTALS
     n = len(mergedunits)
@@ -262,17 +237,14 @@ def get_totals(reportunits, buildunits, sorting):
     total_props = sum([v["props"] for k,v in mergedunits.iteritems()])
     total_proven = sum([v["proven"] for k,v in mergedunits.iteritems()])
     total_skip = sum([v["skip"] for k,v in mergedunits.iteritems()])
-    total_cov = sum([v["coverage"] for k,v in mergedunits.iteritems()]) / n
-    total_sub_cov = float(total_subs - total_skip) / total_subs
-    total_success = 100*(float(total_proven) / total_props)
-    totals = {"units" : n, "unit_cov" : total_cov, "sub_cov" : total_sub_cov, "props" : total_props, "proven":total_proven, "success" : total_success, "subs": total_subs}
-  
-
-
+    total_cov = (sum([v["coverage"] for k,v in mergedunits.iteritems()]) / n) if n > 0 else 0
+    total_sub_cov = (100*(float(total_subs - total_skip)) / total_subs) if total_subs > 0 else 0
+    total_success = (100*(float(total_proven) / total_props)) if total_props > 0 else 0
+    totals = {"units" : n, "unit_cov" : total_cov, "sub_cov" : total_sub_cov, "props" : total_props, "proven":total_proven, "success" : total_success, "subs": total_subs}  
 
     #################
     #  SORT
-    #################
+    #################    
     tmp = [{k : v} for k,v in mergedunits.iteritems()]
     def keyfunc(tup):
         key, d = tup.iteritems().next()
@@ -320,16 +292,19 @@ def print_usage():
     print '          sort statistics by criteria (s=' + ",".join(KNOWN_SORT_CRITERIA) + ')'
     print '          e.g., "--sort=coverage,success" to sort by coverage, then by success'
     print '   --table, t'
-    print '          print as human-readable table instead of JSON/dict' 
+    print '          print as human-readable table instead of JSON/dict'
+    print '   --exclude=s[,s]*'
+    print '          exclude units which contain any of the given strings'
 
 def main(argv):
     inputfile = None
     buildlogfile = None
     sorting = []
+    exclude = []
     table = False
 
     try:
-        opts, args = getopt.getopt(argv, "hs:t", ["help","sort=","table"])
+        opts, args = getopt.getopt(argv, "hs:te:", ["help","sort=","table","exclude="])
     except getopt.GetoptError:
         print_usage();
         sys.exit(2)
@@ -342,6 +317,7 @@ def main(argv):
         if opt in ('-h', "--help"):
             print_usage()
             sys.exit()
+            
         elif opt in ('-s', "--sort"):
             cands = arg.split(",")
             for c in cands:
@@ -350,12 +326,20 @@ def main(argv):
                     sorting.append(s)
                 else:
                     print "Sort criteria '" + s + "' unknown"
+                    
+        elif opt in ('-e', "--exclude"):
+            cands = arg.split(",")
+            for c in cands:
+                s = c.strip()
+                exclude.append(s)
+                
         elif opt in ('-t', '--table'):
             table = True
-
+            
     if not sorting:
         sorting = KNOWN_SORT_CRITERIA
     print "sorting: " + ",".join(sorting)
+    print "exclude: " + ",".join(exclude)
                     
     inputfile = args[0]
     if len(args) > 1: buildlogfile = args[1]
@@ -373,7 +357,7 @@ def main(argv):
     else:
         buildunits = None    
         
-    totals,mergedunits = get_totals(reportunits, buildunits, sorting)
+    totals,mergedunits = get_totals(reportunits, buildunits, sorting=sorting, exclude=exclude)
     if not totals or not mergedunits: return 2
 
     if not table:
