@@ -5,7 +5,9 @@
 #
 # (C) 2017 TU Muenchen, RCS, Martin Becker <becker@rcs.ei.tum.de>
 
-import sys, getopt, os, inspect, time, math, re, datetime, numpy, glob, pprint, json
+import sys, getopt, os, inspect, time, math, re, datetime, numpy, glob, pprint, json, subprocess
+import socket, atexit
+from thread import start_new_thread
 
 # use this if you want to include modules from a subfolder
 cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"pytexttable")))
@@ -22,6 +24,68 @@ KNOWN_SORT_CRITERIA = ('alpha', 'coverage', 'success', 'props', 'subs', 'skip');
 #######################################
 #     FUNCTION DEFINITIONS
 #######################################
+GPS_Process=None
+GPS_Socket=None # TCP socket to AdaCore's GPS, if everything works. Else None.
+
+def cleanup_gps():
+    """
+    Called at exit of this script - disconnect socket and kill GPS, if any.
+    """
+    global GPS_Socket, GPS_Process
+    if GPS_Socket:
+        GPS_Socket.close()
+        GPS_Process.kill()
+
+def run_gps_in_background():
+    global GPS_Process
+    GPS_Process.wait()
+
+def gps_query(qry):
+    """
+    Send a command to GPS and wait for response
+    http://docs.adacore.com/gps-docs/users_guide/_build/html/extending.html#the-server-mode
+    """
+    global GPS_Socket
+
+    GPS_Socket.sendall(qry)
+
+    amount_received = 0
+    amount_expected = len(qry)
+    data = None
+    while amount_received < amount_expected:
+        try:
+            data = GPS_Socket.recv(16)
+            amount_received += len(data)                    
+        except socket.timeout:
+            break
+        print >>sys.stderr, 'received "%s"' % data       
+    res = data
+    return res
+
+def try_launch_gps():
+    global GPS_Process, GPS_Socket
+    GPS_Process = subprocess.Popen(["gps","--server=4242", "--hide"])
+    if GPS_Process.pid:
+        
+        print "GPS pid=" + str(GPS_Process.pid)
+        start_new_thread(run_gps_in_background,())
+
+        # give GPS time to wake up
+        time.sleep(2)
+        
+        # try to communicate
+        GPS_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if True:# try:
+            GPS_Socket.connect(('localhost',4242))
+            GPS_Socket.settimeout(1.0)
+            print "GPS connected"
+
+            # test
+            gps_query('pwd')
+        else: #except:
+            print "GPS not available"
+            GPS_Socket=None
+        
 
 def file2unit(filename):
     """
@@ -70,6 +134,21 @@ def get_json_data(folders):
             d[unit] = contents
     return d
 
+def try_refine_rule(proof):
+    """
+    Given a rule, such as "VC_OVERFLOW_CHECK" and a location (file,line,col),
+    try to refine the rule with the data type of the entity being checked
+    """
+    global GPS_Socket
+    
+    rule = proof["rule"] # e.g., VC_OVERFLOW_CHECK    
+    #print "R=" + rule + "loc=" + proof["file"] + ":" + str(proof["line"]) + "c" + str(proof["col"]) + ", HAVE_GPS=" + str(HAVE_GPS)
+    if GPS_Socket:
+        # TODO: lookup entity
+        pass
+    
+    return rule
+
 def get_statistics(jsondata, sorting, exclude):
     """
     Turn the JSON data into an abstract summary.
@@ -105,8 +184,8 @@ def get_statistics(jsondata, sorting, exclude):
         ig = 0
         for proof in uinfo["proof"]:
             is_suppressed = True if "suppressed" in proof else False
-            is_verified = True if proof["severity"]=="info" else (True if "suppressed" in proof else False)
-            rule = proof["rule"]
+            is_verified = True if proof["severity"]=="info" else (True if "suppressed" in proof else False)            
+            rule = try_refine_rule (proof)
             if is_verified: p = p + 1
             if is_suppressed : ig = ig + 1
             if not rule in rule_stats:
@@ -257,6 +336,8 @@ def main(argv):
     table = False
     pretty = False
 
+    atexit.register(cleanup_gps)
+    
     try:
         opts, args = getopt.getopt(argv, "hs:te:p", ["help","sort=","table","exclude=","pretty"])
     except getopt.GetoptError:
@@ -304,6 +385,8 @@ def main(argv):
     jsondata = get_json_data (gfolders)
     if not jsondata: return 1
 
+    try_launch_gps()
+    
     totals,abstract_units = get_statistics (jsondata, sorting=sorting, exclude=exclude)
     if not totals or not abstract_units: return 2
 
