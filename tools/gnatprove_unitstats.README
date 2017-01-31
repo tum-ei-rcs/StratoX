@@ -1,0 +1,13 @@
+This script generates statistics about units of a mixed Ada/SPARK project
+It reads the *.spark files in the gnatprove output
+
+# Shortcomings
+ - subs which are hidden within a SPARK_Mode => off zone are not counted
+ - generics are not listed separately, but instead to the place of instantiation
+ - 
+
+# TODO
+ - lookup entity type for each VC: separate between Float and Int overflows
+ - gnuplot
+
+(C) 2017 Martin Becker <becker@rcs.ei.tum.de>

@@ -9,13 +9,18 @@
 OBJ=../obj/gnatprove
 PRJ=stratox.gpr
 GPFLAGS=-XBuild_Mode=Analyze
+OBJ_OTHER="hal/boards/obj/pixhawk/gnatprove \
+hal/hal/obj/gnatprove"
+OBJ_ALL="$OBJ $OBJ_OTHER"
+COPY_FOLDERS=$OBJ_ALL
 
 # set the following to something non-empty, to analyze all sources individually instead of entire project
 INDIVIDUAL=
 
+##### SCRIPT STARTS HERE
 
 if [ ! -z "$1" ]; then
-    PREFIX="${1}_"
+    PREFIX="${1}"
     echo "Prefix=$PREFIX"
 else
     PREFIX=""
@@ -80,19 +85,19 @@ fi
 echo "Proving all of $PRJ into $TAR with prefix $PREFIX"
 
 # clean old logs
-rm -f $TAR/${PREFIX}gnatprove_flow.out
-rm -f $TAR/${PREFIX}gnatprove_prove.out
-rm -f $TAR/${PREFIX}filestats.log
-rm -f $TAR/${PREFIX}analysis.log
+mkdir -p $OBJ
+rm -f $OBJ/gnatprove_flow.out
+rm -f $OBJ/gnatprove_prove.out
+rm -f $OBJ/filestats.log
+rm -f $OBJ/unitstats.log
+rm -f $OBJ/analysis.log
 
 ########
 # do it
 ########
 
 # clean (optional; it is necessary when above parameters have changed, but increases analysis time!)
-gnatprove -P $PRJ --clean
-
-mkdir -p $TAR
+#gnatprove -P $PRJ --clean
 
 if [ ! -z "$INDIVIDUAL" ]; then
     ##################
@@ -102,12 +107,14 @@ if [ ! -z "$INDIVIDUAL" ]; then
     get_project_units
     for u in $UNITS; do        
         # prove
-        $TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=prove --report=provers --prover=${PROVERS} --timeout=${TIMEOU} --proof=${PROOF} --steps=${STEPS} -u $u | tee -a $TAR/${PREFIX}analysis.log || true
-        #echo "Unit=${u}:" >> $TAR/${PREFIX}gnatprove_prove.out
-        #cat $OBJ/gnatprove.out >> $TAR/${PREFIX}gnatprove_prove.out || true
+        $TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=prove --report=provers --prover=${PROVERS} --timeout=${TIMEOU} --proof=${PROOF} --steps=${STEPS} -u $u | tee -a $OBJ/analysis.log || true
+        #echo "Unit=${u}:" >> $OBJ/gnatprove_prove.out
+        #cat $OBJ/gnatprove.out >> $OBJ/gnatprove_prove.out || true
+        # reports accumulate in gnatprove.out, so we only need to copy once in the end
     done
-    # reports accumulate in gnatprove.out, so we only need to copy once
-    cp $OBJ/gnatprove.out $TAR/${PREFIX}gnatprove_prove.out || true
+
+    cp $OBJ/gnatprove.out $OBJ/gnatprove_flow.out || true
+    
 else
     ##################
     # analyze project
@@ -115,16 +122,33 @@ else
     
     # flow mode
     #$TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=flow --report=all --prover=${PROVERS} || true
-    #cp $OBJ/gnatprove.out $TAR/${PREFIX}gnatprove_flow.out || true
+    #cp $OBJ/gnatprove.out $OBJ/gnatprove_flow.out || true
 
     # prove mode
-    $TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=prove --report=provers --prover=${PROVERS} --timeout=${TIMEOU} --proof=${PROOF} --steps=${STEPS} | tee $TAR/${PREFIX}analysis.log || true
-    cp $OBJ/gnatprove.out $TAR/${PREFIX}gnatprove_prove.out || true
+    $TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=prove --report=provers --prover=${PROVERS} --timeout=${TIMEOU} --proof=${PROOF} --steps=${STEPS} | tee $OBJ/analysis.log || true
+    cp $OBJ/gnatprove.out $OBJ/gnatprove_prove.out || true
+    
 fi
 
 ##################
 # make statistics
 ##################
-../tools/gnatprove_filestats.py --sort=coverage,success,props --table $TAR/${PREFIX}gnatprove_prove.out $TAR/${PREFIX}analysis.log | tee $TAR/${PREFIX}filestats.log
+../tools/gnatprove_unitstats.py --sort=coverage,success,props -p --table $OBJ_ALL | tee $OBJ/unitstats.log || true
+../tools/gnatprove_filestats.py --sort=coverage,success,props --table $OBJ/gnatprove_prove.out $OBJ/analysis.log | tee $OBJ/filestats.log || true
+
+############
+# copy data
+############
+if [ ! "$TAR" == "$OBJ" ]; then
+    # copy all folders to target
+    mkdir -p $TAR/$PREFIX
+    cnt=0
+    echo "copy_folders=$COPY_FOLDERS"
+    for o in $COPY_FOLDERS; do
+        echo "Copying $o to $TAR/$PREFIX..."
+        cnt=$((cnt+1))
+        cp -R $o $TAR/${PREFIX}/gnatprove_${cnt} || true        
+    done    
+fi
 
 exit 0

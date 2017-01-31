@@ -12,21 +12,27 @@ fi
 ##########
 # PATHS
 ##########
-PROVESCRIPT=/tmp/prove_all.sh # script to be called on each revision
-LOGDIR=/tmp/allrevs
+BRANCH=master
+PROVESCRIPT=~/stratox.hist/prove_all.sh # script to be called on each revision
+LOGDIR=~/stratox.hist
 REPO=~/async/StratoX.git
+LOG=revisions.txt
 (
     cd $REPO
+    git checkout $BRANCH
     mkdir -p $LOGDIR
+    rm -f $LOGDIR/$LOG
     while read -r rev; do
         CDATE=$(git log -1 $rev --format="%cd" --date=iso | sed 's/ /_/g')
         CSUBJ=$(git log -1 $rev --format="%s")
-        echo "Date=$CDATE, comment=$CSUBJ"
+        CBRNCH=$(git name-rev --name-only HEAD)
+	NOWD=$(date +"%Y-%m-%d_%T")
+        echo "$NOWD: commit_date=$CDATE, branch=$CBRNCH, rev=$rev, comment=$CSUBJ" | tee -a $LOGDIR/$LOG
         git checkout "$rev"
         echo " "
         $PROVESCRIPT $CDATE $LOGDIR
     
-    done < <(git rev-list --reverse --date-order "$1")
-    git checkout master
+    done < <(git rev-list --reverse --branches=$BRANCH --date-order "$1")
+    git checkout $BRANCH
 )
 exit 0
