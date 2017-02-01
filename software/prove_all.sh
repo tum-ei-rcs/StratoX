@@ -154,6 +154,7 @@ if [ ! "$TAR" == "$OBJ" ]; then
     # save space: remove some files
     find $TAR/${PREFIX} -type f -name \*.ali -exec rm -f {} \;
     find $TAR/${PREFIX} -type f -name \*.mlw -exec rm -f {} \;
+    find $TAR/${PREFIX} -type f -name \*.dot -exec rm -f {} \;
 fi
 
 exit 0
