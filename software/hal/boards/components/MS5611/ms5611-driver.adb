@@ -304,16 +304,16 @@ is
       G_off_t1 := Float (c2) * Float (2**16);
 
       read_coefficient (Baro, COEFF_TCS, c3);
-      G_tcs := Sat_Cast_TCS (Float (c3) / Float (2**8));
+      G_tcs := (Float (c3) / Float (2**8));
 
       read_coefficient (Baro, COEFF_TCO, c4);
-      G_tco := Sat_Cast_TCO (Float (c4) / Float (2**7));
+      G_tco := (Float (c4) / Float (2**7));
 
       read_coefficient (Baro, COEFF_T_REF, c5);
-      G_t_ref := Sat_Cast_Tref (Float (c5) * Float (2**8));
+      G_t_ref := (Float (c5) * Float (2**8));
 
       read_coefficient (Baro, COEFF_TEMPSENS, c6);
-      G_tempsens := Sat_Cast_Tempsense (Float (c6) / Float (2**23));
+      G_tempsens := (Float (c6) / Float (2**23));
 
       G_Baro_State.FSM_State := READY;
 

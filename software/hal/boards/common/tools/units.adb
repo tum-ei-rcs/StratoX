@@ -9,7 +9,7 @@ package body Units with SPARK_Mode is
    begin
       if signal'Length > 0 then
          for index in Integer range signal'First .. signal'Last loop
-            avg := Sat_Add_Unit (avg, signal (index));
+            avg := Sat_Add_Unit (avg, signal (index)); -- FIXME: error signaling or precondition for overflow necessary; otherwise this isn't a mathematical average
          end loop;
          avg := avg / Unit_Type (signal'Length);
       end if;

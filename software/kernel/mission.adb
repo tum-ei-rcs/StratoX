@@ -111,7 +111,7 @@ package body Mission with SPARK_Mode is
          NVRAM.Load( VAR_HOME_HEIGHT_L, height(1) );
          pragma Annotate (GNATprove, False_Positive, """height"" might not be initialized", "it is done right here");
          NVRAM.Load( VAR_HOME_HEIGHT_H, height(2) );
-         baro_height := Sat_Cast_Alt (Float (Unit_Type (HIL.toUnsigned_16 (height)) * Meter));
+         baro_height := Sat_Cast_Alt (Float (Unit_Type (HIL.toUnsigned_16 (height)) * Meter)); -- FIXME: error handling instead of saturation
          
          --  GPS
          NVRAM.Load( VAR_GPS_TARGET_LONG_A, Float( G_state.home.Longitude ) );
