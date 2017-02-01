@@ -6,11 +6,14 @@
 #  2. (optional) target directory for logs. If empty=obj
 
 # where are the gnatprove outputs and the project file?
-OBJ=../obj/gnatprove
-PRJ=stratox.gpr
+REPO=$HOME/async/StratoX.git/
+OBJ=${REPO}/software/obj/gnatprove
+PRJ=${REPO}/software/stratox.gpr
 GPFLAGS=-XBuild_Mode=Analyze
-OBJ_OTHER="hal/boards/obj/pixhawk/gnatprove \
-hal/hal/obj/gnatprove"
+OBJ_OTHER="${REPO}/software/hal/boards/obj/pixhawk/gnatprove \
+${REPO}/software/hal/hpl/STM32/obj/stm32f42x/gnatprove \
+${REPO}/software/hal/hal/STM32/obj/gnatprove \
+${REPO}/software/hal/hal/obj/gnatprove"
 OBJ_ALL="$OBJ $OBJ_OTHER"
 COPY_FOLDERS=$OBJ_ALL
 
@@ -45,10 +48,8 @@ get_project_units () {
             echo $f >> $TAR/_files.1
         fi;
     done
-    # filter out some specific files (e.g., runtime)
-    grep -v ravenscar $TAR/_files.1 | grep -v 'hal/hpl' > $TAR/_files.2
     # collapse file names to unit names
-    for f in `cat $TAR/_files.2`; do
+    for f in `cat $TAR/_files.1`; do
         unit=$(basename $f)
         echo ${unit%.*} >> $TAR/_units.0
     done
@@ -85,7 +86,6 @@ fi
 echo "Proving all of $PRJ into $TAR with prefix $PREFIX"
 
 # clean old logs
-mkdir -p $OBJ
 rm -f $OBJ/gnatprove_flow.out
 rm -f $OBJ/gnatprove_prove.out
 rm -f $OBJ/filestats.log
@@ -104,6 +104,7 @@ if [ ! -z "$INDIVIDUAL" ]; then
     # iterate files
     ##################
     gnatprove -P $PRJ --clean # we definitely need it here
+    mkdir -o $OBJ # because otherwise 'gprbuild --clean' has the target for our log deleted
     get_project_units
     for u in $UNITS; do        
         # prove
@@ -119,7 +120,8 @@ else
     ##################
     # analyze project
     ##################
-    
+    mkdir -p $OBJ # because otherwise 'gprbuild --clean' has the target for our log deleted
+
     # flow mode
     #$TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=flow --report=all --prover=${PROVERS} || true
     #cp $OBJ/gnatprove.out $OBJ/gnatprove_flow.out || true
@@ -133,8 +135,8 @@ fi
 ##################
 # make statistics
 ##################
-../tools/gnatprove_unitstats.py --sort=coverage,success,props -p --table $OBJ_ALL | tee $OBJ/unitstats.log || true
-../tools/gnatprove_filestats.py --sort=coverage,success,props --table $OBJ/gnatprove_prove.out $OBJ/analysis.log | tee $OBJ/filestats.log || true
+${REPO}/tools/gnatprove_unitstats.py --sort=coverage,success,props --table $OBJ_ALL | tee $OBJ/unitstats.log || true
+${REPO}/tools/gnatprove_filestats.py --sort=coverage,success,props --table $OBJ/gnatprove_prove.out $OBJ/analysis.log | tee $OBJ/filestats.log || true
 
 ############
 # copy data
@@ -149,6 +151,9 @@ if [ ! "$TAR" == "$OBJ" ]; then
         cnt=$((cnt+1))
         cp -R $o $TAR/${PREFIX}/gnatprove_${cnt} || true        
     done    
+    # save space: remove some files
+    find $TAR/${PREFIX} -type f -name \*.ali -exec rm -f {} \;
+    find $TAR/${PREFIX} -type f -name \*.mlw -exec rm -f {} \;
 fi
 
 exit 0
