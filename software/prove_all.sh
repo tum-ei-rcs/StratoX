@@ -7,7 +7,7 @@
 
 # where are the gnatprove outputs and the project file?
 REPO=$HOME/async/StratoX.git/
-OBJ=${REPO}/software/obj/gnatprove
+OBJ=${REPO}/obj/gnatprove
 PRJ=${REPO}/software/stratox.gpr
 GPFLAGS=-XBuild_Mode=Analyze
 OBJ_OTHER="${REPO}/software/hal/boards/obj/pixhawk/gnatprove \
@@ -154,6 +154,7 @@ if [ ! "$TAR" == "$OBJ" ]; then
     # save space: remove some files
     find $TAR/${PREFIX} -type f -name \*.ali -exec rm -f {} \;
     find $TAR/${PREFIX} -type f -name \*.mlw -exec rm -f {} \;
+    find $TAR/${PREFIX} -type f -name \*.dot -exec rm -f {} \;
 fi
 
 exit 0
