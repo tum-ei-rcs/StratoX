@@ -1,6 +1,6 @@
 with STM32.SDMMC;
 
-package Media_Reader.SDCard is
+package Media_Reader.SDCard with SPARK_Mode => Off is
 
    type SDCard_Controller is limited new Media_Controller with private;
 

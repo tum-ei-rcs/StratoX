@@ -97,7 +97,7 @@ rm -f $OBJ/analysis.log
 ########
 
 # clean (optional; it is necessary when above parameters have changed, but increases analysis time!)
-#gnatprove -P $PRJ --clean
+gnatprove -P $PRJ --clean
 
 if [ ! -z "$INDIVIDUAL" ]; then
     ##################
@@ -108,7 +108,7 @@ if [ ! -z "$INDIVIDUAL" ]; then
     get_project_units
     for u in $UNITS; do        
         # prove
-        $TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=prove --report=provers --prover=${PROVERS} --timeout=${TIMEOU} --proof=${PROOF} --steps=${STEPS} -u $u | tee -a $OBJ/analysis.log || true
+        $TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=prove --report=statistics --prover=${PROVERS} --timeout=${TIMEOU} --proof=${PROOF} --steps=${STEPS} -u $u | tee -a $OBJ/analysis.log || true
         #echo "Unit=${u}:" >> $OBJ/gnatprove_prove.out
         #cat $OBJ/gnatprove.out >> $OBJ/gnatprove_prove.out || true
         # reports accumulate in gnatprove.out, so we only need to copy once in the end
@@ -127,7 +127,7 @@ else
     #cp $OBJ/gnatprove.out $OBJ/gnatprove_flow.out || true
 
     # prove mode
-    $TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=prove --report=provers --prover=${PROVERS} --timeout=${TIMEOU} --proof=${PROOF} --steps=${STEPS} | tee $OBJ/analysis.log || true
+    $TIME gnatprove $GPFLAGS -P $PRJ ${PROVEOPTS} -j${CORES} -k --mode=prove --report=statistics --prover=${PROVERS} --timeout=${TIMEOU} --proof=${PROOF} --steps=${STEPS} | tee $OBJ/analysis.log || true
     cp $OBJ/gnatprove.out $OBJ/gnatprove_prove.out || true
     
 fi
