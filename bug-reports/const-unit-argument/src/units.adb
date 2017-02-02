@@ -1,5 +1,5 @@
 with Interfaces; use Interfaces;
-with Bounded_Image; use Bounded_Image;
+--with Bounded_Image; use Bounded_Image;
 
 package body Units with SPARK_Mode is
 
@@ -119,27 +119,6 @@ package body Units with SPARK_Mode is
       return wrap_angle (angle => Angle_Type (diff), min => -180.0 * Degree, max => 180.0 * Degree);
    end delta_Angle;
 
-   function Image (unit : Unit_Type) return String is
-      first : constant Float  := Float'Truncation (Float (unit));
-      rest  : constant String := Integer_Img (Integer ((Float (unit) - first) * Float(10.0)));
-   begin
-      if Float ( unit ) <  0.0 and -1.0 < Float ( unit ) then
-         return "-" & Integer_Img (Types.Sat_Cast_Int (first)) & "." & rest (rest'Length);
-      else
-         return Integer_Img (Types.Sat_Cast_Int (first)) & "." & rest (rest'Length);
-      end if;
-
-   end Image;
-
-   function AImage (unit : Angle_Type) return String is
-   begin
-      return Integer_Img (Types.Sat_Cast_Int (Float (unit) / Ada.Numerics.Pi * Float(180.0))) & "deg";
-   end AImage;
-
-   function RImage (unit : Angle_Type) return String is
-   begin
-      return " " & Image (Unit_Type(unit)) & "rad";
-   end RImage;
 
    function Saturated_Cast (val : Float) return T is
       ret : T;

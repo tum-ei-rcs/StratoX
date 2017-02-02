@@ -13,9 +13,9 @@
 
 with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Numerics;
-with Types;
+--with Types;
 
-pragma Elaborate_All (Types); -- TODO: is this required?
+--pragma Elaborate_All (Types); -- TODO: is this required?
 package Units with
      Spark_Mode is
 
@@ -258,67 +258,17 @@ package Units with
    PLANCK_CONSTANT  : constant Unit_Type                := 6.626_070_040 * Joule * Second;
    GRAVITY_CONSTANT : constant Linear_Acceleration_Type := 127_137.6 * Kilo * Meter / (Hour**2);
 
-   --------------------------
-   --  Conversion functions
-   --------------------------
-
-   function To_Time
-     (rtime : Ada.Real_Time.Time) return Time_Type is
-     (Time_Type
-        (Float ((rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
-   --  converts Real_Time to Time_Type, precision is Nanosecond
-
-   function To_Time
-     (rtime : Ada.Real_Time.Time_Span) return Time_Type is
-     (Time_Type
-        (Float ((rtime) / Ada.Real_Time.Microseconds (1)) * Float(1.0e-6)));
-
-    function To_Time_Span(time : Time_Type) return Ada.Real_Time.Time_Span is
-     ( Ada.Real_Time.Microseconds (Types.Sat_Cast_Int (Float (time) / Float(1.0e-6))));
-
-     function To_Degree(angle : Angle_Type) return Float is
-     (Float (angle / Degree));
 
    -------------------------------------------------------------
    --  Elementary math functions handling overflow/range checks
    -------------------------------------------------------------
-
-   function "+"( Left : Ada.Real_Time.Time; Right : Time_Type ) return Ada.Real_Time.Time is
-   ( Left + Ada.Real_Time.Microseconds (Types.Sat_Cast_Int (Float (Right) / Float(1.0e-6))));
-
-
-   function wrap_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
-     with Pre => min <= Angle_Type(0.0) and then
-     max >= 0.0 * Radian and then
-     angle <= Angle_Type'Last / 4.0 and then
-     angle >= Angle_Type'First / 4.0 and then
-     max <= Angle_Type'Last / 4.0 and then
-       min >= Angle_Type'First / 4.0 and then
-       max - min > 1.0e-3 * Radian,
-     Post => Float (wrap_angle'Result) >= Float (min) and Float (wrap_angle'Result) <= Float (max);
-   --  wrap angle between two values
-   --  Must make no assumptions on input 'angle' here, otherwise caller might fail if it isn't SPARK.
-   --  FIXME: the float casts in Post are a workaround for gcc
-
-   function mirror_Angle( angle : Angle_Type; min : Angle_Type; max : Angle_Type) return Angle_Type
-     with Pre => min <= 0.0 * Radian and then
-     max >= 0.0 * Radian and then
-     max > min and then
-     max < Angle_Type'Last / 4.0 and then
-     min > Angle_Type'First / 4.0,
-     Post => Float (mirror_Angle'Result) >= Float (min) and Float (mirror_Angle'Result) <= Float (max);
-   --  mirror angle at min/max boundaries
-   --  FIXME: the float casts in Post are a workaround for gcc
 
    function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type;
 
    function Clip_Unitcircle (X : Unit_Type) return Unit_Type
      with Post => Clip_Unitcircle'Result in Unit_Type (-1.0) .. Unit_Type (1.0);
 
-   function integrate(x : Unit_Type'Base; dt : Time_Type) return Unit_Type'Base is
-     ( x * dt );
-   --  Experimental generic integration (return value looses its units)
-   pragma Inline_Always( integrate );
+
 
 
    generic
@@ -354,31 +304,7 @@ package Units with
      with Inline;
    --  convert a float into a more specific float type, and trim to the value range
 
-   function sgn( x : Unit_Type'Base ) return Unit_Type is
-     ( if x = 0.0 then 0.0 elsif x > 0.0 then 1.0 else -1.0 );
-   --  get the sign as unit multiplier
-   --  subtype Sign_Type is Float range -1.0 .. 1.0;
 
 
-   --  function "*" (Left : Float; Right : Prefix_Type) return Unit_Type is
-   --          ( Unit_Type( Left * Float(Right) ) );
-
-   --------------------------
-   --  functions on signals
-   --------------------------
-
-   -- function Radian( degree : Float ) return Float
-   function average( signal : Unit_Array ) return Unit_Type;
-
-   ------------------
-   --  I/O helpers
-   ------------------
-
-   function Image  (unit : Unit_Type)  return String
-     with Post => Image'Result'Length in 1 .. 36 and Image'Result'First = 1;
-   function AImage (unit : Angle_Type) return String
-     with Post => AImage'Result'Length in 1 .. 36 and AImage'Result'First = 1;
-   function RImage (unit : Angle_Type) return String
-     with Post => RImage'Result'Length in 1 .. 40 and RImage'Result'First = 1;
 
 end Units;

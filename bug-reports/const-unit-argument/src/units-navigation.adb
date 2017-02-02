@@ -1,36 +1,11 @@
 with Units; use Units;
 
---  with Logger;
-
 package body Units.Navigation with SPARK_Mode is
 
 
-   -- magnetic flux vecotor is pointing to the north and about 60° down to ground
-   function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type is
-      temp_vector : Cartesian_Vector_Type := ( Unit_Type( mag_vector(X) ), Unit_Type( mag_vector(Y) ), Unit_Type( mag_vector(Z) ) );
-      result : Angle_Type := 0.0 * Degree;
-   begin
-      -- rotate(temp_vector, Z, 45.0 * Degree);
-      rotate(temp_vector, X, Angle_Type (orientation.Roll)); -- TODO: this is a hack. Kalman filter underestimates the roll angle by this, so to correct heading...
-      rotate(temp_vector, Y, orientation.Pitch);
-
-      -- Logger.log_console(Logger.DEBUG, "Rot vec:" & Image(temp_vector(X) * 1.0e6) & ", "
-      --  & Image(temp_vector(Y) * 1.0e6) & ", " & Image(temp_vector(Z) * 1.0e6) );
-
-      -- Arctan: Only X = Y = 0 raises exception
-      if temp_vector(Y) /= 0.0 or temp_vector(X) /= 0.0 then
-         result := Arctan( -temp_vector(Y) , temp_vector(X) );
-      end if;
-      if result < 0.0 * Degree then
-         result := result + Heading_Type'Last;
-      end if;
-      return Heading_Type( result );
-
-   end Heading;
-
 
    --  phi=atan2(sin(delta_lon) * cos (lat2), cos lat1 * sin lat2 - sin lat1 * cos(lat2) * cos (delta_lon)
-   function Bearing (source_location : GPS_Loacation_Type; target_location  : GPS_Loacation_Type) return Heading_Type is
+   function Bearing (source_location : GPS_Loc_Type; target_location  : GPS_Loc_Type) return Heading_Type is
       result : Angle_Type := 0.0 * Degree;
       a1, a2 : Unit_Type;
    begin
@@ -64,7 +39,7 @@ package body Units.Navigation with SPARK_Mode is
       end if;
       return Heading_Type( result );
    end Bearing;
-   pragma Unreferenced (Heading);
+
 
 
    --  From http://www.movable-type.co.uk/scripts/latlong.html
@@ -73,7 +48,7 @@ package body Units.Navigation with SPARK_Mode is
    --  c = 2 * atan2 (sqrt (haversine), sqrt (1-haversine))
    --  d = EARTH_RADIUS * c
    --  all of the checks below are proven.
-   function Distance (source : GPS_Loacation_Type; target: GPS_Loacation_Type) return Length_Type is
+   function Distance (source : GPS_Loc_Type; target: GPS_Loc_Type) return Length_Type is
       EPS : constant := 1.0E-12;
       pragma Assert (EPS > Float'Small);
 
