@@ -71,7 +71,7 @@ package body Units.Navigation with SPARK_Mode is
    --  d = EARTH_RADIUS * c
    --  all of the checks below are proven.
    function Distance (source : GPS_Loacation_Type; target: GPS_Loacation_Type) return Length_Type is
-      EPS : constant := 1.0E-12;
+      EPS : constant Unit_Type := 1.0E-12;
       pragma Assert (EPS > Float'Small);
 
       delta_lat : constant Angle_Type := Angle_Type(target.Latitude) - Angle_Type(source.Latitude);
