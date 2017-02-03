@@ -259,51 +259,6 @@ package Units with
    GRAVITY_CONSTANT : constant Linear_Acceleration_Type := 127_137.6 * Kilo * Meter / (Hour**2);
 
 
-   -------------------------------------------------------------
-   --  Elementary math functions handling overflow/range checks
-   -------------------------------------------------------------
-
-   function delta_Angle(From : Angle_Type; To : Angle_Type) return Angle_Type;
-
-   function Clip_Unitcircle (X : Unit_Type) return Unit_Type
-     with Post => Clip_Unitcircle'Result in Unit_Type (-1.0) .. Unit_Type (1.0);
-
-
-
-
-   generic
-      type T is digits <>; -- any floating point type
-   function Saturated_Addition (left, right : T) return T
-     with Inline, Pre => 0.0 in T'Range;
-   --  add two Floats of same Unit type and limit to the type's bounds
-
-   generic
-      type T is digits <>; -- any floating point type
-   function Saturate (val, min, max : T) return T
-     with Inline;
-   --  limit to given range
-
-   generic
-      type T is digits <>; -- any floating point type
-   function Saturated_Subtraction (left, right : T) return T
-     with Inline, Pre => 0.0 in T'Range;
-   --  that is required in addition to Saturated_Addition, if the ranges are
-   --  not symmetric
-
-   generic
-      type T is digits <>; -- any floating point type
-   function Wrapped_Addition (left, right : T) return T
-     with Inline,
-     Pre => 0.0 in T'Range;
-   --  add two Floats of same Unit type and wrap ("modulo") to the type's bounds
-   --  Must make no assumptions on inputs otherwise caller might fail if it isn't SPARK.
-
-   generic
-      type T is digits <>;
-   function Saturated_Cast (val : Float) return T
-     with Inline;
-   --  convert a float into a more specific float type, and trim to the value range
-
 
 
 
