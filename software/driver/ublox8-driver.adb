@@ -339,11 +339,11 @@ is
          G_GPS_Message.lat := Sat_Cast_Lat (Float (HIL.toInteger_32 (data_rx (28 .. 31))) * 1.0e-7 * Float (Degree));
          G_GPS_Message.alt := Sat_Cast_Alt (Float (HIL.toInteger_32 (data_rx (36 .. 39))) * Float (Milli * Meter));
          G_GPS_Message.vacc := Sat_Cast_Length (Float (HIL.toUnsigned_32 (data_rx (44 .. 47))) * Float (Milli*Meter));
-         pragma Annotate (GNATprove, False_Positive, "precondition might fail", "pre of toUnsigned_32 is valid");
+         pragma Annotate (GNATprove, False_Positive, "precondition might fail", "pre of toUnsigned_32 is valid; proven in SPARK 18");
          G_GPS_Message.sats := Unsigned_8 (data_rx (23));
          declare
             i32_speed : constant Integer_32 := HIL.toInteger_32 (data_rx (60 .. 63));
-            pragma Annotate (GNATprove, False_Positive, "precondition might fail", "pre of toInteger_32 is valid");
+            pragma Annotate (GNATprove, False_Positive, "precondition might fail", "pre of toInteger_32 is valid; proven in SPARK 18");
          begin            
             G_GPS_Message.speed := Units.Linear_Velocity_Type (Float (i32_speed) / 1000.0);
          end;
