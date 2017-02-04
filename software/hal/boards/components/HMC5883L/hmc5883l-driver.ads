@@ -56,7 +56,7 @@ private
 
    type Buffer_Type is array( 1 .. 6 ) of Unsigned_8;
 
-   buffer : Buffer_Type with Part_Of => State;
-   mode : Unsigned_8 with Part_Of => State;
+   buffer : Buffer_Type with Part_Of => State; -- TODO: not initialized. VC also fails.
+   mode : Unsigned_8 with Part_Of => State; -- TODO: not initialized.
 
 end HMC5883L.Driver;

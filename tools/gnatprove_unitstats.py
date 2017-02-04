@@ -5,7 +5,8 @@
 #
 # (C) 2017 TU Muenchen, RCS, Martin Becker <becker@rcs.ei.tum.de>
 
-import sys, getopt, os, inspect, time, math, re, datetime, numpy, glob, pprint, json
+import sys, getopt, os, inspect, time, math, re, datetime, numpy, glob, pprint
+import json, operator
 
 # use this if you want to include modules from a subfolder
 cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"pytexttable")))
@@ -70,7 +71,7 @@ def get_json_data(folders):
             d[unit] = contents
     return d
 
-def get_statistics(jsondata, sorting, exclude):
+def get_statistics(jsondata, sorting, exclude, details):
     """
     Turn the JSON data into an abstract summary.
     """
@@ -113,6 +114,10 @@ def get_statistics(jsondata, sorting, exclude):
                 rule_stats[rule]={"cnt": 0, "proven":0}
             rule_stats[rule]["cnt"] += 1
             rule_stats[rule]["proven"] += 1 if is_verified else 0            
+            if details:
+                lid = { k:v for k,v in proof.iteritems() if k in ('file','line','col','rule','severity')}
+                abstract_units[u].setdefault("details_proofs",[]).append(lid)
+                
         n = len(uinfo["proof"])
         abstract_units[u]["props"] = n
         abstract_units[u]["rules"] = rule_stats
@@ -134,6 +139,10 @@ def get_statistics(jsondata, sorting, exclude):
                 rule_stats[rule]={"cnt": 0, "proven":0}
             rule_stats[rule]["cnt"] += 1
             rule_stats[rule]["proven"] += 1 if is_verified else 0
+            if details:
+                lid = { k:v for k,v in flow.iteritems() if k in ('file','line','col','rule','severity')}
+                abstract_units[u].setdefault("details_flows",[]).append(lid)
+
         n = len(uinfo["flow"])
         abstract_units[u]["flows"] = n
         abstract_units[u]["flows_proven"] = f
@@ -150,6 +159,13 @@ def get_statistics(jsondata, sorting, exclude):
                         abstract_units[u]["rules"][k]=v
                     else:
                         abstract_units[u]["rules"][k]+=v
+        ###########
+        # SORTING
+        ###########        
+        if "details_proofs" in abstract_units[u]:
+            abstract_units[u]["details_proofs"].sort(key=operator.itemgetter('file','line','col','rule'))
+        if "details_flows" in abstract_units[u]:
+            abstract_units[u]["details_flows"].sort(key=operator.itemgetter('file','line','col','rule'))            
 
 
     ################
@@ -159,6 +175,8 @@ def get_statistics(jsondata, sorting, exclude):
         tmp = abstract_units
         abstract_units = {u: uinfo for u,uinfo in tmp.iteritems() if not any(substring in u for substring in exclude) }
 
+
+        
     ##########
     # TOTALS
     ##########
@@ -249,6 +267,8 @@ def print_usage():
     print '          exclude units which contain any of the given strings'
     print '   --pretty, -p'
     print '          pretty-print output'
+    print '   --details, -d'
+    print '          keep detailed proof/flow information for each unit'
 
 def main(argv):
     gfolders = []
@@ -256,9 +276,10 @@ def main(argv):
     exclude = []
     table = False
     pretty = False
+    details = False
 
     try:
-        opts, args = getopt.getopt(argv, "hs:te:p", ["help","sort=","table","exclude=","pretty"])
+        opts, args = getopt.getopt(argv, "hs:te:pd", ["help","sort=","table","exclude=","pretty","details"])
     except getopt.GetoptError:
         print_usage();
         sys.exit(2)
@@ -292,6 +313,10 @@ def main(argv):
 
         elif opt in ('-p', '--pretty'):
             pretty = True
+
+        elif opt in ('-d', '--details'):
+            details = True
+
             
     if not sorting:
         sorting = KNOWN_SORT_CRITERIA
@@ -304,7 +329,7 @@ def main(argv):
     jsondata = get_json_data (gfolders)
     if not jsondata: return 1
 
-    totals,abstract_units = get_statistics (jsondata, sorting=sorting, exclude=exclude)
+    totals,abstract_units = get_statistics (jsondata, sorting=sorting, exclude=exclude, details=details)
     if not totals or not abstract_units: return 2
 
     # print per unit
