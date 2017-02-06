@@ -18,7 +18,7 @@ import texttable
 #     GLOBAL CONSTANTS
 #######################################
 
-KNOWN_SORT_CRITERIA = ('alpha', 'coverage', 'success', 'props', 'subs', 'skip');
+KNOWN_SORT_CRITERIA = ('alpha', 'coverage', 'success', 'props', 'ents', 'skip');
 
 #######################################
 #     FUNCTION DEFINITIONS
@@ -83,9 +83,9 @@ def get_statistics(jsondata, sorting, exclude, details):
     abstract_units = {}
     for u,uinfo in jsondata.iteritems():
         # GET COVERAGE
-        c = 0 # subs covered
-        s = 0 # subs skipped (incl.
-        n = 0 # subs total
+        c = 0 # entities covered
+        s = 0 # entities skipped (incl.
+        n = 0 # entities total
         for sub in uinfo["spark"]:
             is_package = True if sub["name"].lower() == u.lower() else False
             is_covered = True if sub["spark"] == "all" else False
@@ -95,7 +95,7 @@ def get_statistics(jsondata, sorting, exclude, details):
                 if is_spec: s = s + 1 # that is half-way covered
                 n = n + 1
         abstract_units[u]={}
-        abstract_units[u]["subs"] = n
+        abstract_units[u]["ents"] = n
         abstract_units[u]["spec"] = s
         abstract_units[u]["skip"] = n - c - s
         abstract_units[u]["coverage"] = (100*float(c) / n) if n > 0 else 0
@@ -182,13 +182,13 @@ def get_statistics(jsondata, sorting, exclude, details):
     ##########
     totals={}
     totals["units"] = len(abstract_units)
-    totals["subs"] = sum([v["subs"] for k,v in abstract_units.iteritems()])
+    totals["ents"] = sum([v["ents"] for k,v in abstract_units.iteritems()])
     totals["props"] = sum([v["props"] for k,v in abstract_units.iteritems()])
     totals["suppressed"] = sum([v["suppressed"] for k,v in abstract_units.iteritems()])
     totals["proven"] = sum([v["proven"] for k,v in abstract_units.iteritems()])
     totals["skip"] = sum([v["skip"] for k,v in abstract_units.iteritems()])
     totals["unit_cov"] = (sum([v["coverage"] for k,v in abstract_units.iteritems()]) / totals["units"]) if totals["units"] > 0 else 0
-    totals["sub_cov"] = (100*(float(totals["subs"] - totals["skip"])) / totals["subs"]) if totals["subs"] > 0 else 0
+    totals["ent_cov"] = (100*(float(totals["ents"] - totals["skip"])) / totals["ents"]) if totals["ents"] > 0 else 0
     totals["success"] = (100*(float(totals["proven"]) / totals["props"])) if totals["props"] > 0 else 0
     totals["flows"] = sum([v["flows"] for k,v in abstract_units.iteritems()])
     totals["flows_proven"] = sum([v["flows_proven"] for k,v in abstract_units.iteritems()])
@@ -265,8 +265,6 @@ def print_usage():
     print '          print as human-readable table instead of JSON/dict'
     print '   --exclude=s[,s]*'
     print '          exclude units which contain any of the given strings'
-    print '   --pretty, -p'
-    print '          pretty-print output'
     print '   --details, -d'
     print '          keep detailed proof/flow information for each unit'
 
@@ -275,11 +273,10 @@ def main(argv):
     sorting = []
     exclude = []
     table = False
-    pretty = False
     details = False
 
     try:
-        opts, args = getopt.getopt(argv, "hs:te:pd", ["help","sort=","table","exclude=","pretty","details"])
+        opts, args = getopt.getopt(argv, "hs:te:d", ["help","sort=","table","exclude=","details"])
     except getopt.GetoptError:
         print_usage();
         sys.exit(2)
@@ -311,9 +308,6 @@ def main(argv):
         elif opt in ('-t', '--table'):
             table = True
 
-        elif opt in ('-p', '--pretty'):
-            pretty = True
-
         elif opt in ('-d', '--details'):
             details = True
 
@@ -333,25 +327,19 @@ def main(argv):
     if not totals or not abstract_units: return 2
 
     # print per unit
-    if not table:
-        if pretty:            
-            pprint.pprint(abstract_units)
-        else:
-            for m in abstract_units:
-                u, uinfo = m.iteritems().next()        
-                print u + " : " + str(uinfo)
-    else:
+    if table:
         filtercols = ["rules", "flows", "flows_suppressed", "flows_proven"]
-        print_table (abstract_units, filtercols)
+        print_table (abstract_units, filtercols)        
+    else:
+        print json.dumps(abstract_units)
 
     # print totals
-    if pretty:
-        print "TOTALS:"
+    print "TOTALS:"
+    if table:
         pprint.pprint(totals)
     else:
-        print "TOTALS: " + str(totals)
+        print json.dumps (totals)
 
-    print "Note: 'subs' includes generic instances"
     return 0
 
 if __name__ == "__main__":
