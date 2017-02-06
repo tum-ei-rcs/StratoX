@@ -1,4 +1,4 @@
-with "../../software/hal/boards/pixhawk.gpr";
+-- with "../../software/hal/boards/pixhawk.gpr";
 project Default is
 
    for Languages use ("Ada");
@@ -6,8 +6,8 @@ project Default is
    for Object_Dir use "obj/";
    for Main use ("main.adb");
 
-        for Runtime ("ada") use Pixhawk'Runtime ("Ada");
-        for Target use "arm-eabi";
+        -- for Runtime ("ada") use Pixhawk'Runtime ("Ada");
+        -- for Target use "arm-eabi";
 
    package Compiler is
       for Switches ("Ada") use ("-g", "-O2");
