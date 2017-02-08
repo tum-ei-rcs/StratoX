@@ -1,0 +1,101 @@
+with "../../hal/boards/pixhawk.gpr";
+with "../../config/config.gpr";
+
+project Default is
+
+   type Build_Modes is
+      ("Debug", "Release", "Analyze");
+   for Languages use ("Ada");
+   for Main use ("main.adb");
+
+   -- Specify Directories
+   -----------------------------
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Exec_Dir use "obj";
+   --type Build_Modes is
+   --   ("debug", "release", "analyze");
+
+   Build_Mode : Build_Modes := external ("Build_Mode");
+
+   case Build_Mode is
+
+      when "Debug" =>
+         for Runtime ("ada") use Pixhawk'Runtime ("Ada");
+         for Target use "arm-eabi";
+
+      when "Release" =>
+         for Runtime ("ada") use Pixhawk'Runtime ("Ada");
+         for Target use "arm-eabi";
+
+      when "Analyze" =>
+         for Runtime ("ada") use Pixhawk'Runtime ("Ada");
+         for Target use "arm-eabi";
+   end case;
+
+   package Compiler is
+
+      case Build_Mode is
+
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", "-gnatet=../target-gen.atp");
+
+         when "Release" =>
+            for Default_Switches ("ada") use ("-O2", "-g", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-gnato", "-gnatyak", "-gnat12", "-gnata", "-gnatet=../target-gen.atp");
+
+         when "Analyze" =>
+            for Default_Switches ("ada") use ("-gnato", "-g");
+      end case;
+   end Compiler;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-r", "-E");
+   end Binder;
+
+   package Builder is
+      for Global_Configuration_Pragmas use "gnat.adc";
+
+      case Build_Mode is
+
+         when "Debug" =>
+            for Default_Switches ("ada") use ("-g");
+
+         when "Release" =>
+            for Default_Switches ("ada") use ();
+
+         when "Analyze" =>
+            for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target.atp");
+      end case;
+   end Builder;
+
+   package Ide is
+      for Communication_Protocol use "remote";
+      for Program_Host use "localhost:4242";
+
+      case Build_Mode is
+
+         when "Debug" =>
+            for Gnat use "arm-eabi-gnat";
+            for Gnatlist use "arm-eabi-gnatls";
+            for Debugger_Command use "arm-eabi-gdb";
+            for Documentation_Dir use "doc/";
+
+         when "Release" =>
+
+         when "Analyze" =>
+            for Compiler_Command ("ada") use "gnatmake";
+      end case;
+   end Ide;
+
+   package Linker is
+      for Default_Switches ("ada") use ("-Wl,--defsym=__stack_size=16384", "-Wl,--gc-sections", "-Wl,--print-memory-usage");
+   end Linker;
+
+   package Prove is
+      -- switches for gnat2why et. al.
+
+      for Switches use ("--pedantic", "-j2", "--level=1", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "-k"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
+   end Prove;
+
+end Default;
+

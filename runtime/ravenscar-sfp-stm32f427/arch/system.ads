@@ -33,6 +33,9 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+-- Modified for STM32F4(27) by Martin Becker (becker@rcs.ei.tum.de)         --
+--  + Denorm=True
+--
 
 pragma Restrictions (No_Exception_Propagation);
 --  Only local exception handling is supported in this profile
@@ -148,23 +151,47 @@ private
    --  accessed using the special circuitry in the Targparm unit whose source
    --  should be consulted for more detailed descriptions of the individual
    --  switch values.
-
+   --  see https://www2.adacore.com/gap-static/GNAT_Book/html/
+   --  frontend/targparm__ads.htm
+   --  Attributes are only true if the target *reliably* supports features.
+   --  Reliably means, for all settings of the relevant compiler switches,
+   --  since we cannot control the user setting of these switches.
    Atomic_Sync_Default       : constant Boolean := False;
+
    Backend_Divide_Checks     : constant Boolean := False;
+   --  frontend must generate checks
+
    Backend_Overflow_Checks   : constant Boolean := True;
+   --  backend or HW generates OVF checks
+
    Command_Line_Args         : constant Boolean := False;
+   --  does target take cmd lines?
+
    Configurable_Run_Time     : constant Boolean := True;
-   Denorm                    : constant Boolean := False;
+
+   Denorm                    : constant Boolean := True;
+   --  set to True if target reliably supports denormals with flag "-m.."
+
    Duration_32_Bits          : constant Boolean := False;
    Exit_Status_Supported     : constant Boolean := False;
    Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
+
    Machine_Overflows         : constant Boolean := False;
+   --  S'Machine_Overflows
+
    Machine_Rounds            : constant Boolean := True;
+   --  S'Machine_Rounds
+
    Preallocated_Stacks       : constant Boolean := True;
    Signed_Zeros              : constant Boolean := True;
+
    Stack_Check_Default       : constant Boolean := False;
+   --  stack checking is off by default
+
    Stack_Check_Probes        : constant Boolean := False;
+   --  target does not probe stack
+
    Stack_Check_Limits        : constant Boolean := False;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
@@ -174,6 +201,8 @@ private
    Suppress_Standard_Library : constant Boolean := True;
    Use_Ada_Main_Program_Name : constant Boolean := False;
    Frontend_Exceptions       : constant Boolean := False;
+
    ZCX_By_Default            : constant Boolean := True;
+   --  zero-cost exceptions are active
 
 end System;
