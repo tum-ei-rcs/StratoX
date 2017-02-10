@@ -6,7 +6,7 @@ pragma Unreferenced (Crash); -- protect the "with" above
 
 -- the entry point after POR
 
-procedure boot with SPARK_Mode is
+procedure boot is
    pragma Priority (Config.Tasking.TASK_PRIO_MAIN);
    Self_Test_Passed : Boolean := False;
 begin
