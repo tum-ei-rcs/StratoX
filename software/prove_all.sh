@@ -152,7 +152,6 @@ if [ ! "$TAR" == "$OBJ" ]; then
         cp -R $o $TAR/${PREFIX}/gnatprove_${cnt} || true        
     done    
     # save space: remove some files
-    find $TAR/${PREFIX} -type f -name \*.ali -exec rm -f {} \;
     find $TAR/${PREFIX} -type f -name \*.mlw -exec rm -f {} \;
     find $TAR/${PREFIX} -type f -name \*.dot -exec rm -f {} \;
 fi

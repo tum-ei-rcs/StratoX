@@ -1,7 +1,7 @@
 with System;
 
 --  @summary all parameters for task/thread handling go here
-package Config.Tasking is
+package Config.Tasking with SPARK_Mode is
 
    TASK_PRIO_FLIGHTCRITICAL : constant := System.Priority'First + 50;
    --  tasks below that value can crash, and they are ignored by then
