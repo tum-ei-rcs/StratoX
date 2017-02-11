@@ -7,7 +7,7 @@
 --
 -- Description: register definitions for the HMC5883L
 
-package HMC5883L.Register is
+package HMC5883L.Register with SPARK_Mode is
 
    HMC5883L_ADDRESS : constant := 16#3C# ;-- this device only has one address
    HMC5883L_DEFAULT_ADDRESS : constant := 16#1E#;  -- 2#0011_110X

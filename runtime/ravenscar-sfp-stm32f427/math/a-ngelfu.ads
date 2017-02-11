@@ -38,7 +38,9 @@
 generic
    type Float_Type is digits <>;
 
-package Ada.Numerics.Generic_Elementary_Functions is
+package Ada.Numerics.Generic_Elementary_Functions
+  with SPARK_Mode
+is
 pragma Pure (Generic_Elementary_Functions);
 
    function Sqrt (X : Float_Type'Base) return Float_Type'Base with

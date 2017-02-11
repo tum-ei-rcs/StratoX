@@ -18,7 +18,7 @@
 
 with LED;
 
-package body LED_Manager is
+package body LED_Manager with SPARK_Mode is
 
    type Bits_8 is mod 2**8;
 

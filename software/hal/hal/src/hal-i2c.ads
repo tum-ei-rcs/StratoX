@@ -1,4 +1,4 @@
-package HAL.I2C is
+package HAL.I2C with SPARK_Mode => Off is
 
    type I2C_Status is
      (Ok,

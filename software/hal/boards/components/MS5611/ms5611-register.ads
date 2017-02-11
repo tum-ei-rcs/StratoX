@@ -8,7 +8,7 @@
 
 
 
-private package MS5611.Register is
+private package MS5611.Register with SPARK_Mode is
 
    type Command_Type is mod 2**8;
 

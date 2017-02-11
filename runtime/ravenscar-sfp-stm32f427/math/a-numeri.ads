@@ -13,7 +13,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Ada.Numerics is
+package Ada.Numerics with SPARK_Mode is
    pragma Pure;
 
    Argument_Error : exception;

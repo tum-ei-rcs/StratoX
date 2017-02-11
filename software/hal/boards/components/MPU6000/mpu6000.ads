@@ -1,6 +1,6 @@
 
 
-package MPU6000 is
+package MPU6000 with SPARK_Mode is
 
 
 

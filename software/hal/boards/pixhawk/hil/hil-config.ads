@@ -1,7 +1,7 @@
 --  @summary this package serves as config lookup in HIL.
 --  actually this should not be here. Rather, HIL should
 --  offer an API for that.
-package HIL.Config is
+package HIL.Config with SPARK_Mode is
       -- PX4IO
    PX4IO_BAUD_RATE_HZ : constant := 1_500_000;
 

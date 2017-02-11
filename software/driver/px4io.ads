@@ -1,6 +1,6 @@
 
 
-package PX4IO is
+package PX4IO with SPARK_Mode is
 
 
 end PX4IO;

@@ -6,7 +6,7 @@
 -- Module Description:
 
 -- @summary Top-level driver for the Barometer HMC5883L-01BA03
-package HMC5883L is
+package HMC5883L with SPARK_Mode is
 
 
 

@@ -23,7 +23,7 @@
 
 with HIL; use HIL;
 
-package ublox8.Protocol is
+package ublox8.Protocol with SPARK_Mode is
 
 
 
