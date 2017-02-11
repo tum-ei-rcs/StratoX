@@ -222,8 +222,8 @@ def add_unitentities(jsondata, prjfile, folders):
     json_with_ent = copy.copy(jsondata)
     for u,uinfo in jsondata.iteritems():
         json_with_ent[u]["entities"] = get_entities_of_unit (uinfo["filebase"])
-    pprint.pprint(json_with_ent["config.tasking"])
-    exit(42)
+    #pprint.pprint(json_with_ent["config.tasking"])
+    #exit(42)
     return json_with_ent
 
 def get_statistics(jsondata, sorting, exclude, details):
