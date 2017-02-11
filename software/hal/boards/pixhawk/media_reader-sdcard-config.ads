@@ -22,7 +22,7 @@ with STM32_SVD.SDIO;
 --  based on https://raw.githubusercontent.com/AdaCore/Ada_Drivers_Library/
 --  master/examples/sdcard/src/stm32f7/device_sd_configuration.ads.
 
-package Media_Reader.SDCard.Config is
+package Media_Reader.SDCard.Config with SPARK_Mode => Off is
 
    SD_Pins       : constant STM32.GPIO.GPIO_Points :=
      (PC8, PC9, PC10, PC11, PC12, PD2);

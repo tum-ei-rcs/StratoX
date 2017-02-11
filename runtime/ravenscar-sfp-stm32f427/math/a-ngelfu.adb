@@ -42,7 +42,7 @@ use Ada.Numerics.Elementary_Functions;
 use Ada.Numerics.Long_Elementary_Functions;
 use Ada.Numerics.Long_Long_Elementary_Functions;
 
-package body Ada.Numerics.Generic_Elementary_Functions is
+package body Ada.Numerics.Generic_Elementary_Functions with SPARK_Mode is
 
    subtype T is Float_Type'Base;
 

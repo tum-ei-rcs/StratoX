@@ -34,7 +34,7 @@ with HIL.I2C; use HIL.I2C;
 with HIL; use HIL;
 with Ada.Unchecked_Conversion;
 
-package body HMC5883L.Driver with
+package body HMC5883L.Driver with SPARK_Mode,
 Refined_State => (State => (buffer, mode))
 is
 
@@ -128,7 +128,7 @@ end initialize;
 -- Make sure the device is connected and responds as expected.
 -- @return True if connection is valid, false otherwise
 --
-function testConnection return Boolean is
+function testConnection return Boolean with SPARK_Mode => Off is
     buf : HIL.I2C.Data_Type(1 .. 3);
 begin
     readBytesFromDevice(HMC5883L_RA_IDA, 3, buf);
@@ -144,7 +144,7 @@ end testConnection;
 -- @see HMC5883L_CRA_AVERAGE_BIT
 -- @see HMC5883L_CRA_AVERAGE_LENGTH
 --
-function getSampleAveraging return Unsigned_8 is
+function getSampleAveraging return Unsigned_8 with SPARK_Mode => Off is
    result : Unsigned_8;
 begin
     readBits(HMC5883L_RA_CONFIG_A, HMC5883L_CRA_AVERAGE_BIT, HMC5883L_CRA_AVERAGE_LENGTH, result);
@@ -424,7 +424,7 @@ end getHeadingZ;
 -- @see HMC5883L_RA_STATUS
 -- @see HMC5883L_STATUS_LOCK_BIT
 --
-function getLockStatus return Boolean is
+function getLockStatus return Boolean with SPARK_Mode => Off is
    data : Boolean;
 begin
     readBit(HMC5883L_RA_STATUS, HMC5883L_STATUS_LOCK_BIT, data);
@@ -442,7 +442,7 @@ end getLockStatus;
 -- @see HMC5883L_RA_STATUS
 -- @see HMC5883L_STATUS_READY_BIT
 --
-function getReadyStatus return Boolean is
+function getReadyStatus return Boolean with SPARK_Mode => Off is
    result : Boolean;
 begin
     readBit(HMC5883L_RA_STATUS, HMC5883L_STATUS_READY_BIT, result);
@@ -454,7 +454,7 @@ end getReadyStatus;
 --* Get identification byte A
 -- @return IDA byte (should be01_001_000, ASCII value 'H')
 --
-function getIDA return Unsigned_8 is
+function getIDA return Unsigned_8 with SPARK_Mode => Off is
 begin
     readByteFromDevice(HMC5883L_RA_IDA, buffer(1));
     return buffer(1);
@@ -462,7 +462,7 @@ end getIDA;
 --* Get identification byte B
 -- @return IDA byte (should be00_110_100, ASCII value '4')
 --
-function getIDB return Unsigned_8 is
+function getIDB return Unsigned_8 with SPARK_Mode => Off is
    result : Unsigned_8;
 begin
     readByteFromDevice(HMC5883L_RA_IDB, result);
@@ -471,7 +471,7 @@ end getIDB;
 --* Get identification byte C
 -- @return IDA byte (should be00_110_011, ASCII value '3')
 --
-function getIDC return Unsigned_8 is
+function getIDC return Unsigned_8 with SPARK_Mode => Off is
    result : Unsigned_8;
 begin
     readByteFromDevice(HMC5883L_RA_IDC, result);

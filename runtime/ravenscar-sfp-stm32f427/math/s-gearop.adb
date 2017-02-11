@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Numerics; use Ada.Numerics;
-package body System.Generic_Array_Operations is
+package body System.Generic_Array_Operations with SPARK_Mode is
    function Check_Unit_Last
      (Index : Integer;
       Order : Positive;

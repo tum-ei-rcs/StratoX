@@ -11,7 +11,7 @@
 
 
 
-package ublox8 is
+package ublox8 with SPARK_Mode is
 
 
 end ublox8;

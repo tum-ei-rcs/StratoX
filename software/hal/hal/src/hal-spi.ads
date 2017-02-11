@@ -1,4 +1,4 @@
-package HAL.SPI is
+package HAL.SPI with SPARK_Mode => Off is
    type SPI_Status is
      (Ok,
       Err_Error,

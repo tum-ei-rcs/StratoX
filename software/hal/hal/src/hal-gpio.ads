@@ -1,4 +1,4 @@
-package HAL.GPIO is
+package HAL.GPIO with SPARK_Mode => Off is
 
    type GPIO_Point is limited interface;
    type GPIO_Point_Ref is not null access all GPIO_Point'Class;

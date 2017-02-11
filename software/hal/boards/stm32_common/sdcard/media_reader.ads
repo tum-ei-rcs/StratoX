@@ -1,7 +1,10 @@
 with Interfaces; use Interfaces;
 with HIL;
 
-package Media_Reader is
+--  TODO: rewrite; separate SPARK from non-SPARK.
+--  this package provides data types (Block), which are required in SPARK code,
+--  but also uses access, which isn't.
+package Media_Reader is -- SPARK_Mode => Auto
 
    type Media_Controller is limited interface;
    type Media_Controller_Access is access all Media_Controller'Class;

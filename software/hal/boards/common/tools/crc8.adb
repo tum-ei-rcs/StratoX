@@ -1,6 +1,6 @@
 with Interfaces; use Interfaces;
 
-package body CRC8 is
+package body CRC8 with SPARK_Mode is
 
    -- init
 

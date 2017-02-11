@@ -13,7 +13,7 @@
 -- 3. frequently call LED_tick and LED_sync to manage LED timings.
 --
 
-package LED_Manager is
+package LED_Manager with SPARK_Mode is
 
 -- HAL: adjust these types to your system
 -- ----------------------------------------------------------------------------

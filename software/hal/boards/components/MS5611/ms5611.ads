@@ -6,7 +6,7 @@
 -- Module Description:
 
 -- @summary Top-level driver for the Barometer MS5611-01BA03
-package MS5611 is
+package MS5611 with SPARK_Mode is
 
    -- define return values
    type Sample_Status_Type is

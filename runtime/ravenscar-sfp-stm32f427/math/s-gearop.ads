@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package System.Generic_Array_Operations is
+package System.Generic_Array_Operations with SPARK_Mode is
 pragma Pure (Generic_Array_Operations);
 
    ---------------------

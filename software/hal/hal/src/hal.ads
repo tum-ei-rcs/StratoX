@@ -1,6 +1,6 @@
 with Interfaces;
 
-package HAL is
+package HAL with SPARK_Mode is
    pragma Pure;
 
    subtype Word is Interfaces.Unsigned_32;

@@ -2,7 +2,7 @@
 --with STM32_SVD.GPIO;  use STM32_SVD.GPIO;
 with HIL.GPIO; use HIL.GPIO;
 
-package body LED is
+package body LED with SPARK_Mode is
 
    procedure init is
    begin

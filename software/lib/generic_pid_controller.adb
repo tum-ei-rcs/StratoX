@@ -1,5 +1,5 @@
 
-package body Generic_PID_Controller with SPARK_Mode => Off is
+package body Generic_PID_Controller with SPARK_Mode => On is
 
 
    procedure initialize( Pid : out Pid_Object; 

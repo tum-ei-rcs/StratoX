@@ -1,7 +1,7 @@
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics;
 
 package body Units.Numerics with
-   SPARK_Mode => Off
+   SPARK_Mode => On -- why?
 is
 
    function Sqrt (X : Unit_Type) return Unit_Type is
