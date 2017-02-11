@@ -157,12 +157,12 @@ def add_unitentities(jsondata, prjfile, folders):
                 #    typ = "subprogram type"
                 elif t == 'V':
                     typ = "function"
-                elif t == 'v':
-                    typ = "generic function"
+                #elif t == 'v':
+                #    typ = "generic function" # becomes a function where used, does not appear in SPARK file
                 elif t == 'U':
                     typ = 'procedure'
-                elif t == 'u':
-                    typ = "generic procedure"
+                #elif t == 'u':
+                #    typ = "generic procedure" # same here
                 elif t == 'y':
                     typ = "abstract function"
                 elif t == 'x':
@@ -222,7 +222,7 @@ def add_unitentities(jsondata, prjfile, folders):
     json_with_ent = copy.copy(jsondata)
     for u,uinfo in jsondata.iteritems():
         json_with_ent[u]["entities"] = get_entities_of_unit (uinfo["filebase"])
-    #pprint.pprint(json_with_ent["config.tasking"])
+    #pprint.pprint(json_with_ent["helper"])
     #exit(42)
     return json_with_ent
 
@@ -319,6 +319,11 @@ def get_statistics(jsondata, sorting, exclude, details):
         abstract_units[u]["flows_proven"] = f
         abstract_units[u]["flows_suppressed"] = ig
         abstract_units[u]["flows_success"] = (100*float(f) / n) if n > 0 else 100.0
+
+        # carry over entities
+        if details:
+            abstract_units[u]["entities"] = uinfo["entities"]
+        
         # merge rules
         for r,s in rule_stats.iteritems():
             if not r in abstract_units[u]["rules"]:
@@ -330,6 +335,7 @@ def get_statistics(jsondata, sorting, exclude, details):
                         abstract_units[u]["rules"][k]=v
                     else:
                         abstract_units[u]["rules"][k]+=v
+                        
         ###########
         # SORTING
         ###########        
