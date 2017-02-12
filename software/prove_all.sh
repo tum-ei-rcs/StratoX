@@ -136,7 +136,7 @@ fi
 # make statistics
 ##################
 ${REPO}/tools/gnatprove_unitstats.py --sort=coverage,success,props --table $OBJ_ALL | tee $OBJ/unitstats.log || true
-${REPO}/tools/gnatprove_filestats.py --sort=coverage,success,props --table $OBJ/gnatprove_prove.out $OBJ/analysis.log | tee $OBJ/filestats.log || true
+#${REPO}/tools/gnatprove_filestats.py --sort=coverage,success,props --table $OBJ/gnatprove_prove.out $OBJ/analysis.log | tee $OBJ/filestats.log || true
 
 ############
 # copy data
@@ -152,8 +152,10 @@ if [ ! "$TAR" == "$OBJ" ]; then
         cp -R $o $TAR/${PREFIX}/gnatprove_${cnt} || true        
     done    
     # save space: remove some files
-    find $TAR/${PREFIX} -type f -name \*.mlw -exec rm -f {} \;
-    find $TAR/${PREFIX} -type f -name \*.dot -exec rm -f {} \;
+    if [ ! -z "$TAR" ]; then
+        find $TAR/${PREFIX} -type f -name \*.mlw -exec rm -f {} \;
+        find $TAR/${PREFIX} -type f -name \*.dot -exec rm -f {} \;
+    fi
 fi
 
 exit 0
