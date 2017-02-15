@@ -1,22 +1,24 @@
-with "hal/boards/pixhawk.gpr";
-with "style.gpr";
-with "config/config.gpr";
-with "libsparklemma/spark_lemmas.gpr";
+with "../../hal/boards/pixhawk.gpr";
+with "../../config/config.gpr";
 
-project StratoX is
+project Default is
 
+   type Build_Modes is
+      ("Debug", "Release", "Analyze");
    for Languages use ("Ada");
-   for Main use ("boot.adb");
+   for Main use ("main.adb");
 
    -- Specify Directories
    -----------------------------
-   for Source_Dirs use ("boot", "config", "driver", "driver/fs", "kernel", "modules", "modules/sensors", "modules/actuators", "lib", "lib/ulog");
-   for Object_Dir use "../obj";
-   for Exec_Dir use "../obj";
+   for Source_Dirs use ("src");
+   for Object_Dir use "obj";
+   for Exec_Dir use "obj";
    --type Build_Modes is
    --   ("debug", "release", "analyze");
 
-   case Config.Build_Mode is
+   Build_Mode : Build_Modes := external ("Build_Mode");
+
+   case Build_Mode is
 
       when "Debug" =>
          for Runtime ("ada") use Pixhawk'Runtime ("Ada");
@@ -27,24 +29,22 @@ project StratoX is
          for Target use "arm-eabi";
 
       when "Analyze" =>
-         --  to exclude files/directories from analysis, put them here, *not* in the prove package below. note that it isn't recursive, unless "/**" is appended
-	 --for Excluded_Source_Dirs use ("hal/**");
          for Runtime ("ada") use Pixhawk'Runtime ("Ada");
          for Target use "arm-eabi";
    end case;
 
    package Compiler is
 
-      case Config.Build_Mode is
+      case Build_Mode is
 
          when "Debug" =>
-            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", Style.Style_Switches, "-gnatet=../target-gen.atp");
+            for Default_Switches ("ada") use ("-O0", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-g", "-gnato", "-gnatyak", "-gnat12", "-gnata", "-gnatet=../target-gen.atp");
 
          when "Release" =>
-            for Default_Switches ("ada") use ("-O2", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnato", "-gnatyak", "-gnat12", Style.Style_Switches, "-gnatet=../target-gen.atp");
+            for Default_Switches ("ada") use ("-O2", "-g", "-gnatwa.Xh.k.o", "-gnatVaimrsd", "-gnatQ", "-gnato", "-gnatyak", "-gnat12", "-gnata", "-gnatet=../target-gen.atp");
 
          when "Analyze" =>
-
+            for Default_Switches ("ada") use ("-gnato", "-g");
       end case;
    end Compiler;
 
@@ -55,16 +55,16 @@ project StratoX is
    package Builder is
       for Global_Configuration_Pragmas use "gnat.adc";
 
-      case Config.Build_Mode is
+      case Build_Mode is
 
          when "Debug" =>
             for Default_Switches ("ada") use ("-g");
 
          when "Release" =>
-            for Default_Switches ("ada") use ( );
+            for Default_Switches ("ada") use ();
 
          when "Analyze" =>
-             for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target.atp");
+            for Global_Compilation_Switches ("Ada") use ("-gnateT=" & project'Project_Dir & "target.atp");
       end case;
    end Builder;
 
@@ -72,7 +72,7 @@ project StratoX is
       for Communication_Protocol use "remote";
       for Program_Host use "localhost:4242";
 
-      case Config.Build_Mode is
+      case Build_Mode is
 
          when "Debug" =>
             for Gnat use "arm-eabi-gnat";
@@ -83,7 +83,7 @@ project StratoX is
          when "Release" =>
 
          when "Analyze" =>
-
+            for Compiler_Command ("ada") use "gnatmake";
       end case;
    end Ide;
 
@@ -94,16 +94,8 @@ project StratoX is
    package Prove is
       -- switches for gnat2why et. al.
 
-      for Switches use ("--pedantic", "-j2", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "-k"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
-
+      for Switches use ("--pedantic", "-j2", "--level=1", "--RTS=" & Pixhawk'Runtime ("Ada"), "--verbose", "-k"); -- GPL 2016: bug in --assumptions makes gnatprove crash despite good code
    end Prove;
 
-   package Check is
-      for Default_Switches ("ada") use ("-o", "check/gnatcheck.out", "-rules", "-from=coding_standard.rules");
-   end Check;
-
-   -- pretty printer
-   package Pretty_Printer renames Style.Pretty_Printer;
-
-end StratoX;
+end Default;
 

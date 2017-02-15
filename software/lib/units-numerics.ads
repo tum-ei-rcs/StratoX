@@ -6,10 +6,10 @@ package Units.Numerics with SPARK_Mode is
 
    package Math is new Ada.Numerics.Generic_Elementary_Functions( Unit_Type );
 
+   -- TODO : should we really specify contracts here, or rather in a-ngelfu?
 
-
-   function Sqrt (X : Unit_Type) return Unit_Type;
-   -- with post => Sqrt'Result in 0.0 .. X; -- this postcondition triggers...dunno why, yet
+   function Sqrt (X : Unit_Type) return Unit_Type with 
+     Post => Sqrt'Result in 0.0 .. X; -- this postcondition triggers...dunno why, yet
    
    -- function "**" (Left : Unit_Type; Right : Integer) return Unit_Type;  (Predefined!)
    
@@ -19,12 +19,10 @@ package Units.Numerics with SPARK_Mode is
 --   function Exp (X : Unit_Type) return Float;
 --   function Log (X : Unit_Type) return Float;
 
---  
    function Sin (X : Angle_Type) return Unit_Type 
-   with post => Sin'Result in -1.0 .. 1.0;
---     
---    function Sin (X, Cycle : Angle_Type) return Unit_Type;
---        
+     with post => Sin'Result in -1.0 .. 1.0; 
+   --  FAILS, because of course Ada's a-ngelfu cannot be analyzed
+   --  because it's imported from the C math lib
 
    -- @req cosine-x
    function Cos (X : Angle_Type) return Unit_Type
@@ -59,7 +57,10 @@ package Units.Numerics with SPARK_Mode is
    function Arctan
      (Y : Unit_Type;
       X : Unit_Type := 1.0) return Angle_Type
-      with post => Arctan'Result in -180.0 * Degree .. 180.0 * Degree;
+     with 
+       Pre => X /= 0.0 or Y /= 0.0,
+       Contract_Cases => ( Y >= 0.0 => Arctan'Result in    0.0 * Degree .. 180.0 * Degree,
+                           Y <  0.0 => Arctan'Result in -180.0 * Degree .. 0.0 * Degree);
          
 
    function Arctan

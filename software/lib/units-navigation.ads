@@ -93,7 +93,8 @@ package Units.Navigation with SPARK_Mode is
    function Heading(mag_vector : Magnetic_Flux_Density_Vector; orientation : Orientation_Type) return Heading_Type;
 
 
-   function Distance (source : GPS_Loacation_Type; target: GPS_Loacation_Type) return Length_Type;
+   function Distance (source : GPS_Loacation_Type; target: GPS_Loacation_Type) return Length_Type with
+     Post => Distance'Result >= 0.0 * Meter;
    --  compute great-circle distance between to Lat/Lon
 
    function Bearing (source_location : GPS_Loacation_Type; target_location  : GPS_Loacation_Type) return Heading_Type

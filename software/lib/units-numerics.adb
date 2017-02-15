@@ -1,7 +1,7 @@
 with Ada.Numerics.Elementary_Functions; use Ada.Numerics;
 
 package body Units.Numerics with
-   SPARK_Mode => On -- why?
+   SPARK_Mode => On
 is
 
    function Sqrt (X : Unit_Type) return Unit_Type is
@@ -46,7 +46,7 @@ is
       Cycle : Angle_Type)
       return Angle_Type is
    begin
-      return Angle_Type (Elementary_Functions.Arctan (Float (Y), Float (X), Float (Cycle)));
+      return Angle_Type (Elementary_Functions.Arctan (Y => Float (Y), X => Float (X), Cycle => Float (Cycle)));
    end Arctan;
 
    function Arctan
@@ -54,7 +54,7 @@ is
       X : Unit_Type := 1.0)
       return Angle_Type is
    begin
-      return Angle_Type (Elementary_Functions.Arctan (Float (Y), Float (X)));
+      return Angle_Type (Elementary_Functions.Arctan (Y => Float (Y), X => Float (X)));
    end Arctan;
 
 end Units.Numerics;

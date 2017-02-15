@@ -1,5 +1,5 @@
 with Units; use Units;
-
+with SPARK.Float_Arithmetic_Lemmas; use SPARK.Float_Arithmetic_Lemmas;
 --  with Logger;
 
 package body Units.Navigation with SPARK_Mode is
@@ -11,11 +11,8 @@ package body Units.Navigation with SPARK_Mode is
       result : Angle_Type := 0.0 * Degree;
    begin
       -- rotate(temp_vector, Z, 45.0 * Degree);
-      rotate(temp_vector, X, Angle_Type (orientation.Roll)); -- TODO: this is a hack. Kalman filter underestimates the roll angle by this, so to correct heading...
+      rotate(temp_vector, X, Angle_Type (orientation.Roll));
       rotate(temp_vector, Y, orientation.Pitch);
-
-      -- Logger.log_console(Logger.DEBUG, "Rot vec:" & Image(temp_vector(X) * 1.0e6) & ", "
-      --  & Image(temp_vector(Y) * 1.0e6) & ", " & Image(temp_vector(Z) * 1.0e6) );
 
       -- Arctan: Only X = Y = 0 raises exception
       if temp_vector(Y) /= 0.0 or temp_vector(X) /= 0.0 then
@@ -32,27 +29,46 @@ package body Units.Navigation with SPARK_Mode is
    --  phi=atan2(sin(delta_lon) * cos (lat2), cos lat1 * sin lat2 - sin lat1 * cos(lat2) * cos (delta_lon)
    function Bearing (source_location : GPS_Loacation_Type; target_location  : GPS_Loacation_Type) return Heading_Type is
       result : Angle_Type := 0.0 * Degree;
-      a1, a2 : Unit_Type;
+      y, x : Unit_Type;
+
+      ctla : constant Unit_Type := Cos (target_location.Latitude);
+      stla : constant Unit_Type := Sin (target_location.Latitude);
+      csla : constant Unit_Type := Cos (source_location.Latitude);
+      ssla : constant Unit_Type := Sin (source_location.Latitude);
+      --pragma Assert_And_Cut (ctla in -1.0 .. 1.0 and stla in -1.0 .. 1.0 and csla in -1.0 .. 1.0 and ssla in -1.0 .. 1.0);
+
+      dlon : constant Angle_Type := delta_Angle (source_location.Longitude, target_location.Longitude);
    begin
+
+      Lemma_Mul_Is_Contracting (Float(csla), Float (stla));
+      Lemma_Mul_Is_Contracting (Float(ssla), Float (ctla));
+
       -- calculate angle between -180 .. 180 Degree
       if source_location.Longitude /= target_location.Longitude or
         source_location.Latitude /= target_location.Latitude
       then
-         a1 := Sin (delta_Angle (source_location.Longitude, target_location.Longitude)) * Cos (target_location.Latitude);
          declare
-            cs  : Unit_Type := Cos (source_location.Latitude) * Sin (target_location.Latitude);
-            scc  : Unit_Type := Sin (source_location.Latitude) * Cos(target_location.Latitude);
-            cd  : Unit_Type := Cos (delta_Angle (source_location.Longitude, target_location.Longitude));
+            si : constant Unit_Type := Sin (dlon);
          begin
-            cs := Clip_Unitcircle (cs); -- this really helps the solvers
-
-            scc := Clip_Unitcircle (scc);
-            cd  := Clip_Unitcircle (cd);
-            scc := scc * cd;
-            scc := Clip_Unitcircle (scc);
-            a2  := cs - scc;
+            y := si * ctla;
+            Lemma_Mul_Is_Contracting (Float(si), Float(ctla));
+            pragma Assert (y in -1.0 .. 1.0);
          end;
-         result := Arctan (Y => a1, X => a2, Cycle => DEGREE_360);
+
+         declare
+            pragma Assert (csla in -1.0 .. 1.0);
+            pragma Assert (stla in -1.0 .. 1.0);
+            cs  : constant Unit_Type := csla * stla;
+            cd  : constant Unit_Type := Cos (dlon);
+            scc : Unit_Type := ssla * ctla;
+         begin
+
+            pragma Assert (cs in -1.0 .. 1.0);
+            pragma Assert (scc in -1.0 .. 1.0);
+            scc := scc * cd;
+            x   := cs - scc;
+         end;
+         result := Arctan (Y => y, X => x, Cycle => DEGREE_360);
       end if;
 
       --  shift to Heading_Type
@@ -71,8 +87,6 @@ package body Units.Navigation with SPARK_Mode is
    --  d = EARTH_RADIUS * c
    --  all of the checks below are proven.
    function Distance (source : GPS_Loacation_Type; target: GPS_Loacation_Type) return Length_Type is
-      EPS : constant Unit_Type := 1.0E-12;
-      pragma Assert (EPS > Float'Small);
 
       delta_lat : constant Angle_Type := Angle_Type(target.Latitude) - Angle_Type(source.Latitude);
       delta_lon : constant Angle_Type := Angle_Type(target.Longitude) - Angle_Type(source.Longitude);
@@ -84,81 +98,68 @@ package body Units.Navigation with SPARK_Mode is
       coscos : Unit_Type;
 
    begin
-      --  sin^2(dlat/2): avoid underflow
-      sdlat_half := Sin (dlat_half);
-      --sdlat_half := Clip_Unitcircle (sdlat_half);
-      if abs(sdlat_half) > EPS then
-         sdlat_half := sdlat_half * sdlat_half;
-      else
-         sdlat_half := Unit_Type (0.0);
-      end if;
-      --pragma Assert (Float'Safe_First <= Float (sdlat_half) and Float'Safe_Last >= Float (sdlat_half)); -- OK
-      -- clip inaccuracy overshoots, which helps the provers tremendously
-      sdlat_half := Clip_Unitcircle (sdlat_half); -- sin*sin should only exceed 1.0 by imprecision: OK
+      -- sin^2(dlat/2)
+      declare
+         s : constant Unit_Type := Sin (dlat_half);
+         pragma Assert (s in -1.0 .. 1.0);
+      begin
+         sdlat_half := s * s;
+         Lemma_Mul_Is_Contracting (Float(s), Float(s));
+      end;
 
-      --  sin^2(dlon/2): avoid underflow
-      sdlon_half := Sin (dlon_half);
-      --sdlon_half := Clip_Unitcircle (sdlon_half);
-      if abs(sdlon_half) > EPS then
-         sdlon_half := sdlon_half * sdlon_half;
-      else
-         sdlon_half := Unit_Type (0.0);
-      end if;
-      sdlon_half := Clip_Unitcircle (sdlon_half); -- cos*cos should only exceed 1.0 by imprecision: OK
+      --  sin^2(dlon/2)
+      declare
+         s : constant Unit_Type := Sin (dlon_half);
+         pragma Assert (s in -1.0 .. 1.0);
+      begin
+         sdlon_half := s * s;
+         Lemma_Mul_Is_Contracting (Float(s), Float(s));
+      end;
+
+      pragma Assert_And_Cut (sdlat_half in -1.0 .. 1.0 and sdlon_half in -1.0 .. 1.0);
+      -- *all* analysis results are forgotten, except of what is mentioned in the above cut statement
 
       --  cos*cos
       declare
          cs : constant Unit_Type := Cos (source.Latitude);
          ct : constant Unit_Type := Cos (target.Latitude);
+         pragma Assert (cs in -1.0 .. 1.0);
+         pragma Assert (ct in -1.0 .. 1.0);
       begin
-         --pragma Assert (ct in Unit_Type (-1.0) .. Unit_Type (1.0)); -- OK
-         --pragma Assert (cs in Unit_Type (-1.0) .. Unit_Type (1.0)); -- OK
-
-         coscos := ct * cs; -- OK
-         if abs(coscos) < Unit_Type (EPS) then
-            coscos := Unit_Type (0.0);
-         end if;
-         -- clip inaccuracy overshoots, which helps the provers tremendously
-         coscos := Clip_Unitcircle (coscos); -- cos*cos should only exceed 1.0 by imprecision: OK
+         coscos := cs * ct;
+         Lemma_Mul_Is_Contracting (Float(cs), Float(ct)); -- with this, alt-ergo can conclude quickly in the next line
       end;
+      pragma Assert (coscos in -1.0 .. 1.0);
 
       --  haversine
       declare
          cts : Unit_Type;
       begin
-         --  avoid underflow
-         if abs(coscos) > Unit_Type (EPS) and then abs(sdlon_half) > Unit_Type (EPS)
-         then
-            --pragma Assert (coscos in Unit_Type'Safe_First .. Unit_Type'Safe_Last and sdlon_half in Unit_Type'Safe_First..Unit_Type'Safe_Last); -- OK
-            --  both numbers here are sufficiently different from zero
-            --  both numbers are valid numerics
-            --  both are large enough to avoid underflow
-            cts := coscos * sdlon_half; -- Z3 can prove this steps=default, timeout=60, level=2
-            cts := Clip_Unitcircle (cts);
-         else
-            cts := Unit_Type (0.0); -- this happens likely when target is very close (few meters)
-         end if;
-
-         --  avoid underflow
-         if abs(sdlat_half) < Unit_Type (EPS) then
-            sdlat_half := Unit_Type (0.0);
-         end if;
-         if abs(cts) < Unit_Type (EPS) then
-            cts := Unit_Type (0.0);
-         end if;
+         cts := coscos * sdlon_half;
+         Lemma_Mul_Is_Contracting (Float(coscos), Float(sdlon_half));
+         pragma Assert (cts in -1.0 .. 1.0);
          haversine := sdlat_half + cts;
       end;
-
       if haversine = Unit_Type (0.0) then
          --  numerically too close. return null
          return 0.0*Meter;
       end if;
 
+      -- finally: distance
       declare
-         function Sat_Sub_Unit is new Saturated_Subtraction (Unit_Type);
-         invhav : constant Unit_Type := Sat_Sub_Unit (Unit_Type (1.0), haversine);
+         invhav : constant Unit_Type := 1.0 - haversine;
+         sqr1 : constant Unit_Type := Sqrt (haversine);
+         sqr2 : constant Unit_Type := Sqrt (invhav);
+         darc : Unit_Type;
+         pragma Assert (sqr1 >= 0.0);
       begin
-         return 2.0 * EARTH_RADIUS * Unit_Type (Arctan (Sqrt (haversine), Sqrt (invhav)));
+         if sqr1 = 0.0 and sqr2 = 0.0 then
+            return 0.0*Meter; -- Arctan is undefined for that combination
+         else
+            darc := Unit_Type (Arctan (sqr1, sqr2));
+            pragma Assert (darc in 0.0 * Degree .. 180.0 * Degree);
+            return 2.0 * EARTH_RADIUS * darc;
+         end if;
       end;
    end Distance;
 
