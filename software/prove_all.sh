@@ -95,6 +95,8 @@ rm -f $OBJ/analysis.log
 ########
 # do it
 ########
+gprclean -r -P $PRJ
+gprbuild -p -P $PRJ
 
 # clean (optional; it is necessary when above parameters have changed, but increases analysis time!)
 gnatprove -P $PRJ --clean
