@@ -4,8 +4,6 @@ pragma Elaborate_All(Units);
 
 package body Units.Vectors with SPARK_Mode is
 
-   EPS : constant := 1.0E-12;
-
    function Sat_Add is new Saturated_Addition (Unit_Type);
    function Sat_Sub is new Saturated_Subtraction (Unit_Type);
 
@@ -13,8 +11,6 @@ package body Units.Vectors with SPARK_Mode is
    begin
       if Sqrt (Unit_Type'Last) <= abs (val) then
          return Unit_Type'Last;
-      elsif abs (val) < EPS then
-         return Unit_Type (0.0);
       else
          return val*val;
       end if;
@@ -23,67 +19,27 @@ package body Units.Vectors with SPARK_Mode is
    procedure rotate
      (vector : in out Cartesian_Vector_Type;
       axis   :        Cartesian_Coordinates_Type;
-      angle  :        Angle_Type) is
+      angle  :        Angle_Type)
+   is
       result : Cartesian_Vector_Type := vector;
 
-      --  computes numerically stable Cos(a)*v
-      function Cos_Vec (a : Angle_Type; v : Unit_Type) return Unit_Type with Pre => True;
-      function Cos_Vec (a : Angle_Type; v : Unit_Type) return Unit_Type is
-         res : Unit_Type;
-         c   : Unit_Type;
-      begin
-         if abs(a) < Angle_Type (EPS) then
-            c := 1.0; -- cos (very small) is one
-         else
-            c := Cos (a);
-         end if;
-         c := Units.Clip_Unitcircle (c);
-
-         if abs(v) < EPS then
-            res := 0.0;
-         else
-            res := c * v;
-         end if;
-         return res;
-      end Cos_Vec;
-
-      --  computes numerically stable Sin(a)*v
-      function Sin_Vec (a : Angle_Type; v : Unit_Type) return Unit_Type with Pre => True;
-      function Sin_Vec (a : Angle_Type; v : Unit_Type) return Unit_Type is
-         res : Unit_Type;
-         s   : Unit_Type;
-      begin
-         if abs(a) < Angle_Type (EPS) then
-            s := 0.0; -- sin (very small) is zero
-         else
-            s := Sin (a);
-         end if;
-         s := Units.Clip_Unitcircle (s);
-
-         if abs(v) < EPS then
-            res := 0.0;
-         else
-            res := s * v;
-         end if;
-         return res;
-      end Sin_Vec;
-
+      co : constant Unit_Type := Cos (angle);
+      si : constant Unit_Type := Sin (angle);
+      pragma Assert (co in -1.0 .. 1.0);
+      pragma Assert (si in -1.0 .. 1.0);
    begin
       case (axis) is
          when X =>
-            --  z is veeeery small sometimes: 2E-38. But float'valid passes.
-            --  Only after the multiplication the compiler-inserted 'valid
-            --  fails, because the result becomes a denormal.
-            result (Y) := Sat_Sub (Cos_Vec (angle, vector(Y)), Sin_Vec (angle, vector(Z)));
-            result (Z) := Sat_Add (Sin_Vec (angle, vector(Y)), Cos_Vec (angle, vector(Z)));
+            result (Y) := Sat_Sub (co * vector(Y), si * vector(Z));
+            result (Z) := Sat_Add (si * vector(Y), co * vector(Z));
 
          when Y =>
-            result (X) := Sat_Add (Cos_Vec (angle, vector(X)), Sin_Vec (angle, vector(Z)));
-            result (Z) := Sat_Sub (Cos_Vec (angle, vector(Z)), Sin_Vec (angle, vector(X)));
+            result (X) := Sat_Add (si * vector(Z), co * vector(X));
+            result (Z) := Sat_Sub (co * vector(Z), si * vector(X));
 
          when Z =>
-            result (X) := Sat_Sub (Cos_Vec (angle, vector(X)), Sin_Vec (angle, vector(Y)));
-            result (Y) := Sat_Add (Sin_Vec (angle, vector(X)), Cos_Vec (angle, vector(Y)));
+            result (X) := Sat_Sub (co * vector(X), si * vector(Y));
+            result (Y) := Sat_Add (si * vector(X), co * vector(Y));
       end case;
       vector := result;
    end rotate;
