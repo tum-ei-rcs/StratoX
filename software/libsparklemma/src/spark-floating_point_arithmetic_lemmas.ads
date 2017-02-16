@@ -96,9 +96,8 @@ is
      with
        Global => null,
        Pre =>
-         (Val1 in -1.0 .. 1.0) and then
-         (Val2 in -1.0 .. 1.0),
-       Post => Val1 * Val2 in -1.0 .. 1.0; -- Martin Becker, not proven
+         (Val1 in -1.0 .. 1.0),
+       Post => abs(Val1 * Val2) <= abs(Val2); -- Martin Becker, not proven
 
    procedure Lemma_Div_Is_Monotonic
      (Val1 : Fl;

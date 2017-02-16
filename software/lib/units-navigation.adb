@@ -65,7 +65,10 @@ package body Units.Navigation with SPARK_Mode is
 
             pragma Assert (cs in -1.0 .. 1.0);
             pragma Assert (scc in -1.0 .. 1.0);
+            pragma Assert (cd in -1.0 .. 1.0);
+            Lemma_Mul_Is_Contracting (Float(scc), Float(cd));
             scc := scc * cd;
+            pragma Assert (scc in -1.0 .. 1.0);
             x   := cs - scc;
          end;
          result := Arctan (Y => y, X => x, Cycle => DEGREE_360);
