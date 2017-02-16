@@ -15,8 +15,8 @@ rts:
 stratox: rts
 	gprbuild $(FLAGS) -p -P $(PRJ)
 
-prove:
-	./proveall
+prove: stratox
+	./prove_all.sh
 
 clean:
 	gprclean -r -P $(PRJ)
