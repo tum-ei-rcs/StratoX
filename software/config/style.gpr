@@ -1,0 +1,32 @@
+abstract project Style is
+
+	--type Line_Length_Type is range 32 .. 256;
+	--type Indentation_Spaces_Type is range 1 .. 9;
+
+	-- Variabels
+	LINE_LENGTH := "150";
+        INDENT_SPACES := "3";
+        CONTINUOUS_INDENT := "2";
+
+
+        STYLE_SWITCHES := "-gnaty" & INDENT_SPACES &
+                      "aAbcefiklL7M" & LINE_LENGTH & "nOprStx-h-c-t-b";
+
+
+   package Pretty_Printer is
+   		for Default_Switches("Ada") use (
+--   			"-A1",	-- Alignement
+     			"-aM", "-kL", "-neU", "-ntM",  -- Cases
+--     			-- "-Dfile"  -- file as dictionary file
+     			"--no-separate-is",   -- no newline for keyword is
+     			"--no-separate-loop-then",
+     			"--insert-blank-lines",
+     			"-M" & LINE_LENGTH,
+                        "-i" & INDENT_SPACES,
+                        "-cl" & CONTINUOUS_INDENT,
+                        "--decimal-grouping=3",
+                        "--based-grouping=4",
+                        "--par_threshold=2"  -- newlines if function spec has more than 2 parameters
+   		);
+   end Pretty_Printer;
+end Style;

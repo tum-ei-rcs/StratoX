@@ -1,2 +1,4 @@
 target-gen.atp
 obj/
+*.o
+gnatinspect.db

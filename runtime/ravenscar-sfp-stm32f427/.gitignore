@@ -1,3 +1,5 @@
 adalib/
 obj/
 codepeer/
+*.d
+*.o
