@@ -612,6 +612,8 @@ package body Estimator with SPARK_Mode is
 
       -- Baro
       declare
+         -- TODO: we can tell SPARK about the queue length because we have a specification function
+         -- (which is Length). But we must use 'maxitem' to declare size of "buf".
          buf : Height_Buffer_Pack.Element_Array(1 .. Height_Buffer_Pack.Length_Type'Last);
          maxitem : constant Height_Buffer_Pack.Length_Type := Length (G_height_buffer);
       begin
