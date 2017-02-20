@@ -1,0 +1,32 @@
+
+
+Mit Dim Sys:
+00000000004025f6 <main__calc_my_velocity.3034>:
+  4025f6:   55                      push   %rbp
+  4025f7:   48 89 e5                mov    %rsp,%rbp
+  4025fa:   f3 0f 11 45 fc          movss  %xmm0,-0x4(%rbp)
+  4025ff:   f3 0f 11 4d f8          movss  %xmm1,-0x8(%rbp)
+  402604:   4c 89 55 f0             mov    %r10,-0x10(%rbp)
+  402608:   f3 0f 10 45 fc          movss  -0x4(%rbp),%xmm0
+  40260d:   f3 0f 5e 45 f8          divss  -0x8(%rbp),%xmm0
+  402612:   90                      nop
+  402613:   5d                      pop    %rbp
+  402614:   c3                      retq   
+  402615:   90                      nop
+
+
+Ohne Dim Sys:
+00000000004025f6 <main__calc_my_velocity.3033>:
+  4025f6:   55                      push   %rbp
+  4025f7:   48 89 e5                mov    %rsp,%rbp
+  4025fa:   f3 0f 11 45 fc          movss  %xmm0,-0x4(%rbp)
+  4025ff:   f3 0f 11 4d f8          movss  %xmm1,-0x8(%rbp)
+  402604:   4c 89 55 f0             mov    %r10,-0x10(%rbp)
+  402608:   f3 0f 10 45 fc          movss  -0x4(%rbp),%xmm0
+  40260d:   f3 0f 5e 45 f8          divss  -0x8(%rbp),%xmm0
+  402612:   90                      nop
+  402613:   5d                      pop    %rbp
+  402614:   c3                      retq   
+  402615:   90                      nop
+
+
