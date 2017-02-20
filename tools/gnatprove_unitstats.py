@@ -352,7 +352,6 @@ def get_statistics(jsondata, sorting, exclude, details):
         tmp = abstract_units
         abstract_units = {u: uinfo for u,uinfo in tmp.iteritems() if not any(substring in u for substring in exclude) }
 
-
         
     ##########
     # TOTALS
@@ -376,16 +375,16 @@ def get_statistics(jsondata, sorting, exclude, details):
     for u,uinfo in abstract_units.iteritems():
         for r,stat in uinfo["rules"].iteritems():
             if not r in total_rules:
-                total_rules[r]=stat
+                total_rules[r]=dict(stat) # deep copy of entire rule
             else:
-                # sum keys
+                # rule exists. accumulate individual keys
                 for k,v in stat.iteritems():
-                    if not k in total_rules[r]:
-                        total_rules[r][k]=v
+                    if not k in total_rules[r]: # k=cnt,proven,...
+                        total_rules[r][k]= v # copy
                     else:
                         total_rules[r][k]+=v
     totals["rules"] = total_rules    
-
+    
     #################
     #  SORT
     #################
@@ -505,14 +504,16 @@ def main(argv):
     gfolders = args
 
     print "Using folders: " + str(gfolders)
-    jsondata = get_json_data (gfolders)
+    jsondata = get_json_data (gfolders)    
     if not jsondata: return 1
 
     jsondata = add_unitentities(jsondata, prjfile, gfolders)
     if not jsondata: return 1
+
     
     totals,abstract_units = get_statistics (jsondata, sorting=sorting, exclude=exclude, details=details)
     if not totals or not abstract_units: return 2
+    #print abstract_units # all correct
 
     # print per unit
     if table:
