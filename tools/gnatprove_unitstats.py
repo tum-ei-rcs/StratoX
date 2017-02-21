@@ -286,7 +286,7 @@ def get_statistics(jsondata, sorting, exclude, details):
                 rule_stats[rule]["cnt"] += 1
                 rule_stats[rule]["proven"] += 1 if is_verified else 0            
                 if details:
-                    lid = { k:v for k,v in proof.iteritems() if k in ('file','line','col','rule','severity')}
+                    lid = { k:v for k,v in proof.iteritems() if k in ('file','line','col','rule','severity','how_proved','check_tree')}
                     abstract_units[u].setdefault("details_proofs",[]).append(lid)
                 
         abstract_units[u]["props"] = n
