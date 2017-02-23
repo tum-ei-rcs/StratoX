@@ -73,10 +73,10 @@ if [ "`hostname`" == "rr-u1204-1" ]; then
 else
 	# laptop etc.
 	CORES=2
-	TIMEOU=10
+	TIMEOU=2
 	PROVERS=cvc4,altergo,z3
 	PROOF=per_check:all
-	STEPS=1000
+	STEPS=10
 	# if you use --level=n, then this overwrites and sets a combination of prover, proof and steps
 fi
 
