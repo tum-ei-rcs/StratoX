@@ -10,7 +10,7 @@ package body p4 with SPARK_MODE is
      Post => f1'Result = X + 1
    is
    begin
-      return X + 1;
+      return X ;--+ 1;
    end f1;
 
    -- this is a semi-benign case:
@@ -24,12 +24,18 @@ package body p4 with SPARK_MODE is
 --        return X;
 --     end f1;
 
+   --  the following function is needed just to get this faulty program
+   --  to compile. Otherwise the compiler detects the overflow and refuses.
+   function hide_addition_from_compiler (X : Integer) return Integer is
+   begin
+      return X + 1; -- this is a guaranteed exception being missed
+   end hide_addition_from_compiler;
+
    procedure foo is
       X : Integer := Integer'Last;
       Z : Integer;
    begin
-
-      Z := X + 1; -- this is a guaranteed exception being missed
+      Z := X + 1; --hide_addition_from_compiler (X);
       Z := f1(X);
    end foo;
 end p4;
