@@ -22,11 +22,6 @@ package ULog.GPS with SPARK_Mode is
       alt      : Interfaces.IEEE_Float_32 := 0.0;
    end record;
 
-   function Copy (msg : in Message) return Message;
-   --  what happens if we have two class-wide types in the signature?
-
-   procedure Describe_Func (msg : in Message; namestring : out String);
-
 private
    overriding
    function Self (msg : in Message) return ULog.Message'Class;

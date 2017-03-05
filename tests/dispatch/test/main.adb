@@ -29,13 +29,13 @@ procedure main is
    msg     : ULog.Message; -- root type for polymorphism
    msg_gps : ULog.GPS.Message;
 
-   --  this procedure makes dispatching calls
+   --  this procedure takes any member of the Ulog.Message class and makes dispatching calls
    procedure dispatcher (msg : ULog.Message'Class) is
       --  accepts any argument of tyme ULog.Message and its descendants
       s : Interfaces.Unsigned_16 := ULog.Size (msg); -- dynamic dispatching
    begin
       Put_Line ("Dispatched Tag =" & Ada.Tags.Expanded_Name (msg'Tag));
-      Put_Line ("Dispatched type=" & msg.Describe_Func);
+      Put_Line ("Dispatched type=" & msg.Describe_Func); -- this is not dispatching
       Put_Line ("Dispatched Size=" & s'Img);
    end dispatcher;
 
@@ -77,10 +77,17 @@ procedure main is
 
    end consume;
 
+   m2 : Ulog.GPS.Message;
+
+   m1 : Ulog.Message;
+
+   n : String (1 .. 3);
+
 begin
 
    consume (msg_gps);
-   --  consume (msg);
-   --  msg_gps.Describe;
+   m2 := msg_gps.Copy;
+   m2.Describe_Func(namestring => n); -- dispatching to gps
+   Ada.Text_IO.Put_Line("I am a " & n);
 
 end main;

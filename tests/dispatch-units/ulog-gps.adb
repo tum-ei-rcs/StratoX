@@ -21,22 +21,11 @@ package body ULog.GPS with SPARK_Mode is
       null;
    end Get_Format;
 
-   function Copy (msg : in Message) return Message is
-   begin
-      Ada.Text_IO.Put_Line ("gps copy");
-      return msg;
-   end Copy;
-
    overriding
    function Get_Size (msg : in Message) return Interfaces.Unsigned_16 is
    begin
       return 10; -- TODO
    end Get_Size;
-
-   procedure Describe_Func (msg : in Message; namestring : out String) is
-   begin
-      namestring := "gps";
-   end Describe_Func;
 
    overriding
    function Self (msg : in Message) return ULog.Message'Class is

@@ -41,12 +41,8 @@ package ULog with SPARK_Mode is
    procedure Describe (msg : in Message'Class; namestring : out String); -- is abstract
    --  return a readable string identifying message type
 
-   function Describe_Func (msg : in Message) return String; -- dispatching op
+   function Describe_Func (msg : in Message'Class) return String;
    --  same as above, but as function. REquired because of string.
-
-   function Copy (msg : in Message) return Message'Class;
-   --  what happens if we have two class-wide types in the signature?
-   --  it works!
 
    function Size (msg : in Message'Class)
                   return Interfaces.Unsigned_16; -- is abstract;

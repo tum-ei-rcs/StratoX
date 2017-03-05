@@ -43,11 +43,6 @@ package body ULog with SPARK_Mode is
       --  TODO
    end Get_Format;
 
-   function Copy (msg : in Message) return Message'Class is
-   begin
-      return msg;
-   end Copy;
-
    function Get_Size (msg : in Message) return Interfaces.Unsigned_16 is (0);
 
    function Self (msg : in Message) return ULog.Message'Class is begin
@@ -71,9 +66,9 @@ package body ULog with SPARK_Mode is
       null;
    end Get_Header;
 
-   function Describe_Func (msg : in Message) return String is
+   function Describe_Func (msg : in Message'Class) return String is
    begin
-      return "base";
+      return Ada.Tags.Expanded_Name (msg'Tag);
    end Describe_Func;
 
    procedure Describe (msg : in Message'Class; namestring : out String) is
