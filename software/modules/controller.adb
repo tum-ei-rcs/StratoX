@@ -144,7 +144,7 @@ package body Controller with SPARK_Mode is
      Global => (Input => (G_Object_Position, G_Target_Position),
                 In_Out => (G_state)),
      Depends => (G_state => (G_state, G_Object_Position, G_Target_Position)),
-     Contract_Cases => ( -- Have_Course => G_state.controller_mode /= MODE_POSHOLD,
+     Contract_Cases => ( --Have_Course => G_state.controller_mode /= MODE_POSHOLD,
                         not Have_Course => G_state.controller_mode = MODE_POSHOLD,
                         (Have_Home_Position and Have_My_Position and Distance (G_Object_Position, G_Target_Position) < Config.TARGET_AREA_RADIUS) => G_state.controller_mode = MODE_ARRIVED,
                          (Have_Home_Position and Have_My_Position and Distance (G_Object_Position, G_Target_Position) > 2.0*Config.TARGET_AREA_RADIUS) => G_state.controller_mode = MODE_HOMING,
