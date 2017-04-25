@@ -226,7 +226,7 @@ def add_unitentities(jsondata, prjfile, folders):
     #exit(42)
     return json_with_ent
 
-def get_statistics(jsondata, sorting, exclude, details):
+def get_statistics(jsondata, sorting, exclude, include, details):
     """
     Turn the JSON data into an abstract summary.
     """
@@ -261,12 +261,14 @@ def get_statistics(jsondata, sorting, exclude, details):
         abstract_units[u]["body"] = c
         abstract_units[u]["skip"] = n_ent - c - s
         abstract_units[u]["coverage"] = (100*float(c) / n_ent) if n_ent > 0 else 0
+        abstract_units[u]["coverage_spec"] = (100*float(c+s) / n_ent) if n_ent > 0 else 0
 
         # ents: number of entities
         # spec: number of entities where spec is in SPARK
         # body: number of entities where body is in SPARK
         # skip: number of entities where SPARK is off
         # coverage: number of entities where body in in SPARK divided by number of entities
+        # coverage_spec: number of entities where at least spec in in SPARK divided by number of entities
         
         # GET SUCCESS of PROOF
         rule_stats={}
@@ -348,23 +350,33 @@ def get_statistics(jsondata, sorting, exclude, details):
     ################
     # FILTER UNITS
     ################
-    if exclude:
+    if exclude and not include:
+		# filter away partial matches
         tmp = abstract_units
         abstract_units = {u: uinfo for u,uinfo in tmp.iteritems() if not any(substring in u for substring in exclude) }
+    elif include and not exclude:
+		# only keep perfect matches
+		tmp = abstract_units
+		abstract_units = {u: uinfo for u,uinfo in tmp.iteritems() if u in include }
 
         
     ##########
     # TOTALS
     ##########
+    # ent_cov: number of entities with body in spark divided number of entities
+    # ent_cov_spec: number of entities with at least spec in spark divided number of entities
+    # unit_cov: deprecated. unweighted average of individual unit coverages. but unweighted is unfair.
     totals={}
     totals["units"] = len(abstract_units)
     totals["ents"] = sum([v["ents"] for k,v in abstract_units.iteritems()])
     totals["props"] = sum([v["props"] for k,v in abstract_units.iteritems()])
     totals["suppressed"] = sum([v["suppressed"] for k,v in abstract_units.iteritems()])
     totals["proven"] = sum([v["proven"] for k,v in abstract_units.iteritems()])
+    totals["spec"] = sum([v["spec"] for k,v in abstract_units.iteritems()])
     totals["skip"] = sum([v["skip"] for k,v in abstract_units.iteritems()])
-    totals["unit_cov"] = (sum([v["coverage"] for k,v in abstract_units.iteritems()]) / totals["units"]) if totals["units"] > 0 else 0
-    totals["ent_cov"] = (100*(float(totals["ents"] - totals["skip"])) / totals["ents"]) if totals["ents"] > 0 else 0
+    #totals["unit_cov"] = (sum([v["coverage"] for k,v in abstract_units.iteritems()]) / totals["units"]) if totals["units"] > 0 else 0
+    totals["ent_cov"] = (100*(float(totals["ents"] - totals["skip"] - totals["spec"])) / totals["ents"]) if totals["ents"] > 0 else 0
+    totals["ent_cov_spec"] = (100*(float(totals["ents"] - totals["skip"])) / totals["ents"]) if totals["ents"] > 0 else 0
     totals["success"] = (100*(float(totals["proven"]) / totals["props"])) if totals["props"] > 0 else 0
     totals["flows"] = sum([v["flows"] for k,v in abstract_units.iteritems()])
     totals["flows_proven"] = sum([v["flows_proven"] for k,v in abstract_units.iteritems()])
@@ -441,6 +453,8 @@ def print_usage():
     print '          print as human-readable table instead of JSON/dict'
     print '   --exclude=s[,s]*'
     print '          exclude units which contain any of the given strings'
+    print '   --include=s[,s]*'
+    print '          only include units which match exactly any of given strings'    
     print '   --details, -d'
     print '          keep detailed proof/flow information for each unit'
 
@@ -448,12 +462,13 @@ def main(argv):
     gfolders = []
     sorting = []
     exclude = []
+    include = []
     table = False
     details = False
     prjfile = None
 
     try:
-        opts, args = getopt.getopt(argv, "hs:te:dP:", ["help","sort=","table","exclude=","details","project"])
+        opts, args = getopt.getopt(argv, "hs:te:i:dP:", ["help","sort=","table","exclude=","include=","details","project"])
     except getopt.GetoptError:
         print_usage();
         sys.exit(2)
@@ -485,6 +500,12 @@ def main(argv):
                 s = c.strip()
                 exclude.append(s)
 
+        elif opt in ('-i', "--include"):
+            cands = arg.split(",")
+            for c in cands:
+                s = c.strip()
+                include.append(s)
+
         elif opt in ('-t', '--table'):
             table = True
 
@@ -496,10 +517,15 @@ def main(argv):
     #     print "ERROR: project file must be specified with flag -P"
     #     exit (1)
             
+	if include and exclude:
+		print "WARNING: cannot include and exclude the same time. Using exclude."
+		include=[]
+            
     if not sorting:
         sorting = KNOWN_SORT_CRITERIA
     print "sorting: " + ",".join(sorting)
     print "exclude: " + ",".join(exclude)
+    print "include: " + ",".join(include)
 
     gfolders = args
 
@@ -511,13 +537,13 @@ def main(argv):
     if not jsondata: return 1
 
     
-    totals,abstract_units = get_statistics (jsondata, sorting=sorting, exclude=exclude, details=details)
+    totals,abstract_units = get_statistics (jsondata, sorting=sorting, exclude=exclude, include=include, details=details)
     if not totals or not abstract_units: return 2
     #print abstract_units # all correct
 
     # print per unit
     if table:
-        tablecols = ["unit","ents","success","coverage","proven","props","flows","flows_success"]
+        tablecols = ["unit","ents","success","coverage","coverage_spec","proven","props","flows","flows_success"]
         print_table (abstract_units, tablecols)        
     else:
         print json.dumps(abstract_units)
