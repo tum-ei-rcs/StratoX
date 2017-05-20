@@ -57,13 +57,12 @@ is
       --  FIXME: how can we specify a precondition on the private variable?
       --  for now we put an assertion in the body
 
-      entry Get_Msg (msg : out ULog.Message; n_queued_before : out Natural);
+      entry Get_Msg (msg : out ULog.Message; n_queued_before : out Natural) with
+      Pre => not msg'Constrained;
       --  try to get new message from buffer. if empty, this is blocking
       --  until buffer has data, and then returns it.
       --  FIXME: how can we specify a precondition on the private variable?
       --  for now we put an assertion in the body
-      --  FIXME: we need to specify a precondition, that msg is a mutable
-      --  variant record. Otherwise a discriminant check will fail.
 
       function Get_Num_Overflows return Natural;
       --  query how often the buffer overflowed. If this happens, either increase
@@ -210,9 +209,6 @@ is
          pragma Assume (Num_Queued > 0); -- via barrier and assert in New_Msg
 
          msg := Buffer (Integer (Pos_Read)); 
-         --  FIXME: SPARK "discriminant check might fail". True, if the caller does hand
-         --  over a constrained variant record. But we cannot formulate this as a precondition
-         --  and entries cannot have return values. No way to check this.
          
          n_queued_before := Num_Queued;
          Pos_Read := Pos_Read + 1;
