@@ -42,8 +42,7 @@ will need all the tools, because we do not provide pre-compiled releases.
 
 ### Which Branch?
 We have two official branches:
- 1. ***master***: this is where we develop. Includes the "newest stuff" that is considered usable, but
- not necessarily proven to be working in reality.
+ 1. ***master***: this is where we develop. Includes the "newest stuff" that is considered usable, but not necessarily proven to be working in reality.
  2. ***stable***: Only firmware that successfully passed a test flight is located in this branch.
 
 We usually rebase master into stable, when a flight test with master was considered successful. Potential
@@ -58,7 +57,8 @@ the platform and this project in the most appropriate way.
 Required tools:
  * GNAT ARM toolchain, GPL2016
  * SPARK 2014 tools, version GPL2016
-For both visit libre.adacore.com. Later versions might not work due to changes in GNAT (we are currently fixing this)
+ 
+For both visit http://www.libre.adacore.com. Later versions might not work due to changes in GNAT (we are currently fixing this)
 
 ### Building Custom Run-Time System
 Change into the subfolder `runtime/ravenscar-sfp-stm32f427` and run the script `rebuild.sh`. This uses the GNAT ARM tools
@@ -105,7 +105,7 @@ With st-util running, the "Debug" menu in GNAT programming studio is enabled.
 <a name="usage"/>
 
 ## Usage
-:warning: operating this glider system may be suject to regulations in your country, and require permissions from the authorities.
+:warning: Operating this glider system may be suject to regulations in your country, and require permissions from the authorities.
 Please obtain clearances (and possibly insurance) before launching this system in public airspace.
 
 This section describes how this software is used with a model airplane, which is an delta-wing glider,
@@ -135,7 +135,7 @@ Memory region         Used Size  Region Size  %age Used
          sram123:       53272 B       192 KB     27.10%
              ccm:          0 GB        64 KB      0.00%
 ```
-The binary to download on the target is `obj/boot`. We recommend to use the STLink V2 debugger to upload the binary.
+The executable for the target is `obj/boot`. We recommend to use the STLink V2 debugger to download it onto the target.
 
 ### The Glider
 This software was developed to stabilize and control a very specific airframe, which costs about $50 (HobbyKing "Ridge Rider"). 
@@ -244,18 +244,18 @@ Finally, we list all the parts to build the glider. The carrier platform (e.g., 
 
 **Position**  | **Price EUR** | **Comment**
 ------------- | ------------- | ------------
- ballon 800 | 99 | weight: 800g, volume: 2m³, diameter: 1.5m, e.g. [this one](https://www.stratoflights.com/en/shop/wetterballon-800/)
+ ballon 800 | 100 | weight: 800g, volume: 2m³, diameter: 1.5m, e.g. [this one](https://www.stratoflights.com/en/shop/wetterballon-800/)
  special cord (tear strength 135N) | included with balloon 
  balloon gas 1.8m³  | 75 | e.g., 10 liter bottle w/ 200bar
  frame+servos  | 170  | [RidgeRider Slope Wing](http://www.hobbyking.com/hobbyking/store/__73986__HobbyKing_8482_Ridge_Ryder_Slope_Wing_EPO_913mm_PNF_UK_Warehouse_.html)
  BEC | 10 | provides 5V for Pixhawk
  battery | 10 | LiPo 2s, recommended 5Wh of energy
- avionics  | 200 | FCC: Pixhawk LITE 65$. GPS/Mag: ublox Mini NEO-M8N+HMC5983 Compass 40$
+ avionics  | 100 | FCC: Pixhawk LITE 65$. GPS/Mag: ublox Mini NEO-M8N+HMC5983 Compass 40$
  insurance | 80 | e.g., Allianz AMU-300 in Germany
  clearance for take-off | varies | contact federal office of aviation
  GSM/GPS Tracker | 80 | optional, as back-up localization
  prepaid SIM card for GPS Tracker | 10 | optional, of back-up localization is used
- **Total**  | 650 - 740 EUR |
+ **Total**  | 550 - 640 EUR |
  
  You might want to add a camera and a telemetry downlink. 
 
