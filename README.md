@@ -3,13 +3,18 @@ This is a research firmware/software to control an unmanned fixed-wing glider mo
 a light-weight (below 1kg), unpowered delta-wing configuration with two elevon control surfaces.
 This sofware is intended to run on autopilot hardware of the "Pixhawk" family (ARM Cortex-M4).
 
-/!\ This software is a non-mature research project. Use it at your own risk. We recommend it as a 
+:warning: This software is a non-mature research project. Use it at your own risk. We recommend it as a 
 benchmark for verification tools connected to SPARK 2014, or as source of inspiration for other projects.
 
+TOC:
+ 1. [Overview](#overview) 
+ 1. [Installation](#install) 
+ 1. [Usage](#usage) 
+ 1. [Parts](#parts) 
+
+<a name="overview"/>
+
 ## Overview
-
-![Alt text](/doc/fig/mission.png?raw=true "Mission Profile")
-
 The purpose of the glider is to collect weather data (pressure, temperature, humidity) at very high
 altitudes up to the stratosphere, and then "return back home" with the recorded data (neatly
 residing on a microSD card and waiting to be analyzed). Since this glider has no propulsion, it 
@@ -17,6 +22,8 @@ requires a "carrier platform" to bring it up the the desired starting altitude. 
 intended carrier platform is a helium-filled balloon (>2m³) that can climb at least to the chosen 
 target altitude. There, the glider will disconnect itself from the carrier platform and start its
 navigating flight back home.
+
+![Alt text](/doc/fig/mission.png?raw=true "Mission Profile")
 
 Therefore, the firmware supports a "mission profile" as follows:
  1. pre-flight check phase (sensor tests, GPS fix, etc.)
@@ -27,11 +34,13 @@ Therefore, the firmware supports a "mission profile" as follows:
 
 Logging of flight and weather data takes place the entire time.
 
+<a name="install"/>
+
 ## Installation
 This section describes how to setup our software for users and developers. Both users and developers
 will need all the tools, because we do not provide pre-compiled releases.
 
-## Which Branch?
+### Which Branch?
 We have two official branches:
  1. ***master***: this is where we develop. Includes the "newest stuff" that is considered usable, but
  not necessarily proven to be working in reality.
@@ -51,15 +60,19 @@ Required tools:
  * SPARK 2014 tools, version GPL2016
 For both visit libre.adacore.com. Later versions might not work due to changes in GNAT (we are currently fixing this)
 
+### Building Custom Run-Time System
+Change into the subfolder `runtime/ravenscar-sfp-stm32f427` and run the script `rebuild.sh`. This uses the GNAT ARM tools
+to build the packages of the Ravenscar RTS.
+
 ### Registering Custom Run-Time System
-This step is necessary to "show" our custom Ada run-time system to both GNAT and GNATprove.
+This step is necessary to "introduce" our custom Ada RTS to both GNAT and GNATprove.
 
 #### Linux
 First, we need to set a few temporary environment variables:
  * **GNATDIR** location of GNAT GPL 2016 ARM installation, e.g., `/opt/gnat-arm`
    * contains AdaCore's original bareboard run-time: `/opt/gnat-arm/arm-eabi/lib/gnat/ravenscar-sfp-stm32f4`
  * **SPARKDIR** location of SPARK (GPL or pro) installation, e.g., `/opt/spark`
- * **CPEERDIR*: optional, location of Codepeer installation, e.g., `/opt/codepeer`
+ * **CPEERDIR**: optional, location of Codepeer installation, e.g., `/opt/codepeer`
  * **MYRTSDIR**: location of this repository's subfolder `runtime`: `/home/johndoe/async/StratoX.git/runtime/ravenscar-sfp-stm32f427` (referred to as MYRTSDIR)
    * contents: `adalib ada_object_path ada_source_path arch common gnarl-arch gnarl-common math obj ravenscar_build.gpr runtime_build.gpr runtime.xml`
 
@@ -67,7 +80,7 @@ To have gnatbuild and gnatprove recognize our custom RTS, we need to create soft
 ```sh
 # 1. show GNAT ARM the location of our custom RTS:
 ln -s $MYRTSDIR $GNATDIR/arm-eabi/lib/gnat/
-# 2. show SPARK PRO the location of our custom RTS:
+# 2. show SPARK the location of our custom RTS:
 mkdir -p $SPARKDIR/share/spark/runtimes && ln -s $MYRTSDIR $SPARKDIR/share/spark/runtimes/
 # 3. (optional, if codepeer is available)
 ln -s $MYRTSDIR $CPEERDIR/libexec/codepeer/lib/gnat/.
@@ -89,6 +102,8 @@ picocom -b 57600 /dev/ttyUSB0
 Where picocom is an application reading the UART messages (thus showing "printfs") and must be installed prior to usage.
 With st-util running, the "Debug" menu in GNAT programming studio is enabled.
 
+<a name="usage"/>
+
 ## Usage
 :warning: operating this glider system may be suject to regulations in your country, and require permissions from the authorities.
 Please obtain clearances (and possibly insurance) before launching this system in public airspace.
@@ -98,6 +113,29 @@ how the glider can be monitored from a ground control station, and, finally, how
 be downloaded and analyzed after the glider returned.
 
 A rough part list (BOM) to build the glider is given in the last section of this README.
+
+### Building the Flight Stack
+The main project file is `software/stratox.gpr`. You can build as follows:
+```sh
+cd software
+gprbuild -p -P stratox.gpr
+```
+The end of the output should look something like this:
+```
+arm-eabi-gnatbind boot.ali
+
+The following additional restrictions may be applied to this partition:
+pragma Restrictions (No_Access_Parameter_Allocators);
+pragma Restrictions (No_Coextensions);
+...
+arm-eabi-gcc -c b__boot.adb
+arm-eabi-gcc boot.o -Wl,--defsym=__stack_size=16384 -Wl,--gc-sections -Wl,--print-memory-usage -o boot
+Memory region         Used Size  Region Size  %age Used
+           flash:      490260 B         2 MB     23.38%
+         sram123:       53272 B       192 KB     27.10%
+             ccm:          0 GB        64 KB      0.00%
+```
+The binary to download on the target is `obj/boot`. We recommend to use the STLink V2 debugger to upload the binary.
 
 ### The Glider
 This software was developed to stabilize and control a very specific airframe, which costs about $50 (HobbyKing "Ridge Rider"). 
@@ -152,43 +190,41 @@ the limits of the airframe.
 #### Boot Sequence
 After powering the PixLITE flight controller, the following happens:
 
- 1. Execution of Self Checks: blue LED '''FMU B/E''' is solid
-  * LED off -> checking (up to 1 min...)
-  * LED solid -> stuck
-  * LED flashing -> checks passed
- 2. Double beep signal 
-  * starting new mission
-  * elevons are moving into HOLD position (please hitch to carrier platform now)
- 3. Waiting for GPS fix with HDOP <=20m, then memorize as home coordinate
- 4. Long beep signal:
-  * GPX fix done and home coordinate saved
-  * Ascend Timeout starts now
+1. Execution of Self Checks: blue LED '''FMU B/E''' is solid
+   * LED off -> checking (up to 1 min...)
+   * LED solid -> stuck
+   * LED flashing -> checks passed
+2. Double beep signal 
+   * starting new mission
+   * elevons are moving into HOLD position (please hitch to carrier platform now)
+3. Waiting for GPS fix with HDOP <=20m, then memorize as home coordinate
+4. Long beep signal:
+   * GPX fix done and home coordinate saved
+   * Ascend Timeout starts now
 
 ***Triple beep signal***: in-air reset (while recovering latest values from NVRAM)
 
 
 ### Post-Flight Analysis
- 1. Eject the microSD card and download all files with extension *.log from the folder with the latest date
-(representing build date). There may be multiple files, each representing one boot of the software.
-Multiple boots can be present due to multiple power-up sequences, or due to in-air resets.
+ 1. Eject the microSD card and download all files with extension *.log from the folder with the latest date (representing build date). There may be multiple files, each representing one boot of the software. Multiple boots can be present due to multiple power-up sequences, or due to in-air resets.
  2. Rename extension to *.px4log
- 3. The format of the logs is similar to the logs of the (Pixhawk) PX4 flight stack. We have developed 
- our own flight analysis software, which is available here: https://github.com/mbeckersys/MavLogAnalyzer 
- Otherwise, you may also use the PX4 ecosystem of tools to read the logs
+ 3. The format of the logs is similar to the logs of the (Pixhawk) PX4 flight stack. We have developed our own flight analysis software, which is available here: https://github.com/mbeckersys/MavLogAnalyzer Otherwise, you may also use the PX4 ecosystem of tools to read the logs
 
 #### Log Contents
  * Glider attitude + position:
-  * Position, velocity vector, acceleration, rates
-  * GPS raw data
+   * Position, velocity vector, acceleration, rates
+   * GPS raw data
  * Weather data
-  * temperature, pressure, ...
+   * temperature, pressure, ...
  * Debug info
-  * exception info
-  * message queue levels
+   * exception info
+   * message queue levels
  * ...
 
+<a name="contrib"/>
+
 ## Issue Reporting, Contributing
-TODO
+If you want to contribute, report issues or propose enhancements, please let us know either via the issue tracker, or by contacting us directly.
 
 ### In-Air Reset
 The firmware supports in-air reset in case an exception occurs. If the exception is in the logging task, no reset will happen.
@@ -200,6 +236,8 @@ various parameters (e.g., home coordinate) are restored from the NVRAM and the m
 For examplem if an exception occurs in the flight-critical task during the climb phase, then after reset, the values of the
 climb monitoring algorithm (i.a.: reached altitude, position) are restored from NVRAM, and the climb monitoring continues
 immediately, skipping the pre-flight checks.
+
+<a name="parts"/>
 
 ## Part List (BOM)
 Finally, we list all the parts to build the glider. The carrier platform (e.g., a helium balloon) is not included here.
