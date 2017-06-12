@@ -12,7 +12,7 @@ package body Units.Vectors with SPARK_Mode is
       if Sqrt (Unit_Type'Last) <= abs (val) then
          return Unit_Type'Last;
       else
-         return val*val;
+         return val*val; -- TODO: fails (Sqrt is not modeled precisely)
       end if;
    end Unit_Square;
 
@@ -48,24 +48,30 @@ package body Units.Vectors with SPARK_Mode is
       xx : constant Unit_Type := Unit_Square (vector(X));
       yy : constant Unit_Type := Unit_Square (vector(Y));
       zz : constant Unit_Type := Unit_Square (vector(Z));
+      len : constant Unit_type := Sat_Add (Sat_Add (xx, yy), zz);
+      pragma Assert (len >= 0.0); -- TODO: fails. need lemma?
    begin
-      return Sqrt (Sat_Add (Sat_Add (xx, yy), zz));
+      return Sqrt (len);
    end "abs";
 
    function "abs" (vector : Angular_Vector) return Unit_Type is
       xx : constant Unit_Type := Unit_Square (vector(X));
       yy : constant Unit_Type := Unit_Square (vector(Y));
       zz : constant Unit_Type := Unit_Square (vector(Z));
+      len : constant Unit_type := Sat_Add (Sat_Add (xx, yy), zz);
+      pragma Assert (len >= 0.0); -- TODO: fails. need lemma?
    begin
-      return Sqrt (Sat_Add (Sat_Add (xx, yy), zz));
+      return Sqrt (len);
    end "abs";
 
    function "abs" (vector : Linear_Acceleration_Vector) return Linear_Acceleration_Type is
       xx : constant Unit_Type := Unit_Square (vector(X));
       yy : constant Unit_Type := Unit_Square (vector(Y));
       zz : constant Unit_Type := Unit_Square (vector(Z));
+      len : constant Unit_type := Sat_Add (Sat_Add (xx, yy), zz);
+      pragma Assert (len >= 0.0); -- TODO: fails. need lemma?
    begin
-      return Linear_Acceleration_Type (Sqrt (Sat_Add (Sat_Add (xx, yy), zz)));
+      return Linear_Acceleration_Type (Sqrt (len));
    end "abs";
 
    function Eye( n : Natural ) return Unit_Matrix is

@@ -43,7 +43,7 @@ is
       exp_frac  : constant Float := 1.0 / 5.255;
       h0   : constant Length_Type := t_ref / t_coeff;
       prel : constant Unit_Type := pressure / p_ref;
-      comp : constant Unit_Type := prel**exp_frac;
+      comp : constant Unit_Type := prel**exp_frac; -- TODO: ovf check might fail
       neg  : constant Unit_Type := 1.0 - comp;
    begin
       return h0 * neg; -- FIXME: overflow check might fail

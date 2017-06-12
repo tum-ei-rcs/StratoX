@@ -16,7 +16,7 @@ package body Units.Navigation with SPARK_Mode is
 
       -- Arctan: Only X = Y = 0 raises exception
       if temp_vector(Y) /= 0.0 or temp_vector(X) /= 0.0 then
-         result := Arctan( -temp_vector(Y) , temp_vector(X) );
+         result := Arctan( -temp_vector(Y) , temp_vector(X) ); -- TODO: precond might fail
       end if;
       if result < 0.0 * Degree then
          result := result + Heading_Type'Last;
@@ -144,24 +144,26 @@ package body Units.Navigation with SPARK_Mode is
          haversine := sdlat_half + cts;
       end;
       if haversine = Unit_Type (0.0) then
-         --  numerically too close. return null
+         --  numerically too close to zero. return null without further effort
          return 0.0*Meter;
       end if;
 
       -- finally: distance
       declare
+         pragma Assert (haversine in 0.0 .. 1.0); -- TODO: fails (this is the whole point of haversine)
          invhav : constant Unit_Type := 1.0 - haversine;
+         pragma Assert (invhav >= 0.0);
          sqr1 : constant Unit_Type := Sqrt (haversine);
          sqr2 : constant Unit_Type := Sqrt (invhav);
-         darc : Unit_Type;
+         darc : Angle_Type;
          pragma Assert (sqr1 >= 0.0);
       begin
          if sqr1 = 0.0 and sqr2 = 0.0 then
             return 0.0*Meter; -- Arctan is undefined for that combination
          else
-            darc := Unit_Type (Arctan (sqr1, sqr2));
+            darc := Arctan (sqr1, sqr2);
             pragma Assert (darc in 0.0 * Degree .. 180.0 * Degree);
-            return 2.0 * EARTH_RADIUS * darc;
+            return 2.0 * EARTH_RADIUS * Unit_Type (darc); -- FIXME: type conv not allowed in versions later than GPL16
          end if;
       end;
    end Distance;

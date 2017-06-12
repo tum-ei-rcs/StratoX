@@ -16,7 +16,7 @@
 -- or FITNESS FOR A PARTICULAR PURPOSE.                                     --
 --                                                                          --
 --                                                                          --
---                                                                          --
+-- StratoX                                                                  --
 --                                                                          --
 --                                                                          --
 -- You should have received a copy of the GNU General Public License and    --
