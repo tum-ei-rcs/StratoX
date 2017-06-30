@@ -230,9 +230,9 @@ is
       -- gyro compensation
       declare 
          -- SPARK: conversion  between array types that have different element types is not yet supported
-         cv : Cartesian_Vector_Type := (X => Unit_Type (compensated_rates(X)), 
-                                        Y => Unit_Type (compensated_rates(Y)), 
-                                        Z => Unit_Type (compensated_rates(Z)));
+         cv : Cartesian_Vector_Type := (X => Base_Unit_Type (compensated_rates(X)), 
+                                        Y => Base_Unit_Type (compensated_rates(Y)), 
+                                        Z => Base_Unit_Type (compensated_rates(Z)));
       begin
          rotate (cv, X , state.orientation.Roll); 
          compensated_rates := (X => Angular_Velocity_Type (cv(X)), 
@@ -273,14 +273,14 @@ is
                                              ) is
       RATE_REF : constant Angular_Velocity_Type := 200.0*Degree/Second;
    begin
-      R( map(Z_ROLL), map(Z_ROLL) ) := ANGLE_MEASUREMENT_VARIANCE +
+      R( map(Z_ROLL), map(Z_ROLL) ) := Base_Unit_Type (ANGLE_MEASUREMENT_VARIANCE +
          30.0* ANGLE_MEASUREMENT_VARIANCE * abs(samples.acc_length/GRAVITY - Unit_Type(1.0)) +
          10.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.orientation.Pitch/Pitch_Type'Last) +
-         50.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(X)/RATE_REF);
+         50.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(X)/RATE_REF));
       
-      R( map(Z_PITCH), map(Z_PITCH) ) := ANGLE_MEASUREMENT_VARIANCE + 
+      R( map(Z_PITCH), map(Z_PITCH) ) := Base_Unit_Type (ANGLE_MEASUREMENT_VARIANCE + 
          10.0* ANGLE_MEASUREMENT_VARIANCE * abs(samples.acc_length/GRAVITY - Unit_Type(1.0)) +
-         30.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(Y)/RATE_REF);
+         30.0* ANGLE_MEASUREMENT_VARIANCE * abs(states.rates(Y)/RATE_REF));
    end estimate_observation_noise_cov;
 
    -------------------------
@@ -340,16 +340,16 @@ is
    begin
       if dt > Time_Type (0.0) then 
          -- update state
-         states.pos.Longitude := states.pos.Longitude + K( map(X_LON), map(Z_LON) ) * residual.delta_gps_pos.Longitude;
-         states.pos.Latitude := states.pos.Latitude + K( map(X_LAT), map(Z_LAT) ) * residual.delta_gps_pos.Latitude;
-         states.pos.Altitude := states.pos.Altitude + K( map(X_ALT), map(Z_ALT) ) * residual.delta_gps_pos.Altitude
-           + K( map(X_ALT), map(Z_BARO_ALT) ) * residual.delta_baro_alt;
+         states.pos.Longitude := states.pos.Longitude + Unit_Type (K( map(X_LON), map(Z_LON) )) * residual.delta_gps_pos.Longitude;
+         states.pos.Latitude := states.pos.Latitude + Unit_Type (K( map(X_LAT), map(Z_LAT) )) * residual.delta_gps_pos.Latitude;
+         states.pos.Altitude := states.pos.Altitude + Unit_Type (K( map(X_ALT), map(Z_ALT) )) * residual.delta_gps_pos.Altitude
+           + Unit_Type (K( map(X_ALT), map(Z_BARO_ALT) )) * residual.delta_baro_alt;
                                                  
-         states.orientation.Roll := wrap_Angle( states.orientation.Roll + K( map(X_ROLL), map(Z_ROLL) ) * residual.delta_acc_ori(X),
+         states.orientation.Roll := wrap_Angle( states.orientation.Roll + Unit_Type (K( map(X_ROLL), map(Z_ROLL) )) * residual.delta_acc_ori(X),
                                                 Roll_Type'First, Roll_Type'Last );
-         states.orientation.Pitch := mirror_Angle( states.orientation.Pitch + K( map(X_PITCH), map(Z_PITCH) ) * residual.delta_acc_ori(Y),
+         states.orientation.Pitch := mirror_Angle( states.orientation.Pitch + Unit_Type (K( map(X_PITCH), map(Z_PITCH) )) * residual.delta_acc_ori(Y),
                                                    Pitch_Type'First, Pitch_Type'Last );
-         states.orientation.Yaw := wrap_Angle( states.orientation.Yaw + K( map(X_YAW), map(Z_YAW) ) * residual.delta_acc_ori(Z),
+         states.orientation.Yaw := wrap_Angle( states.orientation.Yaw + Unit_Type (K( map(X_YAW), map(Z_YAW) )) * residual.delta_acc_ori(Z),
                                                Yaw_Type'First, Yaw_Type'Last);
          
          
@@ -358,27 +358,27 @@ is
             states.rates(X) := Angular_Velocity_Type (0.0);
          end if;
          if abs (Float (residual.delta_gyr_rates(X))) > EPS then 
-            states.rates(X) := states.rates(X) + K( map(X_ROLL_RATE), map(Z_ROLL_RATE) ) * residual.delta_gyr_rates(X);
+            states.rates(X) := states.rates(X) + Unit_Type (K( map(X_ROLL_RATE), map(Z_ROLL_RATE) )) * residual.delta_gyr_rates(X);
          end if;         
          
          if abs (states.rates(Y)) < Angular_Velocity_Type (EPS) then
             states.rates(Y) := Angular_Velocity_Type (0.0);
          end if;
          if abs (Float (residual.delta_gyr_rates(Y))) > EPS then 
-            states.rates(Y) := states.rates(Y) + K( map(X_PITCH_RATE), map(Z_PITCH_RATE) ) * residual.delta_gyr_rates(Y);
+            states.rates(Y) := states.rates(Y) + Unit_Type (K( map(X_PITCH_RATE), map(Z_PITCH_RATE) )) * residual.delta_gyr_rates(Y);
          end if;
          
          if abs (states.rates(Z)) < Angular_Velocity_Type (EPS) then
             states.rates(Z) := Angular_Velocity_Type (0.0);
          end if;
          if abs (Float (residual.delta_gyr_rates(Z))) > EPS then 
-            states.rates(Z) := states.rates(Z) + K( map(X_YAW_RATE), map(Z_YAW_RATE) ) * residual.delta_gyr_rates(Z);
+            states.rates(Z) := states.rates(Z) + Unit_Type (K( map(X_YAW_RATE), map(Z_YAW_RATE) )) * residual.delta_gyr_rates(Z);
          end if;
          
          
-         states.bias(X) := states.bias(X) + K( map(X_ROLL_BIAS), map(Z_ROLL) ) * residual.delta_acc_ori(X) / dt;
-         states.bias(Y) := states.bias(Y) + K( map(X_PITCH_BIAS), map(Z_PITCH) ) * residual.delta_acc_ori(Y) / dt;
-         states.bias(Z) := states.bias(Z) + K( map(X_YAW_BIAS), map(Z_YAW) ) * residual.delta_acc_ori(Z) / dt;
+         states.bias(X) := states.bias(X) + Unit_Type (K( map(X_ROLL_BIAS), map(Z_ROLL) )) * residual.delta_acc_ori(X) / dt;
+         states.bias(Y) := states.bias(Y) + Unit_Type (K( map(X_PITCH_BIAS), map(Z_PITCH) )) * residual.delta_acc_ori(Y) / dt;
+         states.bias(Z) := states.bias(Z) + Unit_Type (K( map(X_YAW_BIAS), map(Z_YAW) )) * residual.delta_acc_ori(Z) / dt;
       
 --           Logger.log(Logger.DEBUG, "bX: " & AImage( states.bias(X)*Second ) & 
 --                        ", K_X: " & Image(  K( map(X_ROLL), map(Z_ROLL) ) ) &
@@ -417,13 +417,13 @@ is
    procedure calculate_A( A : out State_Transition_Matrix; dt : Time_Type ) is
    begin
       A := (others => (others => 0.0));
-      A( map(X_LAT), map(X_LAT) ) := 1.0; A( map(X_LAT), map(X_GROUND_SPEED_X) ) := Unit_Type(dt);
-      A( map(X_LON), map(X_LON) ) := 1.0; A( map(X_LON), map(X_GROUND_SPEED_Y) ) := Unit_Type(dt);
-      A( map(X_ALT), map(X_ALT) ) := 1.0; A( map(X_ALT), map(X_GROUND_SPEED_Z) ) := -Unit_Type(dt);
+      A( map(X_LAT), map(X_LAT) ) := 1.0; A( map(X_LAT), map(X_GROUND_SPEED_X) ) := Base_Unit_Type(dt);
+      A( map(X_LON), map(X_LON) ) := 1.0; A( map(X_LON), map(X_GROUND_SPEED_Y) ) := Base_Unit_Type(dt);
+      A( map(X_ALT), map(X_ALT) ) := 1.0; A( map(X_ALT), map(X_GROUND_SPEED_Z) ) := -Base_Unit_Type(dt);
    
-      A( map(X_ROLL),  map(X_ROLL) )  := 1.0;   A( map(X_ROLL),  map(X_ROLL_RATE) )  := Unit_Type(dt);   A( map(X_ROLL),  map(X_ROLL_BIAS) )  := -Unit_Type(dt);
-      A( map(X_PITCH), map(X_PITCH) ) := 1.0;   A( map(X_PITCH), map(X_PITCH_RATE) ) := Unit_Type(dt);   A( map(X_PITCH), map(X_PITCH_BIAS) ) := -Unit_Type(dt); 
-      A( map(X_YAW),   map(X_YAW) )   := 1.0;   A( map(X_YAW),   map(X_YAW_RATE) )   := Unit_Type(dt);   A( map(X_YAW),   map(X_YAW_BIAS) )   := -Unit_Type(dt); 
+      A( map(X_ROLL),  map(X_ROLL) )  := 1.0;   A( map(X_ROLL),  map(X_ROLL_RATE) )  := Base_Unit_Type(dt);   A( map(X_ROLL),  map(X_ROLL_BIAS) )  := -Base_Unit_Type(dt);
+      A( map(X_PITCH), map(X_PITCH) ) := 1.0;   A( map(X_PITCH), map(X_PITCH_RATE) ) := Base_Unit_Type(dt);   A( map(X_PITCH), map(X_PITCH_BIAS) ) := -Base_Unit_Type(dt); 
+      A( map(X_YAW),   map(X_YAW) )   := 1.0;   A( map(X_YAW),   map(X_YAW_RATE) )   := Base_Unit_Type(dt);   A( map(X_YAW),   map(X_YAW_BIAS) )   := -Base_Unit_Type(dt); 
       
       A( map(X_ROLL_RATE), map(X_ROLL_RATE) ) := 1.0;
       A( map(X_PITCH_RATE), map(X_PITCH_RATE) ) := 1.0;

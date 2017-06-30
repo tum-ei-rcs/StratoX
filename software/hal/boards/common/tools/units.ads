@@ -23,7 +23,8 @@ package Units with
    --  The unit system
    ---------------------
 
-   type Unit_Type is new Float with  -- As tagged Type? -> Generics with Unit_Type'Class
+   type Base_Unit_Type is new Float;
+   type Unit_Type is new Base_Unit_Type with  -- As tagged Type? -> Generics with Unit_Type'Class
         Dimension_System =>
         ((Unit_Name => Meter, Unit_Symbol => 'm', Dim_Symbol => 'L'),
          (Unit_Name => Kilogram, Unit_Symbol => "kg", Dim_Symbol => 'M'),
@@ -32,6 +33,9 @@ package Units with
          (Unit_Name => Kelvin, Unit_Symbol => 'K', Dim_Symbol => "Theta"),
          (Unit_Name => Radian, Unit_Symbol => "Rad", Dim_Symbol => "A")),
    Default_Value => 0.0; -- required for matrices
+
+   function Ignore_Unit (X : Unit_Type) return Unit_Type is
+     (Unit_Type (Base_Unit_Type (X)));
 
    type Unit_Array is array (Natural range <>) of Unit_Type;
 

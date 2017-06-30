@@ -545,12 +545,12 @@ package body Estimator with SPARK_Mode is
          -- Arctan: Only X = Y = 0 raises exception
          -- Output range: -Cycle/2.0 to Cycle/2.0, thus -180° to 180°
          angles.Roll  := Roll_Type ( Arctan(
-                                     -gravity_vector(Y),   -- minus
-                                     -gravity_vector(Z)
+                                     Base_Unit_Type (-gravity_vector(Y)),   -- minus
+                                     Base_Unit_Type (-gravity_vector(Z))
                                       ) );
 
          g_length := Sqrt (Sat_Add_Float (Float (gravity_vector(Y))**2, Float (gravity_vector(Z))**2));
-         angles.Pitch := Sat_Cast_Pitch (Float (Arctan (gravity_vector(X), Linear_Acceleration_Type (g_length))));
+         angles.Pitch := Sat_Cast_Pitch (Float (Arctan (Base_Unit_Type (gravity_Vector(X)), Base_Unit_Type (Linear_Acceleration_Type (g_length)))));
          angles.Yaw := 0.0 * Degree;
 
       end if;

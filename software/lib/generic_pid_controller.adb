@@ -38,17 +38,17 @@ package body Generic_PID_Controller with SPARK_Mode => On is
                     dt    : Time_Type;
                     result : out PID_Output_Type) 
    is
-      derivate     : Unit_Type := 0.0;
-      output       : Unit_Type := Unit_Type( 0.0 );
-      tmp_integral : Unit_Type := 0.0;
+      derivate     : Base_Unit_Type := 0.0;
+      output       : Base_Unit_Type := 0.0;
+      tmp_integral : Base_Unit_Type := 0.0;
    begin
    
       -- Intetgral Part
-      tmp_integral := Unit_Type(Pid.Integral) + Unit_Type(error) * Unit_Type(dt);
-      if tmp_integral in  Unit_Type(Pid.I_Limit_Low) .. Unit_Type(Pid.I_Limit_High) then
+      tmp_integral := Base_Unit_Type(Pid.Integral) + Base_Unit_Type(error) * Base_Unit_Type(dt);
+      if tmp_integral in  Base_Unit_Type(Pid.I_Limit_Low) .. Base_Unit_Type(Pid.I_Limit_High) then
          Pid.Integral := PID_Integral_Type( tmp_integral );
       else
-         if tmp_integral <  Unit_Type(Pid.I_Limit_Low) then
+         if tmp_integral <  Base_Unit_Type(Pid.I_Limit_Low) then
             Pid.Integral := Pid.I_Limit_Low;
          else 
             Pid.Integral := Pid.I_Limit_High;
@@ -56,21 +56,21 @@ package body Generic_PID_Controller with SPARK_Mode => On is
       end if;   
 
       -- Derivate Part
-      derivate := Unit_Type(error - Pid.Previous_Error) / Unit_Type( dt );
+      derivate := Base_Unit_Type(error - Pid.Previous_Error) / Base_Unit_Type( dt );
       Pid.Previous_Error := error;
       
       
       -- Calculate Output with Gains
-      output := Unit_Type( Pid.Kp ) * Unit_Type( error ) +
-                Unit_Type( Pid.Ki ) * Unit_Type( Pid.Integral ) +
-                Unit_Type( Pid.Kd ) * derivate;
+      output := Base_Unit_Type( Pid.Kp ) * Base_Unit_Type( error ) +
+                Base_Unit_Type( Pid.Ki ) * Base_Unit_Type( Pid.Integral ) +
+                Base_Unit_Type( Pid.Kd ) * derivate;
       
       
       -- Saturate Output
-      if output < Unit_Type( Pid.Output_Limit_Low ) then
-         output := Unit_Type( Pid.Output_Limit_Low );
-      elsif output > Unit_Type(Pid.Output_Limit_High) then
-         output := Unit_Type( Pid.Output_Limit_High );
+      if output < Base_Unit_Type( Pid.Output_Limit_Low ) then
+         output := Base_Unit_Type( Pid.Output_Limit_Low );
+      elsif output > Base_Unit_Type(Pid.Output_Limit_High) then
+         output := Base_Unit_Type( Pid.Output_Limit_High );
       end if;
 
       result := PID_Output_Type( output );

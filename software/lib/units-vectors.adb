@@ -4,13 +4,13 @@ pragma Elaborate_All(Units);
 
 package body Units.Vectors with SPARK_Mode is
 
-   function Sat_Add is new Saturated_Addition (Unit_Type);
-   function Sat_Sub is new Saturated_Subtraction (Unit_Type);
+   function Sat_Add is new Saturated_Addition (Base_Unit_Type);
+   function Sat_Sub is new Saturated_Subtraction (Base_Unit_Type);
 
-   function Unit_Square (val : Unit_Type) return Unit_Type is
+   function Unit_Square (val : Base_Unit_Type) return Base_Unit_Type is
    begin
-      if Sqrt (Unit_Type'Last) <= abs (val) then
-         return Unit_Type'Last;
+      if Sqrt (Base_Unit_Type'Last) <= abs (val) then
+         return Base_Unit_Type'Last;
       else
          return val*val; -- TODO: fails (Sqrt is not modeled precisely)
       end if;
@@ -23,8 +23,8 @@ package body Units.Vectors with SPARK_Mode is
    is
       result : Cartesian_Vector_Type := vector;
 
-      co : constant Unit_Type := Cos (angle);
-      si : constant Unit_Type := Sin (angle);
+      co : constant Base_Unit_Type := Cos (angle);
+      si : constant Base_Unit_Type := Sin (angle);
       pragma Assert (co in -1.0 .. 1.0);
       pragma Assert (si in -1.0 .. 1.0);
    begin
@@ -44,31 +44,31 @@ package body Units.Vectors with SPARK_Mode is
       vector := result;
    end rotate;
 
-   function "abs" (vector : Cartesian_Vector_Type) return Unit_Type is
-      xx : constant Unit_Type := Unit_Square (vector(X));
-      yy : constant Unit_Type := Unit_Square (vector(Y));
-      zz : constant Unit_Type := Unit_Square (vector(Z));
-      len : constant Unit_type := Sat_Add (Sat_Add (xx, yy), zz);
+   function "abs" (vector : Cartesian_Vector_Type) return Base_Unit_Type is
+      xx : constant Base_Unit_Type := Unit_Square (vector(X));
+      yy : constant Base_Unit_Type := Unit_Square (vector(Y));
+      zz : constant Base_Unit_Type := Unit_Square (vector(Z));
+      len : constant Base_Unit_Type := Sat_Add (Sat_Add (xx, yy), zz);
       pragma Assert (len >= 0.0); -- TODO: fails. need lemma?
    begin
       return Sqrt (len);
    end "abs";
 
-   function "abs" (vector : Angular_Vector) return Unit_Type is
-      xx : constant Unit_Type := Unit_Square (vector(X));
-      yy : constant Unit_Type := Unit_Square (vector(Y));
-      zz : constant Unit_Type := Unit_Square (vector(Z));
-      len : constant Unit_type := Sat_Add (Sat_Add (xx, yy), zz);
+   function "abs" (vector : Angular_Vector) return Base_Unit_Type is
+      xx : constant Base_Unit_Type := Unit_Square (vector(X));
+      yy : constant Base_Unit_Type := Unit_Square (vector(Y));
+      zz : constant Base_Unit_Type := Unit_Square (vector(Z));
+      len : constant Base_Unit_Type := Sat_Add (Sat_Add (xx, yy), zz);
       pragma Assert (len >= 0.0); -- TODO: fails. need lemma?
    begin
       return Sqrt (len);
    end "abs";
 
    function "abs" (vector : Linear_Acceleration_Vector) return Linear_Acceleration_Type is
-      xx : constant Unit_Type := Unit_Square (vector(X));
-      yy : constant Unit_Type := Unit_Square (vector(Y));
-      zz : constant Unit_Type := Unit_Square (vector(Z));
-      len : constant Unit_type := Sat_Add (Sat_Add (xx, yy), zz);
+      xx : constant Base_Unit_Type := Unit_Square (Base_Unit_Type (vector(X)));
+      yy : constant Base_Unit_Type := Unit_Square (Base_Unit_Type (vector(Y)));
+      zz : constant Base_Unit_Type := Unit_Square (Base_Unit_Type (vector(Z)));
+      len : constant Base_Unit_Type := Sat_Add (Sat_Add (xx, yy), zz);
       pragma Assert (len >= 0.0); -- TODO: fails. need lemma?
    begin
       return Linear_Acceleration_Type (Sqrt (len));
