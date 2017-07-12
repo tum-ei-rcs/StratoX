@@ -18,7 +18,7 @@ is
       Rate : Angular_Velocity_Type := 0.0 * Degree/Second;
       P    : Unit_Matrix2D := (1 => (0.0, 0.0), 2 => (0.0, 0.0) );
       K    : Unit_Vector2D := (0.0, 0.0); -- Kalman Gain
-      S    : Unit_Type := 0.0;  -- Estimate Error
+      S    : Base_Unit_Type := 0.0;  -- Estimate Error
       y    : Angle_Type := 0.0 * Degree;  -- Angle difference 
    end record;
 
@@ -38,9 +38,9 @@ is
    --  CONSTANTS
    ------------------
    
-   KM_ACC_VARIANCE : constant Unit_Type := 0.001;  -- tut: 0.001 px4: 0.00005;
-   KM_GYRO_BIAS_VARIANCE : constant Unit_Type := 0.005; -- tut: 0.003, px4: 8.0e-6;
-   KM_MEASUREMENT_VARIANCE : constant Unit_Type := 0.008; -- tut: 0.03, px4: 0.003?;
+   KM_ACC_VARIANCE : constant Base_Unit_Type := 0.001;  -- tut: 0.001 px4: 0.00005;
+   KM_GYRO_BIAS_VARIANCE : constant Base_Unit_Type := 0.005; -- tut: 0.003, px4: 8.0e-6;
+   KM_MEASUREMENT_VARIANCE : constant Base_Unit_Type := 0.008; -- tut: 0.03, px4: 0.003?;
 
 
    function MPU_To_PX4Frame(vector : Linear_Acceleration_Vector) return Linear_Acceleration_Vector is
@@ -102,7 +102,7 @@ is
       --  compensate gyros
       declare
          --  SPARK needs explicit conversion between array with different elements:
-         cv : Cartesian_Vector_Type := (X => Unit_Type (newRate(X)), Y => Unit_Type (newRate(Y)), Z => Unit_Type (newRate(Z)));
+         cv : Cartesian_Vector_Type := (X => Base_Unit_Type (newRate(X)), Y => Base_Unit_Type (newRate(Y)), Z => Base_Unit_Type (newRate(Z)));
       begin
          rotate (cv, X, G_state.kmRoll.Angle);
          newRate := (X => Angular_Velocity_Type (cv(X)), Y => Angular_Velocity_Type (cv(Y)), Z => Angular_Velocity_Type (cv(Z)));
@@ -138,14 +138,14 @@ is
       G_state.kmRoll.Angle := predAngle(X);
     
       -- Calc Covariance, stays small
-      G_state.kmRoll.P := ( 1 => ( 1 => G_state.kmRoll.P(1, 1) + Unit_Type(dt) * 
-                                   ( Unit_Type(dt) * G_state.kmRoll.P(2, 2) 
+      G_state.kmRoll.P := ( 1 => ( 1 => G_state.kmRoll.P(1, 1) + Base_Unit_Type(dt) * 
+                                   ( Base_Unit_Type(dt) * G_state.kmRoll.P(2, 2) 
                                       - G_state.kmRoll.P(1, 2) 
                                       - G_state.kmRoll.P(2, 1) 
                                       + KM_ACC_VARIANCE),
-                                   2 => G_state.kmRoll.P(1, 2) - Unit_Type(dt) * G_state.kmRoll.P(2, 2) ),
-                            2 => ( 1 => G_state.kmRoll.P(2, 1) - Unit_Type(dt) * G_state.kmRoll.P(2, 2),
-                                   2 => G_state.kmRoll.P(2, 2) + Unit_Type(dt) * KM_GYRO_BIAS_VARIANCE ) );
+                                   2 => G_state.kmRoll.P(1, 2) - Base_Unit_Type(dt) * G_state.kmRoll.P(2, 2) ),
+                            2 => ( 1 => G_state.kmRoll.P(2, 1) - Base_Unit_Type(dt) * G_state.kmRoll.P(2, 2),
+                                   2 => G_state.kmRoll.P(2, 2) + Base_Unit_Type(dt) * KM_GYRO_BIAS_VARIANCE ) );
                               
       --  2. Update
       G_state.kmRoll.S    := G_state.kmRoll.P(1, 1) + KM_MEASUREMENT_VARIANCE;
@@ -154,9 +154,9 @@ is
       
       --  final correction
       G_state.kmRoll.y := newAngle.Roll - G_state.kmRoll.Angle;
-      G_state.kmRoll.Angle := wrap_Angle( G_state.kmRoll.Angle + G_state.kmRoll.K(1) * G_state.kmRoll.y,
+      G_state.kmRoll.Angle := wrap_Angle( G_state.kmRoll.Angle + Unit_Type (G_State.kmRoll.K(1)) * G_State.kmRoll.Y,
                                           Roll_Type'First, Roll_Type'Last);
-      G_state.kmRoll.Bias  := G_state.kmRoll.Bias + Angular_Velocity_Type( G_state.kmRoll.K(2) * G_state.kmRoll.y );
+      G_state.kmRoll.Bias  := G_state.kmRoll.Bias + Angular_Velocity_Type( Base_Unit_Type (Unit_Type (G_State.kmRoll.K(2)) * G_State.kmRoll.y ));
       
       if G_state.kmRoll.Bias < -BIAS_LIMIT then
          G_state.kmRoll.Bias := -BIAS_LIMIT;
@@ -189,14 +189,14 @@ is
       end if;
             
       --  Calc Covariance, bleibt klein
-      G_state.kmPitch.P := ( 1 => ( 1 => G_state.kmPitch.P(1, 1) + Unit_Type(dt) * 
-                                    ( Unit_Type(dt) * G_state.kmPitch.P(2, 2) 
+      G_state.kmPitch.P := ( 1 => ( 1 => G_state.kmPitch.P(1, 1) + Base_Unit_Type(dt) * 
+                                    ( Base_Unit_Type(dt) * G_state.kmPitch.P(2, 2) 
                                        - G_state.kmPitch.P(1, 2) 
                                        - G_state.kmPitch.P(2, 1) 
                                        + KM_ACC_VARIANCE),
-                                    2 => G_state.kmPitch.P(1, 2) - Unit_Type(dt) * G_state.kmPitch.P(2, 2) ),
-                             2 => ( 1 => G_state.kmPitch.P(2, 1) - Unit_Type(dt) * G_state.kmPitch.P(2, 2),
-                                    2 => G_state.kmPitch.P(2, 2) + Unit_Type(dt) * KM_GYRO_BIAS_VARIANCE ) );
+                                    2 => G_state.kmPitch.P(1, 2) - Base_Unit_Type(dt) * G_state.kmPitch.P(2, 2) ),
+                             2 => ( 1 => G_state.kmPitch.P(2, 1) - Base_Unit_Type(dt) * G_state.kmPitch.P(2, 2),
+                                    2 => G_state.kmPitch.P(2, 2) + Base_Unit_Type(dt) * KM_GYRO_BIAS_VARIANCE ) );
                               
       --  2. Update
       G_state.kmPitch.S    := G_state.kmPitch.P(1, 1) + KM_MEASUREMENT_VARIANCE;
@@ -205,9 +205,9 @@ is
       
       --  final correction
       G_state.kmPitch.y := newAngle.Pitch - G_state.kmPitch.Angle;
-      G_state.kmPitch.Angle := wrap_Angle( G_state.kmPitch.Angle + G_state.kmPitch.K(1) * G_state.kmPitch.y,
+      G_state.kmPitch.Angle := wrap_Angle( G_state.kmPitch.Angle + Unit_Type (G_State.kmPitch.K(1)) * G_state.kmPitch.y,
                                            Pitch_Type'First, Pitch_Type'Last);      
-      G_state.kmPitch.Bias  := G_state.kmPitch.Bias + Angular_Velocity_Type( G_state.kmPitch.K(2) * G_state.kmPitch.y );
+      G_state.kmPitch.Bias  := G_state.kmPitch.Bias + Angular_Velocity_Type( Base_Unit_Type (Unit_Type (G_State.kmPitch.K(2)) * G_state.kmPitch.y ));
       
       if G_state.kmPitch.Bias < -BIAS_LIMIT then
          G_state.kmPitch.Bias := -BIAS_LIMIT;

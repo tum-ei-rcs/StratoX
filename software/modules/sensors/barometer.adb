@@ -42,11 +42,11 @@ is
       p_ref   : constant Pressure_Type := 1013.25 * Hecto * Pascal;
       exp_frac  : constant Float := 1.0 / 5.255;
       h0   : constant Length_Type := t_ref / t_coeff;
-      prel : constant Unit_Type := pressure / p_ref;
-      comp : constant Unit_Type := prel**exp_frac; -- TODO: ovf check might fail
-      neg  : constant Unit_Type := 1.0 - comp;
+      prel : constant Base_Unit_Type := Base_Unit_Type(pressure / P_Ref);
+      comp : constant Base_Unit_Type := prel**exp_frac; -- TODO: ovf check might fail
+      neg  : constant Base_Unit_Type := 1.0 - comp;
    begin
-      return h0 * neg; -- FIXME: overflow check might fail
+      return h0 * Unit_Type(Neg); -- FIXME: overflow check might fail
    end Altitude;
 
    function get_Altitude(Self : Barometer_Tag) return Length_Type is

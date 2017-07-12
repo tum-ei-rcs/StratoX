@@ -109,7 +109,7 @@ package Units.Navigation with SPARK_Mode is
 
 
    function To_NED_Translation( value : GPS_Translation_Type) return NED_Translation_Vector is
-   ( DIM_NORTH => Cos(value.Latitude) * value.Longitude * METER_PER_LAT_DEGREE,
+   ( DIM_NORTH => Unit_Type(Cos(value.Latitude)) * value.Longitude * METER_PER_LAT_DEGREE,
       DIM_EAST => value.Latitude * METER_PER_LAT_DEGREE,
       DIM_DOWN => -(value.Altitude) );
 
