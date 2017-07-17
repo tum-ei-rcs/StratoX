@@ -54,7 +54,9 @@ package body Mission with SPARK_Mode is
    --  states
    -------------
    
-   G_state : State_Type;
+   G_state : State_Type with Linker_Section => ".ccmdata"; 
+   --  this is just a test. By mapping this variable to the Core-coupled memory,
+   --  we have no waiting times when DMA is active
    
    Mission_Resumed : Boolean := False;
    
