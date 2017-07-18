@@ -5,7 +5,6 @@
 --
 --  Tailored to StratoX project.
 --  Author: Martin Becker (becker@rcs.ei.tum.de)
-with Ada.Real_Time;           use Ada.Real_Time;
 
 with STM32.Device;            use STM32.Device;
 with STM32.DMA;               use STM32.DMA;
@@ -167,6 +166,7 @@ package body Media_Reader.SDCard is
    function Card_Present
      (Controller : in out SDCard_Controller) return Boolean
    is
+      pragma Unreferenced (Controller);
    begin
 --        if STM32.GPIO.Set (SD_Detect_Pin) then
 --           --  No card
@@ -513,7 +513,8 @@ package body Media_Reader.SDCard is
          Disable (SD_DMA, SD_DMA_Tx_Stream);
 
          declare
-            data_incomplete : Boolean := DMA_Interrupt_Handler.Buffer_Error and then
+            data_incomplete : constant Boolean :=
+              DMA_Interrupt_Handler.Buffer_Error and then
               Items_Transferred (SD_DMA, SD_DMA_Tx_Stream) /= Data'Length / 4;
          begin
             return Ret = OK and then DMA_Err = DMA_No_Error and then not data_incomplete;
@@ -616,7 +617,8 @@ package body Media_Reader.SDCard is
             Len   => Data'Length);
 
          declare
-            data_incomplete : Boolean := DMA_Interrupt_Handler.Buffer_Error and then
+            data_incomplete : constant Boolean :=
+              DMA_Interrupt_Handler.Buffer_Error and then
               Items_Transferred (SD_DMA, SD_DMA_Tx_Stream) /= Data'Length / 4;
          begin
             return Ret = OK and then DMA_Err = DMA_No_Error and then not data_incomplete;

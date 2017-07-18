@@ -18,44 +18,46 @@ private package ULog.Conversions with SPARK_Mode is
    function Get_Format (t : in Conversion_Tag) return ULog_Format;
    function Get_Name (t : in Conversion_Tag) return ULog_Name;
    function Get_Labels (t : in Conversion_Tag) return ULog_Label;
-   procedure Append_Unlabeled_Bytes (t : in out Conversion_Tag;
-                                     buf : in out HIL.Byte_Array; tail : HIL.Byte_Array);
+   procedure Append_Unlabeled_Bytes
+     (t    : in out Conversion_Tag;
+      buf  : in out HIL.Byte_Array;
+      tail : HIL.Byte_Array);
 
    --  only these should be used by the serialization routines:
 
-   procedure Append_Float (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Float)
+   procedure Append_Float (t   : in out Conversion_Tag; label : String;
+                           buf : in out HIL.Byte_Array; tail  : Float)
      with Pre => label'Length > 0;
 
-   procedure Append_Uint8 (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Unsigned_8)
+   procedure Append_Uint8 (t   : in out Conversion_Tag; label : String;
+                           buf : in out HIL.Byte_Array; tail  : Unsigned_8)
      with Pre => label'Length > 0;
-   procedure Append_Uint16 (t : in out Conversion_Tag; label : String;
-                            buf : in out HIL.Byte_Array; tail : Unsigned_16)
+   procedure Append_Uint16 (t   : in out Conversion_Tag; label : String;
+                            buf : in out HIL.Byte_Array; tail  : Unsigned_16)
      with Pre => label'Length > 0;
-   procedure Append_Uint32 (t : in out Conversion_Tag; label : String;
-                            buf : in out HIL.Byte_Array; tail : Unsigned_32)
+   procedure Append_Uint32 (t   : in out Conversion_Tag; label : String;
+                            buf : in out HIL.Byte_Array; tail  : Unsigned_32)
      with Pre => label'Length > 0;
-   procedure Append_Uint64 (t : in out Conversion_Tag; label : String;
-                            buf : in out HIL.Byte_Array; tail : Unsigned_64)
+   procedure Append_Uint64 (t   : in out Conversion_Tag; label : String;
+                            buf : in out HIL.Byte_Array; tail  : Unsigned_64)
      with Pre => label'Length > 0;
-   procedure Append_Int8 (t : in out Conversion_Tag; label : String;
-                          buf : in out HIL.Byte_Array; tail : Integer_8)
+   procedure Append_Int8 (t   : in out Conversion_Tag; label : String;
+                          buf : in out HIL.Byte_Array; tail  : Integer_8)
      with Pre => label'Length > 0;
-   procedure Append_Int16 (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Integer_16)
+   procedure Append_Int16 (t   : in out Conversion_Tag; label : String;
+                           buf : in out HIL.Byte_Array; tail  : Integer_16)
      with Pre => label'Length > 0;
-   procedure Append_Int32 (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Integer_32)
+   procedure Append_Int32 (t   : in out Conversion_Tag; label : String;
+                           buf : in out HIL.Byte_Array; tail  : Integer_32)
      with Pre => label'Length > 0;
-   procedure Append_Int64 (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Integer_64)
+   procedure Append_Int64 (t   : in out Conversion_Tag; label : String;
+                           buf : in out HIL.Byte_Array; tail  : Integer_64)
      with Pre => label'Length > 0;
-   procedure Append_String64 (t : in out Conversion_Tag;
+   procedure Append_String64 (t     : in out Conversion_Tag;
                               label : String;
-                              buf  : in out HIL.Byte_Array;
-                              tail : String;
-                              slen : Natural)
+                              buf   : in out HIL.Byte_Array;
+                              tail  : String;
+                              slen  : Natural)
      with Pre => label'Length > 0 and then slen <= tail'Length;
    --  append the part tail'First ... tail'First + slen to buf
    --  takes only the first 64 bytes. If longer, then spit before call.

@@ -1,13 +1,13 @@
 --  Project: StratoX
 --  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
---          Martin Becker (becker@rcs.ei.tum.de)
+--           Martin Becker (becker@rcs.ei.tum.de)
 --
 --  Description:
 --     allows logging of structured messages at several logging levels.
 --
 --  Usage:
 --     Logger.init  -- initializes the Logger
---     Logger.log_console (Logger.INFO, "Program started.")  -- writes log on info level to console
+--     Logger.log_console (Logger.INFO, "Program started.")  -- writes to console
 --     Logger.log_sd (Logger.INFO, gps_msg) -- writes GPS record to SD card
 with ULog;
 
@@ -27,8 +27,8 @@ is
 
    procedure Init (status : out Init_Error_Code);
 
-   procedure log(msg_level : Log_Level; message : Message_Type);
-   -- wrapper for log_console
+   procedure log (msg_level : Log_Level; message : Message_Type);
+   --  wrapper for log_console
 
    procedure log_console (msg_level : Log_Level; message : Message_Type);
    --  write a new text log message (shown on console, logged to SD)
@@ -46,7 +46,7 @@ is
 private
    --  FIXME: documentation required
    package Adapter is
-      procedure init_adapter(status : out Init_Error_Code);
+      procedure init_adapter (status : out Init_Error_Code);
       procedure write (message : Message_Type);
    end Adapter;
 

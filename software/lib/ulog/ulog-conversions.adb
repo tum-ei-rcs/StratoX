@@ -5,7 +5,8 @@
 with Ada.Unchecked_Conversion;
 
 --  @summary convert various types to bytearrays
---  FIXME: optimize: don't collect labels and formats unless we are building the header.
+--  FIXME: optimize: don't collect labels and formats unless we are
+--  building the header.
 package body ULog.Conversions with SPARK_Mode is
 
    ----------------------
@@ -55,12 +56,12 @@ package body ULog.Conversions with SPARK_Mode is
                      Buffer_Capacity'Result = 0
                    else
                      Buffer_Capacity'Result = buf'Length - t.Buffer_Fill);
-   --  if the buffer length changed during conversion, then t.Total_Size could be
-   --  bigger than buf'length.
+   --  if the buffer length changed during conversion, then
+   --  t.Total_Size could be bigger than buf'length.
 
-   -----------
-   --  Reset
-   -----------
+   --------------------
+   -- New_Conversion --
+   --------------------
 
    procedure New_Conversion (t : out Conversion_Tag) is
    begin
@@ -72,57 +73,65 @@ package body ULog.Conversions with SPARK_Mode is
    end New_Conversion;
 
    --------------
-   --  Get_Size
+   -- Get_Size --
    --------------
 
-   function Get_Size (t : in Conversion_Tag) return Natural is (t.Buffer_Fill);
+   function Get_Size (t : in Conversion_Tag) return Natural is
+     (t.Buffer_Fill);
 
    ---------------------
-   --  Buffer_Overflow
+   -- Buffer_Overflow --
    ---------------------
 
-   function Buffer_Overflow (t : in Conversion_Tag) return Boolean is (t.Buffer_Overflow);
+   function Buffer_Overflow (t : in Conversion_Tag) return Boolean is
+     (t.Buffer_Overflow);
 
-   ---------------
-   --  Get_Format
-   ---------------
+   ----------------
+   -- Get_Format --
+   ----------------
 
-   function Get_Format (t : in Conversion_Tag) return ULog_Format is (t.Format_Collect.Format);
+   function Get_Format (t : in Conversion_Tag) return ULog_Format is
+     (t.Format_Collect.Format);
 
-   ---------------
-   --  Get_Labels
-   ---------------
+   ----------------
+   -- Get_Labels --
+   ----------------
 
-   function Get_Labels (t : in Conversion_Tag) return ULog_Label is (t.Label_Collect.Labels);
+   function Get_Labels (t : in Conversion_Tag) return ULog_Label is
+     (t.Label_Collect.Labels);
 
-   ---------------
-   --  Get_Name
-   ---------------
+   --------------
+   -- Get_Name --
+   --------------
 
-   function Get_Name (t : in Conversion_Tag) return ULog_Name is (t.Name);
+   function Get_Name (t : in Conversion_Tag) return ULog_Name is
+     (t.Name);
 
-   ---------------
-   --  Set_Name
-   ---------------
+   --------------
+   -- Set_Name --
+   --------------
 
    procedure Set_Name (t : in out Conversion_Tag; s : String) is
       subtype shortname is String (1 .. ULog_Name'Length);
       function To_Name is new Ada.Unchecked_Conversion (shortname, ULog_Name);
       tmp : shortname := (others => Character'Val (0));
-      slen : constant Integer := (if s'Length > tmp'Length then tmp'Length else s'Length);
+      slen : constant Integer :=
+        (if s'Length > tmp'Length then tmp'Length else s'Length);
    begin
       if slen > 0 then
-         tmp (tmp'First .. tmp'First + (slen - 1)) := s (s'First .. s'First + (slen - 1));
+         tmp (tmp'First .. tmp'First + (slen - 1)) :=
+           s (s'First .. s'First + (slen - 1));
       end if;
       t.Name := To_Name (tmp);
    end Set_Name;
 
    ---------------------
-   --  BUffer_Capacity
+   -- Buffer_Capacity --
    ---------------------
 
-   function Buffer_Capacity (t : in Conversion_Tag; buf : HIL.Byte_Array)
-                             return Natural is
+   function Buffer_Capacity
+     (t : in Conversion_Tag; buf : HIL.Byte_Array) return Natural
+   is
       fill : constant Natural := t.Buffer_Fill;
       blen : constant Natural := buf'Length;
       cap  : Natural;
@@ -135,13 +144,16 @@ package body ULog.Conversions with SPARK_Mode is
       return cap;
    end Buffer_Capacity;
 
-   -------------------
-   --  Add_To_Buffer
-   -------------------
+   --------------------
+   -- Copy_To_Buffer --
+   --------------------
 
    --  add as much as we can to the buffer, without overflowing
-   procedure Copy_To_Buffer (t : in out Conversion_Tag;
-                             buf : in out HIL.Byte_Array; tail : HIL.Byte_Array) is
+   procedure Copy_To_Buffer
+     (t    : in out Conversion_Tag;
+      buf  : in out HIL.Byte_Array;
+      tail : HIL.Byte_Array)
+   is
       cap  : constant Natural := Buffer_Capacity (t, buf);
       fill : constant Natural := t.Buffer_Fill;
       tlen : constant Natural := tail'Length;
@@ -167,18 +179,21 @@ package body ULog.Conversions with SPARK_Mode is
       end if;
    end Copy_To_Buffer;
 
-   ------------------------
-   --  Append_Labeled
-   ------------------------
+   --------------------
+   -- Append_Labeled --
+   --------------------
 
-   procedure Add_Labeled (t : in out Conversion_Tag;
-                          label  : String;
-                          format : Character;
-                          buf    : in out HIL.Byte_Array;
-                          tail   : HIL.Byte_Array)
+   procedure Add_Labeled
+     (t      : in out Conversion_Tag;
+      label  : String;
+      format : Character;
+      buf    : in out HIL.Byte_Array;
+      tail   : HIL.Byte_Array)
    is
-      lbl_cap : constant Integer := t.Label_Collect.Labels'Length - t.Label_Collect.Length;
-      fmt_cap : constant Integer := t.Format_Collect.Format'Length - t.Format_Collect.Length;
+      lbl_cap : constant Integer :=
+        t.Label_Collect.Labels'Length - t.Label_Collect.Length;
+      fmt_cap : constant Integer :=
+        t.Format_Collect.Format'Length - t.Format_Collect.Length;
    begin
       if Buffer_Capacity (t, buf) >= tail'Length and
       then lbl_cap > label'Length  -- not >=, because of ','
@@ -187,19 +202,24 @@ package body ULog.Conversions with SPARK_Mode is
          Copy_To_Buffer (t => t, buf => buf, tail => tail);
          if t.Label_Collect.Length > 0 then
             t.Label_Collect.Length := t.Label_Collect.Length + 1;
-            t.Label_Collect.Labels (t.Label_Collect.Length) := HIL.Byte (Character'Pos (','));
+            t.Label_Collect.Labels (t.Label_Collect.Length) :=
+              HIL.Byte (Character'Pos (','));
          end if;
          declare
-            idx_lbl_lo : constant Integer := t.Label_Collect.Labels'First + t.Label_Collect.Length;
+            idx_lbl_lo : constant Integer :=
+              t.Label_Collect.Labels'First + t.Label_Collect.Length;
             idx_lbl_hi : constant Integer := idx_lbl_lo + (label'Length - 1);
-            idx_fmt  : constant Integer := t.Format_Collect.Format'First + t.Format_Collect.Length;
+            idx_fmt    : constant Integer :=
+              t.Format_Collect.Format'First + t.Format_Collect.Length;
             subtype VarString is String (1 .. label'Length);
             subtype VarBytes is HIL.Byte_Array (1 .. label'Length);
-            function To_Bytes is new Ada.Unchecked_Conversion (VarString, VarBytes);
+            function To_Bytes is new
+              Ada.Unchecked_Conversion (VarString, VarBytes);
             d : constant VarBytes := To_Bytes (label);
          begin
             t.Label_Collect.Labels (idx_lbl_lo .. idx_lbl_hi) := d;
-            t.Format_Collect.Format (idx_fmt) := HIL.Byte (Character'Pos (format));
+            t.Format_Collect.Format (idx_fmt) :=
+              HIL.Byte (Character'Pos (format));
          end;
       end if;
       --  keep counting, so caller can see potential overflow
@@ -216,23 +236,26 @@ package body ULog.Conversions with SPARK_Mode is
    end Add_Labeled;
 
    ----------------------------
-   --  Append_Unlabeled_Bytes
+   -- Append_Unlabeled_Bytes --
    ----------------------------
 
-   procedure Append_Unlabeled_Bytes (t : in out Conversion_Tag;
-                                     buf : in out HIL.Byte_Array;
-                                     tail : HIL.Byte_Array) is
+   procedure Append_Unlabeled_Bytes
+     (t   : in out Conversion_Tag;
+      buf : in out HIL.Byte_Array;
+      tail : HIL.Byte_Array) is
    begin
       Copy_To_Buffer (t => t, buf => buf, tail => tail);
    end Append_Unlabeled_Bytes;
 
 
    ------------------
-   --  Append_Float
+   -- Append_Float --
    ------------------
 
-   procedure Append_Float (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Float) is
+   procedure Append_Float
+     (t   : in out Conversion_Tag; label : String;
+      buf : in out HIL.Byte_Array; tail  : Float)
+   is
       subtype Byte4 is Byte_Array (1 .. 4);
       function To_Bytes is new Ada.Unchecked_Conversion (Float, Byte4);
    begin
@@ -240,35 +263,40 @@ package body ULog.Conversions with SPARK_Mode is
    end Append_Float;
 
    ------------------
-   --  Append_Uint8
+   -- Append_Uint8 --
    ------------------
 
-   procedure Append_Uint8 (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Unsigned_8) is
+   procedure Append_Uint8
+     (t   : in out Conversion_Tag; label : String;
+      buf : in out HIL.Byte_Array; tail  : Unsigned_8)
+   is
       barr : constant Byte_Array := (1 => HIL.Byte (tail));
    begin
       Add_Labeled (t, label, 'B', buf, barr);
    end Append_Uint8;
 
+   -----------------
+   -- Append_Int8 --
+   -----------------
 
-   ------------------
-   --  Append_Int8
-   ------------------
-
-   procedure Append_Int8 (t : in out Conversion_Tag; label : String;
-                          buf : in out HIL.Byte_Array; tail : Integer_8) is
+   procedure Append_Int8
+     (t   : in out Conversion_Tag; label : String;
+      buf : in out HIL.Byte_Array; tail  : Integer_8)
+   is
       subtype Byte1 is Byte_Array (1 .. 1);
       function To_Bytes is new Ada.Unchecked_Conversion (Integer_8, Byte1);
    begin
       Add_Labeled (t, label, 'b', buf, To_Bytes (tail));
    end Append_Int8;
 
-   ------------------
-   --  Append_Uint16
-   ------------------
+   -------------------
+   -- Append_Uint16 --
+   -------------------
 
-   procedure Append_Uint16 (t : in out Conversion_Tag; label : String;
-                            buf : in out HIL.Byte_Array; tail : Unsigned_16) is
+   procedure Append_Uint16
+     (t   : in out Conversion_Tag; label : String;
+      buf : in out HIL.Byte_Array; tail  : Unsigned_16)
+   is
       subtype Byte2 is Byte_Array (1 .. 2);
       function To_Bytes is new Ada.Unchecked_Conversion (Unsigned_16, Byte2);
    begin
@@ -276,11 +304,13 @@ package body ULog.Conversions with SPARK_Mode is
    end Append_Uint16;
 
    ------------------
-   --  Append_Int16
+   -- Append_Int16 --
    ------------------
 
-   procedure Append_Int16 (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Integer_16) is
+   procedure Append_Int16
+     (t   : in out Conversion_Tag; label : String;
+      buf : in out HIL.Byte_Array; tail  : Integer_16)
+   is
       subtype Byte2 is Byte_Array (1 .. 2);
       function To_Bytes is new Ada.Unchecked_Conversion (Integer_16, Byte2);
    begin
@@ -288,12 +318,14 @@ package body ULog.Conversions with SPARK_Mode is
    end Append_Int16;
 
 
-   ------------------
-   --  Append_UInt32
-   ------------------
+   -------------------
+   -- Append_UInt32 --
+   -------------------
 
-   procedure Append_Uint32 (t : in out Conversion_Tag; label : String;
-                            buf : in out HIL.Byte_Array; tail : Unsigned_32) is
+   procedure Append_Uint32
+     (t   : in out Conversion_Tag; label : String;
+      buf : in out HIL.Byte_Array; tail  : Unsigned_32)
+   is
       subtype Byte4 is Byte_Array (1 .. 4);
       function To_Bytes is new Ada.Unchecked_Conversion (Unsigned_32, Byte4);
    begin
@@ -301,23 +333,27 @@ package body ULog.Conversions with SPARK_Mode is
    end Append_Uint32;
 
    ------------------
-   --  Append_Int32
+   -- Append_Int32 --
    ------------------
 
-   procedure Append_Int32 (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Integer_32) is
+   procedure Append_Int32
+     (t   : in out Conversion_Tag; label : String;
+      buf : in out HIL.Byte_Array; tail  : Integer_32)
+   is
       subtype Byte4 is Byte_Array (1 .. 4);
       function To_Bytes is new Ada.Unchecked_Conversion (Integer_32, Byte4);
    begin
       Add_Labeled (t, label, 'i', buf, To_Bytes (tail));
    end Append_Int32;
 
-   ------------------
-   --  Append_UInt64
-   ------------------
+   -------------------
+   -- Append_UInt64 --
+   -------------------
 
-   procedure Append_Uint64 (t : in out Conversion_Tag; label : String;
-                            buf : in out HIL.Byte_Array; tail : Unsigned_64) is
+   procedure Append_Uint64
+     (t     : in out Conversion_Tag; label : String;
+      buf   : in out HIL.Byte_Array; tail  : Unsigned_64)
+   is
       subtype Byte8 is Byte_Array (1 .. 8);
       function To_Bytes is new Ada.Unchecked_Conversion (Unsigned_64, Byte8);
    begin
@@ -325,35 +361,38 @@ package body ULog.Conversions with SPARK_Mode is
    end Append_Uint64;
 
    ------------------
-   --  Append_Int64
+   -- Append_Int64 --
    ------------------
 
-   procedure Append_Int64 (t : in out Conversion_Tag; label : String;
-                           buf : in out HIL.Byte_Array; tail : Integer_64) is
+   procedure Append_Int64
+     (t     : in out Conversion_Tag; label : String;
+      buf   : in out HIL.Byte_Array; tail  : Integer_64)
+   is
       subtype Byte8 is Byte_Array (1 .. 8);
       function To_Bytes is new Ada.Unchecked_Conversion (Integer_64, Byte8);
    begin
       Add_Labeled (t, label, 'q', buf, To_Bytes (tail));
    end Append_Int64;
 
-   -------------------
-   --  Append_String
-   -------------------
+   ---------------------
+   -- Append_String64 --
+   ---------------------
 
-   procedure Append_String64 (t : in out Conversion_Tag;
-                              label : String;
-                              buf : in out HIL.Byte_Array;
-                              tail : String; slen : Natural)
+   procedure Append_String64
+     (t     : in out Conversion_Tag; label : String;
+      buf   : in out HIL.Byte_Array; tail  : String; slen : Natural)
    is
       subtype String64 is String (1 .. 64);
       subtype Byte64 is Byte_Array (1 .. String64'Length);
       function To_Byte64 is new Ada.Unchecked_Conversion (String64, Byte64);
 
       tmp : String64 := (others => Character'Val (0));
-      len : constant Integer := (if slen > tmp'Length then tmp'Length else slen);
+      len : constant Integer :=
+        (if slen > tmp'Length then tmp'Length else slen);
    begin
       if len > 0 then
-         tmp (tmp'First .. tmp'First + (len - 1)) := tail (tail'First .. tail'First + (len - 1));
+         tmp (tmp'First .. tmp'First + (len - 1)) :=
+           tail (tail'First .. tail'First + (len - 1));
       end if;
       Add_Labeled (t, label, 'Z', buf, To_Byte64 (tmp));
    end Append_String64;

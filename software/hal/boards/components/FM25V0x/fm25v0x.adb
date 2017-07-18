@@ -49,6 +49,7 @@ is
    OP_WRITE : constant Opcode_Type := 2#0000_0010#; -- write mem
    OP_SLEEP : constant Opcode_Type := 2#1011_1001#; -- enter sleep
    OP_RDID  : constant Opcode_Type := 2#1001_1111#; -- read dev id
+   pragma Unreferenced (OP_WRDI, OP_WRSR, OP_FSTRD, OP_SLEEP);
 
    type Soft_Lock_Field is
      (
@@ -142,6 +143,7 @@ is
       end loop;
       pragma Annotate (GNATprove, False_Positive, "input value of ""Status.Data_Array"" might be used", "part of Union");
    end Read_Status_Register;
+   pragma Unreferenced (Read_Status_Register);
 
    procedure Write_Enable is
       cmd  : constant HIL.SPI.Data_Type (1 .. 1) := (1 => Interfaces.Unsigned_8 (OP_WREN));

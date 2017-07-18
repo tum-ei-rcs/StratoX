@@ -1,6 +1,5 @@
 --  Description: PIXRACER PROTOTYPING MAIN FILE
 --  Main System File
---  todo: better unit name
 
 with Ada.Real_Time; use Ada.Real_Time;
 with Config;        use Config;
@@ -17,6 +16,10 @@ with STM32.DWT;
 
 package body Main is
 
+   ----------------
+   -- Initialize --
+   ----------------
+
    procedure Initialize is
       success : Boolean := False;
       t_next  : Ada.Real_Time.Time;
@@ -24,19 +27,18 @@ package body Main is
    begin
       CPU.initialize;
 
-      STM32.DWT.Enable_Cycle_Counter;
-
-      Logger.init (logret);
+      Logger.Init (logret);
       Logger.log_console (Logger.INFO, "---------------");
       Logger.log_console (Logger.INFO, "CPU initialized");
 
       Buzzer_Manager.Initialize;
 
       LED_Manager.LED_switchOff;
-      LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => False, HIL.Devices.BLU_LED => False));
+      LED_Manager.Set_Color
+        ((HIL.Devices.RED_LED => True,
+          HIL.Devices.GRN_LED => False,
+          HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
-
-
 
       Logger.log_console (Logger.INFO, "Initializing NVRAM...");
       NVRAM.Init;
@@ -69,19 +71,24 @@ package body Main is
          delay until Clock + Milliseconds (50);
       end if;
 
-      LED_Manager.Set_Color ((HIL.Devices.RED_LED => True, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
+      LED_Manager.Set_Color
+        ((HIL.Devices.RED_LED => True,
+          HIL.Devices.GRN_LED => True,
+          HIL.Devices.BLU_LED => False));
       LED_Manager.LED_switchOn;
-      --  SDLog.Perf_Test (10);
-      Logger.log_console (Logger.INFO, "SD Card check done");
    end Initialize;
 
+   --------------
+   -- Run_Loop --
+   --------------
 
    procedure Run_Loop is
       loop_period : constant Time_Span := Milliseconds (MAIN_TICK_RATE_MS);
       loop_next   : Time      := Clock;
 
-      --      gleich : Ada.Real_Time.Time;
-      --      song : constant Buzzer_Manager.Song_Type := (('c',6),('d',6),('c',6),('f',6));
+      --  gleich : Ada.Real_Time.Time;
+      --  song : constant Buzzer_Manager.Song_Type :=
+      --  (('c',6),('d',6),('c',6),('f',6));
       PRESCALER : constant := 100;
       type prescaler_t is mod PRESCALER;
       p : prescaler_t := 0;
@@ -97,39 +104,49 @@ package body Main is
       cycles_min  : Unsigned_32 := Unsigned_32'Last;
       cycles_max  : Unsigned_32 := Unsigned_32'First;
    begin
-      LED_Manager.Set_Color ((HIL.Devices.RED_LED => False, HIL.Devices.GRN_LED => True, HIL.Devices.BLU_LED => False));
+      LED_Manager.Set_Color
+        ((HIL.Devices.RED_LED => False,
+          HIL.Devices.GRN_LED => True,
+          HIL.Devices.BLU_LED => False));
       LED_Manager.LED_blink (LED_Manager.SLOW);
 
---        Buzzer_Manager.Set_Timing (period => 0.5 * Second, length => 0.1 * Second); -- gapless
---        Buzzer_Manager.Enable;
---
---        gleich := Clock;
---        for x in 1 .. song'Length loop
---           Buzzer_Manager.Set_Tone (song (x));
---           Buzzer_Manager.Tick;
---           gleich := gleich + Milliseconds(250);
---           delay until gleich;
---           Buzzer_Manager.Tick;
---        end loop;
---        Buzzer_Manager.Disable;
+      --  Buzzer_Manager.Set_Timing
+      --  (period => 0.5 * Second, length => 0.1 * Second);
+      --        Buzzer_Manager.Enable;
+      --
+      --        gleich := Clock;
+      --        for x in 1 .. song'Length loop
+      --           Buzzer_Manager.Set_Tone (song (x));
+      --           Buzzer_Manager.Tick;
+      --           gleich := gleich + Milliseconds(250);
+      --           delay until gleich;
+      --           Buzzer_Manager.Tick;
+      --        end loop;
+      --        Buzzer_Manager.Disable;
 
       --  gps initial
-      mgps.lat := 48.15;
-      mgps.lon := 11.583;
-      mgps.alt := 560.0;
-      mgps.gps_year := 1908;
+      mgps.lat       := 48.15;
+      mgps.lon       := 11.583;
+      mgps.alt       := 560.0;
+      mgps.gps_year  := 1908;
       mgps.gps_month := 1;
-      mgps.gps_sec := 0;
-      mgps.fix := 0;
-      mgps.nsat := 8;
+      mgps.gps_sec   := 0;
+      mgps.fix       := 0;
+      mgps.nsat      := 8;
 
       loop
          cycle_begin := STM32.DWT.Read_Cycle_Counter;
-
          p := p + 1;
+
+         --  LED heartbeat
+         LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
+         LED_Manager.LED_sync;
+
+         --  SD card test
          if With_SD_Log then
             if p = 0 then
-               Logger.log_console (Logger.INFO, "Logfile size " & SDLog.Logsize'Img & " B");
+               Logger.log_console
+                 (Logger.INFO, "Logfile size " & SDLog.Logsize'Img & " B");
             end if;
 
             --  fake GPS message to test SD log
@@ -143,26 +160,25 @@ package body Main is
             end if;
          end if;
 
-         --  LED heartbeat
-         LED_Manager.LED_tick (MAIN_TICK_RATE_MS);
-         LED_Manager.LED_sync;
-
+         --  cycle counter
          declare
             cycle_end   : constant Unsigned_32 := STM32.DWT.Read_Cycle_Counter;
             cycles_loop : constant Unsigned_32 := cycle_end - cycle_begin;
          begin
             cycles_sum := cycles_sum + cycles_loop;
-            cycles_min := (if cycles_loop < cycles_min then cycles_loop else cycles_min);
-            cycles_max := (if cycles_loop > cycles_max then cycles_loop else cycles_max);
+            cycles_min := (if cycles_loop < cycles_min then
+                              cycles_loop else cycles_min);
+            cycles_max := (if cycles_loop > cycles_max then
+                              cycles_loop else cycles_max);
 
             if p = 0 then
                --  output
                cycles_avg := cycles_sum / PRESCALER;
-               logger.log_console
+               Logger.log_console
                  (Logger.INFO, "Loop min/avg/max cyc: " &
-                    Unsigned_32'Image(cycles_min) &
-                    Unsigned_32'Image(cycles_avg) &
-                    Unsigned_32'Image(cycles_max));
+                    Unsigned_32'Image (cycles_min) &
+                    Unsigned_32'Image (cycles_avg) &
+                    Unsigned_32'Image (cycles_max));
                --  reset
                cycles_sum := 0;
                cycles_min := Unsigned_32'Last;

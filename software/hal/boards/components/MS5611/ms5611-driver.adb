@@ -65,11 +65,7 @@ is
    subtype OFF_Type is Float range -8589672450.9 .. 12884705280.9;
    subtype TEMP_Type is Float range -4000.9 .. 8500.9;
 
-   --  a bunch of functions that allows to add/sub/cast types without range problems
-   function Sat_Cast_Tref is new Units.Saturated_Cast (T_Ref_Type);
-   function Sat_Cast_Tempsense is new Units.Saturated_Cast (Tempsens_Type);
-   function Sat_Cast_TCO is new Units.Saturated_Cast (TCO_Type);
-   function Sat_Cast_TCS is new Units.Saturated_Cast (TCS_Type);
+   --  a bunch of functions that allows to add/sub/cast types without range problems   
    function Sat_Cast_OffType is new Units.Saturated_Cast (OFF_Type);
    function Sat_Cast_TEMPType is new Units.Saturated_Cast (TEMP_Type);
    function Sat_Cast_SensType is new Units.Saturated_Cast (Sense_Type);

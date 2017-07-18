@@ -114,11 +114,15 @@ is
    procedure Write_Header (hdr : in NVRAM_Header) is
       Unused_Header : NVRAM_Header;
       --  GNATprove from SPARK 2017 onwards can do this:
-      --  HDR_OFF_CK_A : constant HIL.NVRAM.Address := Unused_Header.ck_a'Position;
-      --  HDR_OFF_CK_B : constant HIL.NVRAM.Address := Unused_Header.ck_b'Position;
+      --  HDR_OFF_CK_A : constant HIL.NVRAM.Address :=
+      --  Unused_Header.ck_a'Position;
+      --  HDR_OFF_CK_B : constant HIL.NVRAM.Address :=
+      --  Unused_Header.ck_b'Position;
    begin
-      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address + HDR_OFF_CK_A, byte => hdr.ck_a);
-      HIL.NVRAM.Write_Byte (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => hdr.ck_b);
+      HIL.NVRAM.Write_Byte
+        (addr => Hdr_To_Address + HDR_OFF_CK_A, byte => hdr.ck_a);
+      HIL.NVRAM.Write_Byte
+        (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => hdr.ck_b);
    end Write_Header;
 
    -----------------
@@ -128,11 +132,15 @@ is
    procedure Read_Header (framhdr : out NVRAM_Header) is
       Unused_Header : NVRAM_Header;
       --  GNATprove from SPARK 2017 onwards can do this:
-      --  HDR_OFF_CK_A : constant HIL.NVRAM.Address := Unused_Header.ck_a'Position;
-      --  HDR_OFF_CK_B : constant HIL.NVRAM.Address := Unused_Header.ck_b'Position;
+      --  HDR_OFF_CK_A : constant HIL.NVRAM.Address :=
+      --  Unused_Header.ck_a'Position;
+      --  HDR_OFF_CK_B : constant HIL.NVRAM.Address :=
+      --  Unused_Header.ck_b'Position;
    begin
-      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address + HDR_OFF_CK_A, byte => framhdr.ck_a);
-      HIL.NVRAM.Read_Byte (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => framhdr.ck_b);
+      HIL.NVRAM.Read_Byte
+        (addr => Hdr_To_Address + HDR_OFF_CK_A, byte => framhdr.ck_a);
+      HIL.NVRAM.Read_Byte
+        (addr => Hdr_To_Address + HDR_OFF_CK_B, byte => framhdr.ck_b);
    end Read_Header;
 
    -----------------
@@ -193,7 +201,8 @@ is
       HIL.NVRAM.Init;
       Validate_Contents;
 
-      --  maintain boot counter: FIXME: for some unknown reason this isn't reliable. Does the FRAM fail sometimes?
+      --  maintain boot counter: FIXME: for some unknown reason this
+      --  isn't reliable. Does the FRAM fail sometimes?
       Load (VAR_BOOTCOUNTER, num_boots);
       if num_boots < HIL.Byte'Last then
          num_boots := num_boots + 1;
@@ -221,30 +230,35 @@ is
 
    procedure Load (variable : Variable_Name; data : out Integer_8) is
       tmp : HIL.Byte;
-      function Byte_To_Int8 is new Ada.Unchecked_Conversion (HIL.Byte, Integer_8);
+      function Byte_To_Int8 is new
+        Ada.Unchecked_Conversion (HIL.Byte, Integer_8);
    begin
       HIL.NVRAM.Read_Byte (addr => Var_To_Address (variable), byte => tmp);
       data := Byte_To_Int8 (tmp);
    end Load;
 
    procedure Load (variable : in Variable_Name; data : out Float) is
-      bytes : Byte_Array_4 := (others => 0); -- needs init, because SPARK cannot prove via call
+      bytes : Byte_Array_4 := (others => 0);
+      --  needs init, because SPARK cannot prove via call
    begin
       for index in Natural range 0 .. 3 loop
-         HIL.NVRAM.Read_Byte (addr => Var_To_Address (
-                              Variable_Name'Val (Variable_Name'Pos( variable ) + index )),
-                              byte => bytes(bytes'First + index));
+         HIL.NVRAM.Read_Byte
+           (addr => Var_To_Address
+              (Variable_Name'Val (Variable_Name'Pos (variable) + index)),
+            byte => bytes (bytes'First + index));
       end loop;
       data := HIL.toFloat (bytes);
    end Load;
 
    procedure Load (variable : in Variable_Name; data : out Unsigned_32) is
-      bytes : Byte_Array_4 := (others => 0); -- needs init, because SPARK cannot prove via call
+      bytes : Byte_Array_4 := (others => 0);
+      --  needs init, because SPARK cannot prove via call
    begin
       for index in Natural range 0 .. 3 loop
-         HIL.NVRAM.Read_Byte (addr => Var_To_Address (
-                              Variable_Name'Val (Variable_Name'Pos( variable ) + index )),
-                              byte => bytes(bytes'First + index));
+         HIL.NVRAM.Read_Byte
+           (addr => Var_To_Address
+              (Variable_Name'Val (Variable_Name'Pos (variable) + index)),
+            byte => bytes (bytes'First + index));
       end loop;
       data := HIL.Bytes_To_Unsigned32 (bytes);
    end Load;
@@ -259,18 +273,21 @@ is
    end Store;
 
    procedure Store (variable : in Variable_Name; data : in Integer_8) is
-      function Int8_To_Byte is new Ada.Unchecked_Conversion (Integer_8, HIL.Byte);
+      function Int8_To_Byte is new
+        Ada.Unchecked_Conversion (Integer_8, HIL.Byte);
    begin
-      HIL.NVRAM.Write_Byte (addr => Var_To_Address (variable), byte => Int8_To_Byte (data));
+      HIL.NVRAM.Write_Byte
+        (addr => Var_To_Address (variable), byte => Int8_To_Byte (data));
    end Store;
 
    procedure Store (variable : in Variable_Name; data : in Float) is
       bytes : constant Byte_Array_4 := HIL.toBytes (data);
    begin
       for index in Natural range 0 .. 3 loop
-         HIL.NVRAM.Write_Byte (addr => Var_To_Address (
-                               Variable_Name'Val (Variable_Name'Pos( variable ) + index )),
-                               byte => bytes(bytes'First + index));
+         HIL.NVRAM.Write_Byte
+           (addr => Var_To_Address
+              (Variable_Name'Val (Variable_Name'Pos (variable) + index)),
+            byte => bytes (bytes'First + index));
       end loop;
    end Store;
 
@@ -278,9 +295,10 @@ is
       bytes : constant Byte_Array_4 := HIL.Unsigned32_To_Bytes (data);
    begin
       for index in Natural range 0 .. 3 loop
-         HIL.NVRAM.Write_Byte (addr => Var_To_Address (
-                               Variable_Name'Val (Variable_Name'Pos( variable ) + index )),
-                               byte => bytes(bytes'First + index));
+         HIL.NVRAM.Write_Byte
+           (addr => Var_To_Address
+              (Variable_Name'Val (Variable_Name'Pos (variable) + index)),
+            byte => bytes (bytes'First + index));
       end loop;
    end Store;
 

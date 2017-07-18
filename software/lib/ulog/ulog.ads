@@ -19,17 +19,20 @@ with HIL;
 --  How to add a new message 'FOO':
 --  1. add another enum value 'FOO' to Message_Type
 --  2. extend record 'Message' with the case 'FOO'
---  3. add procedure  'Serialize_Ulog_FOO' and only handle the components for your new type
+--  3. add procedure  'Serialize_Ulog_FOO' and only handle the
+--     components for your new type
 package ULog with SPARK_Mode is
 
    --  types of log messages. Add new ones when needed.
-   type Message_Type is (NONE, TEXT, GPS, BARO, IMU, MAG, CONTROLLER, NAV, LOG_QUEUE);
+   type Message_Type is
+     (NONE, TEXT, GPS, BARO, IMU, MAG, CONTROLLER, NAV, LOG_QUEUE);
 
-   type GPS_fixtype is (NOFIX, DEADR, FIX2D, FIX3D, FIX3DDEADR, FIXTIME);
+   type GPS_fixtype is
+     (NOFIX, DEADR, FIX2D, FIX3D, FIX3DDEADR, FIXTIME);
 
    --  polymorphism via variant record. Everything must be initialized
    type Message (Typ : Message_Type := NONE) is record
-      t : Ada.Real_Time.Time := Ada.Real_Time.Time_First; --  time of data capture set by caller
+      t : Ada.Real_Time.Time := Ada.Real_Time.Time_First; -- set by caller
       case Typ is
       when NONE => null;
       when TEXT =>
@@ -93,13 +96,15 @@ package ULog with SPARK_Mode is
    --  Primitive operations
    --------------------------
 
-   procedure Serialize_Ulog (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array)
+   procedure Serialize_Ulog
+     (msg   : in Message; len : out Natural; bytes : out HIL.Byte_Array)
      with Post => len < 256 and --  ulog messages cannot be longer
      then len <= bytes'Length;
    --  turn object into ULOG byte array
    --  @return len=number of bytes written in 'bytes'
 
-   --  procedure Serialize_CSV (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array);
+   --  procedure Serialize_CSV (msg : in Message;
+   --                          len : out Natural; bytes : out HIL.Byte_Array);
    --  turn object into CSV string/byte array
 
    procedure Get_Header_Ulog (bytes : in out HIL.Byte_Array;
@@ -107,8 +112,8 @@ package ULog with SPARK_Mode is
      with Post => len <= bytes'Length;
    --  every ULOG file starts with a header, which is generated here
    --  for all known message types
-   --  @return If true, you must keep calling this. If false, then all message defs have been
-   --  delivered
+   --  @return If true, you must keep calling this. If false, then all
+   --          message defs have been delivered
 
 private
 

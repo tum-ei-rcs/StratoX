@@ -52,36 +52,51 @@ package body ULog with SPARK_Mode => On is
    ---------------------
 
    --  add one Serialize_Ulog_* for each new message
-   procedure Serialize_Ulog_GPS (ct : in out ULog.Conversions.Conversion_Tag;
-                                 msg : in Message; buf : out HIL.Byte_Array)
+   procedure Serialize_Ulog_GPS
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array)
      with Pre => msg.Typ = GPS;
 
-   procedure Serialize_Ulog_IMU (ct : in out ULog.Conversions.Conversion_Tag;
-                                 msg : in Message; buf : out HIL.Byte_Array)
+   procedure Serialize_Ulog_IMU
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array)
      with Pre => msg.Typ = IMU;
 
-   procedure Serialize_Ulog_Baro (ct : in out ULog.Conversions.Conversion_Tag;
-                                  msg : in Message; buf : out HIL.Byte_Array)
+   procedure Serialize_Ulog_Baro
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message; buf : out HIL.Byte_Array)
      with Pre => msg.Typ = BARO;
 
-   procedure Serialize_Ulog_Mag (ct : in out ULog.Conversions.Conversion_Tag;
-                                 msg : in Message; buf : out HIL.Byte_Array)
+   procedure Serialize_Ulog_Mag
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array)
      with Pre => msg.Typ = MAG;
 
-   procedure Serialize_Ulog_Controller (ct : in out ULog.Conversions.Conversion_Tag;
-                                        msg : in Message; buf : out HIL.Byte_Array)
+   procedure Serialize_Ulog_Controller
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array)
      with Pre => msg.Typ = CONTROLLER;
 
-   procedure Serialize_Ulog_Nav (ct : in out ULog.Conversions.Conversion_Tag;
-                                 msg : in Message; buf : out HIL.Byte_Array)
+   procedure Serialize_Ulog_Nav
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array)
      with Pre => msg.Typ = NAV;
 
-   procedure Serialize_Ulog_Text (ct : in out ULog.Conversions.Conversion_Tag;
-                                  msg : in Message; buf : out HIL.Byte_Array)
+   procedure Serialize_Ulog_Text
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array)
      with Pre => msg.Typ = TEXT;
 
-   procedure Serialize_Ulog_LogQ (ct : in out ULog.Conversions.Conversion_Tag;
-                                  msg : in Message; buf : out HIL.Byte_Array)
+   procedure Serialize_Ulog_LogQ
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array)
      with Pre => msg.Typ = LOG_QUEUE;
 
    -------------------------
@@ -89,12 +104,14 @@ package body ULog with SPARK_Mode => On is
    -------------------------
 
    function Time_To_U64 (rtime : Ada.Real_Time.Time) return Unsigned_64
-     with Pre => rtime >= Ada.Real_Time.Time_First; -- SPARK: "precond. might fail". Me: no (private type).
+     with Pre => rtime >= Ada.Real_Time.Time_First;
+     --  SPARK: "precond. might fail". Me: no (private type).
 
-   procedure Serialize_Ulog_With_Tag (ct : out ULog.Conversions.Conversion_Tag;
-                                      msg : in Message;
-                                      len : out Natural;
-                                      bytes : out HIL.Byte_Array)
+   procedure Serialize_Ulog_With_Tag
+     (ct    : out ULog.Conversions.Conversion_Tag;
+      msg   : in Message;
+      len   : out Natural;
+      bytes : out HIL.Byte_Array)
      with Post => len < 256 and --  ulog messages cannot be longer
      then len <= bytes'Length;
 
@@ -120,8 +137,9 @@ package body ULog with SPARK_Mode => On is
       Append_Float (ct, "acc", buf, msg.pos_acc);
       Append_Float (ct, "v", buf, msg.vel);
    end Serialize_Ulog_GPS;
-   --  pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
-
+   --  pragma Annotate
+   --   (GNATprove, Intentional, """buf"" is not initialized",
+   --   "done by Martin Becker");
 
    ------------------------
    --  Serialize_Ulog_Nav
@@ -135,7 +153,6 @@ package body ULog with SPARK_Mode => On is
       Append_Float (ct, "crs", buf, msg.home_course);
       Append_Float (ct, "altd", buf, msg.home_altdiff);
    end Serialize_Ulog_Nav;
-
 
    ------------------------
    --  Serialize_Ulog_IMU
@@ -155,43 +172,55 @@ package body ULog with SPARK_Mode => On is
       Append_Float (ct, "pitch", buf, msg.pitch);
       Append_Float (ct, "yaw", buf, msg.yaw);
    end Serialize_Ulog_IMU;
-   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
+   pragma Annotate
+     (GNATprove, Intentional,
+      """buf"" is not initialized", "done by Martin Becker");
 
    ------------------------
    --  Serialize_Ulog_BARO
    ------------------------
 
-   procedure Serialize_Ulog_Baro (ct : in out ULog.Conversions.Conversion_Tag;
-                                  msg : in Message; buf : out HIL.Byte_Array) is
+   procedure Serialize_Ulog_Baro
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array) is
    begin
       Set_Name (ct, "Baro");
       Append_Float (ct, "press", buf, msg.pressure);
       Append_Float (ct, "temp", buf, msg.temp);
       Append_Float (ct, "alt", buf, msg.press_alt);
    end Serialize_Ulog_Baro;
-   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "being done here");
+   pragma Annotate
+     (GNATprove, Intentional,
+      """buf"" is not initialized", "being done here");
 
    ------------------------
    --  Serialize_Ulog_MAG
    ------------------------
 
-   procedure Serialize_Ulog_Mag (ct : in out ULog.Conversions.Conversion_Tag;
-                                 msg : in Message; buf : out HIL.Byte_Array) is
+   procedure Serialize_Ulog_Mag
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array) is
    begin
       Set_Name (ct, "MAG");
       Append_Float (ct, "magX", buf, msg.magX);
       Append_Float (ct, "magY", buf, msg.magY);
       Append_Float (ct, "magZ", buf, msg.magZ);
    end Serialize_Ulog_Mag;
-   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
+   pragma Annotate
+     (GNATprove, Intentional,
+      """buf"" is not initialized", "done by Martin Becker");
 
 
    -------------------------------
    --  Serialize_Ulog_Controller
    -------------------------------
 
-   procedure Serialize_Ulog_Controller (ct : in out ULog.Conversions.Conversion_Tag;
-                                        msg : in Message; buf : out HIL.Byte_Array) is
+   procedure Serialize_Ulog_Controller
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array) is
    begin
       Set_Name (ct, "Ctrl");
       Append_Uint8 (ct, "mode", buf, msg.ctrl_mode);
@@ -201,28 +230,36 @@ package body ULog with SPARK_Mode => On is
       Append_Float (ct, "EleL", buf, msg.elevon_left);
       Append_Float (ct, "EleR", buf, msg.elevon_right);
    end Serialize_Ulog_Controller;
-   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
+   pragma Annotate
+     (GNATprove, Intentional,
+      """buf"" is not initialized", "done by Martin Becker");
 
    ------------------------
    --  Serialize_Ulog_LogQ
    ------------------------
 
-   procedure Serialize_Ulog_LogQ (ct : in out ULog.Conversions.Conversion_Tag;
-                                  msg : in Message; buf : out HIL.Byte_Array) is
+   procedure Serialize_Ulog_LogQ
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array) is
    begin
       Set_Name (ct, "LogQ");
       Append_Uint16 (ct, "ovf", buf, msg.n_overflows);
       Append_Uint8 (ct, "qd", buf, msg.n_queued);
       Append_Uint8 (ct, "max", buf, msg.max_queued);
    end Serialize_Ulog_LogQ;
-   --  pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
+   --  pragma Annotate
+   --  (GNATprove, Intentional,
+   --  """buf"" is not initialized", "done by Martin Becker");
 
    -------------------------
    --  Serialize_Ulog_Text
    -------------------------
 
-   procedure Serialize_Ulog_Text (ct : in out ULog.Conversions.Conversion_Tag;
-                                  msg : in Message; buf : out HIL.Byte_Array) is
+   procedure Serialize_Ulog_Text
+     (ct  : in out ULog.Conversions.Conversion_Tag;
+      msg : in Message;
+      buf : out HIL.Byte_Array) is
    begin
       Set_Name (ct, "Text");
       --  we allow 128B, but the longest field is 64B. split over two.
@@ -253,7 +290,9 @@ package body ULog with SPARK_Mode => On is
          Append_String64 (ct, "text2", buf, txt, len);
       end;
    end Serialize_Ulog_Text;
-   pragma Annotate (GNATprove, Intentional, """buf"" is not initialized", "done by Martin Becker");
+   pragma Annotate
+     (GNATprove, Intentional,
+      """buf"" is not initialized", "done by Martin Becker");
 
    --------------------
    --  Time_To_U64
@@ -263,7 +302,8 @@ package body ULog with SPARK_Mode => On is
       tmp : Integer;
       u64 : Unsigned_64;
    begin
-      tmp := (rtime - Ada.Real_Time.Time_First) / Ada.Real_Time.Microseconds (1);
+      tmp := (rtime - Ada.Real_Time.Time_First) /
+        Ada.Real_Time.Microseconds (1);
       if tmp < Integer (Unsigned_64'First) then
          u64 := Unsigned_64'First;
       else
@@ -271,7 +311,8 @@ package body ULog with SPARK_Mode => On is
       end if;
       return u64;
    end Time_To_U64;
-   --  SPARK: "precondition might a fail". Me: "no (because Time_First is private and SPARK can't know)"
+   --  SPARK: "precondition might a fail".
+   --  Me: "no (because Time_First is private and SPARK can't know)"
 
    --------------------
    --  Serialize_Ulog
@@ -281,7 +322,8 @@ package body ULog with SPARK_Mode => On is
                              bytes : out HIL.Byte_Array) is
       ct : ULog.Conversions.Conversion_Tag;
    begin
-      Serialize_Ulog_With_Tag (ct => ct, msg => msg, len => len, bytes => bytes);
+      Serialize_Ulog_With_Tag
+        (ct => ct, msg => msg, len => len, bytes => bytes);
       pragma Unreferenced (ct); -- caller doesn't want that
    end Serialize_Ulog;
 
@@ -295,16 +337,20 @@ package body ULog with SPARK_Mode => On is
    begin
       New_Conversion (ct);
       --  write header
-      Append_Unlabeled_Bytes (t => ct, buf => bytes, tail => ULOG_MSG_HEAD
-                              & HIL.Byte (Message_Type'Pos (msg.Typ)));
-      pragma Annotate (GNATprove, Intentional, """bytes"" is not initialized", "done by Martin Becker");
+      Append_Unlabeled_Bytes
+        (t => ct, buf => bytes, tail => ULOG_MSG_HEAD
+         & HIL.Byte (Message_Type'Pos (msg.Typ)));
+      pragma Annotate
+        (GNATprove, Intentional,
+         """bytes"" is not initialized", "done by Martin Becker");
 
       --  serialize the timestamp
       declare
          pragma Assume (msg.t >= Ada.Real_Time.Time_First); -- see a-reatim.ads
          time_usec : constant Unsigned_64 := Time_To_U64 (msg.t);
       begin
-         Append_Uint64 (t => ct, label => "t", buf => bytes, tail => time_usec);
+         Append_Uint64
+           (t => ct, label => "t", buf => bytes, tail => time_usec);
       end;
 
       --  call the appropriate serializaton procedure for other components
@@ -346,18 +392,20 @@ package body ULog with SPARK_Mode => On is
    --  Serialize_CSV
    -------------------
 
---     procedure Serialize_CSV (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array) is
---     begin
---        null;
---     end Serialize_CSV;
+   --   procedure Serialize_CSV
+   --    (msg : in Message; len : out Natural; bytes : out HIL.Byte_Array) is
+   --     begin
+   --        null;
+   --     end Serialize_CSV;
 
    ---------------------
    --  Get_Header_Ulog
    ---------------------
 
-   procedure Get_Header_Ulog (bytes : in out HIL.Byte_Array;
-                              len   : out Natural;
-                              valid : out Boolean) with SPARK_Mode => Off is
+   procedure Get_Header_Ulog
+     (bytes : in out HIL.Byte_Array;
+      len   : out Natural;
+      valid : out Boolean) with SPARK_Mode => Off is
    begin
       if All_Defs then
          valid := False;
@@ -371,26 +419,34 @@ package body ULog with SPARK_Mode => On is
          --  +------------+---------+-----------+
          declare
             timestamp : constant HIL.Byte_Array := (0, 0, 0, 0);
-            l : constant Integer := ULOG_MAGIC'Length + ULOG_VERSION'Length + timestamp'Length;
+            l : constant Integer :=
+              ULOG_MAGIC'Length + ULOG_VERSION'Length + timestamp'Length;
          begin
             if bytes'Length < l then
-               len := 0;
+               len   := 0;
                valid := False;
             end if;
-            bytes (bytes'First .. bytes'First + l - 1) := ULOG_MAGIC & ULOG_VERSION & timestamp;
+            bytes (bytes'First .. bytes'First + l - 1) :=
+              ULOG_MAGIC & ULOG_VERSION & timestamp;
             len := l;
          end;
          Hdr_Def := True;
-         valid := True;
+         valid   := True;
 
       else
          if Next_Def = NONE then
             len := 0;
          else
-            --  now return FMT message with definition of current type. Skip type=NONE
+            --  now return FMT message with definition of current type.
+            --  Skip type=NONE
             declare
-               m : Message (typ => Next_Def); -- <== this prevents spark mode here.. RM 4.4(2): subtype cons. cannot depend. simply comment for proof.
-               FMT_HEAD : constant HIL.Byte_Array := ULOG_MSG_HEAD & ULOG_MTYPE_FMT;
+               --  the following decl prevents spark mode.
+               --  RM 4.4(2): subtype cons. cannot depend.
+               --  simply comment for proof.
+               m : Message (typ => Next_Def);
+
+               FMT_HEAD : constant HIL.Byte_Array :=
+                 ULOG_MSG_HEAD & ULOG_MTYPE_FMT;
 
                type FMT_Msg is record
                   HEAD : HIL.Byte_Array (1 .. 3);
@@ -405,7 +461,8 @@ package body ULog with SPARK_Mode => On is
                FMT_MSGLEN : constant Natural := (FMT_Msg'Size + 7) / 8; -- ceil
 
                subtype foo is HIL.Byte_Array (1 .. FMT_MSGLEN);
-               function To_Buffer is new Ada.Unchecked_Conversion (FMT_Msg, foo);
+               function To_Buffer is new
+                 Ada.Unchecked_Conversion (FMT_Msg, foo);
 
                fmsg : FMT_Msg;
             begin
@@ -415,8 +472,8 @@ package body ULog with SPARK_Mode => On is
                end if;
 
                fmsg.HEAD := FMT_HEAD;
-               fmsg.typ := HIL.Byte (Message_Type'Pos (Next_Def));
-               --  actually serialize a dummy message and read back the properties
+               fmsg.typ  := HIL.Byte (Message_Type'Pos (Next_Def));
+               --  actually serialize a dummy message and read back things
                declare
                   serbuf : HIL.Byte_Array (1 .. 512);
                   pragma Unreferenced (serbuf);
@@ -425,16 +482,18 @@ package body ULog with SPARK_Mode => On is
                   declare
                      ct : ULog.Conversions.Conversion_Tag;
                   begin
-                     Serialize_Ulog_With_Tag (ct => ct, msg => m, len => serlen, bytes => serbuf);
-                     fmsg.fmt := ULog.Conversions.Get_Format (ct);
+                     Serialize_Ulog_With_Tag
+                       (ct => ct, msg => m, len => serlen, bytes => serbuf);
+                     fmsg.fmt  := ULog.Conversions.Get_Format (ct);
                      fmsg.name := ULog.Conversions.Get_Name (ct);
-                     fmsg.lbl := ULog.Conversions.Get_Labels (ct);
+                     fmsg.lbl  := ULog.Conversions.Get_Labels (ct);
                   end;
                   fmsg.len := HIL.Byte (serlen);
                end;
 
                --  copy all over to caller
-               bytes (bytes'First .. bytes'First + FMT_MSGLEN - 1) := To_Buffer (fmsg);
+               bytes (bytes'First .. bytes'First + FMT_MSGLEN - 1) :=
+                 To_Buffer (fmsg);
                len := FMT_MSGLEN;
             end;
          end if;

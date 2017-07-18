@@ -20,7 +20,8 @@ is
      Post => Is_Open = False;
    --  closes the SD log
 
-   procedure Start_Logfile (dirname : String; filename : String; ret : out Boolean);
+   procedure Start_Logfile
+     (dirname : String; filename : String; ret : out Boolean);
    --  @summary create new logfile
 
    procedure Write_Log (Data : SDLog_Data; n_written : out Integer) with
@@ -32,7 +33,8 @@ is
    --  convenience function for Write_Log (File_Data)
 
    procedure Flush_Log;
-   --  @summary force writing logfile to disk. Not recommended when time is critical!
+   --  @summary force writing logfile to disk.
+   --  Not recommended when time is critical!
 
    function Logsize return Unsigned_32;
    --  return log size in bytes

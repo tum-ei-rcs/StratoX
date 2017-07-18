@@ -10,13 +10,13 @@ with Media_Reader.SDCard;              use Media_Reader.SDCard;
 --           minimal package with pointer stuff
 package body SDLog with SPARK_Mode => Off is
 
-   SD_Controller   : aliased SDCard_Controller; -- limited type; FS needs a pointer to this
+   SD_Controller   : aliased SDCard_Controller; -- limited type
    FS              : FAT_Filesystem_Access := null; -- pointer
-   fh_log          : FAT_Filesystem.Directories.Files.File_Handle; -- private type
+   fh_log          : FAT_Filesystem.Directories.Files.File_Handle;
 
-   -------------------
-   --  Close_Filesys
-   -------------------
+   -----------
+   -- Close --
+   -----------
 
    procedure Close is
    begin
@@ -24,12 +24,12 @@ package body SDLog with SPARK_Mode => Off is
       log_open := False;
    end Close;
 
-   -------------------
-   --  Init_Filesys
-   -------------------
+   ----------
+   -- Init --
+   ----------
 
    procedure Init is
-      Status     : FAT_Filesystem.Status_Code;
+      Status : FAT_Filesystem.Status_Code;
    begin
       SD_Initialized := False;
       log_open := False;
@@ -54,12 +54,16 @@ package body SDLog with SPARK_Mode => Off is
    end Init;
 
    -------------------
-   --  Start_Logfile
+   -- Start_Logfile --
    -------------------
 
    --  creates a new directory within root, that is named
    --  after the build.
-   procedure Start_Logfile (dirname : String; filename : String; ret : out Boolean) is
+   procedure Start_Logfile
+     (dirname  : String;
+      filename : String;
+      ret      : out Boolean)
+   is
       Hnd_Root : Directory_Handle;
       Status   : Status_Code;
       Log_Dir  : Directory_Entry;
@@ -104,7 +108,7 @@ package body SDLog with SPARK_Mode => Off is
    end Start_Logfile;
 
    ---------------
-   --  Flush_Log
+   -- Flush_Log --
    ---------------
 
    procedure Flush_Log is
@@ -121,10 +125,12 @@ package body SDLog with SPARK_Mode => Off is
    end Flush_Log;
 
    ---------------
-   --  Write_Log
+   -- Write_Log --
    ---------------
 
-   procedure Write_Log (Data : FAT_Filesystem.Directories.Files.File_Data; n_written : out Integer) is
+   procedure Write_Log
+     (Data      : FAT_Filesystem.Directories.Files.File_Data;
+      n_written : out Integer) is
    begin
       if not log_open then
          n_written := -1;
@@ -133,7 +139,8 @@ package body SDLog with SPARK_Mode => Off is
       declare
          DISCARD : Status_Code;
       begin
-         n_written := File_Write (File => fh_log, Data => Data, Status => DISCARD);
+         n_written := File_Write
+           (File => fh_log, Data => Data, Status => DISCARD);
       end;
    end Write_Log;
 
@@ -144,10 +151,12 @@ package body SDLog with SPARK_Mode => Off is
    end Write_Log;
 
    ------------------
-   --  To_File_Data
+   -- To_File_Data --
    ------------------
 
-   function To_File_Data (S : String) return FAT_Filesystem.Directories.Files.File_Data is
+   function To_File_Data
+     (S : String) return FAT_Filesystem.Directories.Files.File_Data
+   is
       d   : File_Data (1 .. S'Length);
       idx : Unsigned_16 := d'First;
    begin

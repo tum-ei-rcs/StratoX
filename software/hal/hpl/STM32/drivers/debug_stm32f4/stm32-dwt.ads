@@ -128,7 +128,7 @@ package STM32.DWT is
    end record;
 
    Core_DWT : aliased DWT_Core_T
-     with Import, Address => DWT_Core_Base,
-     Linker_Section => ".ccmdata"; --  pointer to CCM
+     with Import, Address => DWT_Core_Base;
+   --  Linker_Section => ".ccmdata"; --  pointer to CCM
 
 end STM32.DWT;

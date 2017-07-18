@@ -22,54 +22,54 @@ is
    --  check whether initialization was successful
 
    --  List of all variables stored in NVRAM. Add new ones when needed.
-   type Variable_Name is (VAR_MISSIONSTATE,
-                          VAR_BOOTCOUNTER,
-                          VAR_EXCEPTION_LINE_L,
-                          VAR_EXCEPTION_LINE_H,
-                          VAR_EXCEPTION_ADDR_A,
-                          VAR_EXCEPTION_ADDR_B,
-                          VAR_EXCEPTION_ADDR_C,
-                          VAR_EXCEPTION_ADDR_D,
-                          VAR_START_TIME_A,
-                          VAR_START_TIME_B,
-                          VAR_START_TIME_C,
-                          VAR_START_TIME_D,
-                          VAR_HIGHWATERMARK_A, -- exec time of main loop in usec
-                          VAR_HIGHWATERMARK_B,
-                          VAR_HIGHWATERMARK_C,
-                          VAR_HIGHWATERMARK_D,
-                          VAR_SERVO_LEFT,
-                          VAR_SERVO_RIGHT,
-                          VAR_HOME_HEIGHT_L,
-                          VAR_HOME_HEIGHT_H,
-                          VAR_GPS_TARGET_LONG_A,
-                          VAR_GPS_TARGET_LONG_B,
-                          VAR_GPS_TARGET_LONG_C,
-                          VAR_GPS_TARGET_LONG_D,
-                          VAR_GPS_TARGET_LAT_A,
-                          VAR_GPS_TARGET_LAT_B,
-                          VAR_GPS_TARGET_LAT_C,
-                          VAR_GPS_TARGET_LAT_D,
-                          VAR_GPS_TARGET_ALT_A,
-                          VAR_GPS_TARGET_ALT_B,
-                          VAR_GPS_TARGET_ALT_C,
-                          VAR_GPS_TARGET_ALT_D,
-                          VAR_GPS_LAST_LONG_A,
-                          VAR_GPS_LAST_LONG_B,
-                          VAR_GPS_LAST_LONG_C,
-                          VAR_GPS_LAST_LONG_D,
-                          VAR_GPS_LAST_LAT_A,
-                          VAR_GPS_LAST_LAT_B,
-                          VAR_GPS_LAST_LAT_C,
-                          VAR_GPS_LAST_LAT_D,
-                          VAR_GPS_LAST_ALT_A,
-                          VAR_GPS_LAST_ALT_B,
-                          VAR_GPS_LAST_ALT_C,
-                          VAR_GPS_LAST_ALT_D,
-                          VAR_GYRO_BIAS_X,
-                          VAR_GYRO_BIAS_Y,
-                          VAR_GYRO_BIAS_Z
-                          );
+   type Variable_Name is
+     (VAR_MISSIONSTATE,
+      VAR_BOOTCOUNTER,
+      VAR_EXCEPTION_LINE_L,
+      VAR_EXCEPTION_LINE_H,
+      VAR_EXCEPTION_ADDR_A,
+      VAR_EXCEPTION_ADDR_B,
+      VAR_EXCEPTION_ADDR_C,
+      VAR_EXCEPTION_ADDR_D,
+      VAR_START_TIME_A,
+      VAR_START_TIME_B,
+      VAR_START_TIME_C,
+      VAR_START_TIME_D,
+      VAR_HIGHWATERMARK_A, -- exec time of main loop in usec
+      VAR_HIGHWATERMARK_B,
+      VAR_HIGHWATERMARK_C,
+      VAR_HIGHWATERMARK_D,
+      VAR_SERVO_LEFT,
+      VAR_SERVO_RIGHT,
+      VAR_HOME_HEIGHT_L,
+      VAR_HOME_HEIGHT_H,
+      VAR_GPS_TARGET_LONG_A,
+      VAR_GPS_TARGET_LONG_B,
+      VAR_GPS_TARGET_LONG_C,
+      VAR_GPS_TARGET_LONG_D,
+      VAR_GPS_TARGET_LAT_A,
+      VAR_GPS_TARGET_LAT_B,
+      VAR_GPS_TARGET_LAT_C,
+      VAR_GPS_TARGET_LAT_D,
+      VAR_GPS_TARGET_ALT_A,
+      VAR_GPS_TARGET_ALT_B,
+      VAR_GPS_TARGET_ALT_C,
+      VAR_GPS_TARGET_ALT_D,
+      VAR_GPS_LAST_LONG_A,
+      VAR_GPS_LAST_LONG_B,
+      VAR_GPS_LAST_LONG_C,
+      VAR_GPS_LAST_LONG_D,
+      VAR_GPS_LAST_LAT_A,
+      VAR_GPS_LAST_LAT_B,
+      VAR_GPS_LAST_LAT_C,
+      VAR_GPS_LAST_LAT_D,
+      VAR_GPS_LAST_ALT_A,
+      VAR_GPS_LAST_ALT_B,
+      VAR_GPS_LAST_ALT_C,
+      VAR_GPS_LAST_ALT_D,
+      VAR_GYRO_BIAS_X,
+      VAR_GYRO_BIAS_Y,
+      VAR_GYRO_BIAS_Z);
 
    --  Default values for all variables (obligatory)
    type Defaults_Table is array (Variable_Name'Range) of HIL.Byte;
@@ -120,7 +120,7 @@ is
       VAR_GPS_LAST_ALT_D => 0,
       VAR_GYRO_BIAS_X => 20,  -- Bias in deci degree
       VAR_GYRO_BIAS_Y => 26,
-      VAR_GYRO_BIAS_Z => 128-3+128    -- most evil hack ever
+      VAR_GYRO_BIAS_Z => 128 - 3 + 128  -- most evil hack ever
       );
 
    procedure Load (variable : in Variable_Name; data : out HIL.Byte);
@@ -130,12 +130,16 @@ is
    --  same, but for 8bit signed Integer
 
    procedure Load (variable : in Variable_Name; data : out Float)
-     with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
-   --  same, but with Float convenience conversion. Point to first variable of the quadrupel.
+     with Pre => Variable_Name'Pos (variable) <
+     Variable_Name'Pos (Variable_Name'Last) - 3;
+   --  same, but with Float convenience conversion. Point to first
+   --  variable of the quadrupel.
 
    procedure Load (variable : in Variable_Name; data : out Unsigned_32)
-     with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
-   --  same, but with U32 convenience conversion. Point to first variable of the quadrupel.
+     with Pre => Variable_Name'Pos (variable) <
+     Variable_Name'Pos (Variable_Name'Last) - 3;
+   --  same, but with U32 convenience conversion. Point to first
+   --  variable of the quadrupel.
 
    procedure Store (variable : in Variable_Name; data : in HIL.Byte);
    --  write variable with given name to NVRAM.
@@ -144,12 +148,16 @@ is
    --  write variable with given name to NVRAM.
 
    procedure Store (variable : in Variable_Name; data : in Float)
-     with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
-   --  same, but with Float convenience conversion.  Point to first variable of the quadrupel.
+     with Pre => Variable_Name'Pos (variable) <
+     Variable_Name'Pos (Variable_Name'Last) - 3;
+   --  same, but with Float convenience conversion.  Point to first
+   --  variable of the quadrupel.
 
    procedure Store (variable : in Variable_Name; data : in Unsigned_32)
-     with Pre => Variable_Name'Pos (variable) < Variable_Name'Pos (Variable_Name'Last) - 3;
-   --  same, but with U32 convenience conversion.  Point to first variable of the quadrupel.
+     with Pre => Variable_Name'Pos (variable) <
+     Variable_Name'Pos (Variable_Name'Last) - 3;
+   --  same, but with U32 convenience conversion.  Point to first
+   --  variable of the quadrupel.
 
    procedure Reset;
    --  explicit reset of NVRAM to defaults; same effect as re-compiling.
