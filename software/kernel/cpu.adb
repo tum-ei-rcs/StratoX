@@ -32,7 +32,7 @@ package body CPU with SPARK_Mode is
 
    end initialize;
 
-   procedure sleep is
+   procedure sleep is -- ??
    begin
       null;
    end sleep;

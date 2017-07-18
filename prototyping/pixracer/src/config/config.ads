@@ -12,5 +12,6 @@ package Config is
 
    MAIN_TICK_RATE_MS : constant := 10;   -- Tickrate in Milliseconds
 
+   With_SD_Log : constant Boolean := False;
 
 end Config;

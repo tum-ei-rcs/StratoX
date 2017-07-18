@@ -19,6 +19,7 @@ library project STM32F42x is
       "drivers",
       "svd/stm32f429x",
       "devices/stm32f42x",
+      "drivers/debug_stm32f4",
       "drivers/fmc",
       "drivers/dma2d",
       "drivers/i2c_stm32f4",

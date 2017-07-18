@@ -3,6 +3,7 @@
 --  Project:     StratoX
 --
 --  Authors: Emanuel Regnath (emanuel.regnath@tum.de)
+pragma SPARK_Mode (Off);
 
 with STM32.USARTs;
 with STM32.Device;
@@ -71,8 +72,8 @@ is
    --  writes devices by internally mapping to U(S)ART ports
    procedure write (Device : in Device_ID_Type; Data : in Data_Type) is
       procedure write_to_port (port : in out STM32.USARTs.USART; Data : in Data_Type) is
-         flag : STM32.USARTS.USART_Status_Flag := STM32.USARTs.USART_Status_Flag'First;
-         ret : Boolean := STM32.USARTS.Status (port, flag);
+         flag : constant STM32.USARTS.USART_Status_Flag := STM32.USARTs.USART_Status_Flag'First;
+         --  ret : Boolean := STM32.USARTS.Status (port, flag);
       begin
          for i in Data'Range loop
             STM32.USARTs.Transmit (port, HAL.UInt9 (Data (i)));
@@ -94,25 +95,27 @@ is
    end write;
 
    --  reads devices by internally mapping to U(S)ART ports
-   procedure read (Device : in Device_ID_Type; Data : out Data_Type) is
-      procedure read_from_port (port : in out STM32.USARTs.USART; Data : out Data_Type) is
+   procedure read (Device : in Device_ID_Type; Data : out Data_Type; n_read : out Natural) 
+   is
+      procedure read_from_port (port : in out STM32.USARTs.USART; Data : out Data_Type; n_read : out Natural) is
       begin
          for i in Data'Range loop
             STM32.USARTs.Receive (port, HAL.UInt9 (Data (i)));
          end loop;
+         n_read := Data'Length;
       end read_from_port;
    begin
       case (Device) is
       when CONSOLE =>
-         read_from_port (STM32.Device.USART_7, Data);
+         read_from_port (STM32.Device.USART_7, Data, n_read);
       when TELE1 =>
-         read_from_port (STM32.Device.USART_2, Data);
+         read_from_port (STM32.Device.USART_2, Data, n_read);
       when TELE2 =>
-         read_from_port (STM32.Device.USART_3, Data);
+         read_from_port (STM32.Device.USART_3, Data, n_read);
       when WIFI =>
-         read_from_port (STM32.Device.USART_1, Data);
+         read_from_port (STM32.Device.USART_1, Data, n_read);
       when GPS =>
-         read_from_port (STM32.Device.UART_4, Data);
+         read_from_port (STM32.Device.UART_4, Data, n_read);
       end case;
    end read;
 

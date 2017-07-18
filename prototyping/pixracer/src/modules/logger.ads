@@ -21,12 +21,14 @@ package Logger with SPARK_Mode,
   --  by definition synchronous and synchronous objects are
   --  by definition external, we need to mark it as such
 is
-   type Log_Level is (SENSOR, ERROR, WARN, INFO, DEBUG, TRACE);
-
    type Init_Error_Code is (SUCCESS, ERROR);
    subtype Message_Type is String;
+   type Log_Level is (SENSOR, ERROR, WARN, INFO, DEBUG, TRACE);
 
    procedure Init (status : out Init_Error_Code);
+
+   procedure log(msg_level : Log_Level; message : Message_Type);
+   -- wrapper for log_console
 
    procedure log_console (msg_level : Log_Level; message : Message_Type);
    --  write a new text log message (shown on console, logged to SD)
@@ -44,7 +46,7 @@ is
 private
    --  FIXME: documentation required
    package Adapter is
-      procedure init (status : out Init_Error_Code);
+      procedure init_adapter(status : out Init_Error_Code);
       procedure write (message : Message_Type);
    end Adapter;
 
