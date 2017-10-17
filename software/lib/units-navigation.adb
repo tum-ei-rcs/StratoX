@@ -163,7 +163,7 @@ package body Units.Navigation with SPARK_Mode is
          else
             darc := Arctan (sqr1, sqr2);
             pragma Assert (darc in 0.0 * Degree .. 180.0 * Degree);
-            return 2.0 * EARTH_RADIUS * Ignore_Unit (darc); -- FIXME: type conv not allowed in versions later than GPL16
+            return 2.0 * EARTH_RADIUS * darc * (1.0/Radian); -- we stay in the units system for arc calc.
          end if;
       end;
    end Distance;

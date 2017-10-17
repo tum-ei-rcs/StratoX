@@ -34,9 +34,6 @@ package Units with
          (Unit_Name => Radian, Unit_Symbol => "Rad", Dim_Symbol => "A")),
    Default_Value => 0.0; -- required for matrices
 
-   function Ignore_Unit (X : Unit_Type) return Unit_Type is
-     (Unit_Type (Base_Unit_Type (X)));
-
    type Unit_Array is array (Natural range <>) of Unit_Type;
 
    -- Base Units
