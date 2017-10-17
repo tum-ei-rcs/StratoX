@@ -37,9 +37,9 @@ package body Buzzer_Manager with SPARK_Mode is
    procedure Enable_Statemachine;
    procedure Disable_Statemachine;
 
-   ---------------
-   --  bodies
-   ---------------
+   -------------------------
+   -- Enable_Statemachine --
+   -------------------------
 
    procedure Enable_Statemachine is
    begin
@@ -49,16 +49,18 @@ package body Buzzer_Manager with SPARK_Mode is
       end if;
    end Enable_Statemachine;
 
+   ------------------
+   -- Change_State --
+   ------------------
 
    procedure Change_State (newstate : state; now : Ada.Real_Time.Time) is
       cand_newstate : state := newstate;
    begin
-
       if cur_state /= newstate then
          case newstate is
             when BDUTY =>
                if not infinite then
-                  -- finite mode...countdown
+                  --  finite mode...countdown
                   if cur_reps > 0 then
                      cur_reps := cur_reps - 1;
                      HIL.Buzzer.Enable;
@@ -67,7 +69,7 @@ package body Buzzer_Manager with SPARK_Mode is
                      cand_newstate := BOFF;
                   end if;
                else
-                  -- infinite mode
+                  --  infinite mode
                   HIL.Buzzer.Enable;
                end if;
 
@@ -79,6 +81,10 @@ package body Buzzer_Manager with SPARK_Mode is
          cur_state := cand_newstate;
       end if;
    end Change_State;
+
+   ----------
+   -- Tick --
+   ----------
 
    procedure Tick is
       next_state : state;
@@ -97,6 +103,10 @@ package body Buzzer_Manager with SPARK_Mode is
       end if;
    end Tick;
 
+   ----------------
+   -- Initialize --
+   ----------------
+
    procedure Initialize is
    begin
       HIL.Buzzer.Initialize;
@@ -104,12 +114,20 @@ package body Buzzer_Manager with SPARK_Mode is
       HIL.Buzzer.Disable;
    end Initialize;
 
+   --------------------------
+   -- Disable_Statemachine --
+   --------------------------
+
    procedure Disable_Statemachine is
       now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
    begin
       infinite := False;
       Change_State (BOFF, now);
    end Disable_Statemachine;
+
+   ------------------------
+   -- Reconfigure_Buzzer --
+   ------------------------
 
    procedure Reconfigure_Buzzer is
    begin
@@ -145,6 +163,9 @@ package body Buzzer_Manager with SPARK_Mode is
 --        Set_Freq (f);
 --     end Set_Tone;
 
+   --------------
+   -- Set_Freq --
+   --------------
 
    procedure Set_Freq (f : in Frequency_Type) is
    begin
@@ -152,18 +173,24 @@ package body Buzzer_Manager with SPARK_Mode is
       Reconfigure_Buzzer;
    end Set_Freq;
 
-
    ----------
-   --  Beep
+   -- Beep --
    ----------
 
-   procedure Beep (f : in Frequency_Type; Reps : Natural; Period : Time_Type; Length : in Time_Type) is
-      function Sat_Sub_Time is new Units.Saturated_Subtraction (Time_Type);
+   procedure Beep
+     (f      : in Frequency_Type;
+      Reps   : Natural;
+      Period : Time_Type;
+      Length : in Time_Type)
+   is
+      function Sat_Sub_Time is new
+        Units.Saturated_Subtraction (Time_Type);
 
+      function To_Millisec (t : Time_Type) return Natural;
       function To_Millisec (t : Time_Type) return Natural is
          ms : Float;
       begin
-         if abs(Float (t)) >= Float'Last / 1000.0 then
+         if abs (Float (t)) >= Float'Last / 1000.0 then
             ms := Float'Last;
          else
             ms := Float (t) * 1000.0;
@@ -172,11 +199,10 @@ package body Buzzer_Manager with SPARK_Mode is
       end To_Millisec;
 
    begin
-
       if not Valid_Frequency (f) or
         Period <= Length or
-        Period = 0.0*Second or
-        Length = 0.0*Second
+        Period = 0.0 * Second or
+        Length = 0.0 * Second
       then
          Disable_Statemachine;
          return;
@@ -185,7 +211,7 @@ package body Buzzer_Manager with SPARK_Mode is
       cur_reps := Reps;
       infinite := (Reps = 0);
       declare
-         cur_pause : constant Time_Type := Sat_Sub_Time (Period, Length);
+         cur_pause  : constant Time_Type := Sat_Sub_Time (Period, Length);
          cur_length : constant Time_Type := Length;
       begin
          cur_pause_ms  := To_Millisec (cur_pause);

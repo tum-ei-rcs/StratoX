@@ -25,7 +25,8 @@ package Buzzer_Manager with SPARK_Mode is
    procedure Tick;
    --  call this periodically to manage the buzzer
 
-   function Valid_Frequency (f : Frequency_Type) return Boolean is (f > 0.0 * Hertz);
+   function Valid_Frequency (f : Frequency_Type) return Boolean is
+     (f > 0.0 * Hertz);
 
 --     procedure Set_Tone (t : Tone_Type);
 --
@@ -34,7 +35,11 @@ package Buzzer_Manager with SPARK_Mode is
 --     --  Examples:
 --     --   a' => 400
 
-   procedure Beep (f : in Frequency_Type; Reps : Natural; Period : Time_Type; Length : in Time_Type);
+   procedure Beep
+     (f      : in Frequency_Type;
+      Reps   : Natural;
+      Period : Time_Type;
+      Length : in Time_Type);
    --  beep given number of times. If reps = 0, then infinite.
 
 private
